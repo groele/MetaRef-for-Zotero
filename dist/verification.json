@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-08",
+  "version": "11.0.6",
+  "name": "MetaRef for Zotero",
+  "environment": {
+    "zotero": "10.0.5",
+    "platform": "Windows"
+  },
+  "identity": {
+    "addonID": "metaref@groele",
+    "addonRef": "metaref",
+    "addonInstance": "MetaRef",
+    "prefsPrefix": "extensions.zotero.metaref",
+    "legacyAliases": false,
+    "preferenceMigration": false
+  },
+  "unit": {
+    "files": 32,
+    "passed": 210
+  },
+  "e2e": {
+    "baseline": {
+      "version": "11.0.0",
+      "zh-CN": 43,
+      "en-US": 43
+    },
+    "current": {
+      "version": "11.0.6",
+      "status": "passed",
+      "Windows Zotero 10.0.5 zh-CN": 43,
+      "Windows Zotero 10.0.5 en-US": 43,
+      "productionXPIInstallation": "passed"
+    }
+  },
+  "checks": {
+    "eslint": "passed",
+    "autocorrect": "passed",
+    "pluginTypeScript": "passed",
+    "testTypeScript": "passed",
+    "productionBuild": "passed",
+    "canonicalPackageIdentity": "passed",
+    "databaseAndZipSHA256": "passed"
+  },
+  "package": {
+    "path": "metaref-for-zotero.xpi",
+    "sha256": "5b3487d1951da154db92d2b46c0ca2b22ba68613a3a57f30d2822d7165a0cdc6",
+    "bytes": 1218434,
+    "copiedFromTestedPackage": true,
+    "manifest": {
+      "manifest_version": 2,
+      "name": "MetaRef for Zotero",
+      "version": "11.0.6",
+      "description": "Validate, organize and enrich reference metadata in Zotero.",
+      "homepage_url": "https://github.com/groele/Zotero-diy/tree/main/Linter-for-Zotero",
+      "author": "northword",
+      "icons": {
+        "48": "content/icons/metaref-48.png",
+        "96": "content/icons/metaref-96.png",
+        "128": "content/icons/metaref-128.png"
+      },
+      "applications": {
+        "zotero": {
+          "id": "metaref@groele",
+          "update_url": "https://raw.githubusercontent.com/groele/Zotero-diy/main/Linter-for-Zotero/dist/update.json",
+          "strict_min_version": "10.0",
+          "strict_max_version": "10.999"
+        }
+      }
+    }
+  },
+  "icons": {
+    "48": {
+      "transparentCorner": true,
+      "paintedRatio": 0.308
+    },
+    "96": {
+      "transparentCorner": true,
+      "paintedRatio": 0.238
+    },
+    "128": {
+      "transparentCorner": true,
+      "paintedRatio": 0.25
+    }
+  },
+  "screenshots": {
+    "zh-CN": "../docs/assets/journal-insights-zh-CN.png",
+    "en-US": "../docs/assets/journal-insights-en-US.png"
+  },
+  "databases": {
+    "manifest": "databases/manifest.json",
+    "archive": "metaref-journal-databases.zip",
+    "sha256": "f29eca41209ca6956a27200f9ce786c5072cfe9a745dc27980e219abdbc85f29",
+    "esiRecords": 12245,
+    "natureJournals": 177,
+    "natureConferences": 1
+  },
+  "report": "../docs/current-review.md",
+  "guide": "../docs/custom-journal-databases.md",
+  "limitations": [
+    "No live external provider availability or response quality was verified.",
+    "Database snapshots were not refreshed online.",
+    "macOS, Linux and all third-party plugin combinations were not verified."
+  ]
+}
