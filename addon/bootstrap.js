@@ -29,7 +29,7 @@ function setDefaultPrefs(rootURI) {
     });
   }
   catch (e) {
-    dump(`[MetaRef] Error loading default prefs: ${e}\n`);
+    dump(`[ZoteroMetaFlow] Error loading default prefs: ${e}\n`);
   }
 }
 

@@ -1,0 +1,20 @@
+ ℹ Building version 10.0.0 to .scaffold/build at 2026-10-14 19:00:19 in test mode.
+   → Preparing static assets
+   → Bundling scripts
+ ✔ Build finished in 0.659 s.
+ ℹ Installed {project}\.scaffold\build\addon as a temporary add-on
+ ℹ Installed {project}\.scaffold\test\resource as a temporary add-on
+
+   → settings panel navigation and validation in Zotero
+     ✔ initializes once on repeated fragment loads and preserves search semantics without a native clear control 0ms
+     ✔ filters individual settings by multiple keywords, retains parent switches and never indexes secrets 8ms
+     ✔ jumps between all seven sections and expands or collapses rules without changing preferences 17ms
+     ✔ validates custom files before activation, rejects edits at the same path, and keeps paths on cancellation 206ms
+     ✔ keeps invalid numeric values out of preferences and labels all input controls 270ms
+   → startup
+     ✔ uses the requested host platform 0ms
+     ✔ should have plugin instance defined 0ms
+   → production XPI installation
+     ✔ replaces the test directory with the production XPI and reads bundled reference data 3078ms
+
+ ✔ Test run completed - 8 passed

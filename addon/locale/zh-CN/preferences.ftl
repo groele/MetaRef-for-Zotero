@@ -1,7 +1,7 @@
 ## 常规设置
 section-general = 常规设置
 lint-on-item-added =
-    .label = MetaRef：新增条目时自动检查并整理
+    .label = ZoteroMetaFlow：新增条目时自动检查并整理
 lint-on-item-added-description = 默认开启。短时间新增的条目合并后在后台处理，关闭后等待中的任务会跳过。仅处理已保存、有标题且可编辑的常规条目；空白条目、附件、订阅条目、已删除条目和同步导入的条目会跳过。运行当前启用的常规规则，可能会规范或补全字段并自动保存。
 lint-on-groupItem-added =
     .label = 群组文库中的新增条目也自动执行
@@ -12,7 +12,7 @@ lint-numConcurrent = 并行运行的数量：
 lint-numConcurrent-description = 范围 1–16，建议设为 1；修改从下一批整理任务开始生效。并发数不会提高外部服务的请求速率。
 settings-search =
     .placeholder = 搜索名称或设置键；空格分隔关键词，Esc 清空
-    .aria-label = 搜索 MetaRef 设置
+    .aria-label = 搜索 ZoteroMetaFlow 设置
 settings-no-results = 没有匹配的设置。请更换关键词。
 settings-custom-data-reset =
     .label = 清除路径
@@ -31,7 +31,7 @@ shortcut-supscript = 上标
 shortcut-bold = 粗体
 shortcut-italic = 斜体
 shortcut-nocase = 保持大小写
-shortcut-lint = MetaRef：检查并整理所选条目
+shortcut-lint = 检查并整理所选条目
 
 wip =
     .label = 开发中...
@@ -40,11 +40,11 @@ wip =
 ## 菜单设置
 section-menu = 右键菜单设置
 section-menu-description = 自定义右键菜单中显示的功能项。取消勾选只会隐藏相应菜单项，不会关闭自动规则或删除该功能。
-menu-standard-description = 「MetaRef：检查并修复元数据」运行已启用的常规规则，检查并修正标题、作者、日期、标识符、期刊等字段；修改自动保存，未能修复的问题显示在结果中。不会运行手动工具。启用的 DOI 查找、DOI 校验及期刊缩写推断规则可能联网；可在对应规则设置中关闭。
-menu-update-metadata-description = 「MetaRef：更新元数据并检查整理」先按条目类型、DOI 或网址从可用数据服务获取题录，再按所选模式更新字段，最后运行已启用的常规规则并保存。注意：「所有字段」模式可能覆盖已有值；「仅空白字段」会保留已有字段，且不会执行可能清除字段的条目类型更改。
+menu-standard-description = 「ZoteroMetaFlow：检查并修复元数据」运行已启用的常规规则，检查并修正标题、作者、日期、标识符、期刊等字段；修改自动保存，未能修复的问题显示在结果中。不会运行手动工具。启用的 DOI 查找、DOI 校验及期刊缩写推断规则可能联网；可在对应规则设置中关闭。
+menu-update-metadata-description = 「ZoteroMetaFlow：更新元数据并检查整理」先按条目类型、DOI 或网址从可用数据服务获取题录，再按所选模式更新字段，最后运行已启用的常规规则并保存。注意：「所有字段」模式可能覆盖已有值；「仅空白字段」会保留已有字段，且不会执行可能清除字段的条目类型更改。
 section-menu-field = 字段右键菜单
 menu-standard =
-    .label = MetaRef：检查并修复元数据
+    .label = ZoteroMetaFlow：检查并修复元数据
 menu-field-correct-title-punctuation =
     .label = 规范标题中的符号
 menu-field-correct-extra-order =
@@ -94,7 +94,7 @@ shortcut-saved = 快捷键已保存，立即生效。
 shortcut-disabled = 此快捷键已禁用。
 
 insights-show-pane =
-    .label = 显示 MetaRef 独立期刊索引侧栏
+    .label = 显示 ZoteroMetaFlow 独立期刊索引侧栏
 insights-description = ESI 与 Nature Index 显示在独立侧栏和可选列表列，不写入文献字段或标签。菜单查询始终可用；数据库更改立即生效。
 
 journal-database-nature = Nature Index 自定义期刊数据库

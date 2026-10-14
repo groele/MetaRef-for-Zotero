@@ -4,15 +4,13 @@
   <html:link rel="localization" href="__addonRef__-main-window.ftl" />
   <html:link rel="localization" href="schema.ftl" />
 </linkset>
-<vbox
-  id="__addonRef__"
-  onload="Zotero.__addonInstance__.hooks.onPrefsEvent('load', { window })"
->
+<vbox id="__addonRef__">
   <html:div class="metaref-settings-tools">
     <html:div class="metaref-settings-search-row">
       <html:input
         class="metaref-settings-search"
-        type="search"
+        type="text"
+        role="searchbox"
         data-l10n-id="settings-search"
       />
       <button
@@ -474,7 +472,7 @@
               data-l10n-id="rule-require-language-option-only-other-doc"
               is="zotero-text-link"
               class="zotero-text-link"
-              href="https://github.com/groele/Zotero-diy/blob/main/MetaRef-for-Zotero/docs/features.md#require-language-require-language"
+              href="https://github.com/groele/Zotero-MetaFlow/blob/main/docs/features.md#require-language-require-language"
             />
           </hbox>
           <description
@@ -929,8 +927,8 @@
       <label
         is="zotero-text-link"
         class="zotero-text-link"
-        href="https://github.com/groele/Zotero-diy/tree/main/MetaRef-for-Zotero"
-        value="https://github.com/groele/Zotero-diy/tree/main/MetaRef-for-Zotero"
+        href="__homepage__"
+        value="__homepage__"
       />
     </hbox>
   </groupbox>

@@ -1,7 +1,9 @@
+import { preferenceListeners } from "../utils/preference-listeners";
 import { getPref, setPref } from "../utils/prefs";
 import { matchesSettings, settingsTokens, validConcurrency } from "../utils/settings";
 
 export function setupSettingsPanel(pane: Element) {
+  const listen = preferenceListeners(pane);
   const doc = pane.ownerDocument!;
   const search = pane.querySelector<HTMLInputElement>(".metaref-settings-search")!;
   const clear = pane.querySelector<HTMLButtonElement>(".metaref-settings-clear")!;
@@ -96,7 +98,7 @@ export function setupSettingsPanel(pane: Element) {
     doc.l10n!.setAttributes(option, heading.getAttribute("data-l10n-id")!);
     jump.appendChild(option);
   });
-  jump.addEventListener("change", () => {
+  listen(jump, "change", () => {
     const group = groups.find(group => group.id === jump.value);
     if (!group)
       return;
@@ -105,19 +107,19 @@ export function setupSettingsPanel(pane: Element) {
     (group.querySelector(":scope > label h2") as HTMLElement).focus({ preventScroll: true });
     jump.value = "";
   });
-  search.addEventListener("input", update);
-  search.addEventListener("keydown", (event: KeyboardEvent) => {
+  listen(search, "input", update);
+  listen(search, "keydown", (event: KeyboardEvent) => {
     if (event.key === "Escape") {
       event.preventDefault();
       event.stopPropagation();
       clearSearch();
     }
   });
-  clear.addEventListener("command", () => {
+  listen(clear, "command", () => {
     clearSearch();
     search.focus();
   });
-  pane.addEventListener("keydown", (event: KeyboardEvent) => {
+  listen(pane, "keydown", (event: KeyboardEvent) => {
     if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === "f") {
       event.preventDefault();
       event.stopPropagation();
@@ -126,7 +128,7 @@ export function setupSettingsPanel(pane: Element) {
     }
   });
   for (const button of disclosureButtons) {
-    button.addEventListener("command", () => details.forEach(detail => detail.open = button.dataset.open === "true"));
+    listen(button, "command", () => details.forEach(detail => detail.open = button.dataset.open === "true"));
   }
   setupInputLabels(pane);
   setupConcurrency(pane);
@@ -152,6 +154,7 @@ function setupInputLabels(pane: Element) {
 }
 
 function setupConcurrency(pane: Element) {
+  const listen = preferenceListeners(pane);
   const input = pane.querySelector<HTMLInputElement>("input[type='number']")!;
   const doc = pane.ownerDocument!;
   const status = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
@@ -175,9 +178,9 @@ function setupConcurrency(pane: Element) {
       setPref("lint.numConcurrent", value);
     }
   };
-  input.addEventListener("input", validate, true);
-  input.addEventListener("change", validate, true);
-  input.addEventListener("blur", () => {
+  listen(input, "input", validate, true);
+  listen(input, "change", validate, true);
+  listen(input, "blur", () => {
     if (input.hasAttribute("aria-invalid")) {
       input.value = String(getPref("lint.numConcurrent"));
       input.removeAttribute("aria-invalid");

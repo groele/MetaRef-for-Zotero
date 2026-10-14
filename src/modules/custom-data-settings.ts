@@ -1,10 +1,12 @@
 import { DataLoader } from "../utils/data-loader";
 import { getString } from "../utils/locale";
+import { preferenceListeners } from "../utils/preference-listeners";
 import { setPref } from "../utils/prefs";
 import { loadTitleTerms } from "../utils/title-terms";
 import { loadCustomAbbreviations } from "./rules/require-abbr";
 
 export function setupCustomDataFiles(pane: Element) {
+  const listen = preferenceListeners(pane);
   const doc = pane.ownerDocument!;
   for (const kind of ["abbr", "title"] as const) {
     const button = pane.querySelector<HTMLButtonElement>(`#metaref-${kind}-choose-custom-data-button`)!;
@@ -19,7 +21,7 @@ export function setupCustomDataFiles(pane: Element) {
     row.appendChild(status);
     input.setAttribute("aria-describedby", status.id);
     let busy = false;
-    button.addEventListener("command", async () => {
+    listen(button, "command", async () => {
       if (busy)
         return;
       busy = true;

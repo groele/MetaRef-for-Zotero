@@ -9,11 +9,11 @@ export default defineConfig({
   source: ["src", "addon"],
   dist: ".scaffold/build",
   name: pkg.config.addonName,
-  xpiName: "metaref-for-zotero",
+  xpiName: "zotero-metaflow",
   id: pkg.config.addonID,
   namespace: pkg.config.addonRef,
   updateURL: "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
-  xpiDownloadLink: "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/metaref-for-zotero.xpi",
+  xpiDownloadLink: "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi",
   server: {
     startArgs: ["-no-remote"],
   },
@@ -100,6 +100,7 @@ export default defineConfig({
     entries: [env.METAREF_TEST_ENTRIES || "test/tests"],
     prefs: {
       "metaref.test.fixturePath": resolve("test/data"),
+      ...env.METAREF_TEST_PLATFORM && { "metaref.test.expectedPlatform": Number(env.METAREF_TEST_PLATFORM) },
       ...env.METAREF_TEST_PACKAGE_PATH && { "metaref.test.packagePath": env.METAREF_TEST_PACKAGE_PATH },
       ...env.METAREF_TEST_LOCALE && { "intl.locale.requested": env.METAREF_TEST_LOCALE },
     },

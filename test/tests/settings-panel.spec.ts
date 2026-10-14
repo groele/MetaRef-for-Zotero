@@ -32,6 +32,16 @@ describe("settings panel navigation and validation in Zotero", function () {
     win?.close();
   });
 
+  it("initializes once on repeated fragment loads and preserves search semantics without a native clear control", function () {
+    const actions = pane.querySelectorAll(".metaref-shortcut-action").length;
+    pane.dispatchEvent(new win.Event("load"));
+    pane.dispatchEvent(new win.Event("load"));
+    assert.equal(pane.querySelectorAll(".metaref-shortcut-action").length, actions);
+    assert.isAbove(actions, 0);
+    assert.equal(search.type, "text");
+    assert.equal(search.getAttribute("role"), "searchbox");
+  });
+
   it("filters individual settings by multiple keywords, retains parent switches and never indexes secrets", function () {
     const detail = find("rule.correct-title-sentence-case").closest("details") as HTMLDetailsElement;
     const originalOpen = detail.open;

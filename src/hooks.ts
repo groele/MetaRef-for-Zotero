@@ -3,11 +3,12 @@ import { registerExtraColumns, unregisterExtraColumns } from "./modules/item-tre
 import { registerJournalPane, unregisterJournalPane } from "./modules/journal-pane";
 import { registerMenu, unregisterMenu } from "./modules/menu";
 import { registerNotifier, unregisterNotifier } from "./modules/notifier";
-import { registerPrefs, registerPrefsScripts } from "./modules/preference";
+import { registerPrefs, registerPrefsScripts, registerPrefsWindow, unregisterPrefsWindows } from "./modules/preference";
 import { RichTextToolBar, setHtmlTag } from "./modules/rich-text";
 import { Rules } from "./modules/rules";
 import { registerShortcuts } from "./modules/shortcuts";
 import { AutomaticItems } from "./utils/automatic-items";
+import { cleanupResources } from "./utils/cleanup";
 import { closeAllDialogs } from "./utils/dialog";
 import { toArray } from "./utils/general";
 import { loadJournalInsights } from "./utils/journal-insights";
@@ -24,17 +25,29 @@ const automaticItems = new AutomaticItems(processAddedItems, () => {
 
 async function onStartup() {
   await Promise.all([Zotero.initializationPromise, Zotero.unlockPromise, Zotero.uiReadyPromise]);
-  initLocale();
-  registerPrefs();
-  registerNotifier();
-  registerMenu();
-  await loadJournalInsights();
-  registerExtraColumns();
-  registerJournalPane();
-  await Promise.all(Zotero.getMainWindows().map(onMainWindowLoad));
+  if (!addon.data.alive)
+    return;
+  try {
+    initLocale();
+    registerPrefs();
+    registerNotifier();
+    registerMenu();
+    await loadJournalInsights();
+    if (!addon.data.alive)
+      return;
+    registerExtraColumns();
+    registerJournalPane();
+    await Promise.all(Zotero.getMainWindows().map(onMainWindowLoad));
+  }
+  catch (error) {
+    await onShutdown();
+    throw error;
+  }
 }
 
 async function onMainWindowLoad(win: Window): Promise<void> {
+  if (!addon.data.alive)
+    return;
   registerMainWindowLocale(win);
   shortcutCleanups.get(win)?.();
   shortcutCleanups.set(win, registerShortcuts(win));
@@ -45,29 +58,39 @@ async function onMainWindowLoad(win: Window): Promise<void> {
 }
 
 async function onMainWindowUnload(win: Window): Promise<void> {
-  shortcutCleanups.get(win)?.();
+  const shortcuts = shortcutCleanups.get(win);
+  const toolbar = toolbars.get(win);
   shortcutCleanups.delete(win);
-  toolbars.get(win)?.clean();
   toolbars.delete(win);
-  unregisterMainWindowLocale(win);
+  await cleanupResources([
+    () => shortcuts?.(),
+    () => toolbar?.clean(),
+    () => unregisterMainWindowLocale(win),
+  ], error => logger.error("Window cleanup failed:", error));
 }
 
 async function onShutdown() {
   addon.data.alive = false;
-  automaticItems.cancelPending();
-  unregisterNotifier();
-  closeAllDialogs();
-  await addon.runner.stop();
-  closeAllDialogs();
-  unregisterMenu();
-  unregisterExtraColumns();
-  unregisterJournalPane();
-  ztoolkit.unregisterAll();
-  await Promise.all(Zotero.getMainWindows().map(onMainWindowUnload));
-  unloadLocale();
+  await cleanupResources([
+    () => automaticItems.cancelPending(),
+    unregisterNotifier,
+    unregisterPrefsWindows,
+    closeAllDialogs,
+    () => addon.runner.stop(),
+    closeAllDialogs,
+    unregisterMenu,
+    unregisterExtraColumns,
+    unregisterJournalPane,
+    () => ztoolkit.unregisterAll(),
+    () => Promise.all([...new Set([...shortcutCleanups.keys(), ...toolbars.keys(), ...Zotero.getMainWindows()])].map(onMainWindowUnload)),
+    unloadLocale,
+  ], error => logger.error("Plugin cleanup failed:", error));
   // Remove addon object
   // @ts-expect-error - Plugin instance is not typed
-  delete Zotero[addon.data.config.addonInstance];
+  if (Zotero[addon.data.config.addonInstance] === addon) {
+    // @ts-expect-error - Plugin instance is not typed
+    delete Zotero[addon.data.config.addonInstance];
+  }
 }
 
 async function onNotify(
@@ -138,6 +161,9 @@ async function processAddedItems(ids: number[]) {
 
 async function onPrefsEvent(type: string, data: { [key: string]: never }) {
   switch (type) {
+    case "load-script":
+      registerPrefsWindow(data.window);
+      break;
     case "load":
       registerPrefsScripts(data.window);
       break;

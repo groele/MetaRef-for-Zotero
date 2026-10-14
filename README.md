@@ -1,23 +1,23 @@
-# Zotero-MetaFlow (原 MetaRef) — 文献元数据整理助手
+# ZoteroMetaFlow — 文献元数据整理助手
 
-> **Zotero Flow Series** 系列成员：专注文献元数据的校验、整理与补全。
+<img src="addon/content/icons/metaref-128.png" alt="ZoteroMetaFlow icon" width="64" height="64" />
 
-<img src="addon/content/icons/metaref-128.png" alt="MetaFlow icon" width="64" height="64" />
+用于校验、整理和补全文献元数据的 Zotero 插件，当前版本 **10.0.0**（GitHub 标签 **V10**），支持 Zotero **10.0–11.x**。项目仓库：[groele/Zotero-MetaFlow](https://github.com/groele/Zotero-MetaFlow)。基于 [Northword/Linter for Zotero](https://github.com/northword/zotero-format-metadata) 开发，保留上游版权及 AGPL-3.0 许可证。
 
-用于校验、整理和补全文献元数据的 Zotero 插件，当前版本 **12.2.0**，面向 Zotero **10.0.x**。项目仓库：[groele/Zotero-MetaFlow](https://github.com/groele/Zotero-MetaFlow)。基于 [Northword/Linter for Zotero](https://github.com/northword/zotero-format-metadata) 开发，保留上游版权及 AGPL-3.0 许可证。
+Zotero 11 / Firefox 153 迁移与验证记录见 [兼容性审查](docs/zotero11-compatibility.md)。安装清单和更新清单均声明支持 Zotero 10.0–11.x；Zotero 11 的实机验证基于开发版，后续宿主变更仍需回归。
 
 ## 安装
 
-下载 [MetaRef 12.2.0 安装包](dist/metaref-for-zotero.xpi)，在 Zotero 插件管理器中选择「从文件安装插件」。MetaRef 使用独立插件 ID `metaref@groele`、资源命名空间 `metaref`、实例 `Zotero.MetaRef` 和设置前缀 `extensions.zotero.metaref`。自动更新清单和安装包均从本仓库的 `dist` 路径获取。
+下载 [ZoteroMetaFlow 10.0.0 安装包](dist/zotero-metaflow.xpi)，在 Zotero 插件管理器中选择「从文件安装插件」。ZoteroMetaFlow 使用插件 ID `metaflow@groele`。自动更新清单和安装包均从 `groele/Zotero-MetaFlow` 仓库的 `dist` 路径获取。为保留已有 MetaRef 设置，内部资源命名空间 `metaref`、实例 `Zotero.MetaRef` 和设置前缀 `extensions.zotero.metaref` 继续沿用。
 
-如果当前安装的是 11.0.6 或更早版本，请手动安装 12.2.0 一次：旧目录删除后，旧版本的自动更新地址不再可用。11.0.7 起自动更新地址位于本项目目录。
+从 MetaRef 更换到 ZoteroMetaFlow 时，因插件 ID 已改变，必须手动安装一次；旧 ID 的自动更新无法切换到新 ID。
 
-安装前移除已有 Linter 插件，避免两个实例同时整理条目。MetaRef 12.0.0 / 12.1.0 可直接更新到 12.2.0，保留同一 MetaRef 设置空间内的设置；不读取或迁移原 Linter 设置。
+安装前禁用并移除旧 MetaRef 或 Linter 插件，避免同时整理条目。已有 MetaRef 设置继续可用；不读取或迁移原 Linter 设置。
 
 ## 功能
 
 - 40 项标准规则与 9 项手动工具，处理标题、化学式角标、作者、语言、日期、卷期页、DOI、缩写、所在地和 Extra。手动工具不参与自动整理。
-- MetaRef 内部 22 项菜单直接显示，以分隔线区分操作顺序；没有嵌套子菜单。
+- ZoteroMetaFlow 内部 22 项菜单直接显示，以分隔线区分操作顺序；没有嵌套子菜单。
 - 独立的期刊索引侧栏及 ESI、Nature Index 列，不写入文献字段或标签。菜单查询打开结果窗口，关闭后可以再次执行。
 - 侧栏分别显示匹配结果及命中依据，只保留一组数据来源和简短解释。标题区没有附加图标或按钮；数据库更新在设置页操作。
 - ESI 与 Nature Index 可分别使用自定义 JSON／CSV，支持校验、重新读取、恢复内置名单及导出内置 JSON。异常文件回退到内置数据并显示原因。

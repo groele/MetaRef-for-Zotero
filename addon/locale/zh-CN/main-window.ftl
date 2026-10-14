@@ -1,9 +1,9 @@
 ## menu
 richtext-toolbar-label = 论文标题格式工具栏
 menuitem-label = 
-  .label = MetaRef
+  .label = ZoteroMetaFlow
 menuitem-stdFormatFlow = 
-  .label = MetaRef：检查并修复元数据
+  .label = ZoteroMetaFlow：检查并修复元数据
 field-nature-index = Nature Index
 
 menu-group-primary = 常用操作
@@ -13,7 +13,7 @@ menu-group-publication = 语言与出版物
 menu-group-indexing = 期刊索引识别
 menu-group-maintenance = 标识符、日期与额外字段
 journal-insights-heading =
-    .label = MetaRef 期刊索引
+    .label = ZoteroMetaFlow 期刊索引
     .tooltiptext = ESI 学科与 Nature Index 名单识别
 journal-insights-loading = 正在读取期刊索引名单…
 field-esi = ESI 学科

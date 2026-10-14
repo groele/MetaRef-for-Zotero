@@ -95,7 +95,7 @@ describe("metadata workflow in Zotero", function () {
       const originalAutoCheck = Zotero.Prefs.get(`${prefix}.lint.onAdded`, true) as boolean;
       assert.isNotNull(autoCheck, "automatic processing has a visible setting control");
       assert.isNotNull(groupAutoCheck, "group-library processing has its own dependent control");
-      assert.include(autoCheck.getAttribute("label")!, "MetaRef", "the setting uses the MetaRef feature prefix");
+      assert.include(autoCheck.getAttribute("label")!, config.addonName, "the setting uses the plugin feature prefix");
       autoCheck.checked = false;
       autoCheck.dispatchEvent(new win.Event("command", { bubbles: true }));
       assert.isFalse(Zotero.Prefs.get(`${prefix}.lint.onAdded`, true), "turning the switch off persists immediately");

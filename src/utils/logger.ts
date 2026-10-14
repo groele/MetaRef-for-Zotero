@@ -10,7 +10,7 @@ export interface Logger {
 export function createLogger(prefix?: string): Logger {
   const _log = (level: LogLevel, ...args: any[]) => {
     const base = [
-      ["debug"].includes(level) ? "" : "[MetaRef]",
+      ["debug"].includes(level) ? "" : "[ZoteroMetaFlow]",
       prefix ? `[${prefix}]` : "",
     ].filter(Boolean).join(" ");
 

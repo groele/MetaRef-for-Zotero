@@ -1,3 +1,4 @@
+import { cleanupResourcesSync } from "../utils/cleanup";
 import { cachedJournalInsights, clearJournalInsights, getJournalInsights, loadJournalInsights } from "../utils/journal-insights";
 import { presentJournalInsights } from "../utils/journal-insights-presentation";
 import { getLocaleID, getString } from "../utils/locale";
@@ -59,7 +60,7 @@ export function registerJournalPane() {
         clearJournalInsights();
       refreshData();
       for (const refresh of refreshers.values())
-        void refresh().catch(error => logger.error(error));
+        void Promise.resolve().then(refresh).catch(error => logger.error(error));
     }, true));
   }
 }
@@ -129,10 +130,12 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
 }
 
 export function unregisterJournalPane() {
-  observers.splice(0).forEach(id => Zotero.Prefs.unregisterObserver(id));
-  refreshers.clear();
-  if (sectionID)
-    Zotero.ItemPaneManager.unregisterSection(sectionID);
+  const id = sectionID;
   sectionID = undefined;
-  clearJournalInsights();
+  refreshers.clear();
+  cleanupResourcesSync([
+    ...observers.splice(0).map(id => () => Zotero.Prefs.unregisterObserver(id)),
+    () => id && Zotero.ItemPaneManager.unregisterSection(id),
+    clearJournalInsights,
+  ], error => logger.error("Journal pane cleanup failed:", error));
 }

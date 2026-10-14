@@ -1,0 +1,76 @@
+$ node scripts/test-e2e.mjs
+$ zotero-plugin build && tsc --noEmit
+ ℹ Building version 12.2.1 to .scaffold/build at 2026-10-14 15:45:51 in production mode.
+   → Preparing static assets
+   → Bundling scripts
+   → Packing plugin
+ ✔ Build finished in 1.421 s.
+ ℹ Building version 12.2.1 to .scaffold/build at 2026-10-14 15:45:56 in test mode.
+   → Preparing static assets
+   → Bundling scripts
+ ✔ Build finished in 0.967 s.
+ ℹ Installed {project}\.scaffold\build\addon as a temporary add-on
+ ℹ Installed {project}\.scaffold\test\resource as a temporary add-on
+
+   → user-defined journal databases in Zotero
+     ✔ uses custom JSON and BOM CSV consistently in the pane, columns and rules, and reloads edited files 748ms
+     ✔ validates before activating, preserves paths on errors or cancellation, exports real files and resets from settings 2408ms
+     ✔ imports both delivered JSON and CSV databases and round-trips the built-in ESI export 3014ms
+   → independent journal insights in Zotero
+     ✔ renders its own section and columns without changing item metadata 1051ms
+   → native flat menu commands
+     ✔ runs a formatter from its actual menu element on two consecutive openings 19724ms
+     ✔ shows visible results for both index commands without saving item metadata 4372ms
+   → metadata workflow in Zotero
+     ✔ persists formulas in a single batch, including book titles and duplicate inputs 514ms
+     ✔ applies the formula shortcut only once and leaves unrelated input fields alone 315ms
+     ✔ shows the automatic rule and records, rejects conflicts, disables and resets shortcuts 674ms
+     ✔ formats the actual title editor selection and toggles only the requested tag 93ms
+     ✔ continues healthy rules after preparation failures and primitive apply errors 216ms
+   → processing efficiency in Zotero
+     ✔ measures import dispatch, repeated indexing and batch progress on real items 3385ms
+   → data processing resilience in Zotero
+     ✔ recovers every modified item after a transaction rollback 682ms
+     ✔ reports permanent save failure instead of counting it as success 184ms
+     ✔ isolates applicability failures and still saves sibling rule changes 360ms
+     ✔ records preparation failures separately and keeps unaffected rules available 167ms
+     ✔ starts a fresh batch after a results window fails 594ms
+     ✔ finishes concurrent items and commits once even when progress updates fail 523ms
+     ✔ reports a failed duplicate search without blocking the following formatter 612ms
+     ✔ stops before the next rule and item, saves completed work, then accepts another batch 615ms
+     ✔ blocks late writes and reports from a timed-out rule 431ms
+     ✔ uses the live item when a report action starts a new batch after its rule has finished 819ms
+     ✔ runs all local standard rules across article, conference, thesis, book and patent fields 3653ms
+     ✔ preserves a manually entered abbreviation and series when no replacement is available 720ms
+     ✔ updates creator annotations and CSL extra data without saving inside a rule 477ms
+     ✔ falls back after a malformed service result and preserves fields in blank mode 702ms
+     ✔ preserves incompatible fields and creator roles during blank-only metadata updates 5872ms
+     ✔ updates preprints and resolves PMID and URL service fallbacks 15167ms
+     ✔ keeps menus, columns and title listeners stable on repeated window initialization 675ms
+     ✔ delivers each item notification once after repeated plugin initialization 629ms
+     ✔ cancels the entire combined workflow when a tool dialog is cancelled 145ms
+     ✔ runs DOI services and remaining tools through the same save boundary 674ms
+     ✔ bounds concurrent items and captures the selection when queuing a later batch 2097ms
+     ✔ rechecks automatic lint preferences after its import delay 1542ms
+     ✔ runs the collection menu on that collection's items instead of the item-list selection 1862ms
+     ✔ undoes and redoes an entire successful metadata batch 1603ms
+     ✔ falls back to bundled reference data when custom abbreviation and ESI files are invalid 11779ms
+     ✔ opens each settings tool and cancels it without running the following formatter 5696ms
+     ✔ accepts settings before applying a tool and the following formatter 1650ms
+     ✔ closes a pending tool before waiting for shutdown and removes registered UI 1969ms
+   → real reference files and PDF indexing
+     ✔ reads real CSV and BOM JSON files and displays ESI without writing reference fields 1691ms
+     ✔ imports and indexes a three-page PDF before completing a numeric page range 6527ms
+   → settings panel navigation and validation in Zotero
+     ✔ initializes once on repeated fragment loads and preserves search semantics without a native clear control 1ms
+     ✔ filters individual settings by multiple keywords, retains parent switches and never indexes secrets 7ms
+     ✔ jumps between all seven sections and expands or collapses rules without changing preferences 17ms
+     ✔ validates custom files before activation, rejects edits at the same path, and keeps paths on cancellation 247ms
+     ✔ keeps invalid numeric values out of preferences and labels all input controls 130ms
+   → startup
+     ✔ uses the requested host platform 0ms
+     ✔ should have plugin instance defined 0ms
+   → production XPI installation
+     ✔ replaces the test directory with the production XPI and reads bundled reference data 4985ms
+
+ ✔ Test run completed - 50 passed

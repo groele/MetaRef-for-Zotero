@@ -24,6 +24,7 @@ export default antfu(
       "data",
       "docs",
       "CLAUDE.md",
+      "Zotero11-Firefox153-插件适配指南.md",
     ],
   },
   {

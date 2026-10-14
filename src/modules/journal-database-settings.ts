@@ -2,10 +2,12 @@ import type { JournalDatasetKind } from "../utils/journal-datasets";
 import { journalDatabaseErrorMessage } from "../utils/journal-database-error";
 import { exportJournalDatabase, validateJournalDatabase } from "../utils/journal-database-file";
 import { getString } from "../utils/locale";
+import { preferenceListeners } from "../utils/preference-listeners";
 import { getPref, setPref } from "../utils/prefs";
 import { refreshJournalInsights } from "./journal-pane";
 
 export function setupJournalDatabases(pane: Element) {
+  const listen = preferenceListeners(pane);
   for (const kind of ["esi", "nature"] as JournalDatasetKind[]) {
     const key = kind === "esi" ? "insights.esiCustomDataPath" : "insights.natureCustomDataPath";
     const group = pane.querySelector(`[data-journal-database='${kind}']`)!;
@@ -17,7 +19,7 @@ export function setupJournalDatabases(pane: Element) {
       const button = action === "reset"
         ? group.querySelector("[data-l10n-id='metaref-settings-custom-data-reset']")!
         : group.querySelector(`#metaref-${kind}-${action}-custom-data-button`)!;
-      button.addEventListener("command", async () => {
+      listen(button, "command", async () => {
         if (busy)
           return;
         busy = true;

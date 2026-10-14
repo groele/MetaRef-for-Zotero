@@ -16,8 +16,8 @@ function run(args, env = process.env) {
 run(["build"]);
 const qa = path.join(projectRoot, ".scaffold", "qa");
 mkdirSync(qa, { recursive: true });
-const packagePath = path.join(qa, "metaref-for-zotero-production.xpi");
-copyFileSync(path.join(projectRoot, ".scaffold", "build", "metaref-for-zotero.xpi"), packagePath);
+const packagePath = path.join(qa, "zotero-metaflow-production.xpi");
+copyFileSync(path.join(projectRoot, ".scaffold", "build", "zotero-metaflow.xpi"), packagePath);
 run(["exec", "zotero-plugin", "test", "--no-watch"], {
   ...process.env,
   METAREF_TEST_PACKAGE_PATH: packagePath,

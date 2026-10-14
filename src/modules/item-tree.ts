@@ -1,5 +1,7 @@
+import { cleanupResourcesSync } from "../utils/cleanup";
 import { cachedJournalInsights } from "../utils/journal-insights";
 import { getString } from "../utils/locale";
+import { logger } from "../utils/logger";
 
 const registeredColumns: string[] = [];
 
@@ -54,5 +56,5 @@ export function registerExtraColumns() {
 }
 
 export function unregisterExtraColumns() {
-  registeredColumns.splice(0).forEach(id => Zotero.ItemTreeManager.unregisterColumn(id));
+  cleanupResourcesSync(registeredColumns.splice(0).map(id => () => Zotero.ItemTreeManager.unregisterColumn(id)), error => logger.error("Column cleanup failed:", error));
 }

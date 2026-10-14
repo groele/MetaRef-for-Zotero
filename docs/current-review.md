@@ -1,10 +1,10 @@
 # 当前实现与验收范围
 
-版本：12.2.0。目标：Zotero 10.0.x；本次真实运行环境为 Windows Zotero 10.0.6。顶部主标题格式工具栏支持键盘操作和选区保留，并能准确切换嵌套格式。
+版本：10.0.0。兼容声明：Zotero 10.0–11.x。Zotero 11 / Gecko 153 迁移、独立实机回归与验证边界见 [兼容性审查](zotero11-compatibility.md)。此前功能审查环境为 Windows Zotero 10.0.6。顶部主标题格式工具栏支持键盘操作和选区保留，并能准确切换嵌套格式。
 
 ## 菜单和窗口
 
-MetaRef 内 22 项功能直接显示；设置页分类只控制入口显示。真实测试打开原生右键菜单并触发 command 事件，连续两次执行化学式整理及保存，并分别查询 ESI 与 Nature Index。查询窗口提供明确结果、匹配依据、实际来源及数据错误。
+ZoteroMetaFlow 内 22 项功能直接显示；设置页分类只控制入口显示。真实测试打开原生右键菜单并触发 command 事件，连续两次执行化学式整理及保存，并分别查询 ESI 与 Nature Index。查询窗口提供明确结果、匹配依据、实际来源及数据错误。
 
 窗口关闭使用 Gecko 原生 `domwindowclosed` 通知判断，避免文档导航／unload 与窗口生命周期混淆；关闭窗口后释放跟踪状态及原生观察者，不影响后续设置工具。测试先清理其他测试产生的报告，保证只验证本次点击产生的新窗口。
 
@@ -20,7 +20,7 @@ ESI 展示学科名称，Nature Index 使用“名单内期刊”等明确状态
 
 移除旧版本设置迁移、版本比较模块、已弃用的 onUpdateInBatch API、旧快捷键加号别名、旧式对象键期刊列表输入、废弃菜单上下文回退、旧安装包别名、旧版本压缩包、过时审查和重复验证文件、未使用的图标尺寸。
 
-使用独立 MetaRef 身份及设置空间，不读取或迁移原设置。ESI 查询改为 `tool-query-esi` 手动工具，Nature Index 查询为 `tool-query-nature-index`；没有写入字段／标签的历史规则身份。ESI 数据路径和列显示格式归入 insights 设置。
+使用 ZoteroMetaFlow 身份 `metaflow@groele`，保留 MetaRef 设置空间 `extensions.zotero.metaref`；不读取或迁移原 Linter 设置。ESI 查询改为 `tool-query-esi` 手动工具，Nature Index 查询为 `tool-query-nature-index`；没有写入字段／标签的历史规则身份。ESI 数据路径和列显示格式归入 insights 设置。
 
 保留有实际用途的 JSON 数组／标准包装对象、CSV 表头别名和编码容错；保留上游版权及许可证。不删除资料库条目的人工字段或标签。
 
@@ -50,8 +50,8 @@ ESI 展示学科名称，Nature Index 使用“名单内期刊”等明确状态
 
 ## 验证
 
-246 项单元测试（36 个文件）。真实 Zotero E2E 的最终结果、生产包 SHA256 和安装清单由 `dist/verification.json` 记录。真实 E2E 覆盖自定义数据库、设置窗口、自动处理开关、菜单命令、侧栏对齐、事务恢复、撤销、通知、快捷键、PDF、160 条真实条目的保存与性能计数，以及生产 XPI 安装。[性能检验](performance-audit-2026-10-09.md) 记录同机优化前后的场景与测量范围。
+257 项单元测试（41 个文件）。真实 Zotero E2E 的最终结果、生产包 SHA256 和安装清单由 `dist/verification.json` 记录。真实 E2E 覆盖自定义数据库、设置窗口、自动处理开关、菜单命令、侧栏对齐、事务恢复、撤销、通知、快捷键、PDF、160 条真实条目的保存与性能计数，以及生产 XPI 安装。[性能检验](performance-audit-2026-10-09.md) 记录同机优化前后的场景与测量范围。
 
-原 `Linter-for-Zotero` 目录删除后，11.0.6 及更早版本的旧更新地址不可达，需要手动安装当前版本一次；从 11.0.7 开始使用新目录更新地址。更新清单和 XPI 均指向 `groele/Zotero-diy` 中的 `MetaRef-for-Zotero/dist`。
+更新清单和 XPI 均指向 `groele/Zotero-MetaFlow` 中的 `dist`。插件 ID 已更换，需要手动安装一次并移除旧 MetaRef，已有设置继续可用。
 
 外部元数据服务采用受控响应验证；尚未证明实时服务连通性或全部第三方插件组合。未实机验收 macOS／Linux。Windows 原生文件选择器的路径边界通过替换返回值验证，没有自动点击系统文件对话框。

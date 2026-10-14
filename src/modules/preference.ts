@@ -1,5 +1,7 @@
 import { homepage } from "../../package.json";
 import { getString } from "../utils/locale";
+import { preferenceListeners, releasePreferenceListeners } from "../utils/preference-listeners";
+import { watchPreferencePane } from "../utils/preference-window";
 import { getPref, setPref } from "../utils/prefs";
 import { normalizeShortcut, recordShortcut, SHORTCUT_DEFAULTS, shortcutPreview } from "../utils/shortcuts";
 import { setupCustomDataFiles } from "./custom-data-settings";
@@ -9,11 +11,14 @@ import { Rules } from "./rules";
 import { setupSettingsPanel } from "./settings-panel";
 
 const initializedPanes = new WeakSet<Element>();
+const preferenceWindows = new Map<Window, () => void>();
 
 export function registerPrefs() {
   Zotero.PreferencePanes.register({
     pluginID: addon.data.config.addonID,
     src: `${rootURI}content/preferences.xhtml`,
+    scripts: [`${rootURI}content/scripts/preferences.js`],
+    defaultXUL: true,
     label: getString("prefs-title"),
     image: `${rootURI}/content/icons/metaref-96.png`,
     stylesheets: [`${rootURI}/content/preferences.css`],
@@ -21,9 +26,33 @@ export function registerPrefs() {
   });
 }
 
+export function registerPrefsWindow(win: Window) {
+  if (preferenceWindows.has(win) || !addon.data.alive)
+    return;
+  const stopWatching = watchPreferencePane(win, addon.data.config.addonRef, registerPrefsScripts);
+  const cleanup = () => {
+    stopWatching();
+    releasePreferenceListeners(win.document);
+    win.removeEventListener("unload", cleanup);
+    preferenceWindows.delete(win);
+    if (addon.data.prefs?.window === win)
+      addon.data.prefs = undefined;
+  };
+  win.addEventListener("unload", cleanup, { once: true });
+  preferenceWindows.set(win, cleanup);
+}
+
+export function unregisterPrefsWindows() {
+  for (const cleanup of preferenceWindows.values())
+    cleanup();
+  releasePreferenceListeners();
+}
+
 export function registerPrefsScripts(_window: Window) {
   // This function is called when the prefs window is opened
-  // See addon/content/preferences.xul onpaneload
+  // The external preferences script watches fragment load events.
+  if (!addon.data.alive)
+    return;
   if (!addon.data.prefs) {
     addon.data.prefs = {
       window: _window,
@@ -42,11 +71,12 @@ export function registerPrefsScripts(_window: Window) {
   setupCustomDataFiles(pane);
   setupJournalDatabases(pane);
   setupDependencies(pane);
-  setupShortcutInputs();
+  setupShortcutInputs(pane);
   setupSettingsPanel(pane);
 }
 
 function setupMenuSettings(pane: Element) {
+  const listen = preferenceListeners(pane);
   const container = pane.querySelector("#metaref-menu-settings");
   if (!container)
     return;
@@ -64,7 +94,7 @@ function setupMenuSettings(pane: Element) {
       control.setAttribute("native", "true");
       control.setAttribute("preference", `${addon.data.config.prefsPrefix}.menu.${id}`);
       control.checked = getPref(`menu.${id}` as any, true) as boolean;
-      control.addEventListener("command", () => setPref(`menu.${id}` as any, control.checked));
+      listen(control, "command", () => setPref(`menu.${id}` as any, control.checked));
       group.appendChild(control);
     }
     container.appendChild(group);
@@ -72,13 +102,14 @@ function setupMenuSettings(pane: Element) {
 }
 
 function setupCustomDataReset(pane: Element) {
+  const listen = preferenceListeners(pane);
   for (const input of pane.querySelectorAll<HTMLInputElement>("input[readonly][preference]")) {
     const button = input.ownerDocument.createXULElement("button");
     input.ownerDocument.l10n!.setAttributes(button, "metaref-settings-custom-data-reset");
     button.setAttribute("native", "true");
     button.dataset.resetPath = "true";
     if (!input.closest("[data-journal-database]")) {
-      button.addEventListener("command", () => {
+      listen(button, "command", () => {
         if (input.parentElement!.hasAttribute("data-busy"))
           return;
         const status = input.parentElement!.querySelector(".metaref-custom-data-status");
@@ -94,6 +125,7 @@ function setupCustomDataReset(pane: Element) {
 }
 
 function setupDependencies(pane: Element) {
+  const listen = preferenceListeners(pane);
   const prefix = `${addon.data.config.prefsPrefix}.`;
   const controls = [...pane.querySelectorAll<HTMLInputElement>("[preference]")];
   const key = (control: Element) => control.getAttribute("preference")!.replace(prefix, "");
@@ -121,14 +153,15 @@ function setupDependencies(pane: Element) {
         button.disabled = input.disabled || (button.dataset.resetPath === "true" && !input.value);
     }
   };
-  pane.addEventListener("command", update);
-  pane.addEventListener("syncfrompreference", () => setTimeout(update, 0), true);
+  listen(pane, "command", update);
+  listen(pane, "syncfrompreference", () => setTimeout(update, 0), true);
   update();
 }
 
 // ---------- Shortcut input recording & preview ----------
 
-function setupShortcutInputs() {
+function setupShortcutInputs(pane: Element) {
+  const listen = preferenceListeners(pane);
   const win = addon.data.prefs?.window;
   if (!win)
     return;
@@ -197,16 +230,16 @@ function setupShortcutInputs() {
       doc.l10n!.setAttributes(button, `metaref-${l10nID}`);
       button.setAttribute("native", "true");
       button.classList.add("metaref-shortcut-action");
-      button.addEventListener("command", onCommand);
+      listen(button, "command", onCommand);
       actions.appendChild(button);
     };
     makeButton("shortcut-clear", () => save(input, ""));
     makeButton("shortcut-reset", () => save(input, SHORTCUT_DEFAULTS[action]));
     input.value = getPref(pref as any, SHORTCUT_DEFAULTS[action]) as string;
     updatePreview(input);
-    input.addEventListener("syncfrompreference", () => setTimeout(updatePreview, 0, input));
+    listen(input, "syncfrompreference", () => setTimeout(updatePreview, 0, input));
 
-    input.addEventListener("input", (event: Event) => {
+    listen(input, "input", (event: Event) => {
       // Reject invalid pasted bindings before Zotero's preference binding saves them.
       event.stopImmediatePropagation();
       const raw = input.value;
@@ -215,8 +248,8 @@ function setupShortcutInputs() {
         updatePreview(input);
       }
     }, true);
-    input.addEventListener("blur", () => input.removeAttribute("aria-invalid"));
-    input.addEventListener("keydown", (event: KeyboardEvent) => {
+    listen(input, "blur", () => input.removeAttribute("aria-invalid"));
+    listen(input, "keydown", (event: KeyboardEvent) => {
       if (event.key === "Tab")
         return;
       event.stopPropagation();

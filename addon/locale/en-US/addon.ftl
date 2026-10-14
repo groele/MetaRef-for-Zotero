@@ -1,5 +1,5 @@
 ## General
-prefs-title = MetaRef
+prefs-title = ZoteroMetaFlow
 
 ## Item tree
 field-abbr = Abbr

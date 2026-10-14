@@ -1,0 +1,76 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import hooks from "./hooks";
+
+const mocks = vi.hoisted(() => ({
+  register: vi.fn(),
+  unregister: vi.fn(),
+  load: vi.fn(),
+  locale: vi.fn(),
+}));
+vi.mock("./modules/item-tree", () => ({ registerExtraColumns: mocks.register, unregisterExtraColumns: mocks.unregister }));
+vi.mock("./modules/journal-pane", () => ({ registerJournalPane: mocks.register, unregisterJournalPane: mocks.unregister }));
+vi.mock("./modules/menu", () => ({ registerMenu: mocks.register, unregisterMenu: mocks.unregister }));
+vi.mock("./modules/notifier", () => ({ registerNotifier: mocks.register, unregisterNotifier: mocks.unregister }));
+vi.mock("./modules/preference", () => ({ registerPrefs: mocks.register, registerPrefsScripts: vi.fn(), registerPrefsWindow: vi.fn(), unregisterPrefsWindows: mocks.unregister }));
+vi.mock("./modules/rich-text", () => ({ RichTextToolBar: vi.fn(), setHtmlTag: vi.fn() }));
+vi.mock("./modules/rules", () => ({ Rules: {} }));
+vi.mock("./modules/shortcuts", () => ({ registerShortcuts: vi.fn() }));
+vi.mock("./utils/dialog", () => ({ closeAllDialogs: mocks.unregister }));
+vi.mock("./utils/journal-insights", () => ({ loadJournalInsights: mocks.load }));
+vi.mock("./utils/locale", () => ({ initLocale: mocks.register, registerMainWindowLocale: vi.fn(), unloadLocale: mocks.locale, unregisterMainWindowLocale: vi.fn() }));
+vi.mock("./utils/logger", () => ({ logger: { error: vi.fn(), debug: vi.fn() } }));
+vi.mock("./utils/prefs", () => ({ getPref: vi.fn() }));
+
+describe("startup cancellation and failure cleanup", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    const addon = { data: { alive: true, config: { addonInstance: "MetaRef" } }, runner: { stop: vi.fn() } };
+    vi.stubGlobal("addon", addon);
+    vi.stubGlobal("ztoolkit", { unregisterAll: vi.fn() });
+    vi.stubGlobal("Zotero", { MetaRef: addon, getMainWindows: () => [] });
+  });
+
+  it("does not register resources if disabled while waiting for the host", async () => {
+    let ready!: () => void;
+    (Zotero as any).initializationPromise = new Promise<void>((resolve) => {
+      ready = resolve;
+    });
+    const pending = hooks.onStartup();
+    await hooks.onShutdown();
+    ready();
+    await pending;
+    expect(mocks.register).not.toHaveBeenCalled();
+  });
+
+  it("does not register columns after disable during data loading", async () => {
+    let ready!: () => void;
+    mocks.load.mockImplementation(() => new Promise<void>((resolve) => {
+      ready = resolve;
+    }));
+    const pending = hooks.onStartup();
+    await vi.waitFor(() => expect(mocks.load).toHaveBeenCalledOnce());
+    expect(mocks.register).toHaveBeenCalledTimes(4);
+    await hooks.onShutdown();
+    ready();
+    await pending;
+    expect(mocks.register).toHaveBeenCalledTimes(4);
+  });
+
+  it("cleans a failed startup even if host unregister operations throw", async () => {
+    mocks.load.mockRejectedValue(new Error("database"));
+    mocks.unregister.mockImplementation(() => {
+      throw new Error("unregister");
+    });
+    await expect(hooks.onStartup()).rejects.toThrow("database");
+    expect(addon.data.alive).toBe(false);
+    expect(addon.runner.stop).toHaveBeenCalledOnce();
+    expect(mocks.locale).toHaveBeenCalledOnce();
+  });
+
+  it("does not delete a replacement plugin instance", async () => {
+    const replacement = {};
+    (Zotero as any).MetaRef = replacement;
+    await hooks.onShutdown();
+    expect((Zotero as any).MetaRef).toBe(replacement);
+  });
+});

@@ -1,4 +1,5 @@
 import type { RuleForRegularScopeField } from "./rules/rule-base";
+import { cleanupResourcesSync } from "../utils/cleanup";
 import { getJournalInsights } from "../utils/journal-insights";
 import { presentJournalInsights } from "../utils/journal-insights-presentation";
 import { getLocaleID, getString } from "../utils/locale";
@@ -45,7 +46,7 @@ function addMenu<T extends _ZoteroTypes.MenuManager.ValidTarget>(options: _Zoter
 }
 
 export function unregisterMenu() {
-  registeredMenus.splice(0).forEach(id => Zotero.MenuManager.unregisterMenu(id));
+  cleanupResourcesSync(registeredMenus.splice(0).map(id => () => Zotero.MenuManager.unregisterMenu(id)), error => logger.error("Menu cleanup failed:", error));
 }
 
 export function registerMenu() {
