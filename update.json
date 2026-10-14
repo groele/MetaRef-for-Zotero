@@ -4,7 +4,7 @@
       "updates": [
         {
           "version": "12.2.0",
-          "update_link": "https://raw.githubusercontent.com/groele/MetaRef-for-Zotero/main/dist/metaref-for-zotero.xpi",
+          "update_link": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/metaref-for-zotero.xpi",
           "applications": {
             "zotero": {
               "strict_min_version": "10.0",

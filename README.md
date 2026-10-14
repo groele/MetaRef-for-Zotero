@@ -1,8 +1,10 @@
-# MetaRef for Zotero — 文献元数据助手
+# Zotero-MetaFlow (原 MetaRef) — 文献元数据整理助手
 
-<img src="addon/content/icons/metaref-128.png" alt="MetaRef icon" width="64" height="64" />
+> **Zotero Flow Series** 系列成员：专注文献元数据的校验、整理与补全。
 
-用于校验、整理和补全文献元数据的 Zotero 插件，当前版本 **12.2.0**，面向 Zotero **10.0.x**。项目仓库：[groele/MetaRef-for-Zotero](https://github.com/groele/MetaRef-for-Zotero)。基于 [Northword/Linter for Zotero](https://github.com/northword/zotero-format-metadata) 开发，保留上游版权及 AGPL-3.0 许可证。
+<img src="addon/content/icons/metaref-128.png" alt="MetaFlow icon" width="64" height="64" />
+
+用于校验、整理和补全文献元数据的 Zotero 插件，当前版本 **12.2.0**，面向 Zotero **10.0.x**。项目仓库：[groele/Zotero-MetaFlow](https://github.com/groele/Zotero-MetaFlow)。基于 [Northword/Linter for Zotero](https://github.com/northword/zotero-format-metadata) 开发，保留上游版权及 AGPL-3.0 许可证。
 
 ## 安装
 
