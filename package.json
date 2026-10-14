@@ -13,14 +13,13 @@
   },
   "author": "northword",
   "license": "AGPL-3.0-or-later",
-  "homepage": "https://github.com/groele/Zotero-diy/tree/main/MetaRef-for-Zotero",
+  "homepage": "https://github.com/groele/MetaRef-for-Zotero",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/groele/Zotero-diy.git",
-    "directory": "MetaRef-for-Zotero"
+    "url": "git+https://github.com/groele/MetaRef-for-Zotero.git"
   },
   "bugs": {
-    "url": "https://github.com/groele/Zotero-diy/issues"
+    "url": "https://github.com/groele/MetaRef-for-Zotero/issues"
   },
   "main": "src/index.ts",
   "scripts": {

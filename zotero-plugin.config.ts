@@ -12,8 +12,8 @@ export default defineConfig({
   xpiName: "metaref-for-zotero",
   id: pkg.config.addonID,
   namespace: pkg.config.addonRef,
-  updateURL: "https://raw.githubusercontent.com/groele/Zotero-diy/main/MetaRef-for-Zotero/dist/update.json",
-  xpiDownloadLink: "https://raw.githubusercontent.com/groele/Zotero-diy/main/MetaRef-for-Zotero/dist/metaref-for-zotero.xpi",
+  updateURL: "https://raw.githubusercontent.com/groele/MetaRef-for-Zotero/main/dist/update.json",
+  xpiDownloadLink: "https://raw.githubusercontent.com/groele/MetaRef-for-Zotero/main/dist/metaref-for-zotero.xpi",
   server: {
     startArgs: ["-no-remote"],
   },

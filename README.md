@@ -2,11 +2,11 @@
 
 <img src="addon/content/icons/metaref-128.png" alt="MetaRef icon" width="64" height="64" />
 
-用于校验、整理和补全文献元数据的 Zotero 插件，当前版本 **12.2.0**，面向 Zotero **10.0.x**。项目仓库：[Zotero-diy / MetaRef-for-Zotero](https://github.com/groele/Zotero-diy/tree/main/MetaRef-for-Zotero)。基于 [Northword/Linter for Zotero](https://github.com/northword/zotero-format-metadata) 开发，保留上游版权及 AGPL-3.0 许可证。
+用于校验、整理和补全文献元数据的 Zotero 插件，当前版本 **12.2.0**，面向 Zotero **10.0.x**。项目仓库：[groele/MetaRef-for-Zotero](https://github.com/groele/MetaRef-for-Zotero)。基于 [Northword/Linter for Zotero](https://github.com/northword/zotero-format-metadata) 开发，保留上游版权及 AGPL-3.0 许可证。
 
 ## 安装
 
-下载 [MetaRef 12.2.0 安装包](dist/metaref-for-zotero.xpi)，在 Zotero 插件管理器中选择「从文件安装插件」。MetaRef 使用独立插件 ID `metaref@groele`、资源命名空间 `metaref`、实例 `Zotero.MetaRef` 和设置前缀 `extensions.zotero.metaref`。自动更新清单和安装包均从本仓库的 `MetaRef-for-Zotero/dist` 路径获取。
+下载 [MetaRef 12.2.0 安装包](dist/metaref-for-zotero.xpi)，在 Zotero 插件管理器中选择「从文件安装插件」。MetaRef 使用独立插件 ID `metaref@groele`、资源命名空间 `metaref`、实例 `Zotero.MetaRef` 和设置前缀 `extensions.zotero.metaref`。自动更新清单和安装包均从本仓库的 `dist` 路径获取。
 
 如果当前安装的是 11.0.6 或更早版本，请手动安装 12.2.0 一次：旧目录删除后，旧版本的自动更新地址不再可用。11.0.7 起自动更新地址位于本项目目录。
 
