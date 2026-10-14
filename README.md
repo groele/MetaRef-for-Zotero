@@ -60,8 +60,6 @@ Update feed: [update.json](https://github.com/groele/Zotero-MetaFlow/blob/main/u
 
 Index lists are reference datasets, not evidence that any particular article is indexed. Back up important library data before extensive batch modifications.
 
-**Installation / coexistence note:** MetaFlow uses a distinct add-on ID from MetaRef/Linter. Do not enable overlapping metadata cleaners simultaneously. Some existing preferences continue to use the internal `metaref` namespace.
-
 ## Development & Testing
 
 Run the following commands from the repository root. Follow project-specific test prerequisites before running native desktop validation.
