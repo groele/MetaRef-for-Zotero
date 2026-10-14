@@ -1,61 +1,92 @@
-# ZoteroMetaFlow — 文献元数据整理助手
+<div align="center">
 
-<img src="addon/content/icons/metaref-128.png" alt="ZoteroMetaFlow icon" width="64" height="64" />
+# Zotero MetaFlow
 
-用于校验、整理和补全文献元数据的 Zotero 插件，当前版本 **10.0.0**（GitHub 标签 **V10**），支持 Zotero **10.0–11.x**。项目仓库：[groele/Zotero-MetaFlow](https://github.com/groele/Zotero-MetaFlow)。基于 [Northword/Linter for Zotero](https://github.com/northword/zotero-format-metadata) 开发，保留上游版权及 AGPL-3.0 许可证。
+**Validate, organize, and enrich your reference metadata.**
 
-Zotero 11 / Firefox 153 迁移与验证记录见 [兼容性审查](docs/zotero11-compatibility.md)。安装清单和更新清单均声明支持 Zotero 10.0–11.x；Zotero 11 的实机验证基于开发版，后续宿主变更仍需回归。
+[English](README.md) · [简体中文](README.zh-CN.md)
 
-## 安装
+![Version](https://img.shields.io/badge/version-10.0.0-blue) ![Zotero](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-green) ![License](https://img.shields.io/badge/license-AGPL-3.0-or-later-lightgrey)
 
-下载 [ZoteroMetaFlow 10.0.0 安装包](dist/zotero-metaflow.xpi)，在 Zotero 插件管理器中选择「从文件安装插件」。ZoteroMetaFlow 使用插件 ID `metaflow@groele`。自动更新清单和安装包均从 `groele/Zotero-MetaFlow` 仓库的 `dist` 路径获取。为保留已有 MetaRef 设置，内部资源命名空间 `metaref`、实例 `Zotero.MetaRef` 和设置前缀 `extensions.zotero.metaref` 继续沿用。
+[Download](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi) · [Report an Issue](https://github.com/groele/Zotero-MetaFlow/issues) · [Releases](https://github.com/groele/Zotero-MetaFlow/releases)
 
-从 MetaRef 更换到 ZoteroMetaFlow 时，因插件 ID 已改变，必须手动安装一次；旧 ID 的自动更新无法切换到新 ID。
+**Zotero Flow Series**
 
-安装前禁用并移除旧 MetaRef 或 Linter 插件，避免同时整理条目。已有 MetaRef 设置继续可用；不读取或迁移原 Linter 设置。
+</div>
 
-## 功能
+---
 
-- 40 项标准规则与 9 项手动工具，处理标题、化学式角标、作者、语言、日期、卷期页、DOI、缩写、所在地和 Extra。手动工具不参与自动整理。
-- ZoteroMetaFlow 内部 22 项菜单直接显示，以分隔线区分操作顺序；没有嵌套子菜单。
-- 独立的期刊索引侧栏及 ESI、Nature Index 列，不写入文献字段或标签。菜单查询打开结果窗口，关闭后可以再次执行。
-- 侧栏分别显示匹配结果及命中依据，只保留一组数据来源和简短解释。标题区没有附加图标或按钮；数据库更新在设置页操作。
-- ESI 与 Nature Index 可分别使用自定义 JSON／CSV，支持校验、重新读取、恢复内置名单及导出内置 JSON。异常文件回退到内置数据并显示原因。
-- 快捷键支持录制、禁用、重置与冲突检查；默认上标组合为 Ctrl+Shift+=，macOS 使用 Cmd。
-- 批处理采用有界并发和统一保存，支持取消、事务失败恢复、撤销／重做及规则错误隔离。
-- 设置页支持分区跳转、多关键词逐项搜索、设置键搜索、规则一键展开／收起；保留父开关，清空搜索后恢复展开状态。并发数与自定义文件在保存前校验，错误和取消不会覆盖原路径。
-- 设置页提供「新增条目时自动检查并整理」开关及群组文库开关。短时间的新增通知合并、去重后在后台处理；关闭开关后，等待中的自动任务会跳过。
-- 内置数据及索引跨批次复用，自定义文件在批次结束后释放缓存。进度刷新按阶段节流，保留完整处理与保存计数。
-- 预印本检测同时识别支持的 DOI 和 URL；报告操作可直接启动元数据更新，并在条目已删除时安全跳过。
+## Overview
 
-详细操作见 [元数据整理流程](docs/metadata-workflow-zh.md)，数据库格式见 [自定义数据库指南](docs/custom-journal-databases.md)。
+Zotero MetaFlow is an independently maintained Zotero add-on that validate, organize, and enrich your reference metadata. It is designed for research workflows that need practical functionality within the Zotero desktop application.
 
-![期刊索引侧栏](docs/assets/journal-insights-zh-CN.png)
+## Key Features
 
-## 数据文件
+- Apply configurable metadata rules for titles, authors, DOI, dates, abbreviations, and scientific notation.
+- Use batch processing with progress reporting, cancellation and undo/redo where supported.
+- Inspect journal information through ESI and Nature Index views.
+- Customize data sources, keyboard shortcuts, and automatic cleanup settings.
 
-内置 ESI 数据覆盖 Clarivate 2026 年第 6 期全部 22 个学科、12,245 条记录；Nature Index 使用 2026 年 6 月名单，含 177 种期刊和 1 个会议记录，期刊文章只匹配期刊记录。
+## Screenshots
 
-[完整 JSON／CSV 及模板](dist/databases/README.md) · [数据库压缩包](dist/metaref-journal-databases.zip)
+For interface examples and implementation details, see the [project documentation](https://github.com/groele/Zotero-MetaFlow/tree/main/docs) where available. Screenshots will be added only after they are verified against the current interface.
 
-数据库来源见 [ESI](data/esi/README.md) 和 [Nature Index](data/nature-index/README.md)。名单匹配不表示某篇文章收录或质量评级。此次没有在线更新数据库快照。
+## Compatibility
 
-## 开发和验证
+| Item | Details |
+| --- | --- |
+| Add-on version | `10.0.0` |
+| Add-on ID | `metaflow@groele` |
+| Declared Zotero range | `10.0–11.*` |
+| Verification | Zotero 11 checks include development builds; support declared by the manifest does not imply validation against every future release. |
 
-需要 Node.js 22+、pnpm 12.3.4，Windows 真实 E2E 使用 Zotero 与 PowerShell 7。
+The declared compatibility range is not a guarantee that every Zotero version has been tested.
+
+## Installation
+
+1. [Download the XPI](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi) for the current release (`zotero-metaflow.xpi`).
+2. Open Zotero → **Tools → Plugins** (or the add-on manager in your version).
+3. Choose **Install Add-on From File**, select the XPI, and restart Zotero if requested.
+
+Update feed: [update.json](https://github.com/groele/Zotero-MetaFlow/blob/main/update.json).
+
+## Quick Start
+
+1. Install the XPI and open MetaFlow preferences in Zotero.
+2. Enable the metadata rules that fit your library and review the target items.
+3. Run selected cleanup tools or a batch operation; inspect results before large-scale updates.
+
+## Configuration & Notes
+
+Index lists are reference datasets, not evidence that any particular article is indexed. Back up important library data before extensive batch modifications.
+
+**Installation / coexistence note:** MetaFlow uses a distinct add-on ID from MetaRef/Linter. Do not enable overlapping metadata cleaners simultaneously. Some existing preferences continue to use the internal `metaref` namespace.
+
+## Development & Testing
+
+Run the following commands from the repository root. Follow project-specific test prerequisites before running native desktop validation.
 
 ```powershell
 pnpm install --frozen-lockfile
 pnpm test:unit
 pnpm lint:check
 pnpm build
-pnpm exec tsc --noEmit --project test/tsconfig.json
-$env:ZOTERO_PLUGIN_ZOTERO_BIN_PATH='C:\Program Files\Zotero\zotero.exe'
-$env:ZOTERO_PLUGIN_PROFILE_PATH=Join-Path $PWD '.scaffold/test/profile'
-$env:METAREF_TEST_LOCALE='zh-CN' # 或 en-US
-pnpm test:e2e
-```
+``
 
-E2E 在独立资料库打开原生菜单、侧栏和设置窗口，并安装生产 XPI 检查打包数据，不替换个人资料库中的插件。当前验收记录见 [verification.json](dist/verification.json)、[本轮审查](docs/current-review.md) 和 [性能检验](docs/performance-audit-2026-10-09.md)。外部服务使用受控响应验证；不据此宣称实时网络服务可用。
+These commands describe available project tasks, not a claim that every environment or integration test passes.
 
-普通开发的 `pnpm start` 需先配置 `.env.example` 中的程序和独立资料库目录。数据生成见 `pnpm update-data`，普通构建直接读取已生成的数据。上游项目说明保留在 [UPSTREAM-README](docs/UPSTREAM-README.md)。
+## Documentation & Support
+
+[Metadata workflow](docs/metadata-workflow-zh.md) · [Database guide](docs/custom-journal-databases.md) · [Compatibility](docs/zotero11-compatibility.md)
+
+[Open an issue](https://github.com/groele/Zotero-MetaFlow/issues) · [Browse source](https://github.com/groele/Zotero-MetaFlow)
+
+## Acknowledgements & Attribution
+
+Zotero MetaFlow was originally developed as a derivative of [northword/zotero-format-metadata](https://github.com/northword/zotero-format-metadata) by northword (Linter for Zotero). We acknowledge the original author and contributors for their foundational work. This Zotero Flow Series edition is independently maintained, is not an official release of the upstream project, and is not endorsed by Zotero. Original copyright and applicable third-party notices remain in force.
+
+## License
+
+Distributed under **AGPL-3.0-or-later**. See [LICENSE](LICENSE) and any applicable third-party notices for details.
+
+Zotero and associated trademarks belong to their respective owners.
