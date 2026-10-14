@@ -1,9 +1,9 @@
 ## menu
 richtext-toolbar-label = Title formatting toolbar
 menuitem-label = 
-  .label = ZoteroMetaFlow
+  .label = Zotero MetaFlow
 menuitem-stdFormatFlow = 
-  .label = ZoteroMetaFlow: Check and Fix Metadata
+  .label = Zotero MetaFlow: Check and Fix Metadata
 field-nature-index = Nature Index
 
 menu-group-primary = Common actions
@@ -13,7 +13,7 @@ menu-group-publication = Language & publication
 menu-group-indexing = Journal index insights
 menu-group-maintenance = Identifiers, dates & Extra
 journal-insights-heading =
-    .label = ZoteroMetaFlow journal insights
+    .label = Zotero MetaFlow journal insights
     .tooltiptext = ESI disciplines and Nature Index journal membership
 journal-insights-loading = Loading journal index datasets…
 field-esi = ESI disciplines

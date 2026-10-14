@@ -1,9 +1,9 @@
 {
   "date": "2026-10-14",
   "version": "10.0.0",
-  "name": "ZoteroMetaFlow",
+  "name": "Zotero MetaFlow",
   "identity": {
-    "addonName": "ZoteroMetaFlow",
+    "addonName": "Zotero MetaFlow",
     "addonID": "metaflow@groele",
     "addonRef": "metaref",
     "addonInstance": "MetaRef",
@@ -21,7 +21,8 @@
       "finalPackageFocusedPassed": 8,
       "finalPackageLog": "../docs/assets/metaflow-V10-zotero10.txt",
       "pluginVersion": "10.0.0",
-      "sameProductionXpi": true
+      "sameProductionXpi": true,
+      "displayName": "Zotero MetaFlow"
     },
     "zotero11": {
       "version": "11.0-dev.5+dac1ad489",
@@ -30,7 +31,8 @@
       "finalPackageFocusedPassed": 8,
       "finalPackageLog": "../docs/assets/metaflow-V10-zotero11.txt",
       "pluginVersion": "10.0.0",
-      "sameProductionXpi": true
+      "sameProductionXpi": true,
+      "displayName": "Zotero MetaFlow"
     }
   },
   "validation": {
@@ -47,11 +49,11 @@
   },
   "package": {
     "path": "zotero-metaflow.xpi",
-    "sha256": "bbb8ba84031b31ada1c4291a6564932afd83243b29c1a351d84202caaf00bb2c",
-    "bytes": 1224933,
+    "sha256": "d682df77c44ff247c367fdf687a924f0e1d4ed70088672b4a514c97ebff44f3d",
+    "bytes": 1224940,
     "manifest": {
       "manifest_version": 2,
-      "name": "ZoteroMetaFlow",
+      "name": "Zotero MetaFlow",
       "version": "10.0.0",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
@@ -82,12 +84,12 @@
   },
   "report": "../docs/zotero11-compatibility.md",
   "publication": {
-    "githubPublished": false,
-    "gitCommitted": false,
     "repository": "https://github.com/groele/Zotero-MetaFlow",
     "targetBranch": "main",
     "targetTag": "V10",
-    "verificationRecordStage": "pre-publication"
+    "verificationRecordStage": "pre-publication",
+    "gitCommitted": false,
+    "githubPublished": false
   },
   "limitations": [
     "Zotero 11 coverage uses a development build; future host changes need regression tests.",

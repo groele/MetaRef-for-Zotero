@@ -5,7 +5,7 @@
   "packageManager": "pnpm@12.3.4",
   "description": "Validate, organize and enrich reference metadata in Zotero.",
   "config": {
-    "addonName": "ZoteroMetaFlow",
+    "addonName": "Zotero MetaFlow",
     "addonID": "metaflow@groele",
     "addonRef": "metaref",
     "addonInstance": "MetaRef",

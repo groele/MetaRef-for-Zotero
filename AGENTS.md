@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Overview
 
-"ZoteroMetaFlow" (package name `zotero-metaflow`, add-on ID `metaflow@groele`) is a Zotero plugin that validates and formats item metadata. It is built on the [zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template) and [zotero-plugin-scaffold](https://github.com/northword/zotero-plugin-scaffold) toolchain, and bundled with esbuild into an ESM script loaded by Zotero (a Firefox/Gecko `firefox140` runtime — not Node).
+"Zotero MetaFlow" (package name `zotero-metaflow`, add-on ID `metaflow@groele`) is a Zotero plugin that validates and formats item metadata. It is built on the [zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template) and [zotero-plugin-scaffold](https://github.com/northword/zotero-plugin-scaffold) toolchain, and bundled with esbuild into an ESM script loaded by Zotero (a Firefox/Gecko `firefox140` runtime — not Node).
 
 Target: Zotero 10.0-11.x (validated on Windows Zotero 10.0.6 and Zotero 11 development builds); build output targets Firefox 140. Package manager: **pnpm** (12.3.4, pinned in package.json). Node v22+ required for development.
 

@@ -4,7 +4,7 @@
 
 依据：项目根目录的《Zotero11-Firefox153-插件适配指南》以及 [Zotero 11 官方开发文档](https://www.zotero.org/support/dev/zotero_11_for_developers)。按用户要求，安装清单和更新清单的兼容上限改为 `strict_max_version: 11.*`，最低版本保留 `10.0`。Firefox 140 构建目标继续保留，使同一脚本可在 Gecko 140 和 153 中运行。Zotero 11 的验证基于开发版，不代表未来所有构建均已验证。
 
-插件显示名称更新为 `ZoteroMetaFlow`，ID 更新为 `metaflow@groele`，主页与更新路径统一到 `groele/Zotero-MetaFlow`。内部资源、实例及设置前缀保持原值，以继续使用 MetaRef 设置。更换 ID 需要手动安装一次并移除旧插件。
+插件显示名称更新为 `Zotero MetaFlow`，ID 更新为 `metaflow@groele`，主页与更新路径统一到 `groele/Zotero-MetaFlow`。内部资源、实例及设置前缀保持原值，以继续使用 MetaRef 设置。更换 ID 需要手动安装一次并移除旧插件。
 
 ## 实际修改
 

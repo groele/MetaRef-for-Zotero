@@ -48,7 +48,7 @@ This plugin provides a toolbar and shortcuts to insert tags for **superscript, s
   - Italic: `Ctrl` + `I`
   - Nocase: `Ctrl` + `N`
   - Format chemical formulas for selected library items: `Ctrl` + `Alt` + `S`
-  - ZoteroMetaFlow: Check and Fix Metadata for selected library items: `Ctrl` + `Alt` + `L`
+  - Zotero MetaFlow: Check and Fix Metadata for selected library items: `Ctrl` + `Alt` + `L`
 
 Shortcuts are configurable, can be disabled or reset, and reject duplicate bindings. Rich text shortcuts only act on title selections. On macOS, use Cmd and Option instead of Ctrl and Alt.
 
@@ -116,7 +116,7 @@ Uses a built-in dataset (JabRef + Woodward Library) to look up journal abbreviat
 
 ### Independent ESI Discipline Insights (`tool-query-esi`)
 
-Displays the journal's Essential Science Indicators (ESI) discipline in a dedicated ZoteroMetaFlow item-pane section and list column. No item fields or tags are written.
+Displays the journal's Essential Science Indicators (ESI) discipline in a dedicated Zotero MetaFlow item-pane section and list column. No item fields or tags are written.
 
 - **Matching**: Matches journal items by print ISSN, electronic eISSN, full publication title, and abbreviation.
 - **Customizable Format**: Supports formatting templates using `{subject}` (e.g., `物理学`), `{category}` (e.g., `PHYSICS`), and `{en}` (e.g., `Physics`). Default: `{subject}ESI`.

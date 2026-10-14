@@ -35,7 +35,7 @@ rule-require-language =
 rule-require-language-menu-item =
   .label = 自动识别条目语言
 rule-require-language-menu-field =
-  .label = 自动识别（ZoteroMetaFlow）
+  .label = 自动识别（Zotero MetaFlow）
 
 rule-require-language-option-only =
   .label = 限制识别的语言以提高准确度：
@@ -62,7 +62,7 @@ rule-correct-title-sentence-case =
 rule-correct-title-sentence-case-menu-item =
   .label = 将标题改为句首大写
 rule-correct-title-sentence-case-menu-field =
-  .label = 句首大写（ZoteroMetaFlow）
+  .label = 句首大写（Zotero MetaFlow）
 
 rule-correct-title-sentence-option-custom-term = 自定义术语：
   .label = 自定义术语
@@ -81,7 +81,7 @@ rule-correct-title-sentence-option-disabled-languages-desc = 如需添加其他�
 rule-correct-title-punctuation =
   .label = 标题中的符号应规范
 rule-correct-title-punctuation-menu-field =
-  .label = 规范符号（ZoteroMetaFlow）
+  .label = 规范符号（Zotero MetaFlow）
 rule-correct-title-punctuation-quotes =
   .label = 直引号转换为弯引号
 
@@ -90,7 +90,7 @@ rule-correct-title-punctuation-quotes =
 rule-correct-creators-punctuation =
   .label = 作者名中的符号应规范
 rule-correct-creators-punctuation-menu-field =
-  .label = 规范符号（ZoteroMetaFlow）
+  .label = 规范符号（Zotero MetaFlow）
 
 
 ## correct-shortTitle-sentence-case
@@ -110,7 +110,7 @@ rule-correct-title-chemical-formula =
 rule-correct-title-chemical-formula-menu-item =
   .label = 自动整理化学式上下标
 rule-correct-title-chemical-formula-menu-field =
-  .label = 自动整理化学式上下标（ZoteroMetaFlow）
+  .label = 自动整理化学式上下标（Zotero MetaFlow）
 
 
 ## require-creators
@@ -138,7 +138,7 @@ rule-correct-date-format =
 rule-correct-date-format-menu-item =
   .label = 统一日期格式为 ISO 格式
 rule-correct-date-format-menu-field =
-  .label = 转为 ISO 格式（ZoteroMetaFlow）
+  .label = 转为 ISO 格式（Zotero MetaFlow）
 
 
 rule-correct-filing-date-format =
@@ -156,7 +156,7 @@ rule-correct-extra-order =
 rule-correct-extra-order-menu-item =
   .label = 修正「额外」字段的顺序
 rule-correct-extra-order-menu-field =
-  .label = 修正顺序 (ZoteroMetaFlow)
+  .label = 修正顺序 (Zotero MetaFlow)
 
 
 ## correct-publication-title-alias
@@ -165,7 +165,7 @@ rule-correct-publication-title-alias =
 rule-correct-publication-title-alias-menu-item =
   .label = 修正期刊标题别称
 rule-correct-publication-title-alias-menu-field =
-  .label = 修正别称 (ZoteroMetaFlow)
+  .label = 修正别称 (Zotero MetaFlow)
 
 
 ## correct-publication-title-case
@@ -174,7 +174,7 @@ rule-correct-publication-title-case =
 rule-correct-publication-title-case-menu-item =
   .label = 修正期刊标题大小写
 rule-correct-publication-title-case-menu-field =
-  .label = 修正大小写 (ZoteroMetaFlow)
+  .label = 修正大小写 (Zotero MetaFlow)
 
 
 ## require-journal-abbr
@@ -183,7 +183,7 @@ rule-require-journal-abbr =
 rule-require-journal-abbr-menu-item =
   .label = 自动填充期刊缩写
 rule-require-journal-abbr-menu-field =
-  .label = 查找缩写（ZoteroMetaFlow）
+  .label = 查找缩写（Zotero MetaFlow）
 
 rule-require-journal-abbr-option-infer =
   .label = 本地数据集没有期刊缩写时自动根据 ISO 4 规则推断缩写
@@ -230,7 +230,7 @@ rule-require-doi =
 rule-require-doi-menu-item =
   .label = 根据标题查找 DOI
 rule-require-doi-menu-field =
-  .label = 查找 DOI（ZoteroMetaFlow）
+  .label = 查找 DOI（Zotero MetaFlow）
 
 
 ## no-doi-prefix
@@ -239,7 +239,7 @@ rule-no-doi-prefix =
 rule-no-doi-prefix-menu-item =
   .label = 去除 DOI 网址前缀
 rule-no-doi-prefix-menu-field =
-  .label = 去除网址前缀（ZoteroMetaFlow）
+  .label = 去除网址前缀（Zotero MetaFlow）
 
 
 ## correct-doi-long
@@ -296,7 +296,7 @@ rule-require-university-place =
 rule-require-university-place-menu-item =
   .label = 填写高校所在地
 rule-require-university-place-menu-field =
-  .label = 查找（ZoteroMetaFlow）
+  .label = 查找（Zotero MetaFlow）
 
 
 ## correct-edition-numeral
@@ -344,7 +344,7 @@ rule-tool-set-language-menu-item =
 rule-tool-update-metadata =
   .label = 通过标识符更新元数据
 rule-tool-update-metadata-menu-item =
-  .label = ZoteroMetaFlow：更新元数据并检查整理
+  .label = Zotero MetaFlow：更新元数据并检查整理
 rule-tool-update-metadata-option-semanticScholarToken = Semantic Scholar API Key:
   .label = Semantic Scholar Token
   .placeholder = Semantic Scholar Token
@@ -380,7 +380,7 @@ rule-tool-csl-helper =
 rule-tool-csl-helper-menu-item =
   .label = { rule-tool-csl-helper.label }
 rule-tool-csl-helper-menu-field =
-  .label = { rule-tool-csl-helper.label }（ZoteroMetaFlow）
+  .label = { rule-tool-csl-helper.label }（Zotero MetaFlow）
 
 
 ## tool-clean-extra

@@ -1,7 +1,7 @@
 ## General settings
 section-general = General Settings
 lint-on-item-added =
-    .label = ZoteroMetaFlow: Check and organize new items automatically
+    .label = Zotero MetaFlow: Check and organize new items automatically
 lint-on-item-added-description = Enabled by default. Nearby additions are grouped and processed in the background; turning this off skips pending tasks. It only processes saved, titled, editable regular items; blank items, attachments, feed items, deleted items, and synced imports are skipped. Enabled standard rules may normalize or fill fields, and changes are saved automatically.
 lint-on-groupItem-added =
     .label = Also run for items added to group libraries
@@ -12,7 +12,7 @@ lint-numConcurrent = Number of concurrent:
 lint-numConcurrent-description = Range: 1–16. Recommended: 1. Changes apply to the next metadata check. Concurrency does not increase external service request rates.
 settings-search =
     .placeholder = Search names or preference keys; separate keywords with spaces; Esc clears
-    .aria-label = Search ZoteroMetaFlow settings
+    .aria-label = Search Zotero MetaFlow settings
 settings-no-results = No matching settings. Try a different keyword.
 settings-custom-data-reset =
     .label = Clear path
@@ -41,11 +41,11 @@ wip =
 ## Menu settings
 section-menu = Context Menu Settings
 section-menu-description = Choose which actions appear in context menus. Unchecking an action only hides its menu entry; it does not disable automatic rules or remove the feature.
-menu-standard-description = “ZoteroMetaFlow: Check and Fix Metadata” runs enabled standard rules to check and correct title, creator, date, identifier, journal, and other fields. Changes are saved; unresolved findings appear in the results. It does not run manual tools. Enabled DOI lookup, DOI validation, and journal abbreviation inference rules may use the network; disable them in their rule settings if needed.
-menu-update-metadata-description = “ZoteroMetaFlow: Update Metadata and Check” retrieves bibliographic data from available services using the item type, DOI, or URL, applies the selected update mode, then runs enabled standard rules and saves changes. “All fields” can overwrite existing values. “Blank fields only” preserves existing values and prevents item-type changes that could clear fields.
+menu-standard-description = “Zotero MetaFlow: Check and Fix Metadata” runs enabled standard rules to check and correct title, creator, date, identifier, journal, and other fields. Changes are saved; unresolved findings appear in the results. It does not run manual tools. Enabled DOI lookup, DOI validation, and journal abbreviation inference rules may use the network; disable them in their rule settings if needed.
+menu-update-metadata-description = “Zotero MetaFlow: Update Metadata and Check” retrieves bibliographic data from available services using the item type, DOI, or URL, applies the selected update mode, then runs enabled standard rules and saves changes. “All fields” can overwrite existing values. “Blank fields only” preserves existing values and prevents item-type changes that could clear fields.
 section-menu-field = Field Context Menus
 menu-standard =
-    .label = ZoteroMetaFlow: Check and Fix Metadata
+    .label = Zotero MetaFlow: Check and Fix Metadata
 menu-field-correct-title-punctuation =
     .label = Normalize punctuation in title
 menu-field-correct-extra-order =
@@ -95,7 +95,7 @@ shortcut-saved = Shortcut saved and active immediately.
 shortcut-disabled = This shortcut is disabled.
 
 insights-show-pane =
-    .label = Show the independent ZoteroMetaFlow journal insights section
+    .label = Show the independent Zotero MetaFlow journal insights section
 insights-description = Show ESI and Nature Index in an independent section and optional columns without writing fields or tags. Menu queries remain available; database changes apply immediately.
 
 journal-database-nature = Custom Nature Index journal database

@@ -35,7 +35,7 @@ rule-require-language =
 rule-require-language-menu-item =
   .label = Auto detect item language
 rule-require-language-menu-field =
-  .label = Auto detect (ZoteroMetaFlow)
+  .label = Auto detect (Zotero MetaFlow)
 
 rule-require-language-option-only =
   .label = Limit recognized languages to improve accuracy
@@ -62,7 +62,7 @@ rule-correct-title-sentence-case =
 rule-correct-title-sentence-case-menu-item =
   .label = Convert title to sentence case
 rule-correct-title-sentence-case-menu-field =
-  .label = Sentence case (ZoteroMetaFlow)
+  .label = Sentence case (Zotero MetaFlow)
 
 rule-correct-title-sentence-option-custom-term = Custom term:
   .label = Custom terms
@@ -81,7 +81,7 @@ rule-correct-title-sentence-option-disabled-languages-desc = Enter a comma-separ
 rule-correct-title-punctuation =
   .label = Punctuation in title shoule be normalized
 rule-correct-title-punctuation-menu-field =
-  .label = Normalize punctuation (ZoteroMetaFlow)
+  .label = Normalize punctuation (Zotero MetaFlow)
 rule-correct-title-punctuation-quotes =
   .label = Convert quotes to curly
 
@@ -90,7 +90,7 @@ rule-correct-title-punctuation-quotes =
 rule-correct-creators-punctuation =
   .label = Punctuation in creators shoule be normalized
 rule-correct-creators-punctuation-menu-field =
-  .label = Normalize punctuation hyphens (ZoteroMetaFlow)
+  .label = Normalize punctuation hyphens (Zotero MetaFlow)
 
 
 ## correct-shortTitle-sentence-case
@@ -110,7 +110,7 @@ rule-correct-title-chemical-formula =
 rule-correct-title-chemical-formula-menu-item =
   .label = Format chemical formula subscripts and superscripts
 rule-correct-title-chemical-formula-menu-field =
-  .label = Chemical formula subscripts and superscripts (ZoteroMetaFlow)
+  .label = Chemical formula subscripts and superscripts (Zotero MetaFlow)
 
 
 ## require-creators
@@ -138,7 +138,7 @@ rule-correct-date-format =
 rule-correct-date-format-menu-item =
   .label = Normalize date format to ISO
 rule-correct-date-format-menu-field =
-  .label = ISO format (ZoteroMetaFlow)
+  .label = ISO format (Zotero MetaFlow)
 
 
 rule-correct-filing-date-format =
@@ -155,7 +155,7 @@ rule-correct-extra-order =
 rule-correct-extra-order-menu-item =
   .label = Fix order of extra fields
 rule-correct-extra-order-menu-field =
-  .label = Fix order (ZoteroMetaFlow)
+  .label = Fix order (Zotero MetaFlow)
 
 
 ## correct-publication-title-alias
@@ -164,7 +164,7 @@ rule-correct-publication-title-alias =
 rule-correct-publication-title-alias-menu-item =
   .label = Fix alias of publicationTitle
 rule-correct-publication-title-alias-menu-field =
-  .label = Fix alias (ZoteroMetaFlow)
+  .label = Fix alias (Zotero MetaFlow)
 
 
 ## correct-publication-title-case
@@ -173,7 +173,7 @@ rule-correct-publication-title-case =
 rule-correct-publication-title-case-menu-item =
   .label = Fix capitalization of publicationTitle
 rule-correct-publication-title-case-menu-field =
-  .label = Fix capitalization (ZoteroMetaFlow)
+  .label = Fix capitalization (Zotero MetaFlow)
 
 
 ## require-journal-abbr
@@ -182,7 +182,7 @@ rule-require-journal-abbr =
 rule-require-journal-abbr-menu-item =
   .label = Look up journal abbreviations
 rule-require-journal-abbr-menu-field =
-  .label = Lookup (ZoteroMetaFlow)
+  .label = Lookup (Zotero MetaFlow)
 
 rule-require-journal-abbr-option-infer =
   .label = Auto infer abbreviation via ISO 4 if missing
@@ -229,7 +229,7 @@ rule-require-doi =
 rule-require-doi-menu-item =
   .label = Retrieve DOI by title
 rule-require-doi-menu-field =
-  .label = Retrieve DOI (ZoteroMetaFlow)
+  .label = Retrieve DOI (Zotero MetaFlow)
 
 
 ## no-doi-prefix
@@ -238,7 +238,7 @@ rule-no-doi-prefix =
 rule-no-doi-prefix-menu-item =
   .label = Remove DOI prefix
 rule-no-doi-prefix-menu-field =
-  .label = Remove URL prefix (ZoteroMetaFlow)
+  .label = Remove URL prefix (Zotero MetaFlow)
 
 
 ## correct-doi-long
@@ -295,7 +295,7 @@ rule-require-university-place =
 rule-require-university-place-menu-item =
   .label = Fill university place
 rule-require-university-place-menu-field =
-  .label = Lookup (ZoteroMetaFlow)
+  .label = Lookup (Zotero MetaFlow)
 
 
 ## correct-edition-numeral
@@ -343,7 +343,7 @@ rule-tool-set-language-menu-item =
 rule-tool-update-metadata =
   .label = Retrieve item metadata via identifier
 rule-tool-update-metadata-menu-item =
-  .label = ZoteroMetaFlow: Update Metadata and Check
+  .label = Zotero MetaFlow: Update Metadata and Check
 rule-tool-update-metadata-option-semanticScholarToken = Semantic Scholar API Key:
   .label = Semantic Scholar Token
   .placeholder = Semantic Scholar Token
@@ -379,7 +379,7 @@ rule-tool-csl-helper =
 rule-tool-csl-helper-menu-item =
   .label = { rule-tool-csl-helper.label }
 rule-tool-csl-helper-menu-field =
-  .label = { rule-tool-csl-helper.label } (ZoteroMetaFlow)
+  .label = { rule-tool-csl-helper.label } (Zotero MetaFlow)
 
 
 ## tool-clean-extra

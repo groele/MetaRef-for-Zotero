@@ -4,7 +4,7 @@
 
 ## 菜单和窗口
 
-ZoteroMetaFlow 内 22 项功能直接显示；设置页分类只控制入口显示。真实测试打开原生右键菜单并触发 command 事件，连续两次执行化学式整理及保存，并分别查询 ESI 与 Nature Index。查询窗口提供明确结果、匹配依据、实际来源及数据错误。
+Zotero MetaFlow 内 22 项功能直接显示；设置页分类只控制入口显示。真实测试打开原生右键菜单并触发 command 事件，连续两次执行化学式整理及保存，并分别查询 ESI 与 Nature Index。查询窗口提供明确结果、匹配依据、实际来源及数据错误。
 
 窗口关闭使用 Gecko 原生 `domwindowclosed` 通知判断，避免文档导航／unload 与窗口生命周期混淆；关闭窗口后释放跟踪状态及原生观察者，不影响后续设置工具。测试先清理其他测试产生的报告，保证只验证本次点击产生的新窗口。
 
@@ -20,7 +20,7 @@ ESI 展示学科名称，Nature Index 使用“名单内期刊”等明确状态
 
 移除旧版本设置迁移、版本比较模块、已弃用的 onUpdateInBatch API、旧快捷键加号别名、旧式对象键期刊列表输入、废弃菜单上下文回退、旧安装包别名、旧版本压缩包、过时审查和重复验证文件、未使用的图标尺寸。
 
-使用 ZoteroMetaFlow 身份 `metaflow@groele`，保留 MetaRef 设置空间 `extensions.zotero.metaref`；不读取或迁移原 Linter 设置。ESI 查询改为 `tool-query-esi` 手动工具，Nature Index 查询为 `tool-query-nature-index`；没有写入字段／标签的历史规则身份。ESI 数据路径和列显示格式归入 insights 设置。
+使用 Zotero MetaFlow 身份 `metaflow@groele`，保留 MetaRef 设置空间 `extensions.zotero.metaref`；不读取或迁移原 Linter 设置。ESI 查询改为 `tool-query-esi` 手动工具，Nature Index 查询为 `tool-query-nature-index`；没有写入字段／标签的历史规则身份。ESI 数据路径和列显示格式归入 insights 设置。
 
 保留有实际用途的 JSON 数组／标准包装对象、CSV 表头别名和编码容错；保留上游版权及许可证。不删除资料库条目的人工字段或标签。
 

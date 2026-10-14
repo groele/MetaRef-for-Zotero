@@ -33,12 +33,12 @@ For interface examples and implementation details, see the [project documentatio
 
 ## Compatibility
 
-| Item | Details |
-| --- | --- |
-| Add-on version | `10.0.0` |
-| Add-on ID | `metaflow@groele` |
-| Declared Zotero range | `10.0–11.*` |
-| Verification | Zotero 11 checks include development builds; support declared by the manifest does not imply validation against every future release. |
+| Item                  | Details                                                                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Add-on version        | `10.0.0`                                                                                                                              |
+| Add-on ID             | `metaflow@groele`                                                                                                                     |
+| Declared Zotero range | `10.0–11.*`                                                                                                                           |
+| Verification          | Zotero 11 checks include development builds; support declared by the manifest does not imply validation against every future release. |
 
 The declared compatibility range is not a guarantee that every Zotero version has been tested.
 
@@ -69,7 +69,7 @@ pnpm install --frozen-lockfile
 pnpm test:unit
 pnpm lint:check
 pnpm build
-``
+```
 
 These commands describe available project tasks, not a claim that every environment or integration test passes.
 
