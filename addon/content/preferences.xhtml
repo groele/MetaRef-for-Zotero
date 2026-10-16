@@ -566,6 +566,16 @@
       <!-- 期刊索引数据库 -->
       <groupbox>
         <label><html:h3 data-l10n-id="section-article-esi" /></label>
+        <vbox class="indented-pref">
+          <label data-l10n-id="easyscholar-key-label" />
+          <html:input
+            type="password"
+            autocomplete="off"
+            id="__addonRef__-easyscholar-key"
+            preference="easyscholar.secretKey"
+          />
+          <description data-l10n-id="easyscholar-key-description" class="metaref-pref-description" />
+        </vbox>
         <checkbox
           data-l10n-id="insights-show-pane"
           preference="insights.showPane"

@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-![Version](https://img.shields.io/badge/version-10.0.0-blue) ![Zotero](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-green) ![License](https://img.shields.io/badge/license-AGPL-3.0-or-later-lightgrey)
+![Version](https://img.shields.io/badge/version-10.1.0-blue) ![Zotero](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-green) ![License](https://img.shields.io/badge/license-AGPL-3.0-or-later-lightgrey)
 
 [下载插件](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues) · [版本发布](https://github.com/groele/Zotero-MetaFlow/releases)
 
@@ -25,6 +25,7 @@ Zotero MetaFlow 是 Zotero Flow Series 中独立维护的插件，校验、整�
 - 使用可配置规则整理标题、作者、DOI、日期、缩写及科学符号。
 - 支持批量处理、进度反馈、取消与适用场景下的撤销/重做。
 - 通过 ESI 与 Nature Index 视图查看期刊相关信息。
+- 手动查询 EasyScholar 期刊评级，并将返回字段合并写入条目 Extra。
 - 配置自定义数据来源、快捷键及自动整理选项。
 
 ## 界面展示
@@ -35,7 +36,7 @@ Zotero MetaFlow 是 Zotero Flow Series 中独立维护的插件，校验、整�
 
 | 项目         | 说明                                                                                   |
 | ------------ | -------------------------------------------------------------------------------------- |
-| 插件版本     | `10.0.0`                                                                               |
+| 插件版本     | `10.1.0`                                                                               |
 | 插件 ID      | `metaflow@groele`                                                                      |
 | 声明兼容范围 | `10.0–11.*`                                                                            |
 | 验证情况     | Zotero 11 的相关验证包含开发版本；清单声明的兼容范围不意味着未来所有版本均已实机验收。 |

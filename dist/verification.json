@@ -1,6 +1,6 @@
 {
   "date": "2026-10-16",
-  "version": "10.0.1",
+  "version": "10.1.0",
   "name": "Zotero MetaFlow",
   "identity": {
     "addonName": "Zotero MetaFlow",
@@ -10,48 +10,31 @@
     "prefsPrefix": "extensions.zotero.metaref"
   },
   "unit": {
-    "passed": 285,
-    "files": 46
+    "passed": 289,
+    "files": 47
   },
   "e2e": {
-    "zotero10": {
-      "version": "10.0.6",
-      "platformMajorVersion": 140,
-      "locale": "en-US",
-      "fullRegressionPassed": 55,
-      "productionXpiInstallPassed": 1,
-      "pluginVersion": "10.0.1",
-      "sameProductionXpi": true,
-      "isolatedProfile": true,
-      "displayName": "Zotero MetaFlow"
-    },
-    "zotero11": {
-      "status": "not rerun on the release worktree",
-      "previousRepairWorktreeFullRegressionPassed": 56,
-      "previousRepairWorktreeFinalPackageFocusedPassed": 9,
-      "previousPluginVersion": "10.0.0",
-      "platformMajorVersion": 153
-    }
+    "status": "Not run in this integration checkout; requires Zotero desktop and an isolated profile."
   },
   "validation": {
     "productionBuild": "passed",
     "pluginTypeScript": "passed",
     "unitTests": "passed",
-    "eslint": "not completed in release worktree",
+    "eslint": "targeted changed TypeScript files passed; full repository lint reports CRLF-format findings",
     "autocorrect": "passed",
-    "productionXpiTemporaryInstall": "passed",
+    "productionXpiTemporaryInstall": "not run",
     "updateManifestConsistency": "passed",
-    "isolatedProfileAndData": true,
+    "isolatedProfileAndData": false,
     "testTypeScript": "passed"
   },
   "package": {
     "path": "zotero-metaflow.xpi",
-    "sha256": "ceda9d673410d334782e631874286c0c3e50eebacb8a62fa1eec224403a7773e",
-    "bytes": 1230922,
+    "sha256": "7c17e1c6dd7ec159f47c9c61860fae72d0bc6ff35b72733da17537143b531328",
+    "bytes": 1233969,
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "10.0.1",
+      "version": "10.1.0",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
       "author": "northword",
@@ -83,14 +66,15 @@
   "publication": {
     "repository": "https://github.com/groele/Zotero-MetaFlow",
     "targetBranch": "main",
-    "targetTag": "V10.0.1"
+    "targetTag": "V10.1.0"
   },
   "limitations": [
+    "Zotero desktop E2E and temporary XPI installation were not run in this integration checkout.",
+    "Authenticated EasyScholar requests require a user-owned API key; service availability was not tested.",
     "Zotero 11 coverage uses a development build; future host changes need regression tests.",
-    "Persistent installation and restart were not tested.",
-    "Manual visual QA, live external metadata services, macOS/Linux and all third-party plugin combinations were not tested."
+    "Manual visual QA, macOS/Linux and third-party plugin combinations were not tested."
   ],
-  "tag": "V10.0.1",
+  "tag": "V10.1.0",
   "previousFullRegression": {
     "pluginVersion": "12.2.1",
     "zotero10Passed": 50,

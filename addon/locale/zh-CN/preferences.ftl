@@ -1,5 +1,7 @@
 ## 常规设置
 section-general = 常规设置
+easyscholar-key-label = EasyScholar API 密钥
+easyscholar-key-description = 输入你在 EasyScholar 获取的个人密钥。密钥保存在本机 Zotero 插件偏好中；MetaFlow 仅在手动运行 EasyScholar 查询时发送 HTTPS 请求。
 lint-on-item-added =
     .label = Zotero MetaFlow：新增条目时自动检查并整理
 lint-on-item-added-description = 默认开启。短时间新增的条目合并后在后台处理，关闭后等待中的任务会跳过。仅处理已保存、有标题且可编辑的常规条目；空白条目、附件、订阅条目、已删除条目和同步导入的条目会跳过。运行当前启用的常规规则，可能会规范或补全字段并自动保存。
@@ -95,7 +97,7 @@ shortcut-disabled = 此快捷键已禁用。
 
 insights-show-pane =
     .label = 显示 Zotero MetaFlow 独立期刊索引侧栏
-insights-description = ESI 与 Nature Index 显示在独立侧栏和可选列表列，不写入文献字段或标签。菜单查询始终可用；数据库更改立即生效。
+insights-description = ESI 与 Nature Index 显示在独立侧栏和可选列表列，不写入文献字段或标签。EasyScholar 需手动查询，返回的信息会写入 Extra；数据库更改立即生效。
 
 journal-database-nature = Nature Index 自定义期刊数据库
 journal-database-nature-path =

@@ -47,6 +47,7 @@ declare namespace _ZoteroTypes {
       "insights.esiCustomDataPath": string;
       "insights.showPane": boolean;
       "insights.natureCustomDataPath": string;
+      "easyscholar.secretKey": string;
       "rule.require-university-place": boolean;
       "rule.require-doi": boolean;
       "rule.require-creators": boolean;
@@ -104,6 +105,7 @@ declare namespace _ZoteroTypes {
       "menu.tool-csl-helper": boolean;
       "menu.tool-creators-ext": boolean;
       "menu.tool-query-nature-index": boolean;
+      "menu.tool-update-easyscholar": boolean;
       "menu.correct-title-punctuation": boolean;
       "menu.correct-extra-order": boolean;
       "rule.tool-set-language": boolean;

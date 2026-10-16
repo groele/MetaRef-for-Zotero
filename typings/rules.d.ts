@@ -48,5 +48,6 @@ type ID =
   | "tool-update-metadata"
   | "tool-get-short-doi"
   | "tool-query-nature-index"
+  | "tool-update-easyscholar"
   | "tool-csl-helper"
   | "tool-clean-extra"

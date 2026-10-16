@@ -114,7 +114,7 @@ export const MENU_SECTIONS = {
   title: ["correct-title-sentence-case", "correct-title-chemical-formula", "tool-title-guillemet"],
   creators: ["correct-creators-case", "correct-creators-pinyin", "tool-creators-ext"],
   publication: ["require-language", "tool-set-language", "correct-publication-title-alias", "correct-publication-title-case", "require-journal-abbr", "correct-conference-abbr", "require-university-place"],
-  indexing: ["tool-query-esi", "tool-query-nature-index"],
+  indexing: ["tool-query-esi", "tool-query-nature-index", "tool-update-easyscholar"],
   maintenance: ["correct-date-format", "no-doi-prefix", "tool-get-short-doi", "tool-csl-helper", "tool-clean-extra"],
 } satisfies Record<string, string[]>;
 
@@ -123,7 +123,7 @@ export const MENU_GROUPS = Object.entries(MENU_SECTIONS).filter(([key]) => key !
 function registerItemMenus() {
   const isMenuVisible = (key: string): boolean => getPref(`menu.${key}` as any, true) ?? true;
   const makeItem = (key: string): ItemMenu => {
-    const indexing = MENU_SECTIONS.indexing.includes(key);
+    const indexing = ["tool-query-esi", "tool-query-nature-index"].includes(key);
     const rule = key === "standard" ? undefined : Rules.getByID(key as ID);
     const custom = rule?.getItemMenu?.();
     const l10nID = key === "standard" ? getLocaleID("menuitem-stdFormatFlow") : getLocaleID(custom?.l10nID || `rule-${key as ID}-menu-item` as Parameters<typeof getLocaleID>[0]);

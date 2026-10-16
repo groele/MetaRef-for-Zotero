@@ -37,6 +37,7 @@ import { ToolQueryESI } from "./tool-query-esi";
 import { ToolQueryNatureIndex } from "./tool-query-nature-index";
 import { ToolSetLanguage } from "./tool-set-language";
 import { ToolTitleGuillemet } from "./tool-title-guillemet";
+import { ToolUpdateEasyScholar } from "./tool-update-easyscholar";
 import { ToolUpdateMetadata } from "./tool-update-metadata";
 
 const register: Rule<any>[] = [
@@ -110,6 +111,7 @@ const register: Rule<any>[] = [
   ToolUpdateMetadata,
   ToolGetShortDOI,
   ToolQueryNatureIndex,
+  ToolUpdateEasyScholar,
   ToolCSLHelper,
   ToolCleanExtra,
 ];

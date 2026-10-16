@@ -50,6 +50,7 @@ pref("insights.esiFormat", "{subject}ESI");
 pref("insights.esiCustomDataPath", "");
 pref("insights.showPane", true);
 pref("insights.natureCustomDataPath", "");
+pref("easyscholar.secretKey", "");
 pref("rule.require-university-place", true);
 pref("rule.require-doi", true);
 pref("rule.require-creators", true);
@@ -116,6 +117,7 @@ pref("menu.tool-clean-extra", true);
 pref("menu.tool-csl-helper", true);
 pref("menu.tool-creators-ext", true);
 pref("menu.tool-query-nature-index", true);
+pref("menu.tool-update-easyscholar", true);
 pref("menu.correct-title-punctuation", true);
 pref("menu.correct-extra-order", true);
 

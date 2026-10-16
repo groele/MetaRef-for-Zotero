@@ -17,7 +17,7 @@ describe("menu module", () => {
     try {
       const root = registered();
       expect(root.menus.filter((menu: any) => menu.menuType === "submenu")).toHaveLength(0);
-      expect(root.menus.filter((menu: any) => menu.menuType === "menuitem")).toHaveLength(22);
+      expect(root.menus.filter((menu: any) => menu.menuType === "menuitem")).toHaveLength(23);
     }
     finally {
       unregisterMenu();
@@ -118,12 +118,12 @@ describe("menu module", () => {
       expect(Rules.getStandard().every(rule => !rule.id.startsWith("tool-"))).toBe(true);
     });
 
-    it("covers all 22 menu items across all sections", () => {
+    it("covers all 23 menu items across all sections", () => {
       const allItemIDs = Object.values(MENU_SECTIONS).flat();
 
-      expect(allItemIDs).toHaveLength(22);
+      expect(allItemIDs).toHaveLength(23);
       const uniqueIDs = new Set(allItemIDs);
-      expect(uniqueIDs.size).toBe(22);
+      expect(uniqueIDs.size).toBe(23);
     });
 
     it("references valid registered rules for all rule-based menu items", () => {

@@ -1,5 +1,12 @@
 # Linter for Zotero V10 — 10.0.5
 
+## 10.1.0 — 2026-10-16
+
+- Added a manual EasyScholar journal lookup for journal articles and conference papers. The user-provided API key is stored in local plugin preferences, requests use HTTPS, and results are merged into Extra through MetaFlow's existing batch save and rollback flow.
+- Preserved unrelated Extra content and existing EasyScholar values not returned by a lookup. EasyScholar lookups do not run automatically when items are added.
+- Excluded the merged XPI's legacy Green Frog key migration and plaintext HTTP abbreviation/CNKI endpoints.
+- Validation: 288 unit tests, production build, TypeScript check, and targeted ESLint passed. Live EasyScholar service availability and authenticated requests require a user-owned API key and were not tested.
+
 ## 10.0.6 — 2026-10-07
 
 - 修复设置对话框在加载或关闭期间可能使批处理挂起的问题。

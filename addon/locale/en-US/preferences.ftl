@@ -1,5 +1,7 @@
 ## General settings
 section-general = General Settings
+easyscholar-key-label = EasyScholar API key
+easyscholar-key-description = Enter your personal key from EasyScholar. It is stored in this Zotero plugin's local preferences; MetaFlow sends an HTTPS request only when you manually run the EasyScholar lookup.
 lint-on-item-added =
     .label = Zotero MetaFlow: Check and organize new items automatically
 lint-on-item-added-description = Enabled by default. Nearby additions are grouped and processed in the background; turning this off skips pending tasks. It only processes saved, titled, editable regular items; blank items, attachments, feed items, deleted items, and synced imports are skipped. Enabled standard rules may normalize or fill fields, and changes are saved automatically.
@@ -96,7 +98,7 @@ shortcut-disabled = This shortcut is disabled.
 
 insights-show-pane =
     .label = Show the independent Zotero MetaFlow journal insights section
-insights-description = Show ESI and Nature Index in an independent section and optional columns without writing fields or tags. Menu queries remain available; database changes apply immediately.
+insights-description = Show ESI and Nature Index in an independent section and optional columns without writing fields or tags. EasyScholar lookups are manual and write returned information to Extra; database changes apply immediately.
 
 journal-database-nature = Custom Nature Index journal database
 journal-database-nature-path =
