@@ -15,9 +15,14 @@ jobs:
   create-release:
     uses: zotero-plugin-dev/workflows/.github/workflows/release-plugin.yml@main
 
-    # You can customize any of the inputs here.
-    # If you omit an input, its default value will be used.
-    # with:
-    #   build: ""
-    #   release: "pnpm release"
-    # secrets: inherit
+    with:
+      release: |
+        version="${GITHUB_REF_NAME#v}"
+        version="${version#V}"
+        notes_file="$(find docs/releases -maxdepth 1 -type f -iname "v${version}.md" -print -quit)"
+        if [ -n "$notes_file" ]; then
+          gh release create "$GITHUB_REF_NAME" dist/zotero-metaflow.xpi --title "Zotero MetaFlow ${version}" --notes-file "$notes_file"
+        else
+          gh release create "$GITHUB_REF_NAME" dist/zotero-metaflow.xpi --title "Zotero MetaFlow ${version}" --generate-notes
+        fi
+      comment-template: ""
