@@ -66,7 +66,9 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
 
   it("infers ISO 4 offline with the production LTWA asset", async function () {
     const original = Zotero.HTTP.request;
-    Zotero.HTTP.request = async () => {
+    Zotero.HTTP.request = async (method, url, options) => {
+      if (["localhost", "127.0.0.1"].includes(new URL(url).hostname))
+        return original(method, url, options);
       throw new Error("ISO 4 must not use the network");
     };
     try {
@@ -87,7 +89,9 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
     clearRequestCache();
     const original = Zotero.HTTP.request;
     let calls = 0;
-    Zotero.HTTP.request = async () => {
+    Zotero.HTTP.request = async (method, url, options) => {
+      if (new URL(url).hostname !== "example.test")
+        return original(method, url, options);
       calls++;
       return { status: 200, response: "{\"paperId\":\"durable-fixture\"}", responseText: "{\"paperId\":\"durable-fixture\"}" } as XMLHttpRequest;
     };
@@ -116,7 +120,9 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
     pref("semanticScholarToken", "semantic-fixture-token");
     const original = Zotero.HTTP.request;
     let calls = 0;
-    Zotero.HTTP.request = async () => {
+    Zotero.HTTP.request = async (method, url, options) => {
+      if (new URL(url).hostname !== "api.semanticscholar.org")
+        return original(method, url, options);
       calls++;
       const response = JSON.stringify({ paperId: "cache-alias-fixture", title: "Alias fixture", externalIds: { DOI: "10.1234/cache-alias-fixture" } });
       return { status: 200, response, responseText: response } as XMLHttpRequest;
