@@ -1,6 +1,23 @@
 import { DataLoader } from "./data-loader";
 import { convertToRegex } from "./str";
 
+export interface CompiledTitleTerm {
+  pattern: RegExp;
+  replace: string;
+}
+
+export function compileTitleTerms(rows: { search: string; replace: string }[]): CompiledTitleTerm[] {
+  return rows.map(row => ({ pattern: convertToRegex(row.search), replace: row.replace }));
+}
+
+export function applyTitleTerms(title: string, terms: CompiledTitleTerm[]): string {
+  for (const { pattern, replace } of terms) {
+    pattern.lastIndex = 0;
+    title = title.replace(pattern, replace);
+  }
+  return title;
+}
+
 export function validateTitleTerms(rows: unknown[]): { search: string; replace: string }[] {
   return rows.map((value, index) => {
     const row = value as { search?: unknown; replace?: unknown } | null;

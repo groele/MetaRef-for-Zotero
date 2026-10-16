@@ -32,3 +32,7 @@ undo-action-lint-metadata = { $count ->
 }
 info-batch-cancelled = Stopped: processed { $processed }, skipped { $skipped }
 info-batch-duration = Finished in { $seconds } seconds
+report-export = Export report and field changes
+report-export-failed = Export failed. Click to retry.
+report-prepare-failed = Rule preparation failed
+info-batch-details = Saved { $saved }; unchanged { $unchanged }; not applicable { $notApplicable }; warnings { $warnings }.

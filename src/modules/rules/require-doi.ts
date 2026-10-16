@@ -1,3 +1,4 @@
+import { requestCachedGET } from "../../utils/http";
 import { defineRule } from "./rule-base";
 
 export const RequireDOI = defineRule({
@@ -8,7 +9,7 @@ export const RequireDOI = defineRule({
   // The rate limit is 50 requests per second.
   // https://crossref.readthedocs.io/en/latest/
   cooldown: 20,
-  async apply({ item, report, debug }) {
+  async apply({ item, report, debug, signal }) {
     if (item.getField("language").startsWith("zh")) {
       debug("Skipping for Chinese language");
       return;
@@ -27,12 +28,13 @@ export const RequireDOI = defineRule({
     }
 
     const url = `https://www.crossref.org/openurl?pid=${addon.data.config.addonID}&${ctx}&multihit=true`;
-    const req = await Zotero.HTTP.request("GET", url, {
+    const req = await requestCachedGET(url, {
       responseType: "xml",
       timeout: 15_000,
-    })
+    }, signal)
       // We catch here and re-throw because this error message is too long
       .catch((error) => {
+        signal?.throwIfAborted();
         throw new Error(`CrossRef request error, ${error.status}`);
       });
 

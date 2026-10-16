@@ -18,6 +18,14 @@ describe("batch data cache", () => {
     expect(read).toHaveBeenCalledTimes(1);
     expect(first).toBe(second);
   });
+  it("does not silently choose a conflicting normalized journal title", async () => {
+    vi.stubGlobal("rootURI", "test/");
+    read.mockResolvedValue(JSON.stringify({ "Journal-A": "J. A.", "Journal A": "J. Alpha.", "Nature": "Nature" }));
+    const maps = await DataLoader.getJournalAbbrMaps();
+    expect(maps.abbrMap.has("journala")).toBe(false);
+    expect(maps.titleMap.has("journala")).toBe(false);
+    expect(maps.abbrMap.get("nature")).toBe("Nature");
+  });
 
   it("retries failed reads rather than caching rejection", async () => {
     read.mockRejectedValueOnce(new Error("missing file")).mockResolvedValueOnce("{}");

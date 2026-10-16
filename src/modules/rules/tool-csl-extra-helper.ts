@@ -1,4 +1,5 @@
 import { useSettingsDialog } from "../../utils/dialog";
+import { getString } from "../../utils/locale";
 import { getPinyin, getSurnamePinyin, splitChineseName } from "../../utils/pinyin";
 import { capitalizeFirstLetter } from "../../utils/str";
 import { splitPinyin } from "./correct-creators-pinyin";
@@ -38,9 +39,9 @@ export const ToolCSLHelper = defineRule<Options>({
     await addon.runner.applyRuleByID(item, "correct-extra-order", {});
   },
 
-  async prepare({ items, debug }) {
+  async prepare({ items, debug, signal }) {
     if (items.length !== 1) {
-      ztoolkit.prompt("This tool only supports a single item.");
+      ztoolkit.prompt(getString("tool-single-item-only"));
       return false;
     }
 
@@ -122,7 +123,7 @@ export const ToolCSLHelper = defineRule<Options>({
     debug("originalFields after apply item's fields", originalFields);
 
     // ----- Step 4: Open dialog and collect results -----
-    const { dialog, openForSettings } = useSettingsDialog<Record<string, string>>();
+    const { dialog, openForSettings } = useSettingsDialog<Record<string, string>>(signal);
 
     function addField(key: string) {
       debug("adding", key);

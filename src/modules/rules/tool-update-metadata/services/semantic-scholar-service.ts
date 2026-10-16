@@ -1,16 +1,19 @@
 import type { Identifiers } from "../identifiers";
+import { requestGET } from "../../../../utils/http";
 import { getPref } from "../../../../utils/prefs";
+import { abortableDelay } from "../../../../utils/rule-execution";
 import { defineService } from "./base-service";
 
-async function request(paperID: string, fields: (keyof Result)[]): Promise<RequestResult> {
+async function request(paperID: string, fields: (keyof Result)[], signal?: AbortSignal): Promise<RequestResult> {
   const url = `https://api.semanticscholar.org/graph/v1/paper/${encodeURIComponent(paperID.trim())}?fields=${fields.join(",")}`;
-  const res = await Zotero.HTTP.request("GET", url, {
+  const res = await requestGET(url, {
     timeout: 15_000,
+    successCodes: [200, 400, 404],
     headers: {
       ...getPref("semanticScholarToken") && { "x-api-key": getPref("semanticScholarToken") },
       "User-Agent": "Zotero MetaFlow",
     },
-  });
+  }, signal);
 
   return { _status: res.status, ...JSON.parse(res.response) };
 }
@@ -42,12 +45,13 @@ export function parsePaperID(type: keyof Identifiers, value: string): string {
 
 export const SemanticScholarService = defineService<Result>({
   id: "semantic-scholar-service",
+  lookup: "identifier",
   name: "Semantic Scholar Service",
   // set cooldown to 1_000 when token is set,
   get cooldown() { return getPref("semanticScholarToken") ? 1_000 : 3_000; },
   shouldApply: () => true,
 
-  async updateIdentifiers({ item, identifiers, isPreprint }) {
+  async updateIdentifiers({ item, identifiers, isPreprint, signal }) {
     // only update preprints and conference papers;
     // journal articles and other types are not updated.
     if (!isPreprint && item.itemType !== "conferencePaper")
@@ -57,7 +61,17 @@ export const SemanticScholarService = defineService<Result>({
     for (const idType of identifiersToCheck) {
       if (identifiers[idType]) {
         const paperID = parsePaperID(idType, identifiers[idType]!);
-        const res = await request(paperID, ["paperId", "title", "externalIds"]);
+        let res: RequestResult;
+        try {
+          res = await request(paperID, ["paperId", "title", "externalIds"], signal);
+        }
+        catch (error) {
+          signal?.throwIfAborted();
+          if ([400, 404].includes((error as { status?: number }).status || 0))
+            res = { _status: 404, error: "No match" };
+          else
+            throw error;
+        }
 
         if (res._status === 200) {
           identifiers.SemanticScholarID = res.paperId;
@@ -66,13 +80,15 @@ export const SemanticScholarService = defineService<Result>({
             identifiers.DOI = doi;
           return true;
         }
+        if (identifiersToCheck.slice(identifiersToCheck.indexOf(idType) + 1).some(key => identifiers[key]))
+          await abortableDelay(SemanticScholarService.cooldown, signal);
       }
     }
 
     return false;
   },
 
-  async fetch({ identifiers, debug }) {
+  async fetch({ identifiers, debug, signal }) {
     const paperID = identifiers.SemanticScholarID
       ? parsePaperID("SemanticScholarID", identifiers.SemanticScholarID)
       : identifiers.DOI
@@ -95,7 +111,7 @@ export const SemanticScholarService = defineService<Result>({
       "journal",
     ];
 
-    const res = await request(paperID, fields);
+    const res = await request(paperID, fields, signal);
 
     if (res._status !== 200) {
       debug(`Request from Semantic Scholar failed, status code ${res._status}, ${res.error}`);

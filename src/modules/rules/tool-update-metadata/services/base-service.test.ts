@@ -47,4 +47,24 @@ describe("service request scheduling", () => {
     await second;
     expect(fetch).toHaveBeenCalledTimes(1);
   });
+  it("reads changed cooldowns without resetting the last start time", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
+    let cooldown = 100;
+    const starts: number[] = [];
+    const service = defineService({ id: "dynamic", name: "Dynamic", get cooldown() {
+      return cooldown;
+    }, shouldApply: () => true, async fetch() {
+      starts.push(Date.now());
+      return {};
+    } });
+    await service.fetch!({} as MetadataContext);
+    cooldown = 40;
+    const pending = service.fetch!({} as MetadataContext);
+    await vi.advanceTimersByTimeAsync(39);
+    expect(starts).toEqual([0]);
+    await vi.advanceTimersByTimeAsync(1);
+    await pending;
+    expect(starts).toEqual([0, 40]);
+  });
 });

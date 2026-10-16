@@ -11,6 +11,7 @@ import { AutomaticItems } from "./utils/automatic-items";
 import { cleanupResources } from "./utils/cleanup";
 import { closeAllDialogs } from "./utils/dialog";
 import { toArray } from "./utils/general";
+import { clearRequestCache } from "./utils/http";
 import { loadJournalInsights } from "./utils/journal-insights";
 import { initLocale, registerMainWindowLocale, unloadLocale, unregisterMainWindowLocale } from "./utils/locale";
 import { logger } from "./utils/logger";
@@ -73,6 +74,7 @@ async function onShutdown() {
   addon.data.alive = false;
   await cleanupResources([
     () => automaticItems.cancelPending(),
+    clearRequestCache,
     unregisterNotifier,
     unregisterPrefsWindows,
     closeAllDialogs,

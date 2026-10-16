@@ -20,18 +20,20 @@ describe("native flat menu commands", function () {
     Zotero.Prefs.set(key, original as boolean, true);
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     for (const dialog of plugin().data.dialogs.values())
       dialog.close();
     const win = Zotero.getMainWindow();
-    (win.document.getElementById("zotero-itemmenu") as any).hidePopup();
+    const popup = win.document.getElementById("zotero-itemmenu") as any;
+    popup.hidePopup();
+    await wait(() => popup.state === "closed", "menu cleanup");
   });
-  const wait = async (condition: () => boolean, label = "native command") => {
+  async function wait(condition: () => boolean, label = "native command") {
     for (let attempt = 0; attempt < 200 && !condition(); attempt++)
       await Zotero.Promise.delay(50);
     const windows = [...plugin().data.dialogs].map(([id, window]: [string, Window]) => ({ id, closed: window.closed, title: window.document?.title }));
     assert.isTrue(condition(), `${label} must complete; tracked=${JSON.stringify(windows)}`);
-  };
+  }
 
   beforeEach(async function () {
     for (const dialog of plugin().data.dialogs.values())
@@ -54,9 +56,25 @@ describe("native flat menu commands", function () {
     const root = popup.querySelector("menu[data-l10n-id='metaref-menuitem-label']") as any;
     assert.isNotNull(root);
     assert.isFalse(root.disabled);
-    root.open = true;
     const sub = root.querySelector("menupopup") as any;
+    // Native menus can retain the open property after the parent was hidden by a dialog.
+    root.open = false;
+    if (sub.state !== "closed") {
+      sub.hidePopup();
+      await wait(() => sub.state === "closed", "previous submenu closing");
+    }
+    const shown = new Promise<void>((resolve) => {
+      const onShown = (event: Event) => {
+        if (event.target !== sub)
+          return;
+        sub.removeEventListener("popupshown", onShown);
+        resolve();
+      };
+      sub.addEventListener("popupshown", onShown);
+    });
+    sub.openPopup(root, "end_before", 0, 0, true);
     await wait(() => sub.state === "open", "MetaRef popup opening");
+    await shown;
     assert.equal(sub.querySelectorAll(":scope > menu").length, 0, "no nested menu arrows");
     assert.equal(sub.querySelectorAll(":scope > menuitem").length, 22);
     return { win, popup, sub };

@@ -2,7 +2,7 @@
 
 This page outlines the rules supported (or planned) by this plugin. The purpose is to ensure the **existence, correctness, and accuracy** of all items and fields in a Zotero library.
 
-Unlike traditional linting tools, this plugin focuses on **direct fixes**. There is no "warn-only" mode for most rules.
+Formatting rules apply direct fixes. Ambiguous field-misuse and free-text placeholder findings are reported for review while preserving the original values.
 
 ⚠️ Please note: due to technical limitations, the plugin can never fully replace human review. After automatic corrections, you should still carefully check each field for accuracy.
 
@@ -213,6 +213,6 @@ Allows filling in missing fields (date, volume, issue, pages, etc.) from DOI, ar
 
 For preprints, updates item type to `journalArticle` when possible.
 
-Updates can fill blanks or replace fields; item type changes require the corresponding option. Empty or malformed service values do not erase existing fields. Service failures and transformation errors allow fallback to the next service. Semantic Scholar author names are not currently converted into Zotero creators.
+Updates fill blanks by default or replace fields when explicitly selected. Updating metadata is separate from running standard formatting rules. Contradictory DOI results are rejected; sparse results allow later trusted sources to fill missing fields without overwriting earlier sources. Fields edited during the request are preserved. Type changes that would discard existing fields or creator roles are skipped. Semantic Scholar author names are not mechanically split into Zotero creators.
 
-All tools use the shared batch save boundary. Cancelling a settings dialog cancels the combined operation, including any following formatter. See the [workflow guide](metadata-workflow-zh.md) and [current review](current-review.md) for validation coverage and limits.
+All tools use the shared batch save boundary. Failed rules roll back their own writes while healthy rules continue. Preparation supports cancellation, and reports expose saved field changes and JSON export. Cancelling a tool dialog cancels its explicit combined operation. See the [workflow guide](metadata-workflow-zh.md) and the [repair record](repair-implementation-2026-10-16.md).

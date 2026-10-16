@@ -32,3 +32,7 @@ undo-action-lint-metadata = { $count ->
 }
 info-batch-cancelled = 已停止：处理 { $processed } 条，跳过 { $skipped } 条
 info-batch-duration = 耗时 { $seconds } 秒
+report-export = 导出报告与字段变更
+report-export-failed = 导出失败，点击重试。
+report-prepare-failed = 规则准备失败
+info-batch-details = 已保存 { $saved }；未变化 { $unchanged }；不适用 { $notApplicable }；提醒 { $warnings }。

@@ -77,7 +77,7 @@ export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "rule.correct-proceedingsTitle-sentence-case": false,
   "rule.correct-extra-order": true,
   "rule.tool-update-metadata.option.slient": false,
-  "rule.tool-update-metadata.option.mode": "all",
+  "rule.tool-update-metadata.option.mode": "blank",
   "rule.tool-update-metadata.option.allow-type-changed": true,
   "semanticScholarToken": "",
   "menu.standard": true,

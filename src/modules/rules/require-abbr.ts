@@ -1,5 +1,6 @@
 import type { Data } from "../../utils/data-loader";
 import { DataLoader } from "../../utils/data-loader";
+import { requestCachedGET } from "../../utils/http";
 import { getString } from "../../utils/locale";
 import { getPref } from "../../utils/prefs";
 import { getTextLanguage, normalizeKey } from "../../utils/str";
@@ -37,7 +38,7 @@ export const RequireJournalAbbr = defineRule<Options>({
   scope: "field",
   targetItemTypes: ["journalArticle"],
   targetItemField: "journalAbbreviation",
-  async apply({ item, options, debug, report }) {
+  async apply({ item, options, debug, report, signal }) {
     const publicationTitle = item.getField("publicationTitle") as string;
 
     // 无期刊全称直接跳过
@@ -60,7 +61,7 @@ export const RequireJournalAbbr = defineRule<Options>({
     // 从 ISSN LTWA 推断完整期刊缩写
     if (!journalAbbr && options.infer) {
       debug("try to infer abbreviation via abbreviso");
-      journalAbbr = await getAbbrFromLTWAOnline(publicationTitle);
+      journalAbbr = await getAbbrFromLTWAOnline(publicationTitle, signal);
     // journalAbbr = await this.getAbbrFromLTWALocally(publicationTitle);
     }
 
@@ -182,10 +183,10 @@ async function _getAbbrLocally(publicationTitle: string, data: Data): Promise<st
  * - String of `ISO 4 with dot abbr` when API returns a valid response
  * - `undefined` when API returns an invalid response
  */
-async function getAbbrFromLTWAOnline(publicationTitle: string): Promise<string | undefined> {
+async function getAbbrFromLTWAOnline(publicationTitle: string, signal?: AbortSignal): Promise<string | undefined> {
   publicationTitle = encodeURIComponent(publicationTitle);
   const url = `https://abbreviso.toolforge.org/abbreviso/a/${publicationTitle}`;
-  const res = await Zotero.HTTP.request("GET", url, { timeout: 15_000 });
+  const res = await requestCachedGET(url, {}, signal);
   const result = res.response as string;
   if (result === "" || result === null || result === undefined) {
     return undefined;
@@ -222,8 +223,11 @@ export async function loadCustomAbbreviations(path: string): Promise<Map<string,
   for (const [title, abbr] of rows) {
     if (typeof title !== "string" || typeof abbr !== "string")
       throw new TypeError("Each abbreviation row must contain a title and a text abbreviation");
-    if (title.trim() && abbr.trim())
+    if (title.trim() && abbr.trim()) {
+      if (map.has(normalizeKey(title)) && map.get(normalizeKey(title)) !== abbr.trim())
+        throw new TypeError(`Conflicting abbreviations for ${title}`);
       map.set(normalizeKey(title), abbr.trim());
+    }
   }
   return map;
 }

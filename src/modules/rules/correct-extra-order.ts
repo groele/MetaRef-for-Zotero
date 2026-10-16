@@ -32,6 +32,7 @@ export function sortExtraFieldMap(
   const isOriginalField = (key: string) => key.toLowerCase().startsWith("original-");
 
   const entries = [...input.entries()];
+  const standardFields = new Set(zoteroFields.map(field => field.toLowerCase()));
   const collator = new Intl.Collator("en", { sensitivity: "base" });
 
   entries.sort(([keyA], [keyB]) => {
@@ -47,8 +48,8 @@ export function sortExtraFieldMap(
       return 1;
 
     // 2️⃣ Zotero build-in fields
-    const aIsZotero = zoteroFields.some(f => f.toLowerCase() === keyA.toLowerCase());
-    const bIsZotero = zoteroFields.some(f => f.toLowerCase() === keyB.toLowerCase());
+    const aIsZotero = standardFields.has(a);
+    const bIsZotero = standardFields.has(b);
     if (aIsZotero && !bIsZotero)
       return -1;
     if (!aIsZotero && bIsZotero)

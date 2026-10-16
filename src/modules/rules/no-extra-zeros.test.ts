@@ -15,10 +15,17 @@ describe("removeLeadingZeros", () => {
   });
 
   it("should handle page ranges", () => {
-    expect(removeLeadingZeros("0-20")).toBe("1-20");
+    expect(removeLeadingZeros("0-20")).toBe("0-20");
     expect(removeLeadingZeros("0012-0020")).toBe("12-20");
     expect(removeLeadingZeros("0005-0010")).toBe("5-10");
     expect(removeLeadingZeros("0005,0010")).toBe("5,10");
+  });
+
+  it("preserves valid ranges and does not infer a replacement for zero", () => {
+    for (const value of ["10-12", "20-25", "100-110", "0-5", "S10-S20", "10-20, 30-40"])
+      expect(removeLeadingZeros(value)).toBe(value);
+    expect(removeLeadingZeros("0010-0020")).toBe("10-20");
+    expect(removeLeadingZeros(removeLeadingZeros("0010-0020"))).toBe("10-20");
   });
 
   it("should handle mixed text and numbers", () => {

@@ -1,7 +1,8 @@
+import type { CompiledTitleTerm } from "../../utils/title-terms";
 import contryJson from "../../utils/country-by-capital-city.json";
 import { getPref } from "../../utils/prefs";
-import { convertToRegex, escapeRegex, functionWords } from "../../utils/str";
-import { loadTitleTerms } from "../../utils/title-terms";
+import { escapeRegex, functionWords } from "../../utils/str";
+import { applyTitleTerms, compileTitleTerms, loadTitleTerms } from "../../utils/title-terms";
 import { defineRule } from "./rule-base";
 
 /** =============================  Special Words Begin  ============================= */
@@ -224,6 +225,7 @@ export function toSentenceCase(text: string, locale: string = "en-US") {
 
 interface Options {
   data?: any[];
+  terms?: CompiledTitleTerm[];
 }
 
 export function keepOriginalTitle(language: string, disabledLanguagesList: string) {
@@ -243,7 +245,7 @@ function createCorrectTitleSentenceCaseRule(targetItemField: "title" | "shortTit
     fieldMenu: {
       l10nID: "rule-correct-title-sentence-case-menu-field",
     },
-    async apply({ item, options, debug }) {
+    async apply({ item, options }) {
       const oldTitle = item.getField(targetItemField, false, true);
       if (!oldTitle)
         return;
@@ -252,16 +254,9 @@ function createCorrectTitleSentenceCaseRule(targetItemField: "title" | "shortTit
       const disabledLanguagesList = getPref("rule.correct-title-sentence-case.disabled-languages") || "zh";
       title = keepOriginalTitle(lang, disabledLanguagesList) ? title : toSentenceCase(title, lang);
 
-      const data = options.data;
-      if (data) {
-        data.forEach((term) => {
-          const search = convertToRegex(term.search);
-          if (search.test(title)) {
-            title = title.replace(search, term.replace);
-            debug(`[title] Hit custom term: `, search);
-          }
-        });
-      }
+      const terms = options.terms ?? (options.data && compileTitleTerms(options.data));
+      if (terms)
+        title = applyTitleTerms(title, terms);
 
       if (title !== oldTitle) {
         item.setField(targetItemField, title);
@@ -272,7 +267,7 @@ function createCorrectTitleSentenceCaseRule(targetItemField: "title" | "shortTit
       const customTermFilePath = getPref("rule.correct-title-sentence-case.custom-term-path");
       if (customTermFilePath) {
         return {
-          data: await loadTitleTerms(customTermFilePath),
+          terms: compileTitleTerms(await loadTitleTerms(customTermFilePath)),
         };
       }
       else {

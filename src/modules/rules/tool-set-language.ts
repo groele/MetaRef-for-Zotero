@@ -1,5 +1,6 @@
 import { langName, toISO3 } from "tinyld";
 import { useSettingsDialog } from "../../utils/dialog";
+import { getString } from "../../utils/locale";
 import { getPref } from "../../utils/prefs";
 import { defineRule } from "./rule-base";
 
@@ -17,7 +18,7 @@ export const ToolSetLanguage = defineRule<Options>({
       item.setField("language", options.language);
   },
 
-  async prepare() {
+  async prepare({ signal }) {
     const allowLangs = ["zh", "en"];
     if (getPref("rule.require-language.only")) {
       const otherLang = getPref("rule.require-language.only.other") as string;
@@ -26,8 +27,8 @@ export const ToolSetLanguage = defineRule<Options>({
       }
     }
 
-    const { dialog, openForSettings } = useSettingsDialog<{ option: string; input: string }>();
-    dialog.addSetting("Select a Language:", "option", {
+    const { dialog, openForSettings } = useSettingsDialog<{ option: string; input: string }>(signal);
+    dialog.addSetting(getString("tool-language-choice"), "option", {
       tag: "select",
       children: allowLangs.map(lang => ({
         tag: "option",
@@ -42,11 +43,11 @@ export const ToolSetLanguage = defineRule<Options>({
         },
       })),
     })
-      .addSetting("Or Input a Language:", "input", {
+      .addSetting(getString("tool-language-input"), "input", {
         tag: "input",
       });
 
-    const result = await openForSettings("Select Language");
+    const result = await openForSettings(getString("tool-language-title"));
 
     let language: string;
     if (!result) {

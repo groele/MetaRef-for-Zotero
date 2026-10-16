@@ -5,6 +5,17 @@ import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
 import { waitUtilAsync } from "../utils/wait";
+import { Rules } from "./rules";
+
+export interface FieldChange {
+  itemID: number;
+  ruleID: string;
+  field: string;
+  before: unknown;
+  after: unknown;
+  source?: string;
+  saved: boolean;
+}
 
 export interface ReportInfo {
   level?: "info" | "warning" | "error";
@@ -17,9 +28,11 @@ export interface ReportInfo {
   itemID: number;
   title: string;
   ruleID: string;
+  field?: string;
+  source?: string;
 }
 
-export function createReporter(infos: ReportInfo[]) {
+export function createReporter(infos: ReportInfo[], changes: FieldChange[] = []) {
   const resolvedInfos: Record<number, ReportInfo[]> = groupBy(
     infos,
     info => info.itemID,
@@ -35,7 +48,29 @@ export function createReporter(infos: ReportInfo[]) {
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "14px",
     },
-    children: Object.values(resolvedInfos).flatMap(infos => [
+    children: [{
+      tag: "button",
+      properties: {
+        id: "metaref-report-export",
+        textContent: getString("report-export"),
+        onclick: async (event: Event) => {
+          const button = event.currentTarget as HTMLButtonElement;
+          button.disabled = true;
+          try {
+            const path = await new ztoolkit.FilePicker(getString("report-export"), "save", [["JSON", "*.json"]], "metaflow-report.json").open();
+            if (path)
+              await Zotero.File.putContentsAsync(path, JSON.stringify({ reports: infos.map(({ action, ...info }) => info), changes }, null, 2));
+          }
+          catch (error) {
+            button.textContent = getString("report-export-failed");
+            createLogger("reporter").error("Report export failed:", error);
+          }
+          finally {
+            button.disabled = false;
+          }
+        },
+      },
+    }, ...Object.values(resolvedInfos).flatMap(infos => [
       {
         tag: "div",
         styles: {
@@ -48,7 +83,7 @@ export function createReporter(infos: ReportInfo[]) {
           {
             tag: "a",
             properties: {
-              textContent: `${infos[0].itemID} - ${infos[0].title}`,
+              textContent: infos[0].itemID ? `${infos[0].itemID} - ${infos[0].title}` : infos[0].title,
             },
             styles: {
               fontWeight: "bold",
@@ -62,15 +97,24 @@ export function createReporter(infos: ReportInfo[]) {
               {
                 type: "click",
                 listener: () => {
-                  Zotero.getActiveZoteroPane()?.selectItem(infos[0].itemID);
+                  if (infos[0].itemID)
+                    Zotero.getActiveZoteroPane()?.selectItem(infos[0].itemID);
                 },
               },
             ],
           },
           ...infos.map(createRuleResultRows),
+          ...changes.filter(change => change.itemID === infos[0].itemID).map(change => ({
+            tag: "details",
+            children: [{ tag: "summary", properties: { textContent: `${change.field}${change.source ? ` · ${change.source}` : ""}` } }, {
+              tag: "pre",
+              properties: { textContent: JSON.stringify({ before: change.before, after: change.after, saved: change.saved }, null, 2) },
+              styles: { whiteSpace: "pre-wrap", overflowWrap: "anywhere" },
+            }],
+          } satisfies TagElementProps)),
         ],
       },
-    ] satisfies TagElementProps[]),
+    ] satisfies TagElementProps[])],
   });
 
   function createRuleResultRows(info: ReportInfo): TagElementProps {
@@ -95,7 +139,7 @@ export function createReporter(infos: ReportInfo[]) {
         {
           tag: "a",
           properties: {
-            textContent: info.label ?? info.ruleID,
+            textContent: info.label ?? (Rules.getByID(info.ruleID as ID) ? getString((Rules.getByID(info.ruleID as ID)!.nameKey || `rule-${info.ruleID}`) as Parameters<typeof getString>[0], "label") : info.ruleID),
           // href: `https://github.com/groele/Zotero-MetaFlow/blob/main/docs/rules/${info.ruleID}.md`,
           },
           styles: {
@@ -234,7 +278,7 @@ export class ProgressUI {
     });
   }
 
-  public showFinished(successCount: number, errorCount: number, duration: number, cancelled = false, skipped = 0, preparationFailed = 0): void {
+  public showFinished(successCount: number, errorCount: number, duration: number, cancelled = false, skipped = 0, preparationFailed = 0, details?: { saved: number; unchanged: number; notApplicable: number; warnings: number }): void {
     if (!this.progressWindow)
       return;
 
@@ -252,6 +296,7 @@ export class ProgressUI {
 
     this.progressWindow
       .changeLine({ text, progress: 100, idx: 0 })
+      .changeLine({ text: details ? getString("info-batch-details", { args: details }) : "", progress: 100, idx: 1 })
       .changeLine({ text: getString("info-batch-duration", { args: { seconds: duration.toFixed(1) } }), idx: 2 })
       .startCloseTimer(PROGRESS_WINDOW_CLOSE_DELAY);
     if (preparationFailed && successCount + errorCount)

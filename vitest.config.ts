@@ -6,9 +6,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: [
-        "src/modules/rules/*.ts",
+        "src/**/*.ts",
       ],
       exclude: [
+        "src/**/*.test.ts",
         "src/modules/rules/_*.ts",
         "src/modules/rules/index.ts",
         "src/modules/rules/rule-base.ts",

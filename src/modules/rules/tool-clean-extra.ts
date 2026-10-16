@@ -31,7 +31,7 @@ export const ToolCleanExtra = defineRule<Options>({
     }
   },
 
-  async prepare({ items, debug }) {
+  async prepare({ items, debug, signal }) {
     const fields = new Set<string>();
 
     for (const item of items) {
@@ -45,7 +45,7 @@ export const ToolCleanExtra = defineRule<Options>({
     const fieldPrefix = "field--" as const;
     const { dialog, openForSettings } = useSettingsDialog<{
       [key: `${typeof fieldPrefix}${string}`]: boolean;
-    }>();
+    }>(signal);
 
     if (fields.size === 0) {
       dialog.addStaticRow(getString("rule-tool-clean-extra-empty"), {

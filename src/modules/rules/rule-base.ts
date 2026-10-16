@@ -13,7 +13,7 @@ export interface ApplyContext<Option = object> {
    */
   options: Option;
   debug: Debug;
-  report: (info: Pick<ReportInfo, "level" | "message" | "action">) => void;
+  report: (info: Pick<ReportInfo, "level" | "message" | "action" | "field" | "source">) => void;
   /** Aborted when this rule exceeds its execution deadline. */
   signal?: AbortSignal;
 }
@@ -21,6 +21,7 @@ export interface ApplyContext<Option = object> {
 export interface PrepareContext {
   items: Zotero.Item[];
   debug: Debug;
+  signal?: AbortSignal;
 }
 
 interface RuleBase<Option = object> {
@@ -75,6 +76,8 @@ interface RuleBase<Option = object> {
   cooldown?: number;
   /** Maximum execution time, including throttle waits. Defaults to 60 seconds. */
   timeout?: number;
+  /** Preparation deadline. Tool dialogs default to no deadline; cancellation still applies. */
+  prepareTimeout?: number;
 
   /**
    * Handler of the rule.

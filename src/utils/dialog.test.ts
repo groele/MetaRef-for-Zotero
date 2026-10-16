@@ -151,6 +151,19 @@ describe("dialog lifecycle", () => {
     window.close();
     await pending;
   });
+  it("closes only its own settings window when its preparation is cancelled", async () => {
+    const controller = new AbortController();
+    const { dialog, window } = createDialog();
+    const other = createDialog();
+    const first = useDialog(dialog as any, controller.signal).openAndWaitClose("Cancelled settings");
+    const second = useDialog(other.dialog as any).openAndWaitClose("Other report");
+    controller.abort();
+    await first;
+    expect(window.closed).toBe(true);
+    expect(other.window.closed).toBe(false);
+    other.window.close();
+    await second;
+  });
 
   it("keeps a loaded native window tracked during document unload", async () => {
     const { dialog, loadLock, unloadLock, window } = createDialog();

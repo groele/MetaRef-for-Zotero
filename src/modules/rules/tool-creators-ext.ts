@@ -1,4 +1,5 @@
 import { useSettingsDialog } from "../../utils/dialog";
+import { getString } from "../../utils/locale";
 import { defineRule } from "./rule-base";
 
 interface CreatorExt extends _ZoteroTypes.Item.Creator {
@@ -97,10 +98,10 @@ export const ToolCreatorsExt = defineRule<CreatorExtOptions> ({
     item.setCreators(creatorsExt);
   },
 
-  async prepare() {
-    const { dialog, openForSettings } = useSettingsDialog<CreatorExtOptions>();
+  async prepare({ signal }) {
+    const { dialog, openForSettings } = useSettingsDialog<CreatorExtOptions>(signal);
     dialog
-      .addSetting("标记符号：", "mark", {
+      .addSetting(getString("tool-creators-mark"), "mark", {
         tag: "select",
         children: KNOWN_SYMBOLS.map(mark => ({
           tag: "option",
@@ -111,16 +112,16 @@ export const ToolCreatorsExt = defineRule<CreatorExtOptions> ({
         }),
         ),
       })
-      .addSetting("国籍：", "country", {
+      .addSetting(getString("tool-creators-country"), "country", {
         tag: "input",
         attributes: {
           type: "text",
           name: "country",
-          placeholder: "Default is extra.creatorsExt",
+          placeholder: getString("tool-creators-country-hint"),
         },
       });
 
-    const result = await openForSettings("作者扩展信息");
+    const result = await openForSettings(getString("tool-creators-title"));
     return result;
   },
 

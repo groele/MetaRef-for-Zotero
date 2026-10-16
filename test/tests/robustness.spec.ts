@@ -410,7 +410,7 @@ describe("data processing resilience in Zotero", function () {
           } });
           return [bad];
         }
-        return [{ itemType: "journalArticle", title: "replacement title", publicationTitle: "QA Journal", creators: [], accessDate: "invalid-date", volume: { invalid: true }, libraryCatalog: "QA service" }];
+        return [{ itemType: "journalArticle", title: "replacement title", DOI: "10.1234/qa", date: "2026", publicationTitle: "QA Journal", creators: [], accessDate: "invalid-date", volume: { invalid: true }, libraryCatalog: "QA service" }];
       }
     };
     try {
@@ -445,7 +445,7 @@ describe("data processing resilience in Zotero", function () {
       setTranslator() {}
       async getTranslators() { return [{}]; }
       async translate() {
-        return [{ itemType: "preprint", title: "service title", abstractNote: "new abstract", creators: [{ creatorType: "author", lastName: "New author" }] }];
+        return [{ itemType: "preprint", title: "service title", DOI: "10.1234/type-qa", date: "2026", publicationTitle: "QA Journal", abstractNote: "new abstract", creators: [{ creatorType: "author", lastName: "New author" }] }];
       }
     };
     pref("rule.tool-update-metadata.option.slient", true);

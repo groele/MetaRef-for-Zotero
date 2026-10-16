@@ -1,3 +1,5 @@
+import { requestCachedGET } from "../../utils/http";
+import { getString } from "../../utils/locale";
 import { defineRule } from "./rule-base";
 
 export const CorrectDOILong = defineRule({
@@ -5,7 +7,7 @@ export const CorrectDOILong = defineRule({
   scope: "field",
   targetItemField: "DOI",
   cooldown: 20, //  The rate limit is 50 requests per second.
-  async apply({ item, debug, report }) {
+  async apply({ item, debug, report, signal }) {
     const doi = item.getField("DOI");
     if (!doi)
       return;
@@ -16,7 +18,7 @@ export const CorrectDOILong = defineRule({
 
     if (/^10\/\S+$/.test(cleanDOI)) {
       debug("ShortDOI detected, resolving to long DOI");
-      const result = await makeRequest(cleanDOI);
+      const result = await makeRequest(cleanDOI, signal);
       const longDOI = getLongDOI(result);
       if (longDOI) {
         item.setField("DOI", longDOI);
@@ -25,20 +27,20 @@ export const CorrectDOILong = defineRule({
       else {
         report({
           level: "error",
-          message: "This Short DOI is not resolvable.",
+          message: getString("rule-doi-unresolvable"),
         });
       }
     }
     else {
       debug("LongDOI detected, trying to validate long DOI");
-      const result = await makeRequest(cleanDOI);
+      const result = await makeRequest(cleanDOI, signal);
       if (validateLongDOI(result)) {
         debug("LongDOI validated");
       }
       else {
         report({
           level: "error",
-          message: "This DOI is not resolvable.",
+          message: getString("rule-doi-unresolvable"),
         });
       }
     }
@@ -52,11 +54,11 @@ const ErrorCodeMessage: Record<number, string> = {
   200: "Values Not Found. The Handle Record exists but the required elements do not exist.",
 };
 
-async function makeRequest(doi: string): Promise<Result> {
+async function makeRequest(doi: string, signal?: AbortSignal): Promise<Result> {
   const url = `https://doi.org/api/handles/${encodeURIComponent(doi)}`;
-  const req = await Zotero.HTTP.request("GET", url, {
+  const req = await requestCachedGET(url, {
     responseType: "json",
-  });
+  }, signal);
 
   if (req.status !== 200) {
     throw new Error(`DOI API request failed: ${req.status}`);

@@ -1,3 +1,4 @@
+import { getString } from "../../utils/locale";
 import { defineRule } from "./rule-base";
 
 export const RequireCreators = defineRule({
@@ -9,7 +10,7 @@ export const RequireCreators = defineRule({
     if (!creators.length) {
       report({
         level: "error",
-        message: "Creators is required",
+        message: getString("rule-require-creators-missing"),
       });
     }
   },

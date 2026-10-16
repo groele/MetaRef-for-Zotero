@@ -22,7 +22,7 @@ export function closeAllDialogs() {
   pendingLoadResolvers.clear();
 }
 
-export function useDialog<T extends DialogHelper | SettingsDialogHelper>(dialog: T): {
+export function useDialog<T extends DialogHelper | SettingsDialogHelper>(dialog: T, signal?: AbortSignal): {
   dialog: T;
   openAndWaitClose: (title: string) => Promise<void>;
   close: () => void;
@@ -48,11 +48,14 @@ export function useDialog<T extends DialogHelper | SettingsDialogHelper>(dialog:
   let id: string;
 
   async function openAndWaitClose(title: string) {
+    signal?.throwIfAborted();
     id = `${kebabCase(title)}-${Zotero.Utilities.randomString()}`;
 
     logger.debug(`opening dialog ${id}...`);
     dialog.open(title);
     const window = dialog.window;
+    const abort = () => window.close();
+    signal?.addEventListener("abort", abort, { once: true });
     let resolveClosed!: () => void;
     const closed = new Promise<void>((resolve) => {
       resolveClosed = resolve;
@@ -86,6 +89,7 @@ export function useDialog<T extends DialogHelper | SettingsDialogHelper>(dialog:
       await closed;
     }
     finally {
+      signal?.removeEventListener("abort", abort);
       Services.ww.unregisterNotification(observer);
       pendingDialogs.delete(window);
       pendingLoadResolvers.delete(window);
@@ -119,13 +123,13 @@ type SafeSettingsDialogHelper<T extends SettingsDialogResult> = Omit<
   "setSettingHandlers" | "addAutoSaveButton" | "saveAllSettings"
 >;
 
-export function useSettingsDialog<T extends SettingsDialogResult>(): {
+export function useSettingsDialog<T extends SettingsDialogResult>(signal?: AbortSignal): {
   dialog: SafeSettingsDialogHelper<T>;
   openForSettings: (title: string) => Promise<T | false>;
 } {
   const data = {} as SettingsDialogResult;
   let accepted = false;
-  const { dialog, openAndWaitClose } = useDialog(new ztoolkit.SettingsDialog() as SettingsDialog<T>);
+  const { dialog, openAndWaitClose } = useDialog(new ztoolkit.SettingsDialog() as SettingsDialog<T>, signal);
 
   dialog
     .setSettingHandlers(

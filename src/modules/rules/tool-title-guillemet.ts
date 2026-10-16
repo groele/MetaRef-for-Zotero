@@ -1,5 +1,6 @@
 // autocorrect-disable -- autocorrect mismark of `《》`
 import { useSettingsDialog } from "../../utils/dialog";
+import { getString } from "../../utils/locale";
 import { getActualField } from "../../utils/zotero";
 import { defineRule } from "./rule-base";
 
@@ -46,30 +47,30 @@ export const ToolTitleGuillemet = defineRule<TitleGuillemetOptions> ({
     }
   },
 
-  async prepare() {
-    const { dialog, openForSettings } = useSettingsDialog<TitleGuillemetOptions>();
+  async prepare({ signal }) {
+    const { dialog, openForSettings } = useSettingsDialog<TitleGuillemetOptions>(signal);
 
-    dialog.addSetting("Select your guillemet:", "target", {
+    dialog.addSetting(getString("tool-guillemet-choice"), "target", {
       tag: "select",
       children: [
         {
           tag: "option",
           properties: {
             value: "double",
-            innerHTML: "Single 〈〉 to Double 《》",
+            textContent: getString("tool-guillemet-double"),
           },
         },
         {
           tag: "option",
           properties: {
             value: "single",
-            innerHTML: "Double 《》 to Single 〈〉",
+            textContent: getString("tool-guillemet-single"),
           },
         },
       ],
     });
 
-    const result = await openForSettings("Select Guillemet");
+    const result = await openForSettings(getString("tool-guillemet-title"));
     if (result) {
       return { target: result.target };
     }

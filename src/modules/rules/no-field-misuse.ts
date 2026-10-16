@@ -1,3 +1,4 @@
+import { getString } from "../../utils/locale";
 import { getUsedItemFields } from "../../utils/zotero";
 import { defineRule } from "./rule-base";
 
@@ -13,7 +14,7 @@ import { defineRule } from "./rule-base";
 export const NoFieldMisuse = defineRule({
   id: "no-field-misuse",
   scope: "item",
-  apply({ item, debug }) {
+  apply({ item, report }) {
     const fields = getUsedItemFields(item);
 
     for (const field of fields) {
@@ -25,7 +26,7 @@ export const NoFieldMisuse = defineRule({
       if (field === "extra")
         continue;
 
-      let cleaned = value;
+      let suspicious = false;
 
       switch (field) {
         // Some plugins use shortTitle to store the translated title
@@ -34,11 +35,11 @@ export const NoFieldMisuse = defineRule({
           const title = (item.getField("title") || "").trim();
           const hasCjkTitle = /[\u4E00-\u9FA5]/.test(title);
           const hasCjkShort = /[\u4E00-\u9FA5]/.test(value);
-          // If title is non-Chinese but shortTitle contains Chinese, it's a translated title
+          // A different language may indicate a translation, but does not prove misuse.
           const isTranslatedTitle = !hasCjkTitle && hasCjkShort;
 
           if (hasEmoji(value) || isTranslatedTitle) {
-            cleaned = "";
+            suspicious = true;
           }
           break;
         }
@@ -52,7 +53,7 @@ export const NoFieldMisuse = defineRule({
             || value === "EI"
             || (!/ESI/i.test(value) && /\bSCIE?\b/i.test(value))
           ) {
-            cleaned = "";
+            suspicious = true;
           }
 
           break;
@@ -77,7 +78,7 @@ export const NoFieldMisuse = defineRule({
             // 北大核心 / 南大核心 / CSCD 核心库
             || /核心/.test(value)
           ) {
-            cleaned = "";
+            suspicious = true;
             break;
           }
 
@@ -85,7 +86,7 @@ export const NoFieldMisuse = defineRule({
 
         case "abstractNote":
           if (value.match("摘要翻译")) {
-            cleaned = value.replace(/【?摘要翻译[\s\S]*$/, "").trim();
+            suspicious = true;
           }
           break;
 
@@ -93,10 +94,8 @@ export const NoFieldMisuse = defineRule({
           break;
       }
 
-      if (cleaned !== value) {
-        debug(`Field '${field}' was cleaned from '${value}' to '${cleaned}'`);
-        item.setField(field, cleaned);
-      }
+      if (suspicious)
+        report({ level: "warning", message: getString("rule-no-field-misuse-review", { args: { field, value } }) });
     }
   },
 });

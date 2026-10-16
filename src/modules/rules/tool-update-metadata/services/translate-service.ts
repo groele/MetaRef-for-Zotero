@@ -55,6 +55,7 @@ export const ItemTranslateService = defineService({
 
 export const IdentifiersTranslateService = defineService({
   id: "identifiers-translate-service",
+  lookup: "identifier",
   name: "Identifiers Translate Service",
   cooldown: 100,
   shouldApply: (): boolean => true,
@@ -70,6 +71,7 @@ export const IdentifiersTranslateService = defineService({
 
 export const URLTranslateService = defineService({
   id: "url-translate-service",
+  lookup: "url",
   name: "Web Translate Service",
   cooldown: 100,
   shouldApply: ({ identifiers }) => !!identifiers.URL,

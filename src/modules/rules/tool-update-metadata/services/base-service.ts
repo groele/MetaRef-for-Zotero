@@ -1,6 +1,6 @@
 import type { ApplyContext } from "../../rule-base";
 import type { Identifiers } from "../identifiers";
-import { withThrottle } from "../../../../utils/throttle";
+import { abortableDelay } from "../../../../utils/rule-execution";
 import { Rule } from "../../rule-base";
 
 type MetadataResponse = Record<string, any>;
@@ -24,7 +24,8 @@ export interface MetadataContext {
 export interface MetadataService<T extends MetadataResponse> {
   id: string;
   name: string;
-  /** @todo unimplemented */
+  /** How this adapter binds a response to the requested work. Contradictory DOIs are still rejected. */
+  lookup?: "identifier" | "url";
   supportedItemTypes?: string[];
   /** @see {@link Rule.cooldown}   */
   cooldown: number;
@@ -53,10 +54,22 @@ export interface MetadataService<T extends MetadataResponse> {
 }
 
 export function defineService<T extends MetadataResponse>(service: MetadataService<T>) {
-  const run = withThrottle(<Result>(fn: (ctx: MetadataContext) => Promise<Result>, ctx: MetadataContext) => {
-    ctx.signal?.throwIfAborted();
-    return fn(ctx);
-  }, service.cooldown);
+  let slots: Promise<void> = Promise.resolve();
+  let lastStart = Number.NEGATIVE_INFINITY;
+  const run = <Result>(fn: (ctx: MetadataContext) => Promise<Result>, ctx: MetadataContext) => {
+    const slot = slots.then(async () => {
+      ctx.signal?.throwIfAborted();
+      const wait = Math.max(0, lastStart + service.cooldown - Date.now());
+      if (wait)
+        await abortableDelay(wait, ctx.signal);
+      lastStart = Date.now();
+    });
+    slots = slot.catch(() => {});
+    return slot.then(() => {
+      ctx.signal?.throwIfAborted();
+      return fn(ctx);
+    });
+  };
   const guard = <Result>(fn?: (ctx: MetadataContext) => Promise<Result>) => fn && ((ctx: MetadataContext) => run(fn, ctx));
   service.fetch = guard(service.fetch);
   service.updateIdentifiers = guard(service.updateIdentifiers);

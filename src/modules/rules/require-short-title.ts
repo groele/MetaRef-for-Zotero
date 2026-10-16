@@ -24,8 +24,8 @@ export const RequireShortTitle = defineRule({
     // multiple colons and dashes accurately, skip items
     // that already include a shortTitle.
     const shortTitle = item.getField("shortTitle");
-    if (shortTitle && title.startsWith(shortTitle)) {
-      debug("shortTitle field already contains the main title, skip.");
+    if (shortTitle) {
+      debug("shortTitle already contains a value, preserve it.");
       return;
     }
 

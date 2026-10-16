@@ -61,6 +61,20 @@ describe("menu module", () => {
       vi.unstubAllGlobals();
     }
   });
+  it("updates metadata without implicitly running standard formatters", async () => {
+    try {
+      const root = registered();
+      const run = vi.fn();
+      (addon as any).hooks = { onLintInBatch: run };
+      const command = root.menus.find((menu: any) => menu.l10nID === "metaref-rule-tool-update-metadata-menu-item");
+      await command.onCommand(new Event("command"), { items: [] });
+      expect(run).toHaveBeenCalledWith(["tool-update-metadata"], []);
+    }
+    finally {
+      unregisterMenu();
+      vi.unstubAllGlobals();
+    }
+  });
   describe("shouldShowSeparator", () => {
     it("returns true when current section and subsequent section both have visible items", () => {
       const current = ["a", "b"];

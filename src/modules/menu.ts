@@ -5,7 +5,6 @@ import { presentJournalInsights } from "../utils/journal-insights-presentation";
 import { getLocaleID, getString } from "../utils/locale";
 import { logger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
-import { refreshJournalInsights } from "./journal-pane";
 import { createReporter } from "./reporter";
 import { Rules } from "./rules";
 
@@ -144,7 +143,6 @@ function registerItemMenus() {
           return;
         const items = await menuItems(context);
         if (indexing) {
-          await refreshJournalInsights();
           const infos = await Promise.all(items.filter(item => item.isRegularItem() && !item.deleted && item.itemType === "journalArticle").map(async (item) => {
             const result = await getJournalInsights(item);
             const row = presentJournalInsights(result, Zotero.locale)[key === "tool-query-esi" ? 0 : 1];
@@ -154,11 +152,9 @@ function registerItemMenus() {
             void createReporter(infos).catch(error => logger.error("Journal report failed:", error));
           return;
         }
-        const rules = key === "tool-update-metadata"
-          ? ["tool-update-metadata", "standard"] as const
-          : key === "correct-date-format"
-            ? ["correct-date-format", "correct-filing-date-format", "correct-issue-date-format", "correct-priority-date-format"] as const
-            : [key as ID | "standard"];
+        const rules = key === "correct-date-format"
+          ? ["correct-date-format", "correct-filing-date-format", "correct-issue-date-format", "correct-priority-date-format"] as const
+          : [key as ID | "standard"];
         await addon.hooks.onLintInBatch([...rules], items);
       },
     };

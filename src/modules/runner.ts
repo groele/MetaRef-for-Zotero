@@ -1,11 +1,13 @@
 import type { Arrayable } from "../utils/types";
-import type { ReportInfo } from "./reporter";
+import type { FieldChange, ReportInfo } from "./reporter";
 import type { ApplyContext, PrepareContext, Rule } from "./rules/rule-base";
 import { DataLoader } from "../utils/data-loader";
 import { toArray } from "../utils/general";
+import { ItemMutationJournal } from "../utils/item-mutation-journal";
+import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
-import { executeRule, normalizedConcurrency } from "../utils/rule-execution";
+import { executeRule, normalizedConcurrency, waitForOperation } from "../utils/rule-execution";
 import { isFieldValidForItemType } from "../utils/zotero";
 import { createReporter, ProgressUI } from "./reporter";
 import { Rules } from "./rules";
@@ -32,6 +34,11 @@ export interface BatchResult {
   skipped: number;
   preparationFailed: number;
   records: ReportInfo[];
+  changes: FieldChange[];
+  changed: number;
+  unchanged: number;
+  notApplicable: number;
+  warnings: number;
 }
 
 function shouldApplyRule(rule: Rule<any>, item: Zotero.Item): boolean {
@@ -94,9 +101,14 @@ export class LintRunner {
   private modifiedItems = new Set<Zotero.Item>();
   private runningQueue: Promise<void> = Promise.resolve();
   private cancelled = false;
+  private preparation?: AbortController;
   private saved = 0;
   private failedItems = new Set<number | Zotero.Item>();
+  private unsafeItems = new Set<Zotero.Item>();
   private preparationFailed = 0;
+  private changes: FieldChange[] = [];
+  private savedIDs = new Set<number>();
+  private applicableIDs = new Set<number>();
   private lastProgressTime = 0;
   private lastProgressPhase?: RunnerStats["phase"];
   public lastResult?: BatchResult;
@@ -106,6 +118,7 @@ export class LintRunner {
 
   public cancel(): void {
     this.cancelled = true;
+    this.preparation?.abort(new Error("Batch cancelled"));
   }
 
   public async stop(): Promise<void> {
@@ -200,12 +213,15 @@ export class LintRunner {
     for (const rule of rules) {
       if (this.cancelled)
         break;
+      const controller = new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController();
+      this.preparation = controller;
       try {
         const ctx: PrepareContext = {
           items,
           debug: (...a) => logger.debug(`[prepare] [${rule.id}]`, ...a),
+          signal: controller.signal,
         };
-        const options = await rule.prepare?.(ctx) ?? {};
+        const options = await waitForOperation(() => rule.prepare?.(ctx), controller.signal, rule.prepareTimeout ?? (rule.category === "tool" ? 0 : 60_000)) ?? {};
         optionsMap.set(rule.id, options);
         if (options === false && rule.category === "tool") {
           this.cancel();
@@ -213,17 +229,23 @@ export class LintRunner {
         }
       }
       catch (err) {
+        controller.abort(err);
+        if (this.cancelled)
+          break;
         this.preparationFailed++;
         this.stats.records.push({
           message: err instanceof Error ? err.message : String(err),
           level: "error",
           itemID: 0,
-          title: "Prepare failed",
+          title: getString("report-prepare-failed"),
           ruleID: rule.id,
         });
         logger.error(`Failed to prepare rule ${rule.id}:`, err);
 
         optionsMap.set(rule.id, false);
+      }
+      finally {
+        this.preparation = undefined;
       }
     }
 
@@ -245,10 +267,15 @@ export class LintRunner {
     optionsMap: Map<string, any>,
   ) {
     logger.debug(`Linting item ${item.id}`);
+    if (this.unsafeItems.has(item)) {
+      await item.reload(["primaryData", "itemData", "creators", "tags", "collections", "relations"], true);
+      this.unsafeItems.delete(item);
+    }
     const errors: any[] = [];
+    const original = JSON.stringify(item.toJSON());
 
     for (const rule of rules) {
-      if (this.cancelled)
+      if (this.cancelled || this.unsafeItems.has(item))
         break;
       if (!optionsMap.has(rule.id))
         continue;
@@ -261,8 +288,10 @@ export class LintRunner {
       // We expect one rule's error does not affect next rule apply,
       // so we eat any error here and throw them after all rules applied.
       await Promise.resolve().then(() => {
-        if (shouldApplyRule(rule, item))
+        if (shouldApplyRule(rule, item)) {
+          this.applicableIDs.add(item.id);
           return this.applyRule(item, rule, options);
+        }
       }).catch((error) => {
         let message: string = "";
         // Zotero.HTTP.request error, the message is too long, here we just show the status
@@ -289,7 +318,7 @@ export class LintRunner {
       });
     }
 
-    if (item.hasChanged()) {
+    if (!this.unsafeItems.has(item) && item.hasChanged() && JSON.stringify(item.toJSON()) !== original) {
       this.modifiedItems.add(item);
     }
 
@@ -309,12 +338,14 @@ export class LintRunner {
 
     try {
       let savedCount = 0;
+      const committedIDs: number[] = [];
       await Zotero.DB.executeTransaction(async () => {
         for (const item of items) {
           if (!item.hasChanged())
             continue;
           await item.save({ skipSelect: true });
           savedCount++;
+          committedIDs.push(item.id);
           this.updateProgress(savedCount, items.length);
         }
         if (savedCount > 0) {
@@ -326,6 +357,7 @@ export class LintRunner {
         }
       });
       this.saved = savedCount;
+      committedIDs.forEach(id => this.savedIDs.add(id));
     }
     catch (err) {
       logger.warn("Batch transaction save failed, falling back to individual saveTx:", err);
@@ -337,6 +369,7 @@ export class LintRunner {
           item.fromJSON(snapshots.get(item)!, { strict: true });
           await item.saveTx({ skipSelect: true, ...{ undoAction: "metaref-undo-action-lint-metadata", undoActionArgs: { count: 1 } } });
           this.saved++;
+          this.savedIDs.add(item.id);
         }
         catch (itemErr) {
           this.stats.records.push({
@@ -357,35 +390,66 @@ export class LintRunner {
 
   public async applyRule(item: Zotero.Item, rule: Rule<any>, options: any) {
     logger.debug(`Applying ${rule.id}`);
-
-    await executeRule(item, async (guardedItem, signal) => {
-      let acceptingReports = true;
-      const ctx: ApplyContext = {
-        item: guardedItem,
-        options,
-        signal,
-        debug: (...a) => createLogger(rule.id).debug(...a),
-        report: (info) => {
-          if (signal.aborted || !acceptingReports)
-            return;
-          if (info.level === "error")
-            this.failedItems.add(item.id || item);
-          this.stats.records.push({
-            ...info,
-            itemID: item.id,
-            title: item.getDisplayTitle(),
-            ruleID: rule.id,
-          });
-        },
-      };
-
+    let ruleFailed = false;
+    const sources = new Map<string, string>();
+    const journal = new ItemMutationJournal(item);
+    const restore = async () => {
       try {
-        await rule.apply(ctx);
+        journal.restore();
       }
-      finally {
-        acceptingReports = false;
+      catch (error) {
+        this.unsafeItems.add(item);
+        this.failedItems.add(item.id || item);
+        this.stats.records.push({ itemID: item.id, title: item.getDisplayTitle(), ruleID: rule.id, level: "error", message: getString("rule-rollback-failed") });
+        await item.reload(["primaryData", "itemData", "creators", "tags", "collections", "relations"], true);
+        throw error;
       }
-    }, rule.timeout ?? 60_000, () => new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController());
+    };
+    try {
+      await executeRule(item, async (guardedItem, signal) => {
+        let acceptingReports = true;
+        const ctx: ApplyContext = {
+          item: guardedItem,
+          options,
+          signal,
+          debug: (...a) => createLogger(rule.id).debug(...a),
+          report: (info) => {
+            if (signal.aborted || !acceptingReports)
+              return;
+            if (info.level === "error") {
+              ruleFailed = true;
+              this.failedItems.add(item.id || item);
+            }
+            if (info.field && info.source)
+              sources.set(info.field, info.source);
+            this.stats.records.push({
+              ...info,
+              itemID: item.id,
+              title: item.getDisplayTitle(),
+              ruleID: rule.id,
+            });
+          },
+        };
+
+        try {
+          await rule.apply(ctx);
+        }
+        finally {
+          acceptingReports = false;
+        }
+      }, rule.timeout ?? 60_000, () => new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController(), journal.capture);
+    }
+    catch (error) {
+      await restore();
+      throw error;
+    }
+    if (ruleFailed) {
+      await restore();
+    }
+    else {
+      for (const change of journal.changes())
+        this.changes.push({ ...change, itemID: item.id, ruleID: rule.id, source: sources.get(change.field), saved: false });
+    }
   }
 
   public async applyRuleByID(item: Zotero.Item, ruleID: ID, options: any) {
@@ -423,6 +487,9 @@ export class LintRunner {
     this.lastProgressTime = 0;
     this.lastProgressPhase = undefined;
     this.failedItems.clear();
+    this.changes = [];
+    this.savedIDs.clear();
+    this.applicableIDs.clear();
     if (!this.stats.startTime)
       this.stats.startTime = Date.now();
     logger.debug(`Add tasks at ${new Date().toLocaleTimeString()}`);
@@ -433,6 +500,7 @@ export class LintRunner {
       return;
 
     const duration = (Date.now() - this.stats.startTime) / 1000;
+    const changed = new Set(this.changes.map(change => change.itemID)).size;
     this.lastResult = {
       total: this.stats.total,
       processed: this.stats.current,
@@ -443,6 +511,11 @@ export class LintRunner {
       skipped: this.stats.total - this.stats.current,
       preparationFailed: this.preparationFailed,
       records: [...this.stats.records],
+      changes: this.changes.map(change => ({ ...change, saved: this.savedIDs.has(change.itemID) })),
+      changed,
+      unchanged: this.stats.current - changed,
+      notApplicable: this.stats.current - this.applicableIDs.size,
+      warnings: this.stats.records.filter(record => record.level === "warning").length,
     };
     // Release batch state before opening UI, which may fail when a window closes.
     this.modifiedItems.clear();
@@ -451,9 +524,9 @@ export class LintRunner {
     logger.debug(`Batch tasks completed in ${duration}s`);
     if (addon.data.alive) {
       try {
-        this.ui.showFinished(this.lastResult.passed, this.lastResult.failed, duration, this.cancelled, this.lastResult.skipped, this.preparationFailed);
+        this.ui.showFinished(this.lastResult.passed, this.lastResult.failed, duration, this.cancelled, this.lastResult.skipped, this.preparationFailed, this.lastResult);
         if (!silent && this.lastResult.records.length)
-          createReporter(this.lastResult.records).catch(error => logger.error("Failed to display batch report:", error));
+          createReporter(this.lastResult.records, this.lastResult.changes).catch(error => logger.error("Failed to display batch report:", error));
       }
       catch (error) {
         logger.error("Failed to display batch results:", error);

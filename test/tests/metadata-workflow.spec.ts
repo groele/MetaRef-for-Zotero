@@ -287,6 +287,9 @@ describe("metadata workflow in Zotero", function () {
     assert.equal(editor.value, "<sub><i>2</i></sub>");
     plugin().hooks.onShortcuts("subscript", win);
     assert.equal(editor.value, "<i>2</i>");
+    editor.setSelectionRange(0, 0);
+    plugin().hooks.onShortcuts("subscript", win);
+    assert.equal(editor.value, "<i>2</i>", "a collapsed selection never inserts empty markup");
     editor.value = "H2O";
     editor.dispatchEvent(new win.Event("input", { bubbles: true }));
     editor.blur();

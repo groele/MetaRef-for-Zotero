@@ -1,3 +1,4 @@
+import { getString } from "../../utils/locale";
 import { getUsedItemFields } from "../../utils/zotero";
 import { defineRule } from "./rule-base";
 
@@ -13,10 +14,12 @@ const NULLISH_VALUES = new Set([
   "none",
 ]);
 
+const PLACEHOLDER_FIELDS = new Set(["DOI", "ISBN", "ISSN", "volume", "issue", "pages", "edition", "numPages", "numberOfVolumes"]);
+
 export const NoValueNullish = defineRule({
   id: "no-value-nullish",
   scope: "item",
-  apply({ item }) {
+  apply({ item, report }) {
     const fields = getUsedItemFields(item);
 
     for (const field of fields) {
@@ -27,12 +30,11 @@ export const NoValueNullish = defineRule({
       const trimmed = value.trim();
       const lower = trimmed.toLowerCase();
 
-      // Protect short legitimate titles such as "无"
-      if (field === "title" && trimmed === "无")
-        continue;
-
       if (NULLISH_VALUES.has(lower) || trimmed === "无") {
-        item.setField(field, "");
+        if (PLACEHOLDER_FIELDS.has(field))
+          item.setField(field, "");
+        else
+          report({ level: "warning", message: getString("rule-no-value-nullish-review", { args: { field, value } }) });
       }
     }
   },

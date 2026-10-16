@@ -1,3 +1,5 @@
+import { requestCachedGET } from "../../utils/http";
+import { getString } from "../../utils/locale";
 import { defineRule } from "./rule-base";
 
 /**
@@ -25,16 +27,16 @@ export const ToolGetShortDOI = defineRule({
   targetItemTypes: ["journalArticle", "conferencePaper"],
   cooldown: 20, //  The rate limit is 50 requests per second.
 
-  async apply({ item, report, debug }) {
+  async apply({ item, report, debug, signal }) {
     const doi = item.getField("DOI");
     if (!doi || typeof doi !== "string") {
-      report({ level: "warning", message: "Item has no DOI" });
+      report({ level: "warning", message: getString("rule-doi-missing") });
       return;
     }
 
     const cleanDOI = Zotero.Utilities.cleanDOI(doi);
     if (!cleanDOI) {
-      report({ level: "warning", message: "DOI is invalid" });
+      report({ level: "warning", message: getString("rule-doi-invalid") });
       return;
     }
 
@@ -44,10 +46,10 @@ export const ToolGetShortDOI = defineRule({
     }
 
     const url = `https://shortdoi.org/${encodeURIComponent(cleanDOI)}?format=json`;
-    const req = await Zotero.HTTP.request("GET", url);
+    const req = await requestCachedGET(url, {}, signal);
 
     if (req.status !== 200) {
-      report({ level: "warning", message: `ShortDOI request failed: ${req.status}` });
+      report({ level: "warning", message: getString("rule-short-doi-failed", { args: { status: req.status } }) });
       return;
     }
 
@@ -61,7 +63,7 @@ export const ToolGetShortDOI = defineRule({
       await ztoolkit.ExtraField.setExtraField(item, "short-doi", json.ShortDOI, { save: false });
     }
     else {
-      report({ level: "warning", message: "ShortDOI not found in response" });
+      report({ level: "warning", message: getString("rule-short-doi-empty") });
     }
   },
 });

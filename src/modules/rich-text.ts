@@ -192,6 +192,7 @@ export class RichTextToolBar {
   private observer?: MutationObserver;
   private closeTimer?: number;
   private openTimer?: number;
+  private selectionCleanups = new Map<HTMLTextAreaElement, () => void>();
 
   constructor(private window: Window) {
     this.buttonManager = new ButtonManager(window);
@@ -316,6 +317,14 @@ export class RichTextToolBar {
       textarea.addEventListener("mouseup", remember);
       textarea.addEventListener("keydown", remember, true);
       selectionCaptureAttached.add(textarea);
+      this.selectionCleanups.set(textarea, () => {
+        textarea.removeEventListener("blur", remember, true);
+        textarea.removeEventListener("select", remember);
+        textarea.removeEventListener("keyup", remember);
+        textarea.removeEventListener("mouseup", remember);
+        textarea.removeEventListener("keydown", remember, true);
+        selectionCaptureAttached.delete(textarea);
+      });
     }
     if (getPref("richtext.toolBar", true))
       this.buttonManager.attachToolbar(textarea);
@@ -334,6 +343,9 @@ export class RichTextToolBar {
   clean(): void {
     this.window.clearTimeout(this.closeTimer);
     this.observer?.disconnect();
+    for (const cleanup of this.selectionCleanups.values())
+      cleanup();
+    this.selectionCleanups.clear();
     this.window.document.removeEventListener("focusin", this.onFocusIn, true);
     this.window.document.removeEventListener("focusout", this.onFocusOut, true);
     this.window.document.removeEventListener("click", this.onClick, true);
@@ -393,22 +405,16 @@ export function setHtmlTag(tag: string, attribute?: string, value?: string, win:
   const closeTag = `</${tag}>`;
   const wasWrapped = start !== end && isSingleOuterTag(text.slice(start, end), tag, openTag);
 
-  if (start === end) {
-    const emptyTag = `${openTag}${closeTag}`;
-    textarea.setRangeText(emptyTag, start, end, "end");
-    const newPos = start + openTag.length;
-    textarea.setSelectionRange(newPos, newPos);
+  if (start === end)
+    return;
+  let selectedText = text.slice(start, end);
+  if (wasWrapped) {
+    selectedText = selectedText.slice(openTag.length, -closeTag.length);
   }
   else {
-    let selectedText = text.slice(start, end);
-    if (wasWrapped) {
-      selectedText = selectedText.slice(openTag.length, -closeTag.length);
-    }
-    else {
-      selectedText = `${openTag}${selectedText}${closeTag}`;
-    }
-    textarea.setRangeText(selectedText, start, end, "select");
+    selectedText = `${openTag}${selectedText}${closeTag}`;
   }
+  textarea.setRangeText(selectedText, start, end, "select");
 
   textarea.style.height = "auto";
   if (textarea.scrollHeight > 0)

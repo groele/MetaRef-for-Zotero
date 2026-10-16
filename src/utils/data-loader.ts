@@ -43,12 +43,19 @@ export class DataLoader {
       const data = await this.load("journalAbbr");
       const abbrMap = new Map<string, string>();
       const titleMap = new Map<string, string>();
+      const ambiguous = new Set<string>();
       for (const [title, abbr] of Object.entries(data)) {
         const normalized = normalizeKey(title);
+        if (abbrMap.has(normalized) && abbrMap.get(normalized) !== abbr)
+          ambiguous.add(normalized);
         if (abbr && !abbrMap.has(normalized))
           abbrMap.set(normalized, abbr);
         if (!titleMap.has(normalized))
           titleMap.set(normalized, title);
+      }
+      for (const key of ambiguous) {
+        abbrMap.delete(key);
+        titleMap.delete(key);
       }
       return { abbrMap, titleMap };
     }, true);
@@ -58,11 +65,16 @@ export class DataLoader {
     return this.derived("conference-abbr", async () => {
       const data = await this.load("conferencesAbbr");
       const map = new Map<string, string>();
+      const ambiguous = new Set<string>();
       for (const [name, abbr] of Object.entries(data)) {
         const normalized = normalizeKey(name);
+        if (map.has(normalized) && map.get(normalized) !== abbr)
+          ambiguous.add(normalized);
         if (abbr && !map.has(normalized))
           map.set(normalized, abbr);
       }
+      for (const key of ambiguous)
+        map.delete(key);
       return map;
     }, true);
   }
