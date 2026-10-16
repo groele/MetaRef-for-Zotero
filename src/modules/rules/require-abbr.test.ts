@@ -160,4 +160,17 @@ describe("custom abbreviation data and rule integration", () => {
     await CorrectConferenceAbbr.apply(ctx);
     expect(setExtraField).toHaveBeenCalledWith(ctx.item, "shortConferenceName", "ICW", { save: false });
   });
+
+  it.each(["builtin", "iso4"])("does not read unused custom data in journal %s mode while retaining conference support", async (mode) => {
+    read.mockResolvedValue("{\"Custom Conference\":\"CC\"}");
+    vi.stubGlobal("Zotero", {
+      File: { getContentsAsync: read },
+      Prefs: { get: (key: string) => key.endsWith(".customDataPath") ? "unused.json" : key.endsWith(".sourceMode") ? mode : undefined },
+    });
+    const context = { items: [], debug: vi.fn() };
+    await RequireJournalAbbr.prepare!(context);
+    expect(read).not.toHaveBeenCalled();
+    await CorrectConferenceAbbr.prepare!(context);
+    expect(read).toHaveBeenCalledTimes(1);
+  });
 });

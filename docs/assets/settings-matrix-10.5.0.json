@@ -1,0 +1,3746 @@
+{
+  "scope": "Static source integrity only; excludes real provider availability and permissions.",
+  "defaultCount": 263,
+  "staticControlCount": 118,
+  "missingDefaults": [],
+  "duplicateStaticBindings": [],
+  "unresolvedVisibleBindings": [],
+  "generatedControls": {
+    "implementation": "src/modules/preference.ts and src/modules/workflow-settings.ts",
+    "verification": "Live settings tests click generated fields, columns, menu and workflow controls."
+  },
+  "preferences": [
+    {
+      "key": "cleanExtra",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "legacy-hidden",
+        "references": []
+      }
+    },
+    {
+      "key": "easyscholar.autoUpdateOnAdded",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "easyscholar.autoUpdateOnAdded",
+          "element": "checkbox",
+          "label": "easyscholar-auto-update-on-added",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:184"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.clearExtraBeforeUpdate",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "easyscholar.clearExtraBeforeUpdate",
+          "element": "checkbox",
+          "label": "easyscholar-clear-extra-before-update",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:271"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.abdc",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ahci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ajg",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ami",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.casBasic",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.casSmall",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.casTop",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.casUpgrade",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.casWarning",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ccf",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ccfCustom",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.cju",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.clsci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.compoundIF",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.comprehensiveIF",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.coreRankings",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.cpu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.cqu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.cscd",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.cssci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.cufe",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.cug",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ei",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.esci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.esi",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.fdu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.fms",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ft50",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.hhu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.hx",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.impactFactor",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.impactFactor5Year",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.jci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.jcr",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.newSharp",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.newSharpSmall",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.newSharpTop",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.newSharpWarning",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.njauCore",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.njauQuality",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.nju",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.nssf",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.pku",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.predatoryReports",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ruc",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.sci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.scopus",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.scu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.sdufe",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.sjtu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.ssci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.swjtu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.swufe",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.swupl",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.technologyCore",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.uibe",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.utd24",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.xdu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.xju",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.xmu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.columns.zju",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/item-tree.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.abdc",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ahci",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.ahci",
+          "element": "checkbox",
+          "label": "easyscholar-field-ahci",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ajg",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.ajg",
+          "element": "checkbox",
+          "label": "easyscholar-field-ajg",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ami",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.casBasic",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.casBasic",
+          "element": "checkbox",
+          "label": "easyscholar-field-cas-basic",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.casSmall",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.casSmall",
+          "element": "checkbox",
+          "label": "easyscholar-field-cas-small",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.casTop",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.casTop",
+          "element": "checkbox",
+          "label": "easyscholar-field-cas-top",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.casUpgrade",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.casUpgrade",
+          "element": "checkbox",
+          "label": "easyscholar-field-cas-upgrade",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.casWarning",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.casWarning",
+          "element": "checkbox",
+          "label": "easyscholar-field-cas-warning",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ccf",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.ccf",
+          "element": "checkbox",
+          "label": "easyscholar-field-ccf",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ccfCustom",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.cju",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.clsci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.compoundIF",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.comprehensiveIF",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.coreRankings",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.cpu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.cqu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.cscd",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.cscd",
+          "element": "checkbox",
+          "label": "easyscholar-field-cscd",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.cssci",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.cssci",
+          "element": "checkbox",
+          "label": "easyscholar-field-cssci",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.cufe",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.cug",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ei",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.ei",
+          "element": "checkbox",
+          "label": "easyscholar-field-ei",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.esci",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.esi",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.esi",
+          "element": "checkbox",
+          "label": "easyscholar-field-esi",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.fdu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.fms",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.fms",
+          "element": "checkbox",
+          "label": "easyscholar-field-fms",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ft50",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.ft50",
+          "element": "checkbox",
+          "label": "easyscholar-field-ft50",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.hhu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.hx",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.impactFactor",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.impactFactor",
+          "element": "checkbox",
+          "label": "easyscholar-field-if",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.impactFactor5Year",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.impactFactor5Year",
+          "element": "checkbox",
+          "label": "easyscholar-field-if5",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.jci",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.jci",
+          "element": "checkbox",
+          "label": "easyscholar-field-jci",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.jcr",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.jcr",
+          "element": "checkbox",
+          "label": "easyscholar-field-jcr",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.newSharp",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.newSharp",
+          "element": "checkbox",
+          "label": "easyscholar-field-new-sharp",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.newSharpSmall",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.newSharpSmall",
+          "element": "checkbox",
+          "label": "easyscholar-field-new-sharp-small",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.newSharpTop",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.newSharpTop",
+          "element": "checkbox",
+          "label": "easyscholar-field-new-sharp-top",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.newSharpWarning",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.newSharpWarning",
+          "element": "checkbox",
+          "label": "easyscholar-field-new-sharp-warning",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.njauCore",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.njauQuality",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.nju",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.nssf",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.pku",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.pku",
+          "element": "checkbox",
+          "label": "easyscholar-field-pku",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.predatoryReports",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ruc",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.sci",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.sci",
+          "element": "checkbox",
+          "label": "easyscholar-field-sci",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.scopus",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.scu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.sdufe",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.sjtu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.ssci",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.ssci",
+          "element": "checkbox",
+          "label": "easyscholar-field-ssci",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.swjtu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.swufe",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.swupl",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.technologyCore",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.technologyCore",
+          "element": "checkbox",
+          "label": "easyscholar-field-technology-core",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.uibe",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.utd24",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.fields.utd24",
+          "element": "checkbox",
+          "label": "easyscholar-field-utd24",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.xdu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.xju",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.xmu",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.fields.zju",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/rules/tool-update-easyscholar.ts"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.secretKey",
+      "default": "",
+      "staticControls": [
+        {
+          "key": "easyscholar.secretKey",
+          "element": "input",
+          "label": null,
+          "type": "password"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/utils/easyscholar.ts:329",
+          "src/utils/easyscholar.ts:367"
+        ]
+      }
+    },
+    {
+      "key": "easyscholar.updateAbbreviation",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "easyscholar.updateAbbreviation",
+          "element": "checkbox",
+          "label": "easyscholar-update-abbreviation",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:273"
+        ]
+      }
+    },
+    {
+      "key": "insights.esiCustomDataPath",
+      "default": "",
+      "staticControls": [
+        {
+          "key": "insights.esiCustomDataPath",
+          "element": "input",
+          "label": "rule-tool-query-esi-option-choose-custom-data-input",
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/utils/journal-insights.ts:42"
+        ]
+      }
+    },
+    {
+      "key": "insights.esiFormat",
+      "default": "{subject}ESI",
+      "staticControls": [
+        {
+          "key": "insights.esiFormat",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/utils/journal-insights.ts:162",
+          "src/utils/journal-insights.ts:189"
+        ]
+      }
+    },
+    {
+      "key": "insights.esiSourcePriority",
+      "default": "local-only",
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-source-priority",
+        "references": [
+          "src/utils/journal-insights.ts"
+        ]
+      }
+    },
+    {
+      "key": "insights.natureCustomDataPath",
+      "default": "",
+      "staticControls": [
+        {
+          "key": "insights.natureCustomDataPath",
+          "element": "input",
+          "label": "journal-database-nature-path",
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/utils/journal-insights.ts:42"
+        ]
+      }
+    },
+    {
+      "key": "insights.natureDatasetUUID",
+      "default": "",
+      "staticControls": [
+        {
+          "key": "insights.natureDatasetUUID",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/utils/easyscholar.ts:329",
+          "src/utils/easyscholar.ts:374"
+        ]
+      }
+    },
+    {
+      "key": "insights.natureSourcePriority",
+      "default": "local-only",
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-source-priority",
+        "references": [
+          "src/utils/journal-insights.ts"
+        ]
+      }
+    },
+    {
+      "key": "insights.showPane",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "insights.showPane",
+          "element": "checkbox",
+          "label": "insights-show-pane",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/journal-pane.ts:53",
+          "src/modules/journal-pane.ts:76",
+          "src/modules/journal-pane.ts:82",
+          "src/modules/journal-pane.ts:161"
+        ]
+      }
+    },
+    {
+      "key": "integration.greenfrogMigrated",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "internal-migration-state",
+        "references": [
+          "src/utils/greenfrog-migration.ts"
+        ]
+      }
+    },
+    {
+      "key": "lint.autoReport",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "lint.autoReport",
+          "element": "checkbox",
+          "label": "batch-feedback-auto-report",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/runner.ts:551"
+        ]
+      }
+    },
+    {
+      "key": "lint.delayOnAdded",
+      "default": 500,
+      "staticControls": [],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:29"
+        ]
+      }
+    },
+    {
+      "key": "lint.notify",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "lint.notify",
+          "element": "checkbox",
+          "label": "notify-on-lint",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/reporter.ts:224"
+        ]
+      }
+    },
+    {
+      "key": "lint.numConcurrent",
+      "default": 1,
+      "staticControls": [
+        {
+          "key": "lint.numConcurrent",
+          "element": "input",
+          "label": null,
+          "type": "number"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/runner.ts:207",
+          "src/modules/settings-panel.ts:58"
+        ]
+      }
+    },
+    {
+      "key": "lint.onAdded",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "lint.onAdded",
+          "element": "checkbox",
+          "label": "lint-on-item-added",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:122",
+          "src/hooks.ts:138",
+          "src/hooks.ts:191"
+        ]
+      }
+    },
+    {
+      "key": "lint.onGroup",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "lint.onGroup",
+          "element": "checkbox",
+          "label": "lint-on-groupItem-added",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:165"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-conference-abbr",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-creators-case",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-creators-pinyin",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-date-format",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-extra-order",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "menu.correct-extra-order",
+          "element": "checkbox",
+          "label": "menu-field-correct-extra-order",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-publication-title-alias",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-publication-title-case",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-title-chemical-formula",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-title-punctuation",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "menu.correct-title-punctuation",
+          "element": "checkbox",
+          "label": "menu-field-correct-title-punctuation",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.correct-title-sentence-case",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.no-doi-prefix",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.require-journal-abbr",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.require-language",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.require-university-place",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.show-data-directory",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.show-profile-directory",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.standard",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-clean-extra",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-clear-all-extra",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-creators-ext",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-creators-style",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-creators-swap",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-csl-helper",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-get-short-doi",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-publication-replace",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-query-esi",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-query-nature-index",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-set-language",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-title-guillemet",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-title-replace",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-update-easyscholar",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "menu.tool-update-metadata",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/menu.ts"
+        ]
+      }
+    },
+    {
+      "key": "metadata.autoUpdateOnAdded",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "metadata.autoUpdateOnAdded",
+          "element": "checkbox",
+          "label": "metadata-auto-update-on-added",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:176"
+        ]
+      }
+    },
+    {
+      "key": "metadata.repairCreators",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "metadata.repairCreators",
+          "element": "checkbox",
+          "label": "metadata-repair-creators",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:284",
+          "src/hooks.ts:286",
+          "src/modules/rules/tool-update-metadata/index.ts:327"
+        ]
+      }
+    },
+    {
+      "key": "metadata.updateJournalInfo",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "metadata.updateJournalInfo",
+          "element": "checkbox",
+          "label": "metadata-update-journal-info",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:296"
+        ]
+      }
+    },
+    {
+      "key": "richtext.hotkey",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "richtext.hotkey",
+          "element": "checkbox",
+          "label": "enable-richtext-hotkey",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/shortcuts.ts:44"
+        ]
+      }
+    },
+    {
+      "key": "richtext.toolBar",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "richtext.toolBar",
+          "element": "checkbox",
+          "label": "enable-richtext-toolbar",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rich-text.ts:329",
+          "src/modules/rich-text.ts:331"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-bookTitle-sentence-case",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-bookTitle-sentence-case",
+          "element": "checkbox",
+          "label": "rule-correct-bookTitle-sentence-case",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-conference-abbr",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-conference-abbr",
+          "element": "checkbox",
+          "label": "rule-correct-conference-abbr",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-creators-case",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-creators-case",
+          "element": "checkbox",
+          "label": "rule-correct-creators-case",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-creators-pinyin",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.correct-creators-pinyin",
+          "element": "checkbox",
+          "label": "rule-correct-creators-pinyin",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-creators-punctuation",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-creators-punctuation",
+          "element": "checkbox",
+          "label": "rule-correct-creators-punctuation",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-date-format",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-date-format",
+          "element": "checkbox",
+          "label": "rule-correct-date-format",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-doi-long",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-doi-long",
+          "element": "checkbox",
+          "label": "rule-correct-doi-long",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-edition-numeral",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-edition-numeral",
+          "element": "checkbox",
+          "label": "rule-correct-edition-numeral",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-extra-order",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-extra-order",
+          "element": "checkbox",
+          "label": "rule-correct-extra-order",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-filing-date-format",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-filing-date-format",
+          "element": "checkbox",
+          "label": "rule-correct-filing-date-format",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-issue-date-format",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-issue-date-format",
+          "element": "checkbox",
+          "label": "rule-correct-issue-date-format",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-pages-connector",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-pages-connector",
+          "element": "checkbox",
+          "label": "rule-correct-pages-connector",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-pages-range",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.correct-pages-range",
+          "element": "checkbox",
+          "label": "rule-correct-pages-range",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-priority-date-format",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-priority-date-format",
+          "element": "checkbox",
+          "label": "rule-correct-priority-date-format",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-proceedingsTitle-sentence-case",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.correct-proceedingsTitle-sentence-case",
+          "element": "checkbox",
+          "label": "rule-correct-proceedingsTitle-sentence-case",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-publication-title-alias",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-publication-title-alias",
+          "element": "checkbox",
+          "label": "rule-correct-publication-title-alias",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-publication-title-case",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-publication-title-case",
+          "element": "checkbox",
+          "label": "rule-correct-publication-title-case",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-shortTitle-sentence-case",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-shortTitle-sentence-case",
+          "element": "checkbox",
+          "label": "rule-correct-shortTitle-sentence-case",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-thesis-type",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-thesis-type",
+          "element": "checkbox",
+          "label": "rule-correct-thesis-type",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-title-chemical-formula",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.correct-title-chemical-formula",
+          "element": "checkbox",
+          "label": "rule-correct-title-chemical-formula",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-title-chemical-formula.normalize-spaces",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-title-chemical-formula.normalize-spaces",
+          "element": "checkbox",
+          "label": "rule-correct-title-chemical-formula-option-normalize-spaces",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/correct-title-chemical-formula.ts:19"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-title-punctuation",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-title-punctuation",
+          "element": "checkbox",
+          "label": "rule-correct-title-punctuation",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-title-punctuation.quotes",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.correct-title-punctuation.quotes",
+          "element": "checkbox",
+          "label": "rule-correct-title-punctuation-quotes",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/correct-punctuation.ts:65"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-title-sentence-case",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-title-sentence-case",
+          "element": "checkbox",
+          "label": "rule-correct-title-sentence-case",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-title-sentence-case.custom-term-path",
+      "default": "",
+      "staticControls": [
+        {
+          "key": "rule.correct-title-sentence-case.custom-term-path",
+          "element": "input",
+          "label": "rule-correct-title-sentence-option-custom-term",
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/correct-title-sentence-case.ts:267"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-title-sentence-case.disabled-languages",
+      "default": "zh,de",
+      "staticControls": [
+        {
+          "key": "rule.correct-title-sentence-case.disabled-languages",
+          "element": "input",
+          "label": "rule-correct-title-sentence-option-disabled-languages",
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/correct-title-sentence-case.ts:254"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-university-punctuation",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-university-punctuation",
+          "element": "checkbox",
+          "label": "rule-correct-university-punctuation",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.correct-volume-numeral",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.correct-volume-numeral",
+          "element": "checkbox",
+          "label": "rule-correct-volume-numeral",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-article-webpage",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-article-webpage",
+          "element": "checkbox",
+          "label": "rule-no-article-webpage",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-doi-prefix",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-doi-prefix",
+          "element": "checkbox",
+          "label": "rule-no-doi-prefix",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-field-misuse",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-field-misuse",
+          "element": "checkbox",
+          "label": "rule-no-field-misuse",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-issue-extra-zeros",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-issue-extra-zeros",
+          "element": "checkbox",
+          "label": "rule-no-issue-extra-zeros",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-item-duplication",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-item-duplication",
+          "element": "checkbox",
+          "label": "rule-no-item-duplication",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-journal-preprint",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-journal-preprint",
+          "element": "checkbox",
+          "label": "rule-no-journal-preprint",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-pages-extra-zeros",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.no-pages-extra-zeros",
+          "element": "checkbox",
+          "label": "rule-no-pages-extra-zeros",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-title-trailing-dot",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-title-trailing-dot",
+          "element": "checkbox",
+          "label": "rule-no-title-trailing-dot",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-value-nullish",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-value-nullish",
+          "element": "checkbox",
+          "label": "rule-no-value-nullish",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.no-volume-extra-zeros",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.no-volume-extra-zeros",
+          "element": "checkbox",
+          "label": "rule-no-volume-extra-zeros",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-creators",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-creators",
+          "element": "checkbox",
+          "label": "rule-require-creators",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-doi",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-doi",
+          "element": "checkbox",
+          "label": "rule-require-doi",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-journal-abbr",
+          "element": "checkbox",
+          "label": "rule-require-journal-abbr",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.customDataPath",
+      "default": "",
+      "staticControls": [
+        {
+          "key": "rule.require-journal-abbr.customDataPath",
+          "element": "input",
+          "label": "rule-require-journal-abbr-option-choose-custom-abbr-data-input",
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:29"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.existingPolicy",
+      "default": "known",
+      "staticControls": [],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:36"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.infer",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-journal-abbr.infer",
+          "element": "checkbox",
+          "label": "rule-require-journal-abbr-option-infer",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:30"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.letterCase",
+      "default": "keep",
+      "staticControls": [],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:37"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.matchMode",
+      "default": "exact",
+      "staticControls": [],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:35"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.profile",
+      "default": "combined",
+      "staticControls": [],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:34"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.sourceMode",
+      "default": "auto",
+      "staticControls": [],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:33"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.tagSource",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.require-journal-abbr.tagSource",
+          "element": "checkbox",
+          "label": "abbr-tag-source",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:38"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.usefull",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.require-journal-abbr.usefull",
+          "element": "checkbox",
+          "label": "rule-require-journal-abbr-option-usefull-en",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:31"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.usefullZh",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.require-journal-abbr.usefullZh",
+          "element": "checkbox",
+          "label": "rule-require-journal-abbr-option-usefull-zh",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:32"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-journal-abbr.withDots",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-journal-abbr.withDots",
+          "element": "checkbox",
+          "label": "rule-require-journal-abbr-option-with-dots",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-abbr.ts:39"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-language",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-language",
+          "element": "checkbox",
+          "label": "rule-require-language",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-language.only",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-language.only",
+          "element": "checkbox",
+          "label": "rule-require-language-option-only",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/tool-set-language.ts:23",
+          "src/utils/str.ts:125"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-language.only.cmn",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-language.only.cmn",
+          "element": "checkbox",
+          "label": "rule-require-language-option-only-cmn",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/utils/str.ts:126"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-language.only.eng",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-language.only.eng",
+          "element": "checkbox",
+          "label": "rule-require-language-option-only-eng",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/utils/str.ts:128"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-language.only.other",
+      "default": "",
+      "staticControls": [
+        {
+          "key": "rule.require-language.only.other",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/tool-set-language.ts:24",
+          "src/utils/str.ts:130"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-language.verify-before",
+      "default": false,
+      "staticControls": [
+        {
+          "key": "rule.require-language.verify-before",
+          "element": "checkbox",
+          "label": "rule-require-language-option-verify-before",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/require-language.ts:21"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-short-title",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-short-title",
+          "element": "checkbox",
+          "label": "rule-require-short-title",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.require-university-place",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.require-university-place",
+          "element": "checkbox",
+          "label": "rule-require-university-place",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-clean-extra",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-creators-ext",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-csl-helper",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-get-short-doi",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-query-nature-index",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-set-language",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-title-guillemet",
+      "default": true,
+      "staticControls": [],
+      "runtime": {
+        "kind": "rule-registry",
+        "references": [
+          "src/modules/rules/index.ts"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-update-metadata.option.allow-type-changed",
+      "default": true,
+      "staticControls": [
+        {
+          "key": "rule.tool-update-metadata.option.allow-type-changed",
+          "element": "checkbox",
+          "label": "rule-tool-update-metadata-dialog-allow-type-changed",
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/tool-update-metadata/index.ts:326"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-update-metadata.option.mode",
+      "default": "blank",
+      "staticControls": [
+        {
+          "key": "rule.tool-update-metadata.option.mode",
+          "element": "radiogroup",
+          "label": null,
+          "type": null
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:299",
+          "src/hooks.ts:333",
+          "src/modules/rules/tool-update-metadata/index.ts:325"
+        ]
+      }
+    },
+    {
+      "key": "rule.tool-update-metadata.option.slient",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "legacy-hidden",
+        "references": []
+      }
+    },
+    {
+      "key": "semanticScholarToken",
+      "default": "",
+      "staticControls": [
+        {
+          "key": "semanticScholarToken",
+          "element": "input",
+          "label": "rule-tool-update-metadata-option-semanticScholarToken",
+          "type": "password"
+        }
+      ],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/modules/rules/tool-update-metadata/services/semantic-scholar-service.ts:18"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.bold",
+      "default": "accel,B",
+      "staticControls": [
+        {
+          "key": "shortcut.bold",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.chemicalFormula",
+      "default": "accel,alt,S",
+      "staticControls": [
+        {
+          "key": "shortcut.chemicalFormula",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.dataDirectory",
+      "default": "alt,D",
+      "staticControls": [
+        {
+          "key": "shortcut.dataDirectory",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.easyScholar",
+      "default": "accel,J",
+      "staticControls": [
+        {
+          "key": "shortcut.easyScholar",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.italic",
+      "default": "accel,I",
+      "staticControls": [
+        {
+          "key": "shortcut.italic",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.lint",
+      "default": "accel,alt,L",
+      "staticControls": [
+        {
+          "key": "shortcut.lint",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.nocase",
+      "default": "accel,N",
+      "staticControls": [
+        {
+          "key": "shortcut.nocase",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.profileDirectory",
+      "default": "alt,P",
+      "staticControls": [
+        {
+          "key": "shortcut.profileDirectory",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.publicationCase",
+      "default": "accel,U",
+      "staticControls": [
+        {
+          "key": "shortcut.publicationCase",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.subscript",
+      "default": "accel,=",
+      "staticControls": [
+        {
+          "key": "shortcut.subscript",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.supscript",
+      "default": "accel,shift,=",
+      "staticControls": [
+        {
+          "key": "shortcut.supscript",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "shortcut.titleSentence",
+      "default": "accel,T",
+      "staticControls": [
+        {
+          "key": "shortcut.titleSentence",
+          "element": "input",
+          "label": null,
+          "type": "text"
+        }
+      ],
+      "runtime": {
+        "kind": "dynamic-family",
+        "references": [
+          "src/modules/shortcuts.ts"
+        ]
+      }
+    },
+    {
+      "key": "workflow.updateJournalRankings",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:289"
+        ]
+      }
+    },
+    {
+      "key": "workflow.updateMetadata",
+      "default": false,
+      "staticControls": [],
+      "runtime": {
+        "kind": "direct",
+        "references": [
+          "src/hooks.ts:283",
+          "src/hooks.ts:297"
+        ]
+      }
+    }
+  ]
+}

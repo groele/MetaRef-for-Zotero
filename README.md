@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-![Version](https://img.shields.io/badge/version-10.1.0-blue) ![Zotero](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-green) ![License](https://img.shields.io/badge/license-AGPL-3.0-or-later-lightgrey)
+![Version](https://img.shields.io/badge/version-10.5.0-blue) ![Zotero](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-green) ![License](https://img.shields.io/badge/license-AGPL-3.0-or-later-lightgrey)
 
 [Download](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi) · [Report an Issue](https://github.com/groele/Zotero-MetaFlow/issues) · [Releases](https://github.com/groele/Zotero-MetaFlow/releases)
 
@@ -38,7 +38,7 @@ For interface examples and implementation details, see the [project documentatio
 
 | Item                  | Details                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Add-on version        | `10.4.1`                                                                                                                              |
+| Add-on version        | `10.5.0`                                                                                                                              |
 | Add-on ID             | `metaflow@groele`                                                                                                                     |
 | Declared Zotero range | `10.0–11.*`                                                                                                                           |
 | Verification          | Zotero 11 checks include development builds; support declared by the manifest does not imply validation against every future release. |

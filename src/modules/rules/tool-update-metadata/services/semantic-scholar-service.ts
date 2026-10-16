@@ -15,7 +15,7 @@ export function clearSemanticScholarCache() {
 }
 
 async function request(paperID: string, _fields: (keyof Result)[], signal?: AbortSignal): Promise<RequestResult> {
-  const key = String(getPref("semanticScholarToken") || "");
+  const key = String(getPref("semanticScholarToken") || "").trim();
   const alias = paperAliases.get(`${key}:${paperID.trim().toLowerCase()}`);
   const id = alias && alias.expires > Date.now() ? alias.id : paperID.trim();
   const url = paperURL(id);

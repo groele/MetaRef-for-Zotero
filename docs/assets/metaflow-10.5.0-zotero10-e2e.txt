@@ -1,0 +1,125 @@
+$ node scripts/test-e2e.mjs
+$ zotero-plugin build && tsc --noEmit
+ ℹ Building version 10.5.0 to .scaffold/build at 2026-10-17 03:38:40 in production mode.
+   → Preparing static assets
+   → Bundling scripts
+   → Packing plugin
+ ✔ Build finished in 1.138 s.
+ ℹ Building version 10.5.0 to .scaffold/build at 2026-10-17 03:38:45 in test mode.
+   → Preparing static assets
+   → Bundling scripts
+ ✔ Build finished in 0.892 s.
+ ℹ Installed <workspace>\.scaffold\build\addon as a temporary add-on
+ ℹ Installed <workspace>\.scaffold\test\resource as a temporary add-on
+
+   → abbreviations, durable cache and quiet completion in Zotero
+     ✔ writes verified built-in abbreviations and preserves unknown manual values 769ms
+     ✔ infers ISO 4 offline with the production LTWA asset 1208ms
+     ✔ reuses a real profile cache file across session resets without writing API keys 1087ms
+     ✔ shares Semantic Scholar identifier and metadata requests for the same paper 1ms
+     ✔ closes a normal success notification after about 1.5 seconds without mouse interaction 2286ms
+   → manual author repair in both MetaFlow actions
+     ✔ restores deleted or incorrect authors through standard while preserving ordinary fields 1165ms
+     ✔ restores deleted or incorrect authors through tool-update-metadata while preserving ordinary fields 1156ms
+     ✔ supports identity-checked title lookup when the DOI is absent 316ms
+     ✔ includes journal rankings in metadata updates and obeys blank versus all mode 876ms
+     ✔ respects the switch when remote author repair is disabled 542ms
+   → metadata safety regressions
+     ✔ preserves valid ranges, archive codes, literal titles and curated short titles after saving 559ms
+     ✔ rolls back throw changes including type and creators while saving healthy rules 321ms
+     ✔ rolls back timeout changes including type and creators while saving healthy rules 472ms
+     ✔ rolls back report changes including type and creators while saving healthy rules 612ms
+     ✔ exports the actual saved field changes from the results window 826ms
+     ✔ cancels a real open tool dialog and releases the preparation queue 469ms
+   → green Frog integration in Zotero
+     ✔ uses a unique CNKI title result and rejects ambiguous or external links 2120ms
+     ✔ translates all generated controls, persists output choices and toggles real columns 591ms
+     ✔ saves author annotations, swaps and literal replacements through the batch boundary 2123ms
+     ✔ cancels complete Extra clearing before mutation and saves only after confirmation 337ms
+     ✔ fills missing metadata automatically without a settings dialog 879ms
+     ✔ composes metadata retrieval and existing formatters in the main workflow without a second settings dialog 337ms
+     ✔ skips all ranking requests when outputs are disabled and preserves partial success after a source deadline 9464ms
+   → journal abbreviation integration and safe custom matching
+     ✔ saves two punctuation-distinct custom names and preserves an ambiguous existing abbreviation 589ms
+     ✔ reads a BOM semicolon CSV containing quoted commas and reloads edited mappings 482ms
+     ✔ rejects genuine duplicate-name conflicts without replacing a manually entered value 187ms
+     ✔ applies source profiles, formatting and source tags without repeat writes or unrelated changes 1044ms
+     ✔ preserves values in blank-only mode and keeps conference custom abbreviation support 367ms
+   → user-defined journal databases in Zotero
+     ✔ uses custom JSON and BOM CSV consistently in the pane, columns and rules, and reloads edited files 810ms
+     ✔ validates before activating, preserves paths on errors or cancellation, exports real files and resets from settings 2027ms
+     ✔ imports both delivered JSON and CSV databases and round-trips the built-in ESI export 1762ms
+   → independent journal insights in Zotero
+     ✔ renders its own section and columns without changing item metadata 961ms
+     ✔ updates journal rankings silently in the pane and refreshes persisted edits without another request 977ms
+     ✔ shows every saved ranking for journals and conferences, with no journal-only claims on conferences 539ms
+     ✔ keeps not-found, disabled and unselected responses distinct from successful updates 1048ms
+     ✔ refreshes automatic lookup failures in the journal pane 1237ms
+     ✔ honors API/local source priority in the pane and columns without background requests 1197ms
+   → native flat menu commands
+     ✔ loads the packaged brand icons at their declared sizes 8ms
+     ✔ runs a formatter from its actual menu element on two consecutive openings 1208ms
+     ✔ shows visible results for both index commands without saving item metadata 992ms
+     ✔ shows a user-pinned command only at the first context-menu level and still executes it once 504ms
+   → metadata workflow in Zotero
+     ✔ persists formulas in a single batch, including book titles and duplicate inputs 802ms
+     ✔ applies the formula shortcut only once and leaves unrelated input fields alone 257ms
+     ✔ shows the automatic rule and records, rejects conflicts, disables and resets shortcuts 615ms
+     ✔ formats the actual title editor selection and toggles only the requested tag 70ms
+     ✔ continues healthy rules after preparation failures and primitive apply errors 149ms
+   → processing efficiency in Zotero
+     ✔ measures import dispatch, repeated indexing and batch progress on real items 2614ms
+   → data processing resilience in Zotero
+     ✔ recovers every modified item after a transaction rollback 294ms
+     ✔ reports permanent save failure instead of counting it as success 225ms
+     ✔ retains an independent user edit while rolling back plugin changes after a save failure 219ms
+     ✔ isolates applicability failures and still saves sibling rule changes 235ms
+     ✔ records preparation failures separately and keeps unaffected rules available 213ms
+     ✔ starts a fresh batch after a results window fails 375ms
+     ✔ finishes concurrent items and commits once even when progress updates fail 434ms
+     ✔ reports a failed duplicate search without blocking the following formatter 347ms
+     ✔ stops before the next rule and item, saves completed work, then accepts another batch 304ms
+     ✔ blocks late writes and reports from a timed-out rule 319ms
+     ✔ uses the live item when a report action starts a new batch after its rule has finished 310ms
+     ✔ runs all local standard rules across article, conference, thesis, book and patent fields 1911ms
+     ✔ preserves a manually entered abbreviation and series when no replacement is available 550ms
+     ✔ updates creator annotations and CSL extra data without saving inside a rule 330ms
+     ✔ falls back after a malformed service result and preserves fields in blank mode 580ms
+     ✔ preserves incompatible fields and creator roles during blank-only metadata updates 853ms
+     ✔ updates preprints and resolves PMID and URL service fallbacks 7431ms
+     ✔ keeps menus, columns and title listeners stable on repeated window initialization 463ms
+     ✔ delivers each item notification once after repeated plugin initialization 71ms
+     ✔ cancels the entire combined workflow when a tool dialog is cancelled 60ms
+     ✔ runs DOI services and remaining tools through the same save boundary 393ms
+     ✔ bounds concurrent items and captures the selection when queuing a later batch 853ms
+     ✔ rechecks automatic lint preferences after its import delay 575ms
+     ✔ runs the collection menu on that collection's items instead of the item-list selection 559ms
+     ✔ undoes and redoes an entire successful metadata batch 582ms
+     ✔ falls back to bundled reference data when custom abbreviation and ESI files are invalid 1560ms
+     ✔ opens each settings tool and cancels it without running the following formatter 1313ms
+     ✔ accepts settings before applying a tool and the following formatter 466ms
+     ✔ closes a pending tool before waiting for shutdown and removes registered UI 676ms
+   → real reference files and PDF indexing
+     ✔ reads real CSV and BOM JSON files and displays ESI without writing reference fields 808ms
+     ✔ imports and indexes a three-page PDF before completing a numeric page range 3116ms
+   → settings panel layout and validation in Zotero
+     ✔ initializes once and omits the removed search, section jump and global disclosure controls 1ms
+     ✔ persists every available checkbox binding and connects standard rule switches to the runner 68ms
+     ✔ persists service credentials from their actual inputs and uses them in provider requests 92ms
+     ✔ uses one card style for every section and links workflow modules to existing rule switches 144ms
+     ✔ saves metadata update policy in preferences and never reopens the mode dialog 126ms
+     ✔ tests EasyScholar connections inline, prevents duplicate requests and redacts keys 165ms
+     ✔ links the hidden menu location to visibility and preserves the last visible location 3ms
+     ✔ keeps identifier controls inset from card edges at both window widths 247ms
+     ✔ retains warnings without an automatic report and opens details only on request 246ms
+     ✔ persists independent ESI and Nature Index source priorities 141ms
+     ✔ validates custom files before activation, rejects edits at the same path, and keeps paths on cancellation 225ms
+     ✔ persists every abbreviation source option in its independent collapsible card 197ms
+     ✔ keeps invalid numeric values out of preferences and labels all input controls 121ms
+   → startup
+     ✔ uses the requested host platform 0ms
+     ✔ should have plugin instance defined 0ms
+   → production XPI installation
+     ✔ replaces the test directory with the production XPI and reads bundled reference data 2282ms
+
+ ✔ Test run completed - 94 passed

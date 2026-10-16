@@ -52,6 +52,7 @@ describe("independent journal insights in Zotero", function () {
     assert.notEqual(win.getComputedStyle(heading!, "::before")?.display, "none", "the journal section shows the unified brand icon");
     await section._handleRefresh();
     const body = section.querySelector("[data-type='body']") as HTMLElement;
+    assert.equal(body.querySelector("[data-journal-title]")?.textContent, "Physical Review Letters");
     assert.include(body.textContent!, "ESI");
     assert.include(body.textContent!, "Nature Index");
     assert.equal(body.querySelectorAll("[data-journal-result]").length, 2);
@@ -96,6 +97,7 @@ describe("independent journal insights in Zotero", function () {
     await item.saveTx();
     await section._handleRefresh();
     assert.equal((await plugin().api.getJournalInsights(item)).esi, "");
+    assert.equal(body.querySelector("[data-journal-title]")?.textContent, "Unknown journal QA");
     assert.isFalse((await plugin().api.getJournalInsights(item)).natureIndex);
     assert.isNull(body.querySelector("[data-journal-shared-basis]"), "unmatched results show no successful basis");
     assert.equal(natureColumn.dataProvider(item), "");
@@ -193,8 +195,10 @@ describe("independent journal insights in Zotero", function () {
     const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
     await section._handleRefresh();
     const body = section.querySelector("[data-type='body']") as HTMLElement;
-    for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
+    for (const field of EASYSCHOLAR_FIELD_DEFINITIONS.filter(field => field.key !== "esi"))
       assert.equal(body.querySelector(`[data-journal-ranking='${field.key}']`)?.textContent, "QA-A", field.key);
+    assert.isNull(body.querySelector("[data-journal-ranking='esi']"), "ESI has only one primary presentation");
+    assert.include(body.querySelector("[data-journal-result] dd")?.textContent || "", "QA-A", "saved ESI remains visible when no current category is available");
     const conference = new Zotero.Item("conferencePaper");
     conference.setField("title", "Conference rankings QA");
     conference.setField("proceedingsTitle", "Conference QA");
@@ -204,6 +208,7 @@ describe("independent journal insights in Zotero", function () {
     await win.ZoteroPane.selectItem(conference.id);
     await section._handleRefresh();
     assert.isFalse(section.hidden, "conference rankings use the same pane");
+    assert.equal(body.querySelector("[data-journal-title]")?.textContent, "Conference QA");
     assert.equal(body.querySelector("[data-journal-ranking='ccf']")?.textContent, "A");
     assert.equal(body.querySelector("[data-journal-ranking='coreRankings']")?.textContent, "A*");
     assert.lengthOf(body.querySelectorAll("[data-journal-result]"), 0, "ESI and Nature Index remain journal-only");

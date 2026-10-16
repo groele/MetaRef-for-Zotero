@@ -142,4 +142,24 @@ describe("authenticated service response cache", () => {
     await requestServiceGET("semantic-scholar", "https://example.test/paper/DOI:1", { headers: { "x-api-key": "another-key" } });
     expect(request).toHaveBeenCalledTimes(2);
   });
+
+  it("does not rewrite durable storage when cached paper aliases are unchanged", async () => {
+    const { rememberServiceAliases } = await import("./http");
+    const value = await fetch();
+    const options = { headers: { "x-api-key": "test-secret" } };
+    const url = "https://example.test/paper/1";
+    const aliases = ["https://example.test/paper/DOI:1"];
+    await rememberServiceAliases("semantic-scholar", url, aliases, options, value);
+    await flushServiceCache();
+    const write = vi.spyOn(IOUtils, "writeJSON");
+    try {
+      await rememberServiceAliases("semantic-scholar", url, aliases, options, value);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(write).not.toHaveBeenCalled();
+      await rememberServiceAliases("semantic-scholar", url, [...aliases, "https://example.test/paper/PMID:1"], options, value);
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(write).toHaveBeenCalledTimes(1);
+    }
+    finally { write.mockRestore(); }
+  });
 });

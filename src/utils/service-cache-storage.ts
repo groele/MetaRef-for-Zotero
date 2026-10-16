@@ -88,17 +88,24 @@ export async function storeServiceAliases(key: string, aliases: string[], value:
     return;
   const hash = digest(key);
   const primary = entries.get(hash)?.alias || hash;
-  if (!entries.get(primary)?.value)
+  let changed = false;
+  if (!entries.get(primary)?.value) {
     entries.set(primary, { value, expires });
+    changed = true;
+  }
   const deadline = Math.min(expires, entries.get(primary)!.expires);
   for (const alias of aliases) {
     const target = digest(alias);
-    if (target !== primary)
+    const previous = entries.get(target);
+    if (target !== primary && (previous?.alias !== primary || previous.expires !== deadline || previous.value)) {
       entries.set(target, { alias: primary, expires: deadline });
+      changed = true;
+    }
   }
   while (entries.size > SERVICE_CACHE_LIMIT)
     entries.delete(entries.keys().next().value!);
-  schedule();
+  if (changed)
+    schedule();
 }
 
 export async function clearStoredServiceCache(namespace?: string) {

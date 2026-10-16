@@ -24,7 +24,7 @@ interface Options {
   customDataError?: string;
 }
 
-async function prepare(): Promise<Options> {
+async function prepare(includeConferenceCustom = false): Promise<Options> {
   const options: Options = {
     customDataPath: getPref("rule.require-journal-abbr.customDataPath"),
     infer: getPref("rule.require-journal-abbr.infer"),
@@ -38,7 +38,7 @@ async function prepare(): Promise<Options> {
     tagSource: getPref("rule.require-journal-abbr.tagSource" as any, false),
     withDots: getPref("rule.require-journal-abbr.withDots", true),
   };
-  if (options.customDataPath) {
+  if (options.customDataPath && (includeConferenceCustom || ["auto", "custom"].includes(options.sourceMode || "auto"))) {
     try {
       options.customAbbr = await loadCustomAbbreviations(options.customDataPath);
     }
@@ -143,7 +143,7 @@ export const RequireJournalAbbr = defineRule<Options>({
     report({ level: "info", field: "journalAbbreviation", source: source || "full-title", message: getString("abbr-result", { args: { value: journalAbbr, source: getString(`abbr-source-${source || "full"}` as any) } }) });
   },
 
-  prepare,
+  prepare: () => prepare(),
 
   fieldMenu: {
     l10nID: "rule-require-journal-abbr-menu-field",
@@ -218,7 +218,7 @@ export const CorrectConferenceAbbr = defineRule<Options>({
     }
   },
 
-  prepare,
+  prepare: () => prepare(true),
 
 });
 

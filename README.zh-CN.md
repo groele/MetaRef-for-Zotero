@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-![Version](https://img.shields.io/badge/version-10.1.0-blue) ![Zotero](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-green) ![License](https://img.shields.io/badge/license-AGPL-3.0-or-later-lightgrey)
+![Version](https://img.shields.io/badge/version-10.5.0-blue) ![Zotero](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-green) ![License](https://img.shields.io/badge/license-AGPL-3.0-or-later-lightgrey)
 
 [下载插件](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues) · [版本发布](https://github.com/groele/Zotero-MetaFlow/releases)
 
@@ -36,7 +36,7 @@ Zotero MetaFlow 是 Zotero Flow Series 中独立维护的插件，校验、整�
 
 | 项目         | 说明                                                                                   |
 | ------------ | -------------------------------------------------------------------------------------- |
-| 插件版本     | `10.1.0`                                                                               |
+| 插件版本     | `10.5.0`                                                                               |
 | 插件 ID      | `metaflow@groele`                                                                      |
 | 声明兼容范围 | `10.0–11.*`                                                                            |
 | 验证情况     | Zotero 11 的相关验证包含开发版本；清单声明的兼容范围不意味着未来所有版本均已实机验收。 |

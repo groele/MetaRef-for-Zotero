@@ -63,6 +63,8 @@ menu-show-profile-directory = Open the Zotero profile directory
 journal-rankings-heading = Journal quartiles and rankings
 journal-rankings-empty = No saved rankings. Click the MetaFlow sidebar icon to complete journal information.
 journal-rankings-refresh-failed = Journal refresh failed. Check your connection and data source settings, then click the MetaFlow icon again.
+journal-insights-unnamed = Journal name missing
+journal-insights-saved-source = ESI · Previously saved item information
 journal-rankings-saved-note = Saved journal quartiles and rankings, for reference.
 
 journal-rankings-cancelled = This lookup was cancelled. Previously saved data is retained.

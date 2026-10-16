@@ -89,10 +89,42 @@ describe("data processing resilience in Zotero", function () {
       assert.equal(result.passed, 0);
       assert.equal(result.saved, 0);
       assert.include(result.records.map((row: { ruleID: string }) => row.ruleID), "item-save");
+      assert.equal(item.getField("title"), "failed save", "failed plugin writes are removed from the live item");
+      assert.isFalse(item.hasChanged(), "failed writes cannot leak into the next batch");
+      item.save = save;
+      await plugin().runner.add({ items: [item], silent: true, rules: [{ id: "test-after-save-failure", scope: "item", apply() {
+        item.setField("volume", "7");
+      } }] });
+      await item.reload(["itemData"], true);
+      assert.equal(item.getField("title"), "failed save");
+      assert.equal(item.getField("volume"), "7");
     }
     finally {
       item.save = save;
       await item.reload(["primaryData", "itemData"], true);
+    }
+  });
+
+  it("retains an independent user edit while rolling back plugin changes after a save failure", async function () {
+    const item = await create("manual edit during failure");
+    const save = item.save;
+    item.save = async () => {
+      item.setField("abstractNote", "User edit made while saving");
+      throw new Error("injected save failure with external edit");
+    };
+    try {
+      await plugin().runner.add({ items: [item], rules: [changeTitle], silent: true });
+      assert.equal(item.getField("title"), "manual edit during failure");
+      assert.equal(item.getField("abstractNote"), "User edit made while saving");
+      assert.equal(plugin().runner.lastResult.saved, 0);
+      item.save = save;
+      await item.saveTx();
+      await item.reload(["itemData"], true);
+      assert.equal(item.getField("title"), "manual edit during failure");
+      assert.equal(item.getField("abstractNote"), "User edit made while saving");
+    }
+    finally {
+      item.save = save;
     }
   });
 

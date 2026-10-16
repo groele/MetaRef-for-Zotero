@@ -126,7 +126,7 @@ pref("easyscholar.columns.ssci", false);
 pref("easyscholar.columns.ei", false);
 pref("easyscholar.columns.ahci", false);
 pref("easyscholar.columns.jci", false);
-pref("easyscholar.columns.esi", false);
+pref("easyscholar.columns.esi", true);
 pref("easyscholar.columns.ajg", false);
 pref("easyscholar.columns.ccf", false);
 pref("easyscholar.columns.fms", false);

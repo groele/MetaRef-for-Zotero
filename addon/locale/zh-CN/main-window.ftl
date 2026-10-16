@@ -63,6 +63,8 @@ menu-show-profile-directory = 打开 Zotero 配置目录
 journal-rankings-heading = 期刊分区与评级
 journal-rankings-empty = 暂无已保存的评级。点击右侧 MetaFlow 图标可补全期刊信息。
 journal-rankings-refresh-failed = 期刊信息补全失败，请检查网络和数据源设置后再次点击 MetaFlow 图标。
+journal-insights-unnamed = 未填写期刊名称
+journal-insights-saved-source = ESI · 条目已保存的信息
 journal-rankings-saved-note = 显示已保存的分区及评级，仅供参考。
 
 journal-rankings-cancelled = 本次查询已取消；此前保存的数据仍保留。

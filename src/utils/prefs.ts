@@ -7,6 +7,7 @@ type PluginPrefsMap = _ZoteroTypes.Prefs["PluginPrefsMap"];
 export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "metadata.repairCreators": true,
   "metadata.updateJournalInfo": true,
+  "easyscholar.columns.esi": true,
   "rule.require-journal-abbr.tagSource": false,
   "rule.require-journal-abbr.letterCase": "keep",
   "rule.require-journal-abbr.existingPolicy": "known",

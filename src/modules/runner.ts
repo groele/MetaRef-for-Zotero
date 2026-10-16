@@ -4,6 +4,7 @@ import type { ApplyContext, PrepareContext, Rule } from "./rules/rule-base";
 import { DataLoader } from "../utils/data-loader";
 import { toArray } from "../utils/general";
 import { ItemMutationJournal } from "../utils/item-mutation-journal";
+import { rollbackItemChanges } from "../utils/item-recovery";
 import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
@@ -389,6 +390,19 @@ export class LintRunner {
           });
           logger.error(`Failed to save item ${item.id}:`, itemErr);
           this.failedItems.add(item.id || item);
+          const recovered = rollbackItemChanges(item.toJSON() as Record<string, unknown>, this.changes.filter(change => change.itemID === item.id));
+          try {
+            await item.reload(["primaryData", "itemData", "creators", "tags", "collections", "relations"], true);
+            const persisted = item.toJSON() as Record<string, unknown>;
+            for (const field of ["key", "version", "dateAdded", "dateModified"])
+              recovered[field] = persisted[field];
+            item.fromJSON(recovered, { strict: true });
+          }
+          catch (recoveryError) {
+            this.unsafeItems.add(item);
+            this.stats.records.push({ itemID: item.id, title: item.getDisplayTitle(), ruleID: "item-save", level: "error", message: getString("rule-rollback-failed") });
+            logger.error(`Failed to recover item ${item.id} after a save failure:`, recoveryError);
+          }
         }
       }
     }

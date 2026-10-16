@@ -34,16 +34,6 @@ export function registerExtraColumns() {
   });
   if (abbreviationColumn)
     registeredColumns.push(abbreviationColumn);
-  const esiColumn = Zotero.ItemTreeManager.registerColumn({
-    dataKey: "esiDiscipline",
-    label: getString("field-esi"),
-    dataProvider: item => addon.data.alive && item.itemType === "journalArticle" ? cachedJournalInsights(item)?.esi || "" : "",
-    pluginID: addon.data.config.addonID,
-    zoteroPersist: ["width", "hidden", "sortDirection"],
-  });
-  if (esiColumn)
-    registeredColumns.push(esiColumn);
-
   const natureIndexColumn = Zotero.ItemTreeManager.registerColumn({
     dataKey: "natureIndex",
     label: getString("field-nature-index"),
@@ -64,7 +54,7 @@ export function registerEasyScholarColumns() {
     return;
   for (const field of EASYSCHOLAR_FIELD_DEFINITIONS) {
     const existing = easyScholarColumns.get(field.key);
-    const enabled = getPref(`easyscholar.columns.${field.key}` as any, false) === true;
+    const enabled = getPref(`easyscholar.columns.${field.key}` as any, field.key === "esi") === true;
     if (!enabled) {
       if (existing && Zotero.ItemTreeManager.isCustomColumn(existing))
         Zotero.ItemTreeManager.unregisterColumn(existing);
@@ -74,11 +64,14 @@ export function registerEasyScholarColumns() {
     if (existing && Zotero.ItemTreeManager.isCustomColumn(existing))
       continue;
     const registered = Zotero.ItemTreeManager.registerColumn({
-      dataKey: `easyScholar-${field.key}`,
-      label: getString(getEasyScholarFieldMessageID(field.key) as any),
-      dataProvider: (item: Zotero.Item) => addon.data.alive && ztoolkit?.ExtraField
-        ? [field.extraKey, ...EASYSCHOLAR_EXTRA_ALIASES[field.key] || []].map(key => ztoolkit.ExtraField.getExtraField(item, key)).find(Boolean) || ""
-        : "",
+      dataKey: field.key === "esi" ? "esiDiscipline" : `easyScholar-${field.key}`,
+      label: getString(field.key === "esi" ? "field-esi" : getEasyScholarFieldMessageID(field.key) as any),
+      dataProvider: (item: Zotero.Item) => {
+        if (!addon.data.alive || !ztoolkit?.ExtraField || (field.key === "esi" && item.itemType !== "journalArticle"))
+          return "";
+        const saved = [field.extraKey, ...EASYSCHOLAR_EXTRA_ALIASES[field.key] || []].map(key => ztoolkit.ExtraField.getExtraField(item, key)).find(Boolean) || "";
+        return field.key === "esi" ? cachedJournalInsights(item)?.esi || saved : saved;
+      },
       pluginID: addon.data.config.addonID,
       zoteroPersist: ["width", "hidden", "sortDirection"],
     });

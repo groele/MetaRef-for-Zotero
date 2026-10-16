@@ -1,6 +1,8 @@
 import { assert } from "chai";
 import { config } from "../../package.json";
 import { Rules } from "../../src/modules/rules";
+import { SemanticScholarService } from "../../src/modules/rules/tool-update-metadata/services/semantic-scholar-service";
+import { fetchEasyScholarRank } from "../../src/utils/easyscholar";
 
 describe("settings panel layout and validation in Zotero", function () {
   this.timeout(30_000);
@@ -34,6 +36,102 @@ describe("settings panel layout and validation in Zotero", function () {
     assert.equal(pane.querySelectorAll(".metaref-shortcut-action").length, actions);
     assert.isAbove(actions, 0);
     assert.isNull(pane.querySelector(".metaref-settings-search, .metaref-settings-jump, .metaref-settings-disclosure, .metaref-settings-rule-actions"));
+  });
+
+  it("persists every available checkbox binding and connects standard rule switches to the runner", function () {
+    const controls = [...pane.querySelectorAll<HTMLInputElement>("input[type='checkbox'][preference]")];
+    const saved = new Map(controls.map(control => [control.getAttribute("preference")!, { value: Zotero.Prefs.get(control.getAttribute("preference")!, true), checked: control.checked }]));
+    let checked = 0;
+    try {
+      for (const control of controls.filter(control => !control.getAttribute("preference")!.includes(".easyscholar."))) {
+        const key = control.getAttribute("preference")!;
+        const parents = controls.filter(parent => key.startsWith(`${parent.getAttribute("preference")}.`)).sort((a, b) => a.getAttribute("preference")!.length - b.getAttribute("preference")!.length);
+        for (const parent of parents) {
+          if (!parent.checked)
+            parent.click();
+        }
+        assert.isFalse(control.disabled, `${key} is usable after its parent is enabled`);
+        const previous = control.checked;
+        control.click();
+        assert.equal(Zotero.Prefs.get(key, true), !previous, `${key} persists an actual click`);
+        const ruleID = key.replace(`${config.prefsPrefix}.rule.`, "");
+        const rule = Rules.getByID(ruleID as ID);
+        if (rule?.category !== "tool" && rule)
+          assert.equal(Rules.getEnabledStandard().some(entry => entry.id === ruleID), !previous, `${key} controls standard execution`);
+        control.click();
+        assert.equal(Zotero.Prefs.get(key, true), previous, `${key} can be restored`);
+        checked++;
+      }
+      assert.isAbove(checked, 70, "the audit covers ordinary, rule, workflow and menu switches");
+    }
+    finally {
+      for (const control of controls) {
+        const key = control.getAttribute("preference")!;
+        const original = saved.get(key)!;
+        if (original.value === undefined)
+          Zotero.Prefs.clear(key, true);
+        else
+          Zotero.Prefs.set(key, original.value as boolean, true);
+        control.checked = original.checked;
+      }
+      pane.dispatchEvent(new win.Event("change", { bubbles: true }));
+    }
+  });
+
+  it("persists service credentials from their actual inputs and uses them in provider requests", async function () {
+    const keys = ["easyscholar.secretKey", "semanticScholarToken"];
+    const previous = new Map(keys.map(key => [key, Zotero.Prefs.get(pref(key), true)]));
+    const inputs = keys.map(key => find(key) as HTMLInputElement);
+    const request = Zotero.HTTP.request;
+    let easyScholarCalls = 0;
+    let semanticCalls = 0;
+    Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
+      const parsed = new URL(url);
+      if (parsed.hostname === "www.easyscholar.cc") {
+        easyScholarCalls++;
+        assert.equal(parsed.searchParams.get("secretKey"), "settings-audit-es-key");
+        return { status: 200, responseText: JSON.stringify({ code: 200, data: { officialRank: { all: { sci: "Q1" } } } }) };
+      }
+      if (parsed.hostname === "api.semanticscholar.org") {
+        semanticCalls++;
+        assert.equal(options.headers["x-api-key"], "settings-audit-semantic-key");
+        const response = JSON.stringify({ paperId: "settings-audit-paper", title: "Settings audit" });
+        return { status: 200, response, responseText: response };
+      }
+      return request(method, url, options);
+    }) as any;
+    try {
+      for (const [index, value] of ["  settings-audit-es-key  ", "  settings-audit-semantic-key  "].entries()) {
+        inputs[index].value = value;
+        inputs[index].dispatchEvent(new win.Event("change", { bubbles: true }));
+        assert.equal(Zotero.Prefs.get(pref(keys[index]), true), value);
+      }
+      assert.equal((await fetchEasyScholarRank("Settings audit journal")).status, "success");
+      await fetchEasyScholarRank("Settings audit journal");
+      assert.equal(easyScholarCalls, 1, "an ordinary cached query uses the saved key once");
+      await SemanticScholarService.fetch!({ identifiers: { DOI: "10.1234/settings-audit" }, debug() {} } as any);
+      assert.equal(semanticCalls, 1);
+      const button = pane.querySelector("#metaref-easyscholar-test")!;
+      button.dispatchEvent(new win.Event("command", { bubbles: true }));
+      for (let attempt = 0; attempt < 100; attempt++) {
+        if (easyScholarCalls >= 2 && button.parentElement!.getAttribute("data-busy") !== "true")
+          break;
+        await Zotero.Promise.delay(50);
+      }
+      assert.equal(easyScholarCalls, 2, "the connection test deliberately makes a fresh request");
+      assert.isNotEmpty(pane.querySelector("#metaref-easyscholar-test-status")!.textContent!);
+    }
+    finally {
+      Zotero.HTTP.request = request;
+      for (const [index, key] of keys.entries()) {
+        const value = previous.get(key);
+        if (value === undefined)
+          Zotero.Prefs.clear(pref(key), true);
+        else
+          Zotero.Prefs.set(pref(key), value as string, true);
+        inputs[index].value = String(value || "");
+      }
+    }
   });
 
   it("uses one card style for every section and links workflow modules to existing rule switches", async function () {

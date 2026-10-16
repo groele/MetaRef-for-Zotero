@@ -1,6 +1,7 @@
 import type { BatchResult } from "./runner";
 import { cleanupResourcesSync } from "../utils/cleanup";
 import { EASYSCHOLAR_FIELD_DEFINITIONS } from "../utils/easyscholar";
+import { isJournalFeedback } from "../utils/journal-feedback";
 import { cachedJournalInsights, clearJournalInsights, getJournalInsights, loadJournalInsights } from "../utils/journal-insights";
 import { presentJournalInsights } from "../utils/journal-insights-presentation";
 import { journalRankingRows } from "../utils/journal-ranking-rows";
@@ -144,7 +145,7 @@ export async function refreshJournalPane(itemIDs?: number[]) {
 
 export function setJournalUpdateResult(itemIDs: number[], result?: BatchResult) {
   for (const id of itemIDs) {
-    const messages = result?.records.filter(record => record.itemID === id && (record.code !== "journal-summary")).map(({ level, message }) => ({ level, message })) || [];
+    const messages = result?.records.filter(record => record.itemID === id && isJournalFeedback(record)).map(({ level, message }) => ({ level, message })) || [];
     if (result && !messages.length && !result.cancelled)
       messages.push({ level: "info", message: getString("journal-rankings-query-complete") });
     if (result?.cancelled)
@@ -173,8 +174,17 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     node.setAttribute("style", style);
     return node;
   };
+  const publication = String(item.getField(item.itemType === "conferencePaper" ? "proceedingsTitle" : "publicationTitle") || "").trim();
+  const journalTitle = text("h2", publication || getString("journal-insights-unnamed"), "font-size:14px;font-weight:600;margin:0 0 12px;line-height:1.5;white-space:pre-wrap;");
+  journalTitle.setAttribute("data-journal-title", "true");
+  body.append(journalTitle);
   const sharedBasis = rows.length && rows.every(row => row.basis && row.basis === rows[0].basis) ? rows[0].basis : "";
   const rankings = journalRankingRows(String(item.getField("extra") || ""));
+  const savedESI = rankings.find(row => row.key === "esi");
+  if (rows.length && savedESI && !result.categories.length) {
+    rows[0] = { ...rows[0], value: savedESI.value, matched: true, basis: "", source: getString("journal-insights-saved-source") };
+  }
+  const displayedRankings = rankings.filter(row => item.itemType !== "journalArticle" || row.key !== "esi");
   const rankingSection = text("section", "", "margin-bottom:16px;");
   rankingSection.setAttribute("data-journal-rankings", "true");
   rankingSection.append(text("h3", getString("journal-rankings-heading"), "font-size:13px;margin:0 0 10px;font-weight:600;"));
@@ -187,9 +197,9 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
       status.append(text("div", message.message, `color:${message.level === "warning" || message.level === "error" ? "var(--accent-orange)" : "var(--fill-secondary)"};`));
     rankingSection.append(status);
   }
-  if (rankings.length) {
+  if (displayedRankings.length) {
     const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:minmax(88px,1fr) minmax(0,1fr);gap:8px 12px;");
-    for (const ranking of rankings) {
+    for (const ranking of displayedRankings) {
       const label = text("dt", getString(ranking.labelID as any), "margin:0;font-size:12px;color:var(--fill-secondary);");
       const value = text("dd", ranking.value, "margin:0;min-width:0;font-weight:600;white-space:pre-wrap;");
       value.setAttribute("data-journal-ranking", ranking.key);

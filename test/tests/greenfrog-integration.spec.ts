@@ -128,7 +128,7 @@ describe("green Frog integration in Zotero", function () {
           const previous = control.checked;
           control.click();
           assert.equal(Zotero.Prefs.get(key, true), !previous, `${kind}.${field.key} persists`);
-          const registered = () => (Zotero.ItemTreeManager as any).getCustomColumns(undefined, { pluginID: config.addonID }).some((entry: any) => entry.dataKey.endsWith(`easyScholar-${field.key}`));
+          const registered = () => (Zotero.ItemTreeManager as any).getCustomColumns(undefined, { pluginID: config.addonID }).some((entry: any) => entry.dataKey.endsWith(field.key === "esi" ? "esiDiscipline" : `easyScholar-${field.key}`));
           if (kind === "columns")
             assert.equal(registered(), !previous, `${field.key} column registration follows the switch`);
           control.click();
