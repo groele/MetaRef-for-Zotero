@@ -140,6 +140,7 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
     const nativeWindow = helper.lines[2]._itemText.ownerDocument.defaultView;
     try {
       ui.showFinished(1, 0, 0.1, false, 0, 0, { saved: 1, unchanged: 0, notApplicable: 0, warnings: 0 });
+      nativeWindow.dispatchEvent(new nativeWindow.MouseEvent("mouseover", { bubbles: true }));
       await Zotero.Promise.delay(500);
       assert.isFalse(nativeWindow.closed, "a success stays visible long enough to read");
       await Zotero.Promise.delay(1600);

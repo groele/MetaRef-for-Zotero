@@ -1,0 +1,27 @@
+$ node scripts/test-e2e.mjs
+$ zotero-plugin build && tsc --noEmit
+ ℹ Building version 10.4.1 to .scaffold/build at 2026-10-16 22:18:00 in production mode.
+   → Preparing static assets
+   → Bundling scripts
+   → Packing plugin
+ ✔ Build finished in 1.171 s.
+ ℹ Building version 10.4.1 to .scaffold/build at 2026-10-16 22:18:03 in test mode.
+   → Preparing static assets
+   → Bundling scripts
+ ✔ Build finished in 0.8 s.
+ ℹ Installed <checkout>\.scaffold\build\addon as a temporary add-on
+ ℹ Installed <checkout>\.scaffold\test\resource as a temporary add-on
+
+   → metadata workflow in Zotero
+     ✔ persists formulas in a single batch, including book titles and duplicate inputs 719ms
+     ✔ applies the formula shortcut only once and leaves unrelated input fields alone 581ms
+     ✔ shows the automatic rule and records, rejects conflicts, disables and resets shortcuts 975ms
+     ✔ formats the actual title editor selection and toggles only the requested tag 104ms
+     ✔ continues healthy rules after preparation failures and primitive apply errors 218ms
+   → startup
+     ✔ uses the requested host platform 0ms
+     ✔ should have plugin instance defined 0ms
+   → production XPI installation
+     ✔ replaces the test directory with the production XPI and reads bundled reference data 2282ms
+
+ ✔ Test run completed - 8 passed

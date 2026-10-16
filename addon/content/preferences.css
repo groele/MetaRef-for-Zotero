@@ -74,6 +74,7 @@
 .metaref-shortcut-list {
   container: metaref-shortcuts / inline-size;
   min-width: 0;
+  font-size: 13px;
 }
 
 .metaref-shortcut-input {
@@ -122,7 +123,7 @@
   opacity: 0.75;
 }
 
-@container metaref-shortcuts (max-width: 30em) {
+@container metaref-shortcuts (max-width: 520px) {
   .metaref-shortcut-row {
     grid-template-columns: minmax(7em, 0.85fr) minmax(0, 1.5fr) max-content;
     column-gap: 8px;
@@ -150,7 +151,7 @@
   }
 }
 
-@container metaref-shortcuts (max-width: 22em) {
+@container metaref-shortcuts (max-width: 380px) {
   .metaref-shortcut-row {
     grid-template-columns: minmax(0, 1fr) max-content;
   }

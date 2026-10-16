@@ -20,7 +20,7 @@ easyscholar-columns-description = Selected fields become available in Zotero's i
 easyscholar-auto-update-on-added = Query EasyScholar when a journal article or conference paper is added
     .label = Query EasyScholar when a journal article or conference paper is added
 easyscholar-auto-update-on-added-description = Only runs when MetaFlow's automatic check for added items is enabled. Off by default; enabling it sends the journal or conference name to EasyScholar.
-shortcut-easy-scholar = Query journal information from EasyScholar
+shortcut-easy-scholar = Journal information
 easyscholar-field-jcr = JCR quartile
     .label = JCR quartile
 easyscholar-field-cas-upgrade = CAS ranking (upgrade edition)
@@ -265,10 +265,10 @@ settings-file-empty = The file has no usable records.
 settings-file-valid = Validated and activated { $count } records. Changes apply to the next check.
 settings-file-error = File not activated; the previous path is unchanged. { $error }
 
-shortcut-titleSentence = Convert item titles to sentence case
-shortcut-publicationCase = Capitalize publication titles
-shortcut-dataDirectory = Open the Zotero data directory
-shortcut-profileDirectory = Open the Zotero profile directory
+shortcut-titleSentence = Title sentence case
+shortcut-publicationCase = Publication title case
+shortcut-dataDirectory = Data directory
+shortcut-profileDirectory = Profile directory
 
 easyscholar-field-compound-if = Compound impact factor
     .label = Compound impact factor

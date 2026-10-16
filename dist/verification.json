@@ -1,6 +1,6 @@
 {
   "date": "2026-10-16",
-  "version": "10.4.0",
+  "version": "10.4.1",
   "name": "Zotero MetaFlow",
   "identity": {
     "addonName": "Zotero MetaFlow",
@@ -15,22 +15,45 @@
   },
   "e2e": {
     "status": "passed",
-    "sameProductionPackage": true,
-    "hosts": [
-      {
-        "zotero": "10.0.6",
-        "gecko": 140,
-        "passed": 91
-      },
-      {
-        "zotero": "11.0-dev.5+dac1ad489",
-        "gecko": 153,
-        "passed": 91
-      }
-    ],
-    "locale": "zh-CN",
-    "isolatedProfileAndData": true,
-    "productionXpiTemporaryInstall": "passed on both hosts"
+    "fullRuntimeRegression": {
+      "samePackageOnBothHosts": true,
+      "packageSha256": "2880f8f5b79a754769b66d65a85d33696ea6c02f5d5470a970d4e28932d3152c",
+      "hosts": [
+        {
+          "zotero": "10.0.6",
+          "gecko": 140,
+          "passed": 91
+        },
+        {
+          "zotero": "11.0-dev.5+dac1ad489",
+          "gecko": 153,
+          "passed": 91
+        }
+      ],
+      "locale": "zh-CN"
+    },
+    "finalProductionPackage": {
+      "runtimeBundleIdenticalToFullRegression": true,
+      "changesAfterFullRegression": [
+        "English shortcut label text",
+        "preference build timestamp"
+      ],
+      "installationAndTargetedValidation": [
+        {
+          "zotero": "10.0.6",
+          "gecko": 140,
+          "locale": "en-US",
+          "passed": 8
+        },
+        {
+          "zotero": "11.0-dev.5+dac1ad489",
+          "gecko": 153,
+          "locale": "zh-CN",
+          "passed": 3
+        }
+      ]
+    },
+    "isolatedProfileAndData": true
   },
   "validation": {
     "productionBuild": "passed",
@@ -43,12 +66,12 @@
   },
   "package": {
     "path": "zotero-metaflow.xpi",
-    "sha256": "1218c420c90958da46337cdfd5ae9178ef0c73dfe1c02b75bb2e128124217207",
-    "bytes": 3419201,
+    "sha256": "8b8df319303de3ef321899f8180dad52371ba2e9a05b54346fa5bf71c7b96fe6",
+    "bytes": 3419313,
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "10.4.0",
+      "version": "10.4.1",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
       "author": "groele",
@@ -74,18 +97,20 @@
   "publication": {
     "repository": "https://github.com/groele/Zotero-MetaFlow",
     "targetBranch": "main",
-    "targetTag": "V10.4.0"
+    "targetTag": "V10.4.1"
   },
   "logs": [
-    "../docs/assets/metaflow-10.4.0-zotero10-e2e.txt",
-    "../docs/assets/metaflow-10.4.0-zotero11-e2e.txt",
-    "../docs/assets/metaflow-10.4.0-unit.txt",
-    "../docs/assets/metaflow-10.4.0-lint.txt"
+    "../docs/assets/metaflow-10.4.1-zotero10-e2e.txt",
+    "../docs/assets/metaflow-10.4.1-zotero11-e2e.txt",
+    "../docs/assets/metaflow-10.4.1-final-package-zotero10-en.txt",
+    "../docs/assets/metaflow-10.4.1-final-package-zotero11.txt",
+    "../docs/assets/metaflow-10.4.1-unit.txt",
+    "../docs/assets/metaflow-10.4.1-lint.txt"
   ],
   "limitations": [
     "Authenticated provider availability and account-specific dataset permissions were not tested; API integration tests use controlled responses.",
     "Zotero 11 validation covers the listed development build, not every future release.",
-    "macOS/Linux and combinations with third-party plugins were not tested.",
+    "macOS and combinations with third-party plugins were not tested. Linux headless CI is recorded in the GitHub commit checks.",
     "Legacy Chinese impact-factor and NJAU remote service availability remains provider-dependent.",
     "Saved ESI fields and resolved ESI discipline columns retain separate provenance semantics; see docs/metadata-and-cache-10.4.0.md."
   ]

@@ -204,12 +204,15 @@ export class ProgressUI {
   private progressWindow?: ProgressWindowHelper;
   private _onCancel?: () => void;
   private running = false;
+  private closeTimer?: ReturnType<typeof setTimeout>;
 
   constructor(options?: { onCancel?: () => void }) {
     this._onCancel = options?.onCancel;
   }
 
   public close(): void {
+    clearTimeout(this.closeTimer);
+    this.closeTimer = undefined;
     this.progressWindow?.close();
     this.progressWindow = undefined;
     this.running = false;
@@ -303,8 +306,13 @@ export class ProgressUI {
     this.progressWindow
       .changeLine({ text, progress: 100, idx: 0 })
       .changeLine({ text: details ? getString("info-batch-details", { args: details }) : "", progress: 100, idx: 1 })
-      .changeLine({ text: getString("info-batch-duration", { args: { seconds: duration.toFixed(1) } }), idx: 2 })
-      .startCloseTimer(closeDelay, false);
+      .changeLine({ text: getString("info-batch-duration", { args: { seconds: duration.toFixed(1) } }), idx: 2 });
+    clearTimeout(this.closeTimer);
+    const completedWindow = this.progressWindow;
+    this.closeTimer = setTimeout(() => {
+      if (this.progressWindow === completedWindow)
+        this.close();
+    }, closeDelay);
     if (preparationFailed && successCount + errorCount)
       this.showError();
   }

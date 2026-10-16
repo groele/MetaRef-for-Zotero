@@ -38,7 +38,7 @@ For interface examples and implementation details, see the [project documentatio
 
 | Item                  | Details                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Add-on version        | `10.4.0`                                                                                                                              |
+| Add-on version        | `10.4.1`                                                                                                                              |
 | Add-on ID             | `metaflow@groele`                                                                                                                     |
 | Declared Zotero range | `10.0–11.*`                                                                                                                           |
 | Verification          | Zotero 11 checks include development builds; support declared by the manifest does not imply validation against every future release. |
