@@ -11,6 +11,7 @@ coverage
 # libs
 **/libs/**
 **/abbrevIso*
+!addon/licenses/AbbrevIso-MIT.txt
 
 # tmp
 **/*.bak
@@ -21,4 +22,5 @@ coverage
 
 # ts 编译的 js
 src/**/*.js
+!src/vendor/abbrev-iso.js
 .scaffold

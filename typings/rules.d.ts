@@ -51,3 +51,8 @@ type ID =
   | "tool-update-easyscholar"
   | "tool-csl-helper"
   | "tool-clean-extra"
+  | "tool-creators-style"
+  | "tool-creators-swap"
+  | "tool-title-replace"
+  | "tool-publication-replace"
+  | "tool-clear-all-extra"

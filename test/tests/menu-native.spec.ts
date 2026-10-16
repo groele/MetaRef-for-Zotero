@@ -76,9 +76,32 @@ describe("native flat menu commands", function () {
     await wait(() => sub.state === "open", "MetaRef popup opening");
     await shown;
     assert.equal(sub.querySelectorAll(":scope > menu").length, 0, "no nested menu arrows");
-    assert.equal(sub.querySelectorAll(":scope > menuitem").length, 22);
+    assert.equal(sub.querySelectorAll(":scope > menuitem").length, 30);
+    for (const entry of [root, ...sub.querySelectorAll("menuitem"), ...popup.querySelectorAll(":scope > menuitem[data-l10n-id^='metaref-']")]) {
+      assert.include(entry.style.getPropertyValue("--custom-menu-icon-light"), "metaref-16.svg", "all MetaFlow menu entries have the selected icon");
+      assert.include(entry.style.getPropertyValue("--custom-menu-icon-dark"), "metaref-16.svg");
+      assert.isTrue(entry.classList.contains(entry.localName === "menu" ? "menu-iconic" : "menuitem-iconic"));
+    }
     return { win, popup, sub };
   };
+
+  it("loads the packaged brand icons at their declared sizes", async function () {
+    const win = Zotero.getMainWindow();
+    const entry = (Zotero.PreferencePanes as any).pluginPanes.find((pane: any) => pane.pluginID === config.addonID);
+    const icons = `${entry.src.slice(0, entry.src.lastIndexOf("/") + 1)}icons/`;
+    for (const size of [16, 32, 48, 96, 128, 256, 512]) {
+      const image = new win.Image();
+      image.src = `${icons}metaref-${size}.png`;
+      await image.decode();
+      assert.equal(image.naturalWidth, size);
+      assert.equal(image.naturalHeight, size);
+    }
+    const image = new win.Image();
+    image.src = `${icons}metaref-16.svg`;
+    await image.decode();
+    assert.equal(image.naturalWidth, 16);
+    assert.equal(image.naturalHeight, 16);
+  });
 
   it("runs a formatter from its actual menu element on two consecutive openings", async function () {
     const item = new Zotero.Item("journalArticle");
@@ -111,12 +134,38 @@ describe("native flat menu commands", function () {
       assert.isFalse(command.disabled);
       command.dispatchEvent(new win.Event("command", { bubbles: true }));
       popup.hidePopup();
-      await wait(() => plugin().data.dialogs.size > 0, `${id} result window opening`);
-      const report = [...plugin().data.dialogs.values()][0] as Window;
-      assert.include(report.document.body!.textContent!, expected);
+      const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
+      await section._handleRefresh();
+      assert.include(section.textContent!, expected);
       assert.equal(JSON.stringify(item.toJSON()), snapshot);
-      report.close();
-      await wait(() => plugin().data.dialogs.size === 0, `${id} result window closing (initial closed=${report.closed})`);
+      assert.equal(plugin().data.dialogs.size, 0, "index results stay in the item pane");
+    }
+  });
+
+  it("shows a user-pinned command only at the first context-menu level and still executes it once", async function () {
+    const pref = `${config.prefsPrefix}.menu.primary.correct-title-chemical-formula`;
+    const previous = Zotero.Prefs.get(pref, true);
+    const item = items[0];
+    item.setField("title", "Pinned MoS2");
+    await item.saveTx();
+    try {
+      Zotero.Prefs.set(pref, true, true);
+      const { win, popup, sub } = await menu();
+      const selector = "menuitem[data-l10n-id='metaref-rule-correct-title-chemical-formula-menu-item']";
+      const nested = sub.querySelector(selector) as HTMLElement;
+      const primary = popup.querySelector(`:scope > ${selector}`) as HTMLElement;
+      assert.isTrue(nested.hidden);
+      assert.isNotNull(primary);
+      assert.isFalse(primary.hidden);
+      primary.dispatchEvent(new win.Event("command", { bubbles: true }));
+      popup.hidePopup();
+      await wait(() => item.getField("title", false, true) === "Pinned MoS<sub>2</sub>" && !item.hasChanged());
+    }
+    finally {
+      if (previous === undefined)
+        Zotero.Prefs.clear(pref, true);
+      else
+        Zotero.Prefs.set(pref, previous as boolean, true);
     }
   });
 });

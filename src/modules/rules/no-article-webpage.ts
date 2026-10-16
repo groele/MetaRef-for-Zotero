@@ -104,10 +104,10 @@ export const NoArticleWebPage = defineRule({
         message: getString("rule-no-article-webpage-report-message"),
         action: {
           label: getString("rule-no-article-webpage-report-action"),
-          callback: () => {
+          callback: async () => {
             const currentItem = Zotero.Items.get(item.id);
             if (currentItem && !currentItem.deleted)
-              return addon.hooks.onLintInBatch(["tool-update-metadata"], [currentItem]);
+              await addon.hooks.onLintInBatch(["tool-update-metadata"], [currentItem]);
           },
         },
       });

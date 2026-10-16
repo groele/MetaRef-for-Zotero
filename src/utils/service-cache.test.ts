@@ -1,0 +1,145 @@
+import { createHash } from "node:crypto";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearRequestCache, clearServiceRequestCache, requestServiceGET } from "./http";
+import { clearStoredServiceCache, flushServiceCache, resetServiceCacheSession } from "./service-cache-storage";
+
+vi.mock("./logger", () => ({ createLogger: () => ({ debug: vi.fn() }) }));
+vi.mock("./throttle", () => ({ withThrottle: (fn: unknown) => fn }));
+
+describe("authenticated service response cache", () => {
+  const files = new Map<string, any>();
+  const response = (data = { paperId: "paper-1", title: "Cached paper" }) => ({ status: 200, response: JSON.stringify(data), responseText: JSON.stringify(data) });
+  let request: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    vi.useFakeTimers();
+    request = vi.fn(async () => response());
+    vi.stubGlobal("Zotero", { HTTP: { request }, Profile: { dir: "/isolated-profile" }, Utilities: { Internal: { md5: (key: string) => createHash("md5").update(key).digest("hex") } } });
+    vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
+    vi.stubGlobal("IOUtils", {
+      exists: async (path: string) => files.has(path),
+      readJSON: async (path: string) => structuredClone(files.get(path)),
+      writeJSON: async (path: string, data: any) => { files.set(path, structuredClone(data)); },
+    });
+    resetServiceCacheSession();
+    clearRequestCache();
+    await clearStoredServiceCache();
+  });
+
+  afterEach(async () => {
+    clearRequestCache();
+    await flushServiceCache();
+    resetServiceCacheSession();
+    files.clear();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  const fetch = (key = "test-secret", signal?: AbortSignal) => requestServiceGET("semantic-scholar", "https://example.test/paper/1", { headers: { "x-api-key": key } }, signal);
+
+  it("shares concurrent lookups and partitions credentials", async () => {
+    await Promise.all([fetch(), fetch(), fetch()]);
+    expect(request).toHaveBeenCalledTimes(1);
+    await fetch("different-secret");
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("survives a session reset without persisting the key or extending the TTL", async () => {
+    await fetch();
+    await flushServiceCache();
+    expect(JSON.stringify([...files.values()])).not.toContain("test-secret");
+    await vi.advanceTimersByTimeAsync(71 * 60 * 60_000);
+    clearRequestCache();
+    resetServiceCacheSession();
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(61 * 60_000);
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries logical API errors instead of caching them", async () => {
+    request.mockResolvedValueOnce(response({ error: "Not found" } as any));
+    await fetch();
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears durable and in-memory responses", async () => {
+    await fetch();
+    clearServiceRequestCache("semantic-scholar");
+    await clearStoredServiceCache("semantic-scholar");
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps a shared request alive when only one subscriber cancels", async () => {
+    let release!: (value: any) => void;
+    request.mockImplementationOnce(() => new Promise((resolve) => {
+      release = resolve;
+    }));
+    const controller = new AbortController();
+    const cancelled = fetch("test-secret", controller.signal).catch(error => error);
+    const surviving = fetch();
+    await vi.advanceTimersByTimeAsync(0);
+    controller.abort(new Error("cancel first subscriber"));
+    expect((await cancelled).message).toContain("cancel first");
+    release(response());
+    await surviving;
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it("continues a query when reading the cache file fails", async () => {
+    (IOUtils as any).exists = async () => {
+      throw new Error("filesystem unavailable");
+    };
+    resetServiceCacheSession();
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the original deadline of a version 1 six-hour cache", async () => {
+    await fetch();
+    await flushServiceCache();
+    const snapshot = files.values().next().value;
+    snapshot.version = 1;
+    snapshot.entries[0][1].expires = Date.now() + 6 * 60 * 60_000;
+    clearRequestCache();
+    resetServiceCacheSession();
+    await vi.advanceTimersByTimeAsync(5 * 60 * 60_000);
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(61 * 60_000);
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("preserves a stored cache when flushed before any lookup in the new session", async () => {
+    await fetch();
+    await flushServiceCache();
+    clearRequestCache();
+    resetServiceCacheSession();
+    await flushServiceCache();
+    resetServiceCacheSession();
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it("shares durable paper aliases without duplicating response bodies", async () => {
+    const { rememberServiceAliases } = await import("./http");
+    const value = await fetch();
+    await rememberServiceAliases("semantic-scholar", "https://example.test/paper/1", ["https://example.test/paper/DOI:1"], { headers: { "x-api-key": "test-secret" } }, value);
+    await flushServiceCache();
+    const snapshot = files.values().next().value;
+    expect(snapshot.version).toBe(2);
+    expect(snapshot.entries.filter(([, entry]: any) => entry.value)).toHaveLength(1);
+    expect(snapshot.entries.filter(([, entry]: any) => entry.alias)).toHaveLength(1);
+    clearRequestCache();
+    resetServiceCacheSession();
+    await requestServiceGET("semantic-scholar", "https://example.test/paper/DOI:1", { headers: { "x-api-key": "test-secret" } });
+    expect(request).toHaveBeenCalledTimes(1);
+    await requestServiceGET("semantic-scholar", "https://example.test/paper/DOI:1", { headers: { "x-api-key": "another-key" } });
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+});

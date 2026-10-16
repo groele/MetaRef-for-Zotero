@@ -1,0 +1,11 @@
+$ vitest run
+
+ RUN  v4.1.11 <checkout>
+
+Same-journal finish times (ms): [0,0,0,0,0,0,0,0,0,0]
+
+ Test Files  61 passed (61)
+      Tests  389 passed (389)
+   Start at  21:57:38
+   Duration  6.39s (transform 32.06s, setup 0ms, import 52.06s, tests 5.63s, environment 11ms)
+

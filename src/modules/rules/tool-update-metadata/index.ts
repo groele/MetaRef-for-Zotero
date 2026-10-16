@@ -1,16 +1,17 @@
 import type { MetadataContext, TransformedData } from "./services/base-service";
-import { useSettingsDialog } from "../../../utils/dialog";
 import { getString } from "../../../utils/locale";
 import { getPref } from "../../../utils/prefs";
 import { isFieldValidForItemType } from "../../../utils/zotero";
 import { defineRule } from "../rule-base";
 import { extractIdentifiers, isPreprint } from "./identifiers";
-import { mergeMetadata, metadataIdentity, metadataMissing, normalizeDOI } from "./policy";
+import { mergeMetadata, metadataIdentity, metadataMissing, metadataValuesEqual, normalizeDOI } from "./policy";
 import { services } from "./services";
 
 interface UpdateMetadataOption {
   mode: "blank" | "all";
   allowTypeChanged: boolean;
+  repairCreators?: boolean;
+  creatorsOnly?: boolean;
   // lint: boolean;
 }
 
@@ -27,7 +28,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     const originalDOI = normalizeDOI(identifiers.DOI);
     const allowRelatedDOI = isPreprint(item, identifiers);
     debug("Identifiers: ", identifiers);
-    if (Object.entries(identifiers).length === 0) {
+    if (Object.entries(identifiers).length === 0 && !String(item.getField("title") || "").trim()) {
       report({
         level: "error",
         message: getString("rule-tool-update-metadata-no-identifiers"),
@@ -95,6 +96,10 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
 
     // 3. request metadata and clean data
     let data: TransformedData | null = null;
+    const isAuthor = (creator: NonNullable<TransformedData["creators"]>[number]) => "creatorType" in creator
+      ? creator.creatorType === "author"
+      : creator.creatorTypeID === Zotero.CreatorTypes.getID("author");
+    const hasAuthors = (creators?: TransformedData["creators"]) => Boolean(creators?.some(isAuthor));
     const sources = new Map<string, string>();
     const successfulServices = new Set<string>();
     const expectedType = (result: TransformedData) => options.mode === "all" && options.allowTypeChanged && result.itemType
@@ -126,13 +131,18 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
           if (!Object.entries(transformedData).some(([field, value]) => !["DOI", "itemType", "libraryCatalog"].includes(field) && (Array.isArray(value) ? value.length > 0 : Boolean(value))))
             continue;
           const merged = mergeMetadata(data ?? {}, transformedData);
+          if (options.repairCreators && !hasAuthors(data?.creators) && hasAuthors(transformedData.creators)) {
+            merged.creators = transformedData.creators;
+            sources.set("creators", service.name);
+          }
           for (const field of Object.keys(merged)) {
             if (!sources.has(field) && (field === "creators" ? merged.creators?.length : merged[field as keyof TransformedData]))
               sources.set(field, service.name);
           }
           data = merged;
           successfulServices.add(service.name);
-          if (!metadataMissing(data, original, options.mode, expectedType(data)).length)
+          const missing = options.creatorsOnly ? !hasAuthors(data.creators) : metadataMissing(data, original, options.mode, expectedType(data)).length || (options.repairCreators && !hasAuthors(data.creators));
+          if (!missing)
             break;
         }
       }
@@ -159,12 +169,14 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     }
 
     debug("Clean data: ", data);
-    const missing = metadataMissing(data, original, options.mode, expectedType(data));
+    const missing = options.creatorsOnly ? data.creators?.length ? [] : ["creators"] : metadataMissing(data, original, options.mode, expectedType(data));
+    if (options.repairCreators && !hasAuthors(data.creators) && !missing.includes("creators"))
+      missing.push("creators");
     if (missing.length)
       report({ level: "warning", message: getString("rule-tool-update-metadata-incomplete", { args: { fields: missing.join(", ") } }) });
 
     const unchanged = (field: string, value: unknown) => {
-      if (JSON.stringify(value ?? "") === JSON.stringify((original as Record<string, unknown>)[field] ?? ""))
+      if (metadataValuesEqual(field, (original as Record<string, unknown>)[field], value))
         return true;
       report({ level: "warning", message: getString("rule-tool-update-metadata-edited", { args: { field } }) });
       return false;
@@ -226,12 +238,12 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
       if (!unchanged("creators", (item.toJSON() as TransformedData).creators))
         return;
 
-      if (item.getCreators().length && options.mode !== "all") {
+      if (item.getCreators().length && options.mode !== "all" && !options.repairCreators) {
         debug("Original item has creators, blank mode, skip to update creators.");
         return;
       }
 
-      const creators = data.creators.filter((creator) => {
+      let creators = data.creators.filter((creator) => {
         const type = "creatorType" in creator ? Zotero.CreatorTypes.getID(creator.creatorType) : creator.creatorTypeID;
         return type && Zotero.CreatorTypes.isValidForItemType(type, item.itemTypeID);
       });
@@ -239,7 +251,15 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
         report({ level: "warning", message: getString("rule-tool-update-metadata-invalid-creators") });
         return;
       }
+      if (options.repairCreators && options.mode !== "all") {
+        const authors = creators.filter(isAuthor);
+        if (!authors.length)
+          return;
+        creators = [...authors, ...(original.creators || []).filter(creator => !isAuthor(creator))];
+      }
       if (creators.length) {
+        if (metadataValuesEqual("creators", (item.toJSON() as TransformedData).creators, creators))
+          return;
         item.setCreators(creators);
         report({ level: "info", field: "creators", source: sources.get("creators"), message: getString("rule-tool-update-metadata-field-source", { args: { field: "creators", source: sources.get("creators") || "" } }) });
       }
@@ -253,10 +273,10 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
         let newFieldValue = "";
         const oldFieldValue = item.getField(field);
 
-        if (!unchanged(field, oldFieldValue))
+        if (options.mode !== "all" && !!oldFieldValue)
           continue;
 
-        if (options.mode !== "all" && !!oldFieldValue)
+        if (!unchanged(field, oldFieldValue))
           continue;
 
         switch (field) {
@@ -289,86 +309,23 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
       }
     }
 
-    applyItemType(data);
+    if (!options.creatorsOnly)
+      applyItemType(data);
     applyItemCreators(data);
     const { itemType, creators, ...fields } = data;
-    applyItemFields(fields);
+    if (!options.creatorsOnly)
+      applyItemFields(fields);
 
     // if (options.lint)
     //   addon.runner.add({ rules: "standard", items: item });
   },
 
-  async prepare({ signal }) {
-    // Get Default Settings
-    const isSlient = getPref("rule.tool-update-metadata.option.slient");
-    const defaultOptions: UpdateMetadataOption = {
+  prepare() {
+    return {
       mode: getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" : "blank",
       allowTypeChanged: getPref("rule.tool-update-metadata.option.allow-type-changed"),
+      repairCreators: getPref("metadata.repairCreators" as any, true) === true,
     };
-
-    if (isSlient)
-      return defaultOptions;
-
-    // Create Dialog
-    const { dialog, openForSettings } = useSettingsDialog<UpdateMetadataOption>(signal);
-
-    dialog.addSetting(getString("rule-tool-update-metadata-dialog-mode"), "mode", {
-      tag: "select",
-      children: [{
-        tag: "option",
-        properties: {
-          value: "all",
-          innerHTML: getString("rule-tool-update-metadata-dialog-mode-all"),
-        },
-        attributes: {
-          ...defaultOptions.mode === "all" && { selected: "" },
-        },
-      }, {
-        tag: "option",
-        properties: {
-          value: "blank",
-          innerHTML: getString("rule-tool-update-metadata-dialog-mode-blank"),
-        },
-        attributes: {
-          ...defaultOptions.mode === "blank" && { selected: "" },
-        },
-      }],
-    })
-      .addSetting(getString("rule-tool-update-metadata-dialog-allow-type-changed"), "allowTypeChanged", {
-        tag: "input",
-        attributes: {
-          type: "checkbox",
-          ...defaultOptions.allowTypeChanged && { checked: defaultOptions.allowTypeChanged },
-        },
-      }, { valueType: "boolean" })
-      // .addSetting("Run Lint After Retrive", "lint", {
-      //   tag: "input",
-      //   attributes: {
-      //     type: "checkbox",
-      //     checked: true,
-      //   },
-      // }, { valueType: "boolean" })
-      .addStaticRow(getString("rule-tool-update-metadata-dialog-notes"), {
-        tag: "ul",
-        children: [{
-          tag: "li",
-          properties: {
-            textContent: getString("rule-tool-update-metadata-dialog-note-rate-limit"),
-          },
-        }, {
-          tag: "li",
-          properties: {
-            textContent: getString("rule-tool-update-metadata-dialog-note-chinese-limit"),
-          },
-        }, {
-          tag: "li",
-          properties: {
-            textContent: getString("rule-tool-update-metadata-dialog-note-type-change"),
-          },
-        }],
-      });
-
-    return await openForSettings(getString("rule-tool-update-metadata-dialog-title"));
   },
 });
 

@@ -1,18 +1,14 @@
 import { assert } from "chai";
 import { config } from "../../package.json";
+import { Rules } from "../../src/modules/rules";
 
-describe("settings panel navigation and validation in Zotero", function () {
+describe("settings panel layout and validation in Zotero", function () {
   this.timeout(30_000);
   let win: Window & typeof globalThis;
   let pane: HTMLElement;
-  let search: HTMLInputElement;
   let previousConcurrency: number;
   const pref = (key: string) => `${config.prefsPrefix}.${key}`;
   const find = (key: string) => pane.querySelector<HTMLElement>(`[preference='${pref(key)}']`)!;
-  const query = (value: string) => {
-    search.value = value;
-    search.dispatchEvent(new win.Event("input", { bubbles: true }));
-  };
 
   before(async function () {
     previousConcurrency = Zotero.Prefs.get(pref("lint.numConcurrent"), true) as number;
@@ -24,7 +20,6 @@ describe("settings panel navigation and validation in Zotero", function () {
     pane = win.document.getElementById("metaref") as HTMLElement;
     await win.document.l10n!.translateFragment(pane);
     await Zotero.Promise.delay(50);
-    search = pane.querySelector<HTMLInputElement>(".metaref-settings-search")!;
   });
 
   after(function () {
@@ -32,67 +27,298 @@ describe("settings panel navigation and validation in Zotero", function () {
     win?.close();
   });
 
-  it("initializes once on repeated fragment loads and preserves search semantics without a native clear control", function () {
+  it("initializes once and omits the removed search, section jump and global disclosure controls", function () {
     const actions = pane.querySelectorAll(".metaref-shortcut-action").length;
     pane.dispatchEvent(new win.Event("load"));
     pane.dispatchEvent(new win.Event("load"));
     assert.equal(pane.querySelectorAll(".metaref-shortcut-action").length, actions);
     assert.isAbove(actions, 0);
-    assert.equal(search.type, "text");
-    assert.equal(search.getAttribute("role"), "searchbox");
+    assert.isNull(pane.querySelector(".metaref-settings-search, .metaref-settings-jump, .metaref-settings-disclosure, .metaref-settings-rule-actions"));
   });
 
-  it("filters individual settings by multiple keywords, retains parent switches and never indexes secrets", function () {
-    const detail = find("rule.correct-title-sentence-case").closest("details") as HTMLDetailsElement;
-    const originalOpen = detail.open;
-    query("sentence-case custom-term");
-    assert.isTrue(detail.open);
-    assert.isFalse(find("rule.correct-title-sentence-case").hidden, "parent switch stays visible");
-    assert.isFalse((find("rule.correct-title-sentence-case.custom-term-path").closest("hbox") as HTMLElement).hidden);
-    assert.isTrue(find("rule.no-title-trailing-dot").hidden, "unrelated setting is hidden within the same group");
-    assert.isTrue((pane.querySelector(".metaref-settings-disclosure") as HTMLButtonElement).disabled);
-    query("");
-    assert.equal(detail.open, originalOpen);
-    assert.isFalse(find("rule.no-title-trailing-dot").hidden);
-    const secret = find("semanticScholarToken") as HTMLInputElement;
-    const previous = secret.value;
-    secret.value = "private-settings-search-secret-qa";
-    query(secret.value);
-    assert.isFalse(pane.querySelector<HTMLElement>(".metaref-settings-empty")!.hidden);
-    secret.value = previous;
-    pane.querySelector(".metaref-settings-clear")!.dispatchEvent(new win.Event("command", { bubbles: true }));
-    assert.equal(search.value, "");
-    assert.equal(win.document.activeElement, search);
-    assert.isTrue((pane.querySelector(".metaref-settings-clear") as HTMLButtonElement).disabled);
-  });
-
-  it("jumps between all seven sections and expands or collapses rules without changing preferences", function () {
-    const details = [...pane.querySelectorAll<HTMLDetailsElement>("details")];
-    const initial = details.map(detail => detail.open);
-    const keys = [...pane.querySelectorAll<HTMLElement>("[preference]")].map(control => control.getAttribute("preference")!);
-    const snapshot = keys.map(key => Zotero.Prefs.get(key, true));
-    const expand = pane.querySelector(".metaref-settings-disclosure[data-open='true']")!;
-    const collapse = pane.querySelector(".metaref-settings-disclosure[data-open='false']")!;
-    expand.dispatchEvent(new win.Event("command", { bubbles: true }));
-    assert.isTrue(details.every(detail => detail.open));
-    collapse.dispatchEvent(new win.Event("command", { bubbles: true }));
-    assert.isTrue(details.every(detail => !detail.open));
-    assert.deepEqual(keys.map(key => Zotero.Prefs.get(key, true)), snapshot);
-    details.forEach((detail, index) => detail.open = initial[index]);
-    query("no-such-setting-qa");
-    const jump = pane.querySelector<HTMLSelectElement>(".metaref-settings-jump")!;
-    assert.lengthOf(jump.options, 8);
-    for (const option of (Array.from(jump.options) as HTMLOptionElement[]).slice(1)) {
-      assert.isNotEmpty(option.textContent!.trim());
-      jump.value = option.value;
-      jump.dispatchEvent(new win.Event("change", { bubbles: true }));
-      const group = win.document.getElementById(option.value)!;
-      assert.isFalse((group as HTMLElement).hidden);
-      assert.equal(search.value, "");
-      assert.equal(win.document.activeElement, group.querySelector("h2"));
+  it("uses one card style for every section and links workflow modules to existing rule switches", async function () {
+    assert.lengthOf(pane.querySelectorAll(":scope > .metaref-section-card"), 8);
+    assert.lengthOf(pane.querySelectorAll("checkbox[preference]"), 0, "all preference checkboxes use the same visible native control");
+    for (const card of pane.querySelectorAll(":scope > .metaref-section-card"))
+      assert.isNotNull(card.querySelector(":scope > summary"));
+    for (const label of pane.querySelectorAll(".metaref-check-option"))
+      assert.isNotEmpty(label.textContent!.trim(), "every native checkbox has a readable label");
+    const titleRules = Rules.getStandard().filter(rule => /title/.test(rule.id) && !/publication/.test(rule.id));
+    const before = new Map(titleRules.map(rule => [rule.id, Zotero.Prefs.get(pref(`rule.${rule.id}`), true)]));
+    const module = pane.querySelector<HTMLInputElement>("#metaref-workflow-title")!;
+    try {
+      module.checked = false;
+      module.click();
+      for (const rule of titleRules)
+        assert.isTrue(Zotero.Prefs.get(pref(`rule.${rule.id}`), true));
+      module.click();
+      for (const rule of titleRules)
+        assert.isFalse(Zotero.Prefs.get(pref(`rule.${rule.id}`), true));
     }
-    pane.dispatchEvent(new win.KeyboardEvent("keydown", { key: "f", ctrlKey: !Zotero.isMac, metaKey: Zotero.isMac, bubbles: true, cancelable: true }));
-    assert.equal(win.document.activeElement, search);
+    finally {
+      for (const [id, value] of before) {
+        Zotero.Prefs.set(pref(`rule.${id}`), value as boolean, true);
+        (find(`rule.${id}`) as HTMLInputElement).checked = value as boolean;
+      }
+      pane.dispatchEvent(new win.Event("command", { bubbles: true }));
+    }
+    const cards = [...pane.querySelectorAll<HTMLDetailsElement>(":scope > .metaref-section-card")];
+    const initial = cards.map(card => card.open);
+    try {
+      cards.forEach(card => card.open = false);
+      win.resizeTo(920, 800);
+      pane.scrollIntoView({ block: "start" });
+      await Zotero.Promise.delay(100);
+      const canvas = win.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
+      canvas.width = win.innerWidth;
+      canvas.height = win.innerHeight;
+      (canvas.getContext("2d") as any).drawWindow(win, 0, 0, canvas.width, canvas.height, "rgb(245,245,245)");
+      await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-unified-settings-overview.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
+    }
+    finally {
+      cards.forEach((card, index) => card.open = initial[index]);
+    }
+  });
+
+  it("saves metadata update policy in preferences and never reopens the mode dialog", async function () {
+    const modeKey = "rule.tool-update-metadata.option.mode";
+    const typeKey = "rule.tool-update-metadata.option.allow-type-changed";
+    const legacyKey = "rule.tool-update-metadata.option.slient";
+    const previous = new Map([modeKey, typeKey, legacyKey].map(key => [key, Zotero.Prefs.get(pref(key), true)]));
+    const mode = find(modeKey) as any;
+    const allowType = find(typeKey) as HTMLInputElement;
+    const plugin = (Zotero as any)[config.addonInstance];
+    const dialogs = plugin.data.dialogs.size;
+    const rule = Rules.getByID("tool-update-metadata")!;
+    assert.isNull(pane.querySelector(`[preference='${pref(legacyKey)}']`));
+    try {
+      Zotero.Prefs.set(pref(legacyKey), false, true);
+      for (const value of ["blank", "all"]) {
+        mode.value = value;
+        mode.dispatchEvent(new win.Event("command", { bubbles: true }));
+        await Zotero.Promise.delay(50);
+        assert.equal(Zotero.Prefs.get(pref(modeKey), true), value);
+        for (const enabled of [false, true]) {
+          if (allowType.checked !== enabled)
+            allowType.click();
+          assert.equal(Zotero.Prefs.get(pref(typeKey), true), enabled);
+          const options = await rule.prepare!({ items: [], debug() {} } as any);
+          assert.deepEqual(options, { mode: value, allowTypeChanged: enabled, repairCreators: Zotero.Prefs.get(pref("metadata.repairCreators"), true) === true });
+          assert.equal(plugin.data.dialogs.size, dialogs, "legacy prompt preference cannot reopen the mode dialog");
+        }
+      }
+    }
+    finally {
+      for (const [key, value] of previous)
+        Zotero.Prefs.set(pref(key), value as string | boolean, true);
+      mode.value = previous.get(modeKey);
+      allowType.checked = previous.get(typeKey) as boolean;
+    }
+  });
+
+  it("tests EasyScholar connections inline, prevents duplicate requests and redacts keys", async function () {
+    const input = pane.querySelector<HTMLInputElement>("#metaref-easyscholar-key")!;
+    const button = pane.querySelector<HTMLButtonElement>("#metaref-easyscholar-test")!;
+    const status = pane.querySelector<HTMLElement>("#metaref-easyscholar-test-status")!;
+    const previousValue = input.value;
+    const request = Zotero.HTTP.request;
+    let requests = 0;
+    let accepted = true;
+    try {
+      input.value = "connection-fixture-key";
+      Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
+        if (new URL(url).hostname !== "www.easyscholar.cc")
+          return request(method, url, options);
+        requests++;
+        assert.equal(new URL(url).searchParams.get("publicationName"), "Nature");
+        await Zotero.Promise.delay(50);
+        return { responseText: JSON.stringify(accepted ? { code: 200 } : { code: 403, msg: "Rejected connection-fixture-key" }) };
+      }) as any;
+      const run = async () => {
+        button.dispatchEvent(new win.Event("command", { bubbles: true }));
+        assert.isTrue(button.disabled);
+        button.dispatchEvent(new win.Event("command", { bubbles: true }));
+        for (let attempt = 0; attempt < 200 && button.disabled; attempt++)
+          await Zotero.Promise.delay(25);
+        assert.isFalse(button.disabled);
+        assert.isNotEmpty(status.textContent!.trim());
+      };
+      await run();
+      const success = status.textContent;
+      assert.equal(requests, 1);
+      accepted = false;
+      await run();
+      assert.equal(requests, 2);
+      assert.notEqual(status.textContent, success);
+      assert.notInclude(status.textContent!, "connection-fixture-key");
+      assert.include(status.textContent!, "[redacted]");
+      input.value = "";
+      await run();
+      assert.equal(requests, 2, "an empty key makes no request");
+    }
+    finally {
+      Zotero.HTTP.request = request;
+      input.value = previousValue;
+    }
+  });
+
+  it("links the hidden menu location to visibility and preserves the last visible location", function () {
+    const key = "tool-update-easyscholar";
+    const visible = Zotero.Prefs.get(pref(`menu.${key}`), true);
+    const primary = Zotero.Prefs.get(pref(`menu.primary.${key}`), true);
+    const checkbox = find(`menu.${key}`) as HTMLInputElement;
+    const select = checkbox.closest(".metaref-menu-placement-row")!.querySelector("select")!;
+    const initial = select.value;
+    try {
+      assert.isNotNull(select.querySelector("option[value='none']"));
+      select.value = "primary";
+      select.dispatchEvent(new win.Event("change", { bubbles: true }));
+      assert.isTrue(checkbox.checked);
+      select.value = "none";
+      select.dispatchEvent(new win.Event("change", { bubbles: true }));
+      assert.isFalse(Zotero.Prefs.get(pref(`menu.${key}`), true));
+      assert.isFalse(checkbox.checked);
+      checkbox.click();
+      assert.equal(select.value, "primary");
+      checkbox.click();
+      assert.equal(select.value, "none");
+      select.value = "nested";
+      select.dispatchEvent(new win.Event("change", { bubbles: true }));
+      assert.isTrue(Zotero.Prefs.get(pref(`menu.${key}`), true));
+      assert.isFalse(Zotero.Prefs.get(pref(`menu.primary.${key}`), true));
+      assert.isTrue(checkbox.checked);
+    }
+    finally {
+      for (const [name, value] of [[`menu.${key}`, visible], [`menu.primary.${key}`, primary]] as const) {
+        if (value === undefined)
+          Zotero.Prefs.clear(pref(name), true);
+        else
+          Zotero.Prefs.set(pref(name), value as boolean, true);
+      }
+      checkbox.checked = visible as boolean;
+      select.value = initial;
+    }
+  });
+
+  it("keeps identifier controls inset from card edges at both window widths", async function () {
+    const input = find("rule.no-doi-prefix");
+    const card = input.closest("details") as HTMLDetailsElement;
+    const states = new Map<HTMLDetailsElement, boolean>();
+    for (let ancestor: Element | null = card; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.localName === "details") {
+        states.set(ancestor as HTMLDetailsElement, (ancestor as HTMLDetailsElement).open);
+        (ancestor as HTMLDetailsElement).open = true;
+      }
+    }
+    try {
+      assert.isNotNull(input.closest(".metaref-card-body"));
+      for (const width of [920, 780]) {
+        win.resizeTo(width, 800);
+        card.scrollIntoView({ block: "center" });
+        await Zotero.Promise.delay(100);
+        const rect = card.getBoundingClientRect();
+        const control = input.getBoundingClientRect();
+        assert.isAtLeast(control.left - rect.left, 13, "checkbox clears the border");
+        const heading = card.querySelector(":scope > summary")!.firstElementChild!.getBoundingClientRect();
+        assert.closeTo(control.left, heading.left, 1, "checkbox aligns with its heading");
+        assert.isAtLeast(rect.right - control.right, 13);
+        assert.isAtMost(pane.scrollWidth, pane.clientWidth + 1);
+      }
+      const rect = card.getBoundingClientRect();
+      const canvas = win.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
+      canvas.width = Math.ceil(rect.width);
+      canvas.height = Math.ceil(rect.height);
+      (canvas.getContext("2d") as any).drawWindow(win, rect.left, rect.top, rect.width, rect.height, "rgb(245,245,245)");
+      await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-card-inset.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
+    }
+    finally {
+      for (const [detail, open] of states)
+        detail.open = open;
+    }
+  });
+
+  it("retains warnings without an automatic report and opens details only on request", async function () {
+    const plugin = (Zotero as any)[config.addonInstance];
+    const keys = ["lint.autoReport", "lint.notify", "lint.onAdded"];
+    const previous = new Map(keys.map(key => [key, Zotero.Prefs.get(pref(key), true)]));
+    const item = new Zotero.Item("journalArticle");
+    const dialogs = new Set(plugin.data.dialogs.keys());
+    try {
+      keys.forEach(key => Zotero.Prefs.set(pref(key), false, true));
+      item.setField("title", "Quiet feedback fixture");
+      await item.saveTx();
+      await plugin.runner.add({ items: [item], rules: [{ id: "tool-update-metadata", scope: "item", apply({ report }: any) {
+        report({ level: "warning", message: "Retained warning fixture" });
+      } }] });
+      assert.equal(plugin.data.dialogs.size, dialogs.size, "warnings do not automatically open detailed reports");
+      assert.equal(plugin.runner.lastResult.warnings, 1);
+      assert.isNotEmpty(pane.querySelector("#metaref-last-batch-status")!.textContent!);
+      const button = pane.querySelector<HTMLButtonElement>("#metaref-last-batch-report")!;
+      assert.isFalse(button.disabled);
+      button.dispatchEvent(new win.Event("command", { bubbles: true }));
+      for (let attempt = 0; attempt < 100 && plugin.data.dialogs.size === dialogs.size; attempt++)
+        await Zotero.Promise.delay(25);
+      const report = [...plugin.data.dialogs.entries()].find(([key]: any) => !dialogs.has(key))?.[1] as Window;
+      assert.isDefined(report, "an explicit request opens the retained details");
+      assert.include(report.document.body!.textContent!, "Retained warning fixture");
+      report.close();
+    }
+    finally {
+      for (const [key, value] of previous)
+        Zotero.Prefs.set(pref(key), value as boolean, true);
+      if (item.id)
+        await item.eraseTx();
+      for (const [key, dialog] of plugin.data.dialogs) {
+        if (!dialogs.has(key))
+          (dialog as Window).close();
+      }
+    }
+  });
+
+  it("persists independent ESI and Nature Index source priorities", async function () {
+    for (const kind of ["esi", "nature"]) {
+      const key = pref(`insights.${kind}SourcePriority`);
+      const previous = Zotero.Prefs.get(key, true);
+      const select = pane.querySelector<HTMLSelectElement>(`select[data-index-policy='${kind}']`)!;
+      const initial = select.value;
+      try {
+        assert.lengthOf(select.options, 4);
+        assert.isNotEmpty(win.document.getElementById(select.getAttribute("aria-labelledby")!)!.textContent!.trim());
+        for (const value of ["api-first", "local-first", "api-only", "local-only"]) {
+          select.value = value;
+          select.dispatchEvent(new win.Event("change", { bubbles: true }));
+          assert.equal(Zotero.Prefs.get(key, true), value);
+        }
+      }
+      finally {
+        Zotero.Prefs.set(key, previous as string, true);
+        select.value = initial;
+      }
+    }
+    const card = pane.querySelector("select[data-index-policy]")!.closest("details") as HTMLDetailsElement;
+    const states = new Map<HTMLDetailsElement, boolean>();
+    for (let ancestor: Element | null = card; ancestor; ancestor = ancestor.parentElement) {
+      if (ancestor.localName === "details") {
+        states.set(ancestor as HTMLDetailsElement, (ancestor as HTMLDetailsElement).open);
+        (ancestor as HTMLDetailsElement).open = true;
+      }
+    }
+    try {
+      win.resizeTo(920, 800);
+      card.scrollIntoView({ block: "center" });
+      await Zotero.Promise.delay(100);
+      assert.isAtMost(pane.scrollWidth, pane.clientWidth + 1);
+      const rect = card.getBoundingClientRect();
+      const canvas = win.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
+      canvas.width = Math.ceil(rect.width);
+      canvas.height = Math.ceil(rect.height);
+      (canvas.getContext("2d") as any).drawWindow(win, rect.left, rect.top, rect.width, rect.height, "rgb(245,245,245)");
+      await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-index-source-priority.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
+    }
+    finally {
+      for (const [detail, open] of states)
+        detail.open = open;
+    }
   });
 
   it("validates custom files before activation, rejects edits at the same path, and keeps paths on cancellation", async function () {
@@ -108,7 +334,6 @@ describe("settings panel navigation and validation in Zotero", function () {
         ["abbr", "rule.require-journal-abbr", "rule.require-journal-abbr.customDataPath", "{\"QA Journal\":\"QA J.\"}", "broken JSON"],
         ["title", "rule.correct-title-sentence-case", "rule.correct-title-sentence-case.custom-term-path", "mos2,MoS2\n", "/[/g,invalid\n"],
       ]) {
-        query("");
         for (const name of [rule, key])
           previous.set(pref(name), Zotero.Prefs.get(pref(name), true));
         const control = find(rule) as HTMLInputElement;
@@ -163,6 +388,41 @@ describe("settings panel navigation and validation in Zotero", function () {
     }
   });
 
+  it("persists every abbreviation source option in its independent collapsible card", async function () {
+    const group = pane.querySelector("#metaref-journal-abbreviation-settings")!;
+    const card = group.closest("details.metaref-section-card") as HTMLDetailsElement;
+    assert.equal(card.parentElement, pane);
+    card.open = true;
+    const selects = [...group.querySelectorAll<HTMLSelectElement>("select[data-abbr-option]")];
+    assert.lengthOf(selects, 5);
+    assert.lengthOf(group.querySelectorAll("select[data-abbr-option='profile'] option"), 19);
+    for (const select of selects) {
+      const key = pref(`rule.require-journal-abbr.${select.dataset.abbrOption}`);
+      const previous = Zotero.Prefs.get(key, true);
+      try {
+        for (const option of select.options) {
+          select.value = option.value;
+          select.dispatchEvent(new win.Event("change", { bubbles: true }));
+          assert.equal(Zotero.Prefs.get(key, true), option.value);
+          assert.isNotEmpty(option.textContent!.trim());
+        }
+      }
+      finally {
+        Zotero.Prefs.set(key, previous as string, true);
+        select.value = previous as string;
+      }
+    }
+    group.scrollIntoView({ block: "start" });
+    await Zotero.Promise.delay(100);
+    assert.isAtMost(group.scrollWidth, group.clientWidth + 1);
+    const canvas = win.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
+    canvas.width = win.innerWidth;
+    canvas.height = win.innerHeight;
+    (canvas.getContext("2d") as any).drawWindow(win, 0, 0, canvas.width, canvas.height, "rgb(245,245,245)");
+    await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-abbreviation-settings.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
+    card.open = false;
+  });
+
   it("keeps invalid numeric values out of preferences and labels all input controls", async function () {
     const input = find("lint.numConcurrent") as HTMLInputElement;
     for (const value of ["4", "16", "1"]) {
@@ -186,8 +446,6 @@ describe("settings panel navigation and validation in Zotero", function () {
       assert.isNotNull(win.document.getElementById(labelID!));
     }
     win.resizeTo(780, 720);
-    query("sentence-case custom-term");
-    search.scrollIntoView({ block: "start" });
     await Zotero.Promise.delay(100);
     const rect = pane.getBoundingClientRect();
     assert.isAtMost(pane.scrollWidth, pane.clientWidth + 1, "the settings panel fits its available width");
@@ -198,6 +456,5 @@ describe("settings panel navigation and validation in Zotero", function () {
     (context as any).drawWindow(win, rect.left, rect.top, canvas.width, canvas.height, "rgb(245,245,245)");
     const bytes = Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0));
     await IOUtils.write(PathUtils.join(PathUtils.tempDir, `metaref-settings-${Zotero.locale}.png`), bytes);
-    query("");
   });
 });

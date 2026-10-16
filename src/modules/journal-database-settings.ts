@@ -8,6 +8,11 @@ import { refreshJournalInsights } from "./journal-pane";
 
 export function setupJournalDatabases(pane: Element) {
   const listen = preferenceListeners(pane);
+  for (const select of pane.querySelectorAll<HTMLSelectElement>("select[data-index-policy]")) {
+    const key = `insights.${select.dataset.indexPolicy}SourcePriority`;
+    select.value = String(getPref(key as any, "local-only"));
+    listen(select, "change", () => setPref(key as any, select.value));
+  }
   for (const kind of ["esi", "nature"] as JournalDatasetKind[]) {
     const key = kind === "esi" ? "insights.esiCustomDataPath" : "insights.natureCustomDataPath";
     const group = pane.querySelector(`[data-journal-database='${kind}']`)!;

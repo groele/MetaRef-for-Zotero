@@ -1,11 +1,11 @@
-# MetaRef 名称与图标
+# Zotero MetaFlow 名称与图标
 
-完整名称为 **MetaRef for Zotero**，中文名称为 **MetaRef 文献元数据助手**，界面短名称为 **MetaRef**。
+当前显示名称为 **Zotero MetaFlow**，包名为 `zotero-metaflow`，插件身份为 `metaflow@groele`。
 
-图标采用透明背景的文献轮廓与红色校验线，24 像素矢量网格、1.4 像素线宽，无深色底板、阴影或徽章。灰色轮廓与红色强调贴近 Zotero 原生文献图标；SVG 提供深色主题配色。
+10.2.3 起，品牌图标统一使用用户提供的 **style3_origami_layered_wings**。原始 SVG 复制为 `addon/content/icons/metaref.svg`，菜单使用 `metaref-16.svg`；PNG 提供 16、20、24、32、48、64、96、128、256、512 像素版本。全部资源保留原始图形和颜色。
 
-源文件为 `addon/content/icons/metaref.svg`；仅保留当前使用的 48、96、128 像素 PNG。清单使用 PNG，独立侧边条目使用 SVG。侧栏标题与操作区不展示图标。
+插件管理器、设置侧栏、期刊索引标题与导航、进度提示及插件菜单使用同一品牌图标。文字编辑工具中的加粗、斜体、上下标等操作符号保持其功能含义。
 
-当前插件身份：`metaref@groele`，资源命名空间：`metaref`，实例：`Zotero.MetaRef`，设置空间：`extensions.zotero.metaref`。不提供旧身份、设置迁移、旧 API 或安装包别名。
+为保持已有资源引用和设置连续性，内部资源命名空间 `metaref`、实例 `Zotero.MetaRef`、设置空间 `extensions.zotero.metaref` 继续保留。
 
-新生产包唯一名称为 `dist/metaref-for-zotero.xpi`；更新文件指向同名包。上游版权署名和许可证属于来源信息，继续保留。
+生产包基础名称为 `zotero-metaflow.xpi`；本地交付包附加版本号。上游版权署名和许可证继续保留。详细验收见 [10.2.3 图标更新](brand-icons-10.2.3.md)。

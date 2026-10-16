@@ -33,6 +33,7 @@ import { ToolCleanExtra } from "./tool-clean-extra";
 import { ToolCreatorsExt } from "./tool-creators-ext";
 import { ToolCSLHelper } from "./tool-csl-extra-helper";
 import { ToolGetShortDOI } from "./tool-get-short-doi";
+import { ToolClearAllExtra, ToolCreatorsStyle, ToolCreatorsSwap, ToolPublicationReplace, ToolTitleReplace } from "./tool-library-maintenance";
 import { ToolQueryESI } from "./tool-query-esi";
 import { ToolQueryNatureIndex } from "./tool-query-nature-index";
 import { ToolSetLanguage } from "./tool-set-language";
@@ -114,6 +115,11 @@ const register: Rule<any>[] = [
   ToolUpdateEasyScholar,
   ToolCSLHelper,
   ToolCleanExtra,
+  ToolCreatorsStyle,
+  ToolCreatorsSwap,
+  ToolTitleReplace,
+  ToolPublicationReplace,
+  ToolClearAllExtra,
 ];
 
 export class Rules {

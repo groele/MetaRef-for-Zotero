@@ -28,10 +28,14 @@
 }
 
 .metaref-pref-collapsible {
-  margin-block: 0.35em;
+  margin-block: 10px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 9px;
+  background-color: color-mix(in srgb, currentColor 2%, transparent);
 }
 
 .metaref-pref-collapsible > summary {
+  padding: 11px 13px;
   cursor: pointer;
   border-radius: 3px;
 }
@@ -49,6 +53,14 @@
 
 .metaref-pref-collapsible > groupbox {
   margin-block-start: 0.25em;
+}
+
+.metaref-pref-collapsible[open] {
+  padding-bottom: 12px;
+}
+
+.metaref-pref-collapsible > :not(summary) {
+  margin-inline: 13px;
 }
 
 .metaref-shortcut-label {
@@ -203,16 +215,14 @@
   margin-block: 8px 14px;
 }
 
-.metaref-settings-search-row,
-.metaref-settings-rule-actions {
+.metaref-settings-search-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
 }
 
-.metaref-settings-tools button,
-.metaref-settings-rule-actions button {
+.metaref-settings-tools button {
   margin: 0;
 }
 
@@ -265,4 +275,181 @@
 
 #metaref hbox > radiogroup {
   flex-wrap: wrap;
+}
+
+#metaref-easyscholar-settings {
+  container: metaref-journal-settings / inline-size;
+}
+
+.metaref-field-groups > groupbox {
+  margin-block: 14px;
+}
+
+#metaref .metaref-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+  min-width: 0;
+  margin-block: 8px 12px;
+}
+
+#metaref .metaref-check-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 28px;
+  min-width: 0;
+  margin: 0;
+  padding-block: 3px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+#metaref .metaref-check-option input[type="checkbox"] {
+  appearance: auto;
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: var(--accent-blue, #4070f4);
+}
+
+#metaref-easyscholar-test {
+  align-self: flex-start;
+  width: auto;
+}
+
+.metaref-check-option span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@container metaref-journal-settings (max-width: 22em) {
+  #metaref .metaref-choice-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.metaref-setting-card {
+  min-width: 0;
+  margin-block: 10px;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 9px;
+  background-color: color-mix(in srgb, currentColor 2%, transparent);
+}
+
+.metaref-setting-card > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 13px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.metaref-setting-card > summary::after {
+  content: "›";
+  flex: 0 0 auto;
+  font-size: 18px;
+  color: var(--fill-secondary);
+}
+
+.metaref-setting-card[open] > summary::after {
+  transform: rotate(90deg);
+}
+
+.metaref-setting-card > summary > label,
+.metaref-setting-card > summary h4,
+.metaref-setting-card > summary h3,
+.metaref-setting-card > summary h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#metaref {
+  container: metaref-settings / inline-size;
+}
+
+.metaref-setting-card > p,
+.metaref-setting-card > .metaref-check-option {
+  margin-inline: 13px;
+}
+
+.metaref-setting-card > p,
+.metaref-card-body > p {
+  color: var(--fill-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+#metaref .metaref-menu-placement-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(9em, max-content);
+  align-items: center;
+  gap: 12px;
+  padding-block: 5px;
+}
+
+.metaref-menu-placement-row select {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 4px;
+  color: inherit;
+  background-color: Field;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 4px;
+}
+
+@container metaref-settings (max-width: 22em) {
+  #metaref .metaref-choice-grid,
+  #metaref .metaref-menu-placement-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.metaref-card-hint {
+  margin-inline-start: auto;
+  color: var(--fill-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.metaref-setting-card > groupbox {
+  margin: 0 !important;
+  padding: 4px 13px 10px;
+  border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.metaref-setting-card > summary:focus-visible {
+  outline: 2px solid Highlight;
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+
+#metaref .metaref-card-body {
+  margin: 0;
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 4px 13px 10px;
+  border-top: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+
+#metaref .metaref-pref-collapsible[open] {
+  padding-bottom: 0;
+}
+
+#metaref select[data-index-policy] {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1 1 15em;
+  padding: 4px;
+}
+
+#metaref select[data-abbr-option] {
+  flex: 1 1 15em;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px;
 }

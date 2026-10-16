@@ -9,6 +9,7 @@ import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
 import { executeRule, normalizedConcurrency, waitForOperation } from "../utils/rule-execution";
 import { isFieldValidForItemType } from "../utils/zotero";
+import { updateBatchFeedback } from "./batch-feedback";
 import { createReporter, ProgressUI } from "./reporter";
 import { Rules } from "./rules";
 
@@ -138,11 +139,18 @@ export class LintRunner {
     items: Arrayable<Zotero.Item>;
     rules: Arrayable<Rule<any>>;
     silent?: boolean;
-  }): Promise<void> {
+  }): Promise<BatchResult | undefined> {
     const batch = { ...params, items: [...toArray(params.items)], rules: [...toArray(params.rules)] };
-    const task = () => addon.data.alive ? this.runBatch(batch) : Promise.resolve();
+    let result: BatchResult | undefined;
+    const task = async () => {
+      if (!addon.data.alive)
+        return;
+      await this.runBatch(batch);
+      result = this.lastResult;
+    };
     this.runningQueue = this.runningQueue.then(task, task);
-    return this.runningQueue;
+    await this.runningQueue;
+    return result;
   }
 
   private async runBatch(params: {
@@ -525,7 +533,8 @@ export class LintRunner {
     if (addon.data.alive) {
       try {
         this.ui.showFinished(this.lastResult.passed, this.lastResult.failed, duration, this.cancelled, this.lastResult.skipped, this.preparationFailed, this.lastResult);
-        if (!silent && this.lastResult.records.length)
+        updateBatchFeedback(this.lastResult);
+        if (!silent && getPref("lint.autoReport" as any, false) && this.lastResult.records.length)
           createReporter(this.lastResult.records, this.lastResult.changes).catch(error => logger.error("Failed to display batch report:", error));
       }
       catch (error) {

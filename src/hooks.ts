@@ -1,24 +1,30 @@
 import type { Arrayable } from "./utils/types";
 import { registerExtraColumns, unregisterExtraColumns } from "./modules/item-tree";
-import { registerJournalPane, unregisterJournalPane } from "./modules/journal-pane";
+import { refreshJournalPane, registerJournalPane, setJournalUpdateResult, unregisterJournalPane } from "./modules/journal-pane";
 import { registerMenu, unregisterMenu } from "./modules/menu";
 import { registerNotifier, unregisterNotifier } from "./modules/notifier";
 import { registerPrefs, registerPrefsScripts, registerPrefsWindow, unregisterPrefsWindows } from "./modules/preference";
 import { RichTextToolBar, setHtmlTag } from "./modules/rich-text";
 import { Rules } from "./modules/rules";
+import { ToolUpdateEasyScholar } from "./modules/rules/tool-update-easyscholar";
+import { ToolUpdateMetadata } from "./modules/rules/tool-update-metadata";
 import { registerShortcuts } from "./modules/shortcuts";
 import { AutomaticItems } from "./utils/automatic-items";
+import { createAutomaticWorkflow, runAutomaticWorkflow } from "./utils/automatic-workflow";
 import { cleanupResources } from "./utils/cleanup";
 import { closeAllDialogs } from "./utils/dialog";
 import { toArray } from "./utils/general";
+import { migrateGreenFrogPreferences } from "./utils/greenfrog-migration";
 import { clearRequestCache } from "./utils/http";
-import { loadJournalInsights } from "./utils/journal-insights";
+import { getJournalInsights, loadJournalInsights } from "./utils/journal-insights";
 import { initLocale, registerMainWindowLocale, unloadLocale, unregisterMainWindowLocale } from "./utils/locale";
 import { logger } from "./utils/logger";
 import { getPref } from "./utils/prefs";
+import { flushServiceCache } from "./utils/service-cache-storage";
 
 const shortcutCleanups = new Map<Window, () => void>();
 const toolbars = new Map<Window, RichTextToolBar>();
+const journalRefreshes = new Map<number, Promise<unknown>>();
 const automaticItems = new AutomaticItems(processAddedItems, () => {
   const configuredDelay = getPref("lint.delayOnAdded");
   return Number.isFinite(configuredDelay) ? Math.max(500, Math.min(60_000, configuredDelay)) : 500;
@@ -29,8 +35,11 @@ async function onStartup() {
   if (!addon.data.alive)
     return;
   try {
+    migrateGreenFrogPreferences();
     initLocale();
-    registerPrefs();
+    await registerPrefs();
+    if (!addon.data.alive)
+      return;
     registerNotifier();
     registerMenu();
     await loadJournalInsights();
@@ -74,6 +83,7 @@ async function onShutdown() {
   addon.data.alive = false;
   await cleanupResources([
     () => automaticItems.cancelPending(),
+    flushServiceCache,
     clearRequestCache,
     unregisterNotifier,
     unregisterPrefsWindows,
@@ -102,6 +112,11 @@ async function onNotify(
   extraData: { [key: string]: unknown },
 ) {
   logger.debug("notify", event, type, ids, extraData);
+
+  if (event === "modify" && type === "item") {
+    await refreshJournalPane(ids.map(Number));
+    return;
+  }
 
   // Skip if disabled add on lint
   if (!getPref("lint.onAdded"))
@@ -155,7 +170,25 @@ async function processAddedItems(ids: number[]) {
   );
 
   if (items.length !== 0) {
-    await addon.hooks.onLintInBatch("standard", items);
+    const workflow = createAutomaticWorkflow();
+    addon.data.lastAutomaticWorkflow = workflow;
+    await runAutomaticWorkflow(workflow, {
+      metadata: async () => getPref("metadata.autoUpdateOnAdded")
+        ? addon.runner.add({ items, rules: [{ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false }) }], silent: true })
+        : undefined,
+      format: async () => {
+        return addon.hooks.onLintInBatch("standard", items, { automatic: true });
+      },
+      journal: async () => {
+        const journalItems = items.filter(item => ["journalArticle", "conferencePaper"].includes(item.itemType));
+        if (!getPref("easyscholar.autoUpdateOnAdded", false) || !journalItems.length)
+          return;
+        const result = await addon.runner.add({ items: journalItems, rules: [Rules.getByID("tool-update-easyscholar")!], silent: true });
+        setJournalUpdateResult(journalItems.map(item => item.id), result);
+        await refreshJournalPane(journalItems.map(item => item.id));
+        return result;
+      },
+    }, () => addon.data.alive && getPref("lint.onAdded"));
   }
 
   logger.debug("automatic batch completed for", ids);
@@ -208,6 +241,7 @@ function onShortcuts(type: string, win?: Window) {
 async function onLintInBatch(
   ruleIDs: Arrayable<ID | "standard">,
   items: Zotero.Item[] | "item" | "collection" | string,
+  context: { automatic?: boolean } = {},
 ) {
   if (typeof items === "string") {
     switch (items) {
@@ -232,18 +266,82 @@ async function onLintInBatch(
   );
   items = [...new Map(items.map(item => [item.id || item, item])).values()];
 
-  const requestedRules = toArray(ruleIDs).map(id =>
+  const requestedIDs = [...toArray(ruleIDs)];
+  if (requestedIDs.includes("tool-update-easyscholar")) {
+    if (getPref("easyscholar.clearExtraBeforeUpdate"))
+      requestedIDs.unshift("tool-clear-all-extra");
+    if (getPref("easyscholar.updateAbbreviation", true))
+      requestedIDs.push("require-journal-abbr", "correct-conference-abbr");
+  }
+  const requestedRules = requestedIDs.map(id =>
     id === "standard"
       ? Rules.getEnabledStandard()
       : Rules.getByID(id)!,
   ).flat();
   const rules = [...new Map(requestedRules.filter(Boolean).map(rule => [rule.id, rule])).values()];
+  if (requestedIDs.includes("standard") && !context.automatic) {
+    if (getPref("workflow.updateMetadata" as any, false) && !rules.some(rule => rule.id === "tool-update-metadata")) {
+      rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false, repairCreators: getPref("metadata.repairCreators" as any, true) === true }) });
+    }
+    else if (getPref("metadata.repairCreators" as any, true) && rules.some(rule => rule.id === "require-creators") && !rules.some(rule => rule.id === "tool-update-metadata")) {
+      rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false, repairCreators: true, creatorsOnly: true }) });
+    }
+    if (getPref("workflow.updateJournalRankings" as any, false) && !rules.some(rule => rule.id === "tool-update-easyscholar"))
+      rules.push(Rules.getByID("tool-update-easyscholar")!);
+  }
 
   if (rules.length === 0 || items.length === 0)
     return;
 
-  const tasks = { items, rules };
-  await addon.runner.add(tasks);
+  const updateJournal = !context.automatic && getPref("metadata.updateJournalInfo" as any, true)
+    && (requestedIDs.includes("tool-update-metadata") || (requestedIDs.includes("standard") && getPref("workflow.updateMetadata" as any, false)));
+  if (updateJournal) {
+    const mode = getPref("rule.tool-update-metadata.option.mode") === "all" && !requestedIDs.includes("standard") ? "all" as const : "blank" as const;
+    const rule = { ...ToolUpdateEasyScholar, prepare: () => ({ mode }) };
+    const index = rules.findIndex(rule => rule.id === "tool-update-easyscholar");
+    if (index >= 0)
+      rules[index] = rule;
+    else
+      rules.push(rule);
+  }
+
+  const journalUpdate = rules.some(rule => rule.id === "tool-update-easyscholar");
+  const tasks = { items, rules, silent: journalUpdate && !requestedIDs.includes("standard") };
+  const result = await addon.runner.add(tasks);
+  if (updateJournal && !result?.cancelled && addon.data.alive) {
+    await Promise.all(items.filter(item => item.itemType === "journalArticle").map(item => getJournalInsights(item, { queryAPI: true })));
+    Zotero.ItemTreeManager.refreshColumns();
+  }
+  if (rules.some(rule => ["tool-query-esi", "tool-query-nature-index"].includes(rule.id))) {
+    Zotero.ItemTreeManager.refreshColumns();
+    await refreshJournalPane(items.map(item => item.id));
+  }
+  if (journalUpdate) {
+    setJournalUpdateResult(items.map(item => item.id), result);
+    await refreshJournalPane(items.map(item => item.id));
+  }
+  return result;
+}
+
+function onRefreshJournal(item: Zotero.Item) {
+  if (!item.isEditable() || !["journalArticle", "conferencePaper"].includes(item.itemType))
+    return Promise.resolve();
+  const existing = journalRefreshes.get(item.id);
+  if (existing)
+    return existing;
+  const task = (async () => {
+    const mode = getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" as const : "blank" as const;
+    const result = await addon.runner.add({ items: [item], rules: [{ ...ToolUpdateEasyScholar, prepare: () => ({ mode }) }], silent: true });
+    if (addon.data.alive && !result?.cancelled) {
+      await getJournalInsights(item, { queryAPI: true });
+      Zotero.ItemTreeManager.refreshColumns();
+      setJournalUpdateResult([item.id], result);
+      await refreshJournalPane([item.id]);
+    }
+    return result;
+  })().finally(() => journalRefreshes.delete(item.id));
+  journalRefreshes.set(item.id, task);
+  return task;
 }
 
 export default {
@@ -255,4 +353,5 @@ export default {
   onPrefsEvent,
   onShortcuts,
   onLintInBatch,
+  onRefreshJournal,
 };

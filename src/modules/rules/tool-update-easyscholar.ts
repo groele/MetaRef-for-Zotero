@@ -1,36 +1,26 @@
-import type { EasyScholarRank } from "../../utils/easyscholar";
-import { fetchEasyScholarRank } from "../../utils/easyscholar";
+import type { EasyScholarField, EasyScholarRank } from "../../utils/easyscholar";
+import { EASYSCHOLAR_DEFAULT_FIELDS, EASYSCHOLAR_EXTRA_ALIASES, EASYSCHOLAR_FIELD_DEFINITIONS, EASYSCHOLAR_OUTPUT_FIELDS, fetchEasyScholarRank } from "../../utils/easyscholar";
+import { runJournalSource } from "../../utils/journal-source";
 import { getString } from "../../utils/locale";
+import { getPref } from "../../utils/prefs";
+import { fetchSupplementalJournalRank } from "../../utils/supplemental-journals";
 import { defineRule } from "./rule-base";
 
-const EXTRA_FIELDS: Array<[keyof EasyScholarRank, string]> = [
-  ["jcr", "JCR 分区"],
-  ["casUpgrade", "中科院分区升级版"],
-  ["casBasic", "中科院分区基础版"],
-  ["casSmall", "中科院升级版小类分区"],
-  ["casTop", "中科院升级版 Top 分区"],
-  ["casWarning", "中科院预警"],
-  ["impactFactor", "影响因子"],
-  ["impactFactor5Year", "5 年影响因子"],
-  ["sci", "SCI"],
-  ["ssci", "SSCI"],
-  ["ei", "EI"],
-  ["ahci", "AHCI"],
-  ["jci", "JCI"],
-  ["esi", "ESI"],
-  ["ajg", "AJG"],
-  ["ccf", "CCF"],
-  ["fms", "FMS"],
-  ["utd24", "UTD24"],
-  ["ft50", "FT50"],
-  ["cssci", "CSSCI/南大核心"],
-  ["pku", "中文核心期刊/北大核心"],
-  ["cscd", "CSCD"],
-  ["technologyCore", "中国科技核心期刊"],
-];
+const EXTRA_FIELDS = EASYSCHOLAR_FIELD_DEFINITIONS.map(({ key, extraKey }) => [key, extraKey] as const);
+const MEMBERSHIP_FIELDS = new Set<EasyScholarField>([
+  "sci",
+  "ssci",
+  "ei",
+  "utd24",
+  "ft50",
+  "cssci",
+  "pku",
+  "cscd",
+  "technologyCore",
+]);
 
-function formatFieldValue(key: keyof EasyScholarRank, value: string): string {
-  if (["sci", "ssci", "ei", "utd24", "ft50", "cssci", "pku", "cscd", "technologyCore"].includes(key)) {
+function formatFieldValue(key: EasyScholarField, value: string): string {
+  if (MEMBERSHIP_FIELDS.has(key)) {
     if (/^(?:否|no|false|0)$/i.test(value.trim()))
       return "";
     if (/^(?:是|yes|true|1)$/i.test(value.trim()))
@@ -39,64 +29,143 @@ function formatFieldValue(key: keyof EasyScholarRank, value: string): string {
   return value.trim();
 }
 
-function mergeExtra(existing: string, data: EasyScholarRank): string {
-  const updates = new Map<string, string>();
+export function getEnabledEasyScholarFields(): Set<EasyScholarField> {
+  return new Set(EASYSCHOLAR_OUTPUT_FIELDS.filter(key => getPref(`easyscholar.fields.${key}` as any, EASYSCHOLAR_DEFAULT_FIELDS.has(key)) !== false));
+}
+
+function isNegativeMembership(value: string): boolean {
+  return /^(?:否|no|false|0)$/i.test(value.trim());
+}
+
+function mergeExtra(existing: string, data: EasyScholarRank, enabledFields: ReadonlySet<EasyScholarField> = new Set(EASYSCHOLAR_OUTPUT_FIELDS), mode: "blank" | "all" = "all"): string {
+  const updates = new Map<string, string | null>();
+  const populated = new Set(existing.split(/\r?\n/).flatMap((line) => {
+    const separator = line.search(/[:：]/);
+    return separator >= 0 && line.slice(separator + 1).trim() ? [line.slice(0, separator).trim()] : [];
+  }));
   for (const [dataKey, extraKey] of EXTRA_FIELDS) {
+    if (!enabledFields.has(dataKey))
+      continue;
+    if (mode === "blank" && [extraKey, ...EASYSCHOLAR_EXTRA_ALIASES[dataKey] || []].some(key => populated.has(key)))
+      continue;
     const value = data[dataKey];
-    if (value) {
-      const formatted = formatFieldValue(dataKey, value);
-      if (formatted)
-        updates.set(extraKey, formatted);
+    if (value === undefined)
+      continue;
+    const formatted = formatFieldValue(dataKey, value);
+    if (formatted) {
+      for (const alias of EASYSCHOLAR_EXTRA_ALIASES[dataKey] || [])
+        updates.set(alias, null);
+      updates.set(extraKey, formatted);
+    }
+    else if (MEMBERSHIP_FIELDS.has(dataKey) && isNegativeMembership(value)) {
+      for (const alias of EASYSCHOLAR_EXTRA_ALIASES[dataKey] || [])
+        updates.set(alias, null);
+      updates.set(extraKey, null);
     }
   }
+  if (enabledFields.has("ccfCustom") && data.ccfCustom && !data.ccf && !/^CCF\s*[:：]\s*\S/m.test(existing))
+    updates.set("CCF", data.ccfCustom.trim());
   const lines = existing.split(/\r?\n/);
   const kept = lines.filter((line) => {
-    const separator = line.includes(":") ? line.indexOf(":") : line.indexOf("：");
+    const separator = line.search(/[:：]/);
     return separator < 0 || !updates.has(line.slice(0, separator).trim());
   });
-  for (const [key, value] of updates)
-    kept.push(`${key}: ${value}`);
+  for (const [key, value] of updates) {
+    if (value !== null)
+      kept.push(`${key}: ${value}`);
+  }
   return kept.filter((line, index, all) => line || index < all.length - 1).join("\n").trim();
 }
 
-export const ToolUpdateEasyScholar = defineRule({
+export function summarizeEasyScholarChanges(before: string, after: string) {
+  const keys = new Set<string>([...EXTRA_FIELDS.map(([, key]) => key), ...Object.values(EASYSCHOLAR_EXTRA_ALIASES).flat(), "CCF"]);
+  const read = (text: string) => {
+    const values = new Map<string, string[]>();
+    for (const line of text.split(/\r?\n/)) {
+      const separator = line.search(/[:：]/);
+      const key = line.slice(0, separator).trim();
+      if (separator < 0 || !keys.has(key))
+        continue;
+      values.set(key, [...values.get(key) || [], line.slice(separator + 1).trim()]);
+    }
+    return values;
+  };
+  const oldValues = read(before);
+  const newValues = read(after);
+  const summary = { added: 0, updated: 0, removed: 0 };
+  for (const key of new Set([...oldValues.keys(), ...newValues.keys()])) {
+    if (!oldValues.has(key))
+      summary.added++;
+    else if (!newValues.has(key))
+      summary.removed++;
+    else if (JSON.stringify(oldValues.get(key)) !== JSON.stringify(newValues.get(key)))
+      summary.updated++;
+  }
+  return summary;
+}
+
+export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
   id: "tool-update-easyscholar",
   scope: "item",
   category: "tool",
-  cooldown: 500,
-  timeout: 20_000,
+  cooldown: 0,
+  timeout: 30_000,
   targetItemTypes: ["journalArticle", "conferencePaper"],
   getItemMenu: () => ({ l10nID: "rule-tool-update-easyscholar-menu-item" }),
-  async apply({ item, debug, report, signal }) {
-    const title = String(item.getField("publicationTitle") || item.getField("conferenceName") || "").trim();
+  async apply({ item, options, debug, report, signal }) {
+    const title = String(item.getField("publicationTitle") || item.getField("conferenceName") || item.getField("proceedingsTitle") || "").trim();
     if (!title) {
       report({ level: "warning", message: getString("rule-tool-update-easyscholar-no-title") });
       return;
     }
-    const result = await fetchEasyScholarRank(title, signal);
+    const enabledFields = getEnabledEasyScholarFields();
+    if (!enabledFields.size) {
+      report({ level: "info", message: getString("rule-tool-update-easyscholar-disabled") });
+      return;
+    }
+    const needsEasyScholar = EASYSCHOLAR_FIELD_DEFINITIONS.some(field => field.source !== "supplemental" && enabledFields.has(field.key));
+    const [result, supplemental] = await Promise.all([
+      needsEasyScholar
+        ? runJournalSource(sourceSignal => fetchEasyScholarRank(title, sourceSignal), signal)
+            .catch(() => ({ status: "error" as const, message: getString("rule-tool-update-easyscholar-source-deadline") }))
+        : Promise.resolve({ status: "skipped" as const }),
+      fetchSupplementalJournalRank(title, enabledFields, signal),
+    ]);
+    signal?.throwIfAborted();
+    if (supplemental.errors.length)
+      report({ level: "warning", message: getString("rule-tool-update-easyscholar-supplemental-failed", { args: { error: supplemental.errors.join("; ") } }) });
+    const hasSupplemental = Object.values(supplemental.data).some(Boolean);
     if (result.status === "unconfigured") {
       report({ level: "warning", message: getString("rule-tool-update-easyscholar-unconfigured") });
-      return;
+      if (!hasSupplemental)
+        return;
     }
     if (result.status === "not-found") {
       report({ level: "info", message: getString("rule-tool-update-easyscholar-not-found", { args: { title } }) });
-      return;
+      if (!hasSupplemental)
+        return;
     }
     if (result.status === "error") {
       report({ level: "warning", message: getString("rule-tool-update-easyscholar-failed", { args: { error: result.message } }) });
-      return;
+      if (!hasSupplemental)
+        return;
     }
-    const added = EXTRA_FIELDS.filter(([key]) => Boolean(formatFieldValue(key, result.data[key] || ""))).length;
-    if (!added) {
-      report({ level: "info", message: getString("rule-tool-update-easyscholar-no-fields", { args: { title } }) });
-      return;
-    }
+    const data = { ...result.status === "success" ? result.data : {}, ...supplemental.data };
+    const returned = EXTRA_FIELDS.filter(([key]) => data[key]?.trim()).length;
+    const selected = EXTRA_FIELDS.filter(([key]) => enabledFields.has(key) && data[key]?.trim()).length;
+    if (!selected)
+      report({ level: "info", message: getString("rule-tool-update-easyscholar-no-selected-results") });
     const current = String(item.getField("extra") || "");
-    const updated = mergeExtra(current, result.data);
-    if (updated !== current.trim())
-      item.setField("extra", updated);
-    debug(`${title}: retrieved ${added} EasyScholar fields; item save is handled by the batch runner.`);
-    report({ level: "info", message: getString("rule-tool-update-easyscholar-updated", { args: { count: added, title } }) });
+    const updated = mergeExtra(current, data, enabledFields, options.mode || "all");
+    const changes = summarizeEasyScholarChanges(current, updated);
+    const summary = getString("rule-tool-update-easyscholar-summary", { args: { title, returned, selected, ...changes } });
+    if (updated === current.trim()) {
+      report({ level: "info", code: "journal-summary", message: summary });
+      return;
+    }
+    item.setField("extra", updated);
+    debug(`${title}: returned ${returned}, selected ${selected}; Extra changes: ${JSON.stringify(changes)}.`);
+    report({ level: "info", code: "journal-summary", message: summary });
   },
 });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mergeMetadata, metadataIdentity, metadataMissing, normalizeDOI, titlesAgree } from "./policy";
+import { mergeMetadata, metadataIdentity, metadataMissing, metadataValuesEqual, normalizeDOI, titlesAgree } from "./policy";
 
 describe("metadata identity and completion", () => {
   it("normalizes resolver forms and rejects a different DOI even for an identical title", () => {
@@ -26,4 +26,11 @@ describe("metadata identity and completion", () => {
     expect(metadataMissing({ DOI: "10.1234/a" }, { title: "Original" }, "blank", "journalArticle"))
       .toEqual(["date", "creators", "publicationTitle"]);
   });
+});
+
+it("compares access dates by UTC time while preserving actual concurrent edits", () => {
+  expect(metadataValuesEqual("accessDate", "2026-10-16T04:05:06Z", "2026-10-16 04:05:06")).toBe(true);
+  expect(metadataValuesEqual("accessDate", "2026-10-16T04:05:06Z", "2026-10-16 04:05:07")).toBe(false);
+  expect(metadataValuesEqual("accessDate", "invalid", "different")).toBe(false);
+  expect(metadataValuesEqual("title", "2026-10-16T04:05:06Z", "2026-10-16 04:05:06")).toBe(false);
 });

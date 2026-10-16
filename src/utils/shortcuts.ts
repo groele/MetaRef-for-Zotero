@@ -6,6 +6,11 @@ export const SHORTCUT_DEFAULTS = {
   nocase: "accel,N",
   lint: "accel,alt,L",
   chemicalFormula: "accel,alt,S",
+  easyScholar: "accel,J",
+  titleSentence: "accel,T",
+  publicationCase: "accel,U",
+  dataDirectory: "alt,D",
+  profileDirectory: "alt,P",
 } as const;
 
 export type ShortcutAction = keyof typeof SHORTCUT_DEFAULTS;

@@ -1,6 +1,6 @@
 {
   "date": "2026-10-16",
-  "version": "10.1.0",
+  "version": "10.4.0",
   "name": "Zotero MetaFlow",
   "identity": {
     "addonName": "Zotero MetaFlow",
@@ -10,38 +10,56 @@
     "prefsPrefix": "extensions.zotero.metaref"
   },
   "unit": {
-    "passed": 289,
-    "files": 47
+    "passed": 389,
+    "files": 61
   },
   "e2e": {
-    "status": "Not run in this integration checkout; requires Zotero desktop and an isolated profile."
+    "status": "passed",
+    "sameProductionPackage": true,
+    "hosts": [
+      {
+        "zotero": "10.0.6",
+        "gecko": 140,
+        "passed": 91
+      },
+      {
+        "zotero": "11.0-dev.5+dac1ad489",
+        "gecko": 153,
+        "passed": 91
+      }
+    ],
+    "locale": "zh-CN",
+    "isolatedProfileAndData": true,
+    "productionXpiTemporaryInstall": "passed on both hosts"
   },
   "validation": {
     "productionBuild": "passed",
     "pluginTypeScript": "passed",
     "unitTests": "passed",
-    "eslint": "targeted changed TypeScript files passed; full repository lint reports CRLF-format findings",
+    "eslint": "passed",
     "autocorrect": "passed",
-    "productionXpiTemporaryInstall": "not run",
     "updateManifestConsistency": "passed",
-    "isolatedProfileAndData": false,
-    "testTypeScript": "passed"
+    "trackedSourceAssets": "passed, including vendor code and licenses"
   },
   "package": {
     "path": "zotero-metaflow.xpi",
-    "sha256": "7c17e1c6dd7ec159f47c9c61860fae72d0bc6ff35b72733da17537143b531328",
-    "bytes": 1233969,
+    "sha256": "1218c420c90958da46337cdfd5ae9178ef0c73dfe1c02b75bb2e128124217207",
+    "bytes": 3419201,
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "10.1.0",
+      "version": "10.4.0",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
-      "author": "northword",
+      "author": "groele",
       "icons": {
+        "16": "content/icons/metaref-16.png",
+        "32": "content/icons/metaref-32.png",
         "48": "content/icons/metaref-48.png",
         "96": "content/icons/metaref-96.png",
-        "128": "content/icons/metaref-128.png"
+        "128": "content/icons/metaref-128.png",
+        "256": "content/icons/metaref-256.png",
+        "512": "content/icons/metaref-512.png"
       },
       "applications": {
         "zotero": {
@@ -51,37 +69,24 @@
           "strict_max_version": "11.*"
         }
       }
-    },
-    "removedGeckoApiInBundle": false,
-    "inlinePreferencesHandlers": false,
-    "externalPreferencesScript": true
+    }
   },
-  "migration": {
-    "previousAddonID": "metaref@groele",
-    "manualInstallationRequired": true,
-    "removePreviousAddonBeforeInstallation": true,
-    "existingMetaRefPreferencesRetained": true
-  },
-  "report": "../docs/zotero11-compatibility.md",
   "publication": {
     "repository": "https://github.com/groele/Zotero-MetaFlow",
     "targetBranch": "main",
-    "targetTag": "V10.1.0"
+    "targetTag": "V10.4.0"
   },
-  "limitations": [
-    "Zotero desktop E2E and temporary XPI installation were not run in this integration checkout.",
-    "Authenticated EasyScholar requests require a user-owned API key; service availability was not tested.",
-    "Zotero 11 coverage uses a development build; future host changes need regression tests.",
-    "Manual visual QA, macOS/Linux and third-party plugin combinations were not tested."
+  "logs": [
+    "../docs/assets/metaflow-10.4.0-zotero10-e2e.txt",
+    "../docs/assets/metaflow-10.4.0-zotero11-e2e.txt",
+    "../docs/assets/metaflow-10.4.0-unit.txt",
+    "../docs/assets/metaflow-10.4.0-lint.txt"
   ],
-  "tag": "V10.1.0",
-  "previousFullRegression": {
-    "pluginVersion": "12.2.1",
-    "zotero10Passed": 50,
-    "zotero11Passed": 50,
-    "logs": [
-      "../docs/assets/metaflow-zotero10-e2e.txt",
-      "../docs/assets/metaflow-zotero11-e2e.txt"
-    ]
-  }
+  "limitations": [
+    "Authenticated provider availability and account-specific dataset permissions were not tested; API integration tests use controlled responses.",
+    "Zotero 11 validation covers the listed development build, not every future release.",
+    "macOS/Linux and combinations with third-party plugins were not tested.",
+    "Legacy Chinese impact-factor and NJAU remote service availability remains provider-dependent.",
+    "Saved ESI fields and resolved ESI discipline columns retain separate provenance semantics; see docs/metadata-and-cache-10.4.0.md."
+  ]
 }

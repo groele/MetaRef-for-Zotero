@@ -540,14 +540,20 @@ describe("data processing resilience in Zotero", function () {
     await plugin().hooks.onMainWindowLoad(win);
     const entries = (Zotero.MenuManager as any)._menuManager.getCustomMenuOptions("main/library/item").filter((entry: any) => entry.pluginID === config.addonID);
     assert.equal(entries.length, 1, "the main menu is registered only once");
+    assert.equal((Zotero.PreferencePanes as any).pluginPanes.filter((pane: any) => pane.pluginID === config.addonID).length, 1, "the settings sidebar contains only one MetaFlow entry");
     const columns = (Zotero.ItemTreeManager as any).getCustomColumns(undefined, { pluginID: config.addonID });
     assert.equal(columns.length, 3);
     const countESI = (menus: any[]): number => menus.reduce((count, menu) => count + (menu.l10nID === "metaref-rule-tool-query-esi-menu-item" ? 1 : 0) + countESI(menu.menus || []), 0);
-    assert.equal(countESI(entries.flatMap((entry: any) => entry.menus)), 1);
+    assert.equal(countESI(entries.flatMap((entry: any) => entry.menus)), 2, "one registered view per supported placement");
+    const views = entries.flatMap((entry: any) => [...entry.menus, ...entry.menus.flatMap((menu: any) => menu.menus || [])]).filter((menu: any) => menu.l10nID === "metaref-rule-tool-query-esi-menu-item");
+    let visible = 0;
+    for (const view of views)
+      view.onShowing(null, { items: [], setVisible: (shown: boolean) => { visible += Number(shown); }, setEnabled() {} });
+    assert.equal(visible, 1, "only one placement is visible after repeated initialization");
     const metarefMenu = entries.flatMap((entry: any) => entry.menus).find((menu: any) => menu.l10nID === "metaref-menuitem-label");
     assert.isDefined(metarefMenu, "the MetaRef root item is registered");
     assert.equal(metarefMenu.menus.filter((menu: any) => menu.menuType === "submenu").length, 0, "all commands are directly accessible without nested submenus");
-    assert.equal(metarefMenu.menus.filter((menu: any) => menu.menuType === "menuitem").length, 22);
+    assert.equal(metarefMenu.menus.filter((menu: any) => menu.menuType === "menuitem").length, 30);
     assert.equal(metarefMenu.menus.filter((menu: any) => menu.l10nID === "metaref-tool-query-nature-index-menu-item").length, 1);
     const item = await create("inline title formatting");
     await win.ZoteroPane.selectItem(item.id);
@@ -806,7 +812,7 @@ describe("data processing resilience in Zotero", function () {
     item.setField("extra", "QA field: value");
     await item.saveTx();
     pref("rule.tool-update-metadata.option.slient", false);
-    for (const id of ["tool-title-guillemet", "tool-creators-ext", "tool-set-language", "tool-update-metadata", "tool-csl-helper", "tool-clean-extra"] as ID[]) {
+    for (const id of ["tool-title-guillemet", "tool-creators-ext", "tool-set-language", "tool-csl-helper", "tool-clean-extra"] as ID[]) {
       const previousDialogs = new Set(plugin().data.dialogs.keys());
       const pending = plugin().hooks.onLintInBatch([id, "correct-title-chemical-formula"], [item]);
       let dialog: Window | undefined;

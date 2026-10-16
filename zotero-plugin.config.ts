@@ -22,6 +22,10 @@ export default defineConfig({
     assets: [
       "addon/**/*.*",
       "data/journal-abbr/journal-abbr.json",
+      "data/journal-abbr/journal-abbr-profiles.json",
+      "data/journal-abbr/journal-abbr-provenance.json",
+      "data/journal-abbr/ltwa.tsv",
+      "data/journal-abbr/shortwords.txt",
       "data/conference-abbr.json",
       "data/university-list/university-place.json",
       "data/esi/esi-journals.json",
@@ -100,6 +104,8 @@ export default defineConfig({
     entries: [env.METAREF_TEST_ENTRIES || "test/tests"],
     prefs: {
       "metaref.test.fixturePath": resolve("test/data"),
+      [`${pkg.config.prefsPrefix}.metadata.repairCreators`]: false,
+      [`${pkg.config.prefsPrefix}.metadata.updateJournalInfo`]: false,
       ...env.METAREF_TEST_PLATFORM && { "metaref.test.expectedPlatform": Number(env.METAREF_TEST_PLATFORM) },
       ...env.METAREF_TEST_PACKAGE_PATH && { "metaref.test.packagePath": env.METAREF_TEST_PACKAGE_PATH },
       ...env.METAREF_TEST_LOCALE && { "intl.locale.requested": env.METAREF_TEST_LOCALE },

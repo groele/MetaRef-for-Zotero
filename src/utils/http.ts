@@ -1,4 +1,7 @@
 import { abortableDelay, waitForOperation } from "./rule-execution";
+import { publicationCacheName, SERVICE_CACHE_LIMIT, SERVICE_CACHE_TTL } from "./service-cache-policy";
+import { clearStoredServiceCache, readServiceCache, storeServiceAliases, storeServiceCache } from "./service-cache-storage";
+import { withThrottle } from "./throttle";
 
 type RequestOptions = NonNullable<Parameters<typeof Zotero.HTTP.request>[2]>;
 
@@ -10,13 +13,67 @@ interface CachedRequest {
   expires: number;
 }
 const publicRequests = new Map<string, CachedRequest>();
+const serviceRequests = new Map<string, CachedRequest>();
 
 export function clearRequestCache() {
-  for (const entry of publicRequests.values()) {
-    if (!entry.settled)
-      entry.controller.abort(new Error("Request cache cleared"));
+  for (const store of [publicRequests, serviceRequests]) {
+    for (const entry of store.values()) {
+      if (!entry.settled)
+        entry.controller.abort(new Error("Request cache cleared"));
+    }
+    store.clear();
   }
-  publicRequests.clear();
+}
+
+export function clearServiceRequestCache(namespace: string) {
+  void clearStoredServiceCache(namespace);
+  for (const [key, entry] of serviceRequests) {
+    if (key.startsWith(`${namespace}:`)) {
+      if (!entry.settled)
+        entry.controller.abort(new Error("Service cache cleared"));
+      serviceRequests.delete(key);
+    }
+  }
+}
+
+export function requestServiceGET(namespace: string, url: string, options: RequestOptions = {}, signal?: AbortSignal) {
+  return cachedGET(url, options, signal, serviceRequests, serviceKey(namespace, url, options), SERVICE_CACHE_TTL);
+}
+
+const easyScholarNetwork = withThrottle(requestGET, 500);
+const semanticNetworks = new Map<string, typeof requestGET>();
+
+function networkGET(key: string, url: string, options: RequestOptions, signal: AbortSignal) {
+  if (key.startsWith("easyscholar:"))
+    return easyScholarNetwork(url, options, signal);
+  if (key.startsWith("semantic-scholar:")) {
+    const token = String((options.headers as Record<string, string> | undefined)?.["x-api-key"] || "");
+    let request = semanticNetworks.get(token);
+    if (!request) {
+      request = withThrottle(requestGET, token ? 1000 : 3000);
+      semanticNetworks.set(token, request);
+      if (semanticNetworks.size > 16)
+        semanticNetworks.delete(semanticNetworks.keys().next().value!);
+    }
+    return request(url, options, signal);
+  }
+  return requestGET(url, options, signal);
+}
+
+function serviceKey(namespace: string, url: string, options: RequestOptions) {
+  if (namespace === "easyscholar") {
+    const parsed = new URL(url);
+    parsed.searchParams.set("publicationName", publicationCacheName(parsed.searchParams.get("publicationName") || ""));
+    url = parsed.href;
+  }
+  return `${namespace}:${JSON.stringify([url, Object.entries(options.headers || {}).sort(), options.responseType || "text"])}`;
+}
+
+export async function rememberServiceAliases(namespace: string, url: string, aliases: string[], options: RequestOptions, response: Awaited<ReturnType<typeof requestGET>>) {
+  const expires = Number((response as any)._metaflowCacheExpires);
+  if (response.status !== 200 || !Number.isFinite(expires) || expires <= Date.now())
+    return;
+  await storeServiceAliases(serviceKey(namespace, url, options), aliases.map(alias => serviceKey(namespace, alias, options)), { status: 200, response: String(response.response || response.responseText || ""), responseText: String(response.responseText || response.response || "") }, expires);
 }
 
 /** Share public lookups only; authenticated metadata services never use this cache. */
@@ -25,22 +82,48 @@ export async function requestCachedGET(url: string, options: RequestOptions = {}
   if (options.headers && Object.keys(options.headers).length)
     return requestGET(url, options, signal);
   const key = JSON.stringify([url, options.responseType || "text"]);
-  let entry = publicRequests.get(key);
+  return cachedGET(url, options, signal, publicRequests, key, 300_000);
+}
+
+async function cachedGET(url: string, options: RequestOptions, signal: AbortSignal | undefined, store: Map<string, CachedRequest>, key: string, ttl: number) {
+  signal?.throwIfAborted();
+  let entry = store.get(key);
   if (!entry || entry.expires <= Date.now()) {
-    const controller = new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController();
-    const created: CachedRequest = { controller, users: 0, settled: false, expires: Number.POSITIVE_INFINITY, promise: requestGET(url, options, controller.signal) };
+    const Controller = typeof Zotero.getMainWindow === "function" ? (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController : AbortController;
+    const controller = new Controller();
+    const fetch = () => networkGET(key, url, options, controller.signal);
+    const created: CachedRequest = { controller, users: 0, settled: false, expires: Number.POSITIVE_INFINITY, promise: store === serviceRequests ? readServiceCache(key).then(value => value as unknown as Awaited<ReturnType<typeof requestGET>> || fetch()) : fetch() };
     created.promise = created.promise.then((result) => {
+      controller.signal.throwIfAborted();
       created.settled = true;
-      created.expires = Date.now() + 300_000;
+      let valid = result.status === undefined || result.status === 200;
+      if (store === serviceRequests) {
+        try {
+          const data = JSON.parse(String(result.responseText || result.response || ""));
+          valid = result.status === 200 && (key.startsWith("easyscholar:") ? data.code === 200 : typeof data.paperId === "string");
+        }
+        catch { valid = false; }
+      }
+      if (!valid && store.get(key) === created)
+        store.delete(key);
+      created.expires = Math.min(Date.now() + ttl, Number((result as any)._metaflowCacheExpires) || Number.POSITIVE_INFINITY);
+      if (valid && store === serviceRequests && !(result as any)._metaflowCacheExpires)
+        void storeServiceCache(key, { status: 200, response: String(result.response || result.responseText || ""), responseText: String(result.responseText || result.response || "") }, created.expires);
+      if (store === serviceRequests)
+        return { status: result.status, response: result.response, responseText: result.responseText, _metaflowCacheExpires: created.expires } as unknown as Awaited<ReturnType<typeof requestGET>>;
       return result;
     }, (error) => {
-      if (publicRequests.get(key) === created)
-        publicRequests.delete(key);
+      if (store.get(key) === created)
+        store.delete(key);
       throw error;
     });
-    publicRequests.set(key, created);
-    if (publicRequests.size > 128)
-      publicRequests.delete(publicRequests.keys().next().value!);
+    store.set(key, created);
+    const limit = store === serviceRequests ? SERVICE_CACHE_LIMIT : 128;
+    if (store.size > limit) {
+      const oldest = [...store].find(([, value]) => value.settled);
+      if (oldest)
+        store.delete(oldest[0]);
+    }
     entry = created;
   }
   const current = entry;
@@ -52,19 +135,23 @@ export async function requestCachedGET(url: string, options: RequestOptions = {}
     current.users--;
     if (!current.users && !current.settled) {
       current.controller.abort(new Error("All request subscribers cancelled"));
-      if (publicRequests.get(key) === current)
-        publicRequests.delete(key);
+      if (store.get(key) === current)
+        store.delete(key);
     }
   }
 }
 
 /** Bound public API requests and connect the rule deadline to Gecko's canceller. */
 export async function requestGET(url: string, options: RequestOptions = {}, signal?: AbortSignal) {
+  return requestHTTP("GET", url, options, signal);
+}
+
+export async function requestHTTP(method: "GET" | "POST", url: string, options: RequestOptions = {}, signal?: AbortSignal) {
   for (let attempt = 0; ; attempt++) {
     signal?.throwIfAborted();
     let abort: (() => void) | undefined;
     try {
-      const response = await Zotero.HTTP.request("GET", url, {
+      const response = await Zotero.HTTP.request(method, url, {
         timeout: 15_000,
         ...options,
         cancellerReceiver(cancel: () => void) {

@@ -13,7 +13,7 @@ export interface ApplyContext<Option = object> {
    */
   options: Option;
   debug: Debug;
-  report: (info: Pick<ReportInfo, "level" | "message" | "action" | "field" | "source">) => void;
+  report: (info: Pick<ReportInfo, "level" | "message" | "action" | "field" | "source" | "code">) => void;
   /** Aborted when this rule exceeds its execution deadline. */
   signal?: AbortSignal;
 }

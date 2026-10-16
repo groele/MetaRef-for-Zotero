@@ -5,36 +5,6 @@
   <html:link rel="localization" href="schema.ftl" />
 </linkset>
 <vbox id="__addonRef__">
-  <html:div class="metaref-settings-tools">
-    <html:div class="metaref-settings-search-row">
-      <html:input
-        class="metaref-settings-search"
-        type="text"
-        role="searchbox"
-        data-l10n-id="settings-search"
-      />
-      <button
-        class="metaref-settings-clear"
-        data-l10n-id="settings-search-clear"
-        native="true"
-      />
-    </html:div>
-    <html:select class="metaref-settings-jump" data-l10n-id="settings-jump">
-      <html:option value="" data-l10n-id="settings-jump-placeholder" />
-    </html:select>
-    <html:div
-      class="metaref-settings-count"
-      role="status"
-      aria-live="polite"
-      hidden="true"
-    />
-  </html:div>
-  <description
-    class="metaref-settings-empty"
-    data-l10n-id="settings-no-results"
-    hidden="true"
-    aria-live="polite"
-  />
   <!-- 一般设置 -->
   <groupbox>
     <label><html:h2 data-l10n-id="section-general" /></label>
@@ -64,6 +34,28 @@
       preference="lint.notify"
       native="true"
     />
+    <groupbox>
+      <label><html:h3 data-l10n-id="batch-feedback-heading" /></label>
+      <checkbox
+        data-l10n-id="batch-feedback-auto-report"
+        preference="lint.autoReport"
+        native="true"
+      />
+      <description
+        data-l10n-id="batch-feedback-description"
+        class="metaref-pref-description"
+      />
+      <html:div
+        id="metaref-last-batch-status"
+        role="status"
+        aria-live="polite"
+      />
+      <button
+        id="metaref-last-batch-report"
+        data-l10n-id="batch-feedback-view-report"
+        native="true"
+      />
+    </groupbox>
     <!-- lint.numConcurrent -->
     <hbox align="center">
       <label
@@ -83,6 +75,23 @@
         class="metaref-pref-description"
       />
     </hbox>
+    <checkbox
+      data-l10n-id="metadata-auto-update-on-added"
+      preference="metadata.autoUpdateOnAdded"
+      native="true"
+    /><description
+      data-l10n-id="metadata-auto-update-description"
+      class="metaref-pref-description"
+    />
+    <button
+      id="__addonRef__-integration-status"
+      data-l10n-id="integration-status-button"
+      native="true"
+    />
+    <description
+      data-l10n-id="integration-undo-description"
+      class="metaref-pref-description"
+    />
   </groupbox>
 
   <!-- 是否启用富文本工具 -->
@@ -190,6 +199,59 @@
         />
         <description class="metaref-shortcut-preview" />
       </html:div>
+      <html:div class="metaref-shortcut-row">
+        <label
+          class="metaref-shortcut-label"
+          data-l10n-id="shortcut-easy-scholar"
+        />
+        <html:input
+          class="metaref-shortcut-input"
+          type="text"
+          size="20"
+          preference="shortcut.easyScholar"
+        />
+        <description class="metaref-shortcut-preview" />
+      </html:div>
+      <html:div class="metaref-shortcut-row"
+        ><label
+          class="metaref-shortcut-label"
+          data-l10n-id="shortcut-titleSentence" /><html:input
+          class="metaref-shortcut-input"
+          type="text"
+          size="20"
+          preference="shortcut.titleSentence" /><description
+          class="metaref-shortcut-preview"
+      /></html:div>
+      <html:div class="metaref-shortcut-row"
+        ><label
+          class="metaref-shortcut-label"
+          data-l10n-id="shortcut-publicationCase" /><html:input
+          class="metaref-shortcut-input"
+          type="text"
+          size="20"
+          preference="shortcut.publicationCase" /><description
+          class="metaref-shortcut-preview"
+      /></html:div>
+      <html:div class="metaref-shortcut-row"
+        ><label
+          class="metaref-shortcut-label"
+          data-l10n-id="shortcut-dataDirectory" /><html:input
+          class="metaref-shortcut-input"
+          type="text"
+          size="20"
+          preference="shortcut.dataDirectory" /><description
+          class="metaref-shortcut-preview"
+      /></html:div>
+      <html:div class="metaref-shortcut-row"
+        ><label
+          class="metaref-shortcut-label"
+          data-l10n-id="shortcut-profileDirectory" /><html:input
+          class="metaref-shortcut-input"
+          type="text"
+          size="20"
+          preference="shortcut.profileDirectory" /><description
+          class="metaref-shortcut-preview"
+      /></html:div>
     </html:div>
     <description
       class="metaref-shortcut-status metaref-pref-description"
@@ -234,20 +296,7 @@
   <!-- 详细设置 -->
   <groupbox>
     <label><html:h2 data-l10n-id="section-rules" /></label>
-    <html:div class="metaref-settings-rule-actions">
-      <button
-        class="metaref-settings-disclosure"
-        data-open="true"
-        data-l10n-id="settings-expand-all"
-        native="true"
-      />
-      <button
-        class="metaref-settings-disclosure"
-        data-open="false"
-        data-l10n-id="settings-collapse-all"
-        native="true"
-      />
-    </html:div>
+
     <description
       data-l10n-id="section-item-description"
       class="metaref-pref-description"
@@ -505,8 +554,8 @@
       />
 
       <!-- 字段：缩写 -->
-      <groupbox>
-        <label><html:h3 data-l10n-id="section-article-abbreviation" /></label>
+      <groupbox id="metaref-journal-abbreviation-settings">
+        <label><html:h2 data-l10n-id="section-article-abbreviation" /></label>
         <!-- 更新期刊缩写 -->
         <checkbox
           data-l10n-id="rule-require-journal-abbr"
@@ -514,10 +563,142 @@
           native="true"
         />
         <vbox class="indented-pref">
+          <description
+            data-l10n-id="abbr-settings-description"
+            class="metaref-pref-description"
+          />
+          <hbox align="center"
+            ><label
+              id="metaref-abbr-sourceMode-label"
+              data-l10n-id="abbr-setting-sourcemode" /><html:select
+              data-abbr-option="sourceMode"
+              aria-labelledby="metaref-abbr-sourceMode-label"
+            >
+              <html:option value="auto" data-l10n-id="abbr-choice-auto" />
+              <html:option value="custom" data-l10n-id="abbr-choice-custom" />
+              <html:option value="builtin" data-l10n-id="abbr-choice-builtin" />
+              <html:option
+                value="iso4"
+                data-l10n-id="abbr-choice-iso4"
+              /> </html:select
+          ></hbox>
+          <hbox align="center"
+            ><label
+              id="metaref-abbr-profile-label"
+              data-l10n-id="abbr-setting-profile" /><html:select
+              data-abbr-option="profile"
+              aria-labelledby="metaref-abbr-profile-label"
+            >
+              <html:option
+                value="combined"
+                data-l10n-id="abbr-choice-combined"
+              />
+              <html:option value="ieee" data-l10n-id="abbr-choice-ieee" />
+              <html:option value="acs" data-l10n-id="abbr-choice-acs" />
+              <html:option value="ams" data-l10n-id="abbr-choice-ams" />
+              <html:option value="aea" data-l10n-id="abbr-choice-aea" />
+              <html:option
+                value="annee-philologique"
+                data-l10n-id="abbr-choice-annee-philologique"
+              />
+              <html:option
+                value="astronomy"
+                data-l10n-id="abbr-choice-astronomy"
+              />
+              <html:option value="dainst" data-l10n-id="abbr-choice-dainst" />
+              <html:option value="entrez" data-l10n-id="abbr-choice-entrez" />
+              <html:option
+                value="geology_physics_variations"
+                data-l10n-id="abbr-choice-geology_physics_variations"
+              />
+              <html:option
+                value="lifescience"
+                data-l10n-id="abbr-choice-lifescience"
+              />
+              <html:option
+                value="mathematics"
+                data-l10n-id="abbr-choice-mathematics"
+              />
+              <html:option
+                value="mechanical"
+                data-l10n-id="abbr-choice-mechanical"
+              />
+              <html:option
+                value="meteorology"
+                data-l10n-id="abbr-choice-meteorology"
+              />
+              <html:option
+                value="sociology"
+                data-l10n-id="abbr-choice-sociology"
+              />
+              <html:option value="ubc" data-l10n-id="abbr-choice-ubc" />
+              <html:option value="general" data-l10n-id="abbr-choice-general" />
+              <html:option
+                value="geology_physics"
+                data-l10n-id="abbr-choice-geology_physics"
+              />
+              <html:option
+                value="medicus"
+                data-l10n-id="abbr-choice-medicus"
+              /> </html:select
+          ></hbox>
+          <hbox align="center"
+            ><label
+              id="metaref-abbr-matchMode-label"
+              data-l10n-id="abbr-setting-matchmode" /><html:select
+              data-abbr-option="matchMode"
+              aria-labelledby="metaref-abbr-matchMode-label"
+            >
+              <html:option value="exact" data-l10n-id="abbr-choice-exact" />
+              <html:option
+                value="flexible"
+                data-l10n-id="abbr-choice-flexible"
+              /> </html:select
+          ></hbox>
+          <hbox align="center"
+            ><label
+              id="metaref-abbr-existingPolicy-label"
+              data-l10n-id="abbr-setting-existingpolicy" /><html:select
+              data-abbr-option="existingPolicy"
+              aria-labelledby="metaref-abbr-existingPolicy-label"
+            >
+              <html:option value="known" data-l10n-id="abbr-choice-known" />
+              <html:option value="blank" data-l10n-id="abbr-choice-blank" />
+              <html:option
+                value="replace"
+                data-l10n-id="abbr-choice-replace"
+              /> </html:select
+          ></hbox>
+          <hbox align="center"
+            ><label
+              id="metaref-abbr-letterCase-label"
+              data-l10n-id="abbr-setting-lettercase" /><html:select
+              data-abbr-option="letterCase"
+              aria-labelledby="metaref-abbr-letterCase-label"
+            >
+              <html:option value="keep" data-l10n-id="abbr-choice-keep" />
+              <html:option value="upper" data-l10n-id="abbr-choice-upper" />
+              <html:option value="lower" data-l10n-id="abbr-choice-lower" />
+              <html:option value="title" data-l10n-id="abbr-choice-title" />
+              <html:option
+                value="initials"
+                data-l10n-id="abbr-choice-initials"
+              /> </html:select
+          ></hbox>
+          <checkbox
+            preference="rule.require-journal-abbr.tagSource"
+            data-l10n-id="abbr-tag-source"
+            native="true"
+          />
           <checkbox
             id="__addonRef__-abbr-infer"
             data-l10n-id="rule-require-journal-abbr-option-infer"
             preference="rule.require-journal-abbr.infer"
+            native="true"
+          />
+          <checkbox
+            data-l10n-id="rule-require-journal-abbr-option-with-dots"
+            preference="rule.require-journal-abbr.withDots"
             native="true"
           />
           <hbox align="center">
@@ -564,18 +745,243 @@
       </groupbox>
 
       <!-- 期刊索引数据库 -->
-      <groupbox>
+      <groupbox id="metaref-easyscholar-settings">
         <label><html:h3 data-l10n-id="section-article-esi" /></label>
         <vbox class="indented-pref">
           <label data-l10n-id="easyscholar-key-label" />
           <html:input
             type="password"
-            autocomplete="off"
-            id="__addonRef__-easyscholar-key"
+            autocomplete="new-password"
+            spellcheck="false"
+            id="metaref-easyscholar-key"
             preference="easyscholar.secretKey"
           />
-          <description data-l10n-id="easyscholar-key-description" class="metaref-pref-description" />
+          <label
+            is="zotero-text-link"
+            class="zotero-text-link"
+            href="https://www.easyscholar.cc/open/apidoc"
+            data-l10n-id="easyscholar-key-link"
+          />
+          <button
+            id="metaref-easyscholar-test"
+            data-l10n-id="easyscholar-test-button"
+            native="true"
+          />
+          <html:span
+            id="metaref-easyscholar-test-status"
+            role="status"
+            aria-live="polite"
+          />
+          <description
+            data-l10n-id="easyscholar-key-description"
+            class="metaref-pref-description"
+          />
+          <checkbox
+            data-l10n-id="easyscholar-auto-update-on-added"
+            preference="easyscholar.autoUpdateOnAdded"
+            native="true"
+          />
+          <description
+            data-l10n-id="easyscholar-auto-update-on-added-description"
+            class="metaref-pref-description"
+          />
         </vbox>
+        <description
+          data-l10n-id="easyscholar-fields-description"
+          class="metaref-pref-description"
+        />
+        <html:div class="metaref-field-groups">
+          <groupbox>
+            <label
+              ><html:h4 data-l10n-id="easyscholar-field-group-rank"
+            /></label>
+            <checkbox
+              data-l10n-id="easyscholar-field-jcr"
+              preference="easyscholar.fields.jcr"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-cas-upgrade"
+              preference="easyscholar.fields.casUpgrade"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-cas-basic"
+              preference="easyscholar.fields.casBasic"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-cas-small"
+              preference="easyscholar.fields.casSmall"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-cas-top"
+              preference="easyscholar.fields.casTop"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-cas-warning"
+              preference="easyscholar.fields.casWarning"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-if"
+              preference="easyscholar.fields.impactFactor"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-if5"
+              preference="easyscholar.fields.impactFactor5Year"
+              native="true"
+            />
+          </groupbox>
+          <groupbox>
+            <label
+              ><html:h4 data-l10n-id="easyscholar-field-group-index"
+            /></label>
+            <checkbox
+              data-l10n-id="easyscholar-field-sci"
+              preference="easyscholar.fields.sci"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-ssci"
+              preference="easyscholar.fields.ssci"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-ei"
+              preference="easyscholar.fields.ei"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-ahci"
+              preference="easyscholar.fields.ahci"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-jci"
+              preference="easyscholar.fields.jci"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-esi"
+              preference="easyscholar.fields.esi"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-ajg"
+              preference="easyscholar.fields.ajg"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-ccf"
+              preference="easyscholar.fields.ccf"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-fms"
+              preference="easyscholar.fields.fms"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-utd24"
+              preference="easyscholar.fields.utd24"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-ft50"
+              preference="easyscholar.fields.ft50"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-cssci"
+              preference="easyscholar.fields.cssci"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-pku"
+              preference="easyscholar.fields.pku"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-cscd"
+              preference="easyscholar.fields.cscd"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-technology-core"
+              preference="easyscholar.fields.technologyCore"
+              native="true"
+            />
+          </groupbox>
+          <groupbox>
+            <label
+              ><html:h4 data-l10n-id="easyscholar-field-group-newsharp"
+            /></label>
+            <checkbox
+              data-l10n-id="easyscholar-field-new-sharp"
+              preference="easyscholar.fields.newSharp"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-new-sharp-top"
+              preference="easyscholar.fields.newSharpTop"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-new-sharp-small"
+              preference="easyscholar.fields.newSharpSmall"
+              native="true"
+            />
+            <checkbox
+              data-l10n-id="easyscholar-field-new-sharp-warning"
+              preference="easyscholar.fields.newSharpWarning"
+              native="true"
+            />
+          </groupbox>
+        </html:div>
+        <html:div class="metaref-field-groups">
+          <groupbox>
+            <label
+              ><html:h4 data-l10n-id="easyscholar-field-group-university"
+            /></label>
+            <html:div id="metaref-easyscholar-university-fields" />
+          </groupbox>
+          <groupbox>
+            <label
+              ><html:h4 data-l10n-id="easyscholar-field-group-custom"
+            /></label>
+            <description
+              data-l10n-id="easyscholar-custom-dataset-description"
+              class="metaref-pref-description"
+            />
+            <html:div id="metaref-easyscholar-custom-fields" />
+          </groupbox>
+        </html:div>
+        <groupbox
+          ><label
+            ><html:h4 data-l10n-id="easyscholar-supplemental-group" /></label
+          ><description
+            data-l10n-id="easyscholar-supplemental-description"
+            class="metaref-pref-description" /><html:div
+            id="metaref-easyscholar-supplemental-fields"
+        /></groupbox>
+        <description
+          data-l10n-id="easyscholar-extra-description"
+          class="metaref-pref-description"
+        />
+        <groupbox>
+          <label
+            ><html:h4 data-l10n-id="easyscholar-field-group-columns"
+          /></label>
+          <description
+            data-l10n-id="easyscholar-columns-description"
+            class="metaref-pref-description"
+          />
+          <html:div class="metaref-grid-2" id="metaref-easyscholar-columns" />
+        </groupbox>
         <checkbox
           data-l10n-id="insights-show-pane"
           preference="insights.showPane"
@@ -595,11 +1001,99 @@
               preference="insights.esiFormat"
             />
           </hbox>
+          <checkbox
+            data-l10n-id="easyscholar-update-abbreviation"
+            preference="easyscholar.updateAbbreviation"
+            native="true"
+          /><checkbox
+            data-l10n-id="easyscholar-clear-extra-before-update"
+            preference="easyscholar.clearExtraBeforeUpdate"
+            native="true"
+          /><description
+            data-l10n-id="easyscholar-clear-extra-description"
+            class="metaref-pref-description"
+          />
           <description
             data-l10n-id="rule-tool-query-esi-option-format-desc"
             class="metaref-pref-description"
           />
         </vbox>
+        <groupbox>
+          <label><html:h3 data-l10n-id="index-source-heading" /></label>
+          <hbox align="center">
+            <label
+              id="metaref-esi-priority-label"
+              data-l10n-id="index-source-esi"
+            />
+            <html:select
+              data-index-policy="esi"
+              aria-labelledby="metaref-esi-priority-label"
+            >
+              <html:option
+                value="api-first"
+                data-l10n-id="index-source-api-first"
+              />
+              <html:option
+                value="local-first"
+                data-l10n-id="index-source-local-first"
+              />
+              <html:option
+                value="api-only"
+                data-l10n-id="index-source-api-only"
+              />
+              <html:option
+                value="local-only"
+                data-l10n-id="index-source-local-only"
+              />
+            </html:select>
+          </hbox>
+          <hbox align="center">
+            <label
+              id="metaref-nature-priority-label"
+              data-l10n-id="index-source-nature"
+            />
+            <html:select
+              data-index-policy="nature"
+              aria-labelledby="metaref-nature-priority-label"
+            >
+              <html:option
+                value="api-first"
+                data-l10n-id="index-source-api-first"
+              />
+              <html:option
+                value="local-first"
+                data-l10n-id="index-source-local-first"
+              />
+              <html:option
+                value="api-only"
+                data-l10n-id="index-source-api-only"
+              />
+              <html:option
+                value="local-only"
+                data-l10n-id="index-source-local-only"
+              />
+            </html:select>
+          </hbox>
+          <description
+            data-l10n-id="index-source-description"
+            class="metaref-pref-description"
+          />
+          <hbox align="center">
+            <label
+              id="metaref-nature-dataset-label"
+              data-l10n-id="index-source-nature-uuid"
+            />
+            <html:input
+              type="text"
+              preference="insights.natureDatasetUUID"
+              aria-labelledby="metaref-nature-dataset-label"
+            />
+          </hbox>
+          <description
+            data-l10n-id="index-source-nature-description"
+            class="metaref-pref-description"
+          />
+        </groupbox>
         <vbox class="indented-pref" data-journal-database="esi">
           <!-- 自定义 ESI 数据集 -->
           <hbox align="center">
@@ -861,14 +1355,7 @@
   <!-- 更新元数据 -->
   <groupbox>
     <label><html:h2 data-l10n-id="section-updateMetadata" /></label>
-    <!-- Request Options Everytimes -->
-    <checkbox
-      data-l10n-id="rule-tool-update-metadata-option-slient"
-      preference="rule.tool-update-metadata.option.slient"
-      native="true"
-    />
-
-    <!-- Default Dialog Options -->
+    <!-- Persistent update policy -->
     <groupbox>
       <label><html:h3 data-l10n-id="metadata-update-defaults" /></label>
       <hbox align="center">
@@ -892,6 +1379,58 @@
         data-l10n-id="rule-tool-update-metadata-dialog-allow-type-changed"
         preference="rule.tool-update-metadata.option.allow-type-changed"
         native="true"
+      />
+      <description
+        data-l10n-id="metadata-update-saved-description"
+        class="metaref-pref-description"
+      />
+      <checkbox
+        data-l10n-id="metadata-repair-creators"
+        preference="metadata.repairCreators"
+        native="true"
+      />
+      <description
+        data-l10n-id="metadata-repair-creators-description"
+        class="metaref-pref-description"
+      />
+      <checkbox
+        data-l10n-id="metadata-update-journal-info"
+        preference="metadata.updateJournalInfo"
+        native="true"
+      />
+      <description
+        data-l10n-id="metadata-update-journal-info-description"
+        class="metaref-pref-description"
+      />
+      <description
+        data-l10n-id="rule-tool-update-metadata-dialog-note-rate-limit"
+        class="metaref-pref-description"
+      />
+      <description
+        data-l10n-id="rule-tool-update-metadata-dialog-note-chinese-limit"
+        class="metaref-pref-description"
+      />
+      <description
+        data-l10n-id="rule-tool-update-metadata-dialog-note-type-change"
+        class="metaref-pref-description"
+      />
+    </groupbox>
+
+    <groupbox>
+      <label><html:h3 data-l10n-id="api-cache-heading" /></label>
+      <description
+        data-l10n-id="api-cache-description"
+        class="metaref-pref-description"
+      />
+      <button
+        id="metaref-clear-api-cache"
+        data-l10n-id="api-cache-clear"
+        native="true"
+      />
+      <html:div
+        id="metaref-api-cache-status"
+        role="status"
+        aria-live="polite"
       />
     </groupbox>
 

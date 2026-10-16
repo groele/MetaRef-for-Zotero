@@ -1,13 +1,13 @@
 import { defineService } from "./base-service";
 
-function transform(response: any) {
+export function transform(response: any) {
   ["notes", "tags", "seeAlso", "attachments"].forEach((field) => {
     delete response[field];
   });
   return response;
 }
 
-async function doTranslate(translate: any) {
+export async function doTranslate(translate: any) {
   const translators = await translate.getTranslators();
   if (translators.length === 0)
     return undefined;
@@ -58,7 +58,7 @@ export const IdentifiersTranslateService = defineService({
   lookup: "identifier",
   name: "Identifiers Translate Service",
   cooldown: 100,
-  shouldApply: (): boolean => true,
+  shouldApply: ({ identifiers }): boolean => Object.values(identifiers).some(Boolean),
 
   fetch: async ({ identifiers }) => {
     const translate = new Zotero.Translate.Search();

@@ -20,9 +20,9 @@ function createItem() {
   };
 }
 const response = (name: string, data: Record<string, any>, fetch = async () => data) => ({ id: name, name, lookup: "identifier" as const, cooldown: 0, shouldApply: () => true, fetch, transform: (data: any) => data });
-function run(item: ReturnType<typeof createItem>, mode: "blank" | "all" = "blank") {
+function run(item: ReturnType<typeof createItem>, mode: "blank" | "all" = "blank", options: { repairCreators?: boolean; creatorsOnly?: boolean } = {}) {
   const report = vi.fn();
-  return { report, pending: ToolUpdateMetadata.apply({ item: item as unknown as Zotero.Item, options: { mode, allowTypeChanged: false }, debug: vi.fn(), report }) };
+  return { report, pending: ToolUpdateMetadata.apply({ item: item as unknown as Zotero.Item, options: { mode, allowTypeChanged: false, ...options }, debug: vi.fn(), report }) };
 }
 beforeEach(() => {
   services.splice(0);
@@ -31,6 +31,59 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("trusted metadata update workflow", () => {
+  const authors = [{ creatorType: "author", firstName: "Ada", lastName: "Lovelace" }, { creatorType: "author", firstName: "Grace", lastName: "Hopper" }];
+  it.each([{ existing: [] }, { existing: [authors[0]] }, { existing: [{ creatorType: "author", lastName: "Incorrect" }] }])("repairs missing, partial and incorrect authors without overwriting ordinary fields", async ({ existing }) => {
+    const item = createItem();
+    item.setCreators(existing);
+    services.push(response("verified", { DOI: "10.1234/original", title: "Server title", date: "2026", creators: authors }));
+    await run(item, "blank", { repairCreators: true, creatorsOnly: true }).pending;
+    expect(item.getCreators()).toEqual(authors);
+    expect(item.getField("title")).toBe("Original title");
+    expect(item.getField("date")).toBe("");
+  });
+
+  it("keeps editors while repairing authors in blank mode", async () => {
+    const item = createItem();
+    const editor = { creatorType: "editor", lastName: "Retained Editor" };
+    item.setCreators([authors[0], editor]);
+    services.push(response("verified", { DOI: "10.1234/original", creators: authors }));
+    await run(item, "blank", { repairCreators: true }).pending;
+    expect(item.getCreators()).toEqual([...authors, editor]);
+  });
+
+  it("continues past sources without authors even when ordinary fields are complete", async () => {
+    const item = createItem();
+    item.setField("date", "2025");
+    item.setField("publicationTitle", "Journal");
+    item.setCreators([authors[0]]);
+    const second = vi.fn(async () => ({ DOI: "10.1234/original", creators: authors }));
+    services.push(response("no-authors", { title: "Original title", date: "2025" }), response("authors", {}, second));
+    await run(item, "blank", { repairCreators: true }).pending;
+    expect(second).toHaveBeenCalledOnce();
+    expect(item.getCreators()).toEqual(authors);
+  });
+
+  it("preserves authors edited while waiting and rejects mismatched article identities", async () => {
+    const item = createItem();
+    const manual = [{ creatorType: "author", lastName: "Live edit" }];
+    services.push(response("editing", {}, async () => {
+      item.setCreators(manual);
+      return { DOI: "10.1234/original", creators: authors };
+    }));
+    await run(item, "blank", { repairCreators: true }).pending;
+    expect(item.getCreators()).toEqual(manual);
+    services.splice(0, services.length, response("wrong-paper", { DOI: "10.9999/wrong", creators: authors }));
+    await run(item, "blank", { repairCreators: true }).pending;
+    expect(item.getCreators()).toEqual(manual);
+  });
+
+  it("does not erase authors when a source returns an incomplete or invalid author payload", async () => {
+    const item = createItem();
+    item.setCreators(authors);
+    services.push(response("invalid", { DOI: "10.1234/original", title: "Original title", creators: [{ firstName: "Only given name" }] }));
+    await run(item, "blank", { repairCreators: true }).pending;
+    expect(item.getCreators()).toEqual(authors);
+  });
   it("rejects contradictory DOI results and tries the next source", async () => {
     services.push(response("wrong", { DOI: "10.9999/wrong", title: "Unrelated" }), response("right", { DOI: "10.1234/original", title: "Verified title" }));
     const item = createItem();

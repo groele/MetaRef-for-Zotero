@@ -1,6 +1,8 @@
-import type { Data } from "../../utils/data-loader";
+import type { Data, JournalLookupMaps } from "../../utils/data-loader";
 import { DataLoader } from "../../utils/data-loader";
 import { requestCachedGET } from "../../utils/http";
+import { buildJournalMaps, lookupJournalAbbreviation, styleJournalAbbreviation } from "../../utils/journal-abbreviation";
+import { inferJournalAbbreviation } from "../../utils/journal-abbreviation-iso";
 import { getString } from "../../utils/locale";
 import { getPref } from "../../utils/prefs";
 import { getTextLanguage, normalizeKey } from "../../utils/str";
@@ -11,7 +13,14 @@ interface Options {
   infer: boolean;
   usefull: boolean;
   usefullZh: boolean;
-  customAbbr?: Map<string, string>;
+  withDots: boolean;
+  sourceMode?: string;
+  profile?: string;
+  matchMode?: string;
+  existingPolicy?: string;
+  letterCase?: string;
+  tagSource?: boolean;
+  customAbbr?: CustomAbbreviationMap;
   customDataError?: string;
 }
 
@@ -21,6 +30,13 @@ async function prepare(): Promise<Options> {
     infer: getPref("rule.require-journal-abbr.infer"),
     usefull: getPref("rule.require-journal-abbr.usefull"),
     usefullZh: getPref("rule.require-journal-abbr.usefullZh"),
+    sourceMode: getPref("rule.require-journal-abbr.sourceMode" as any, "auto"),
+    profile: getPref("rule.require-journal-abbr.profile" as any, "combined"),
+    matchMode: getPref("rule.require-journal-abbr.matchMode" as any, "exact"),
+    existingPolicy: getPref("rule.require-journal-abbr.existingPolicy" as any, "known"),
+    letterCase: getPref("rule.require-journal-abbr.letterCase" as any, "keep"),
+    tagSource: getPref("rule.require-journal-abbr.tagSource" as any, false),
+    withDots: getPref("rule.require-journal-abbr.withDots", true),
   };
   if (options.customDataPath) {
     try {
@@ -38,39 +54,62 @@ export const RequireJournalAbbr = defineRule<Options>({
   scope: "field",
   targetItemTypes: ["journalArticle"],
   targetItemField: "journalAbbreviation",
-  async apply({ item, options, debug, report, signal }) {
+  async apply({ item, options, debug, report }) {
     const publicationTitle = item.getField("publicationTitle") as string;
 
     // 无期刊全称直接跳过
     if (publicationTitle === "")
       return;
 
+    const currentAbbr = String(item.getField("journalAbbreviation") || "");
+    const policy = options.existingPolicy || "known";
+    if (currentAbbr && policy === "blank")
+      return;
+    const mode = options.sourceMode || "auto";
+    const flexible = options.matchMode === "flexible";
     let journalAbbr: string | undefined;
-
-    // 从自定义数据集获取
-    journalAbbr = options.customAbbr?.get(normalizeKey(publicationTitle));
-    if (options.customDataError)
+    let source = "";
+    if (["auto", "custom"].includes(mode) && options.customDataError)
       report({ level: "warning", message: getString("rule-require-journal-abbr-custom-data-error", { args: { error: options.customDataError } }) });
-
-    // 从本地数据集获取缩写
-    if (!journalAbbr) {
-      const { abbrMap } = await DataLoader.getJournalAbbrMaps();
-      journalAbbr = abbrMap.get(normalizeKey(publicationTitle));
+    if (mode === "custom" && !options.customAbbr) {
+      if (!options.customDataError)
+        report({ level: "warning", message: getString("abbr-custom-required") });
+      return;
     }
-
-    // 从 ISSN LTWA 推断完整期刊缩写
-    if (!journalAbbr && options.infer) {
-      debug("try to infer abbreviation via abbreviso");
-      journalAbbr = await getAbbrFromLTWAOnline(publicationTitle, signal);
-    // journalAbbr = await this.getAbbrFromLTWALocally(publicationTitle);
+    if (["auto", "custom"].includes(mode) && options.customAbbr) {
+      const match = lookupJournalAbbreviation(publicationTitle, options.customAbbr, flexible);
+      if (match.ambiguous) {
+        report({ level: "warning", message: getString("abbr-match-ambiguous") });
+        return;
+      }
+      journalAbbr = match.abbr;
+      if (journalAbbr)
+        source = "custom";
     }
+    if (!journalAbbr && ["auto", "builtin"].includes(mode)) {
+      const match = lookupJournalAbbreviation(publicationTitle, await DataLoader.getJournalAbbrMaps(options.profile || "combined"), flexible);
+      if (match.ambiguous) {
+        report({ level: "warning", message: getString("abbr-match-ambiguous") });
+        return;
+      }
+      journalAbbr = match.abbr;
+      if (journalAbbr)
+        source = "builtin";
+    }
+    if (!journalAbbr && (mode === "iso4" || (mode === "auto" && options.infer)) && (!currentAbbr || policy === "replace")) {
+      journalAbbr = await inferJournalAbbreviation(publicationTitle);
+      if (journalAbbr)
+        source = "iso4";
+    }
+    if (currentAbbr && !source && policy !== "replace")
+      return;
 
     // 以期刊全称填充
     if (!journalAbbr) {
       debug("try to fill the abbreviation with its full name");
       // 获取条目语言，若无则根据期刊全称判断语言
       const itemLanguage = (item.getField("language") as string) || getTextLanguage(publicationTitle);
-      const isChinese = ["zh", "zh-CN"].includes(itemLanguage);
+      const isChinese = /^(?:zh(?:[-_].*)?|ch|cn|中文|chinese)$/i.test(itemLanguage.trim());
       if (isChinese && options.usefullZh) {
       // 中文，无缩写的，是否以全称替代
         debug(`[Abbr] The abbr. of ${publicationTitle} is replaced by its full name`);
@@ -87,10 +126,21 @@ export const RequireJournalAbbr = defineRule<Options>({
     if (!journalAbbr)
       return;
 
-    const currentAbbr = item.getField("journalAbbreviation") as string;
+    journalAbbr = formatJournalAbbreviation(styleJournalAbbreviation(journalAbbr, options.letterCase), options.withDots !== false);
     if (currentAbbr !== journalAbbr) {
       item.setField("journalAbbreviation", journalAbbr);
     }
+    if (options.tagSource && source) {
+      const tags = { custom: "abbr_user", builtin: "abbr", iso4: "abbr-iso4" };
+      const sourceTag = tags[source as keyof typeof tags];
+      for (const tag of Object.values(tags)) {
+        if (tag !== sourceTag && item.hasTag(tag))
+          item.removeTag(tag);
+      }
+      if (!item.hasTag(sourceTag))
+        item.addTag(sourceTag);
+    }
+    report({ level: "info", field: "journalAbbreviation", source: source || "full-title", message: getString("abbr-result", { args: { value: journalAbbr, source: getString(`abbr-source-${source || "full"}` as any) } }) });
   },
 
   prepare,
@@ -99,6 +149,10 @@ export const RequireJournalAbbr = defineRule<Options>({
     l10nID: "rule-require-journal-abbr-menu-field",
   },
 });
+
+export function formatJournalAbbreviation(value: string, withDots: boolean): string {
+  return withDots ? value : value.replace(/\./g, "");
+}
 
 export const CorrectConferenceAbbr = defineRule<Options>({
   id: "correct-conference-abbr",
@@ -132,7 +186,14 @@ export const CorrectConferenceAbbr = defineRule<Options>({
 
       for (const conferenceNameVariant of conferenceNameVariants) {
         // 从自定义数据集获取
-        shortConferenceName = options.customAbbr?.get(normalizeKey(conferenceNameVariant));
+        if (options.customAbbr) {
+          const match = lookupJournalAbbreviation(conferenceNameVariant, options.customAbbr, true);
+          if (match.ambiguous) {
+            report({ level: "warning", message: getString("abbr-match-ambiguous") });
+            return;
+          }
+          shortConferenceName = match.abbr;
+        }
 
         // 从本地数据集获取缩写
         if (!shortConferenceName) {
@@ -183,7 +244,7 @@ async function _getAbbrLocally(publicationTitle: string, data: Data): Promise<st
  * - String of `ISO 4 with dot abbr` when API returns a valid response
  * - `undefined` when API returns an invalid response
  */
-async function getAbbrFromLTWAOnline(publicationTitle: string, signal?: AbortSignal): Promise<string | undefined> {
+async function _getAbbrFromLTWAOnline(publicationTitle: string, signal?: AbortSignal): Promise<string | undefined> {
   publicationTitle = encodeURIComponent(publicationTitle);
   const url = `https://abbreviso.toolforge.org/abbreviso/a/${publicationTitle}`;
   const res = await requestCachedGET(url, {}, signal);
@@ -204,7 +265,11 @@ async function _getAbbrFromLTWALocally(publicationTitle: string): Promise<string
   return abbr;
 }
 
-export async function loadCustomAbbreviations(path: string): Promise<Map<string, string>> {
+interface CustomAbbreviationMap extends JournalLookupMaps {
+  size: number;
+}
+
+export async function loadCustomAbbreviations(path: string): Promise<CustomAbbreviationMap> {
   let rows: [unknown, unknown][];
   if (/\.json$/i.test(path)) {
     const data = await DataLoader.load("json", path);
@@ -219,15 +284,18 @@ export async function loadCustomAbbreviations(path: string): Promise<Map<string,
   else {
     throw new TypeError("Expected a CSV or JSON abbreviation file");
   }
-  const map = new Map<string, string>();
+  const entries: [string, string][] = [];
   for (const [title, abbr] of rows) {
     if (typeof title !== "string" || typeof abbr !== "string")
       throw new TypeError("Each abbreviation row must contain a title and a text abbreviation");
     if (title.trim() && abbr.trim()) {
-      if (map.has(normalizeKey(title)) && map.get(normalizeKey(title)) !== abbr.trim())
-        throw new TypeError(`Conflicting abbreviations for ${title}`);
-      map.set(normalizeKey(title), abbr.trim());
+      entries.push([title.trim(), abbr.trim()]);
     }
   }
-  return map;
+  const maps = buildJournalMaps(entries);
+  if (maps.exactAmbiguousKeys?.size)
+    throw new TypeError(`Conflicting abbreviations for ${maps.exactAmbiguousKeys.values().next().value}`);
+  if (!maps.exactAbbrMap?.size)
+    throw new TypeError("Expected at least one nonempty title and abbreviation");
+  return { ...maps, size: maps.exactAbbrMap.size };
 }

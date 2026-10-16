@@ -1,3 +1,4 @@
+import { showZoteroDirectory } from "../utils/directories";
 import { getPref } from "../utils/prefs";
 import { matchesShortcut, SHORTCUT_DEFAULTS } from "../utils/shortcuts";
 import { getTitleEditor } from "./rich-text";
@@ -17,9 +18,17 @@ export function registerShortcuts(win: Window): () => void {
     if (matching.length !== 1)
       return;
     const [action] = matching[0];
+    if (action === "dataDirectory" || action === "profileDirectory") {
+      if (target?.closest?.("input, textarea, [contenteditable='true'], editable-text"))
+        return;
+      event.preventDefault();
+      event.stopPropagation();
+      void showZoteroDirectory(action === "dataDirectory" ? "data" : "profile");
+      return;
+    }
 
     const editor = getTitleEditor(win);
-    if (action === "lint" || action === "chemicalFormula") {
+    if (["lint", "chemicalFormula", "easyScholar", "titleSentence", "publicationCase"].includes(action)) {
       if (!target?.closest?.("#zotero-items-tree"))
         return;
       if (target?.closest?.("input, textarea, [contenteditable='true'], editable-text"))
@@ -29,7 +38,8 @@ export function registerShortcuts(win: Window): () => void {
         return;
       event.preventDefault();
       event.stopPropagation();
-      void addon.hooks.onLintInBatch(action === "lint" ? "standard" : "correct-title-chemical-formula", items);
+      const ruleID = action === "lint" ? "standard" : action === "chemicalFormula" ? "correct-title-chemical-formula" : action === "titleSentence" ? "correct-title-sentence-case" : action === "publicationCase" ? "correct-publication-title-case" : "tool-update-easyscholar";
+      void addon.hooks.onLintInBatch(ruleID, items);
     }
     else if (getPref("richtext.hotkey") && editor) {
       event.preventDefault();

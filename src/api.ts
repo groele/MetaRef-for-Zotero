@@ -5,4 +5,8 @@ import { getTextLanguage } from "./utils/str";
 
 const utils = { getTextLanguage };
 
-export default { utils, getJournalInsights, exportJournalDatabase, validateJournalDatabase, refreshJournalInsights };
+function getLastAutomaticWorkflow() {
+  return addon.data.lastAutomaticWorkflow ? JSON.parse(JSON.stringify(addon.data.lastAutomaticWorkflow)) : undefined;
+}
+
+export default { utils, getJournalInsights, exportJournalDatabase, validateJournalDatabase, refreshJournalInsights, getLastAutomaticWorkflow };

@@ -75,3 +75,13 @@ export function metadataMissing(data: TransformedData, original: TransformedData
     required.push("proceedingsTitle");
   return required.filter(field => field === "creators" ? !effective.creators?.length : !effective[field as keyof TransformedData]);
 }
+
+export function metadataValuesEqual(field: string, before: unknown, current: unknown): boolean {
+  if (JSON.stringify(before ?? "") === JSON.stringify(current ?? ""))
+    return true;
+  if (field !== "accessDate" || typeof before !== "string" || typeof current !== "string")
+    return false;
+  const time = (value: string) => Date.parse(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value) ? `${value.replace(" ", "T")}Z` : value);
+  const previous = time(before);
+  return Number.isFinite(previous) && previous === time(current);
+}

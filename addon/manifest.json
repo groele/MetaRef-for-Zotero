@@ -6,9 +6,13 @@
   "homepage_url": "__homepage__",
   "author": "__author__",
   "icons": {
+    "16": "content/icons/metaref-16.png",
+    "32": "content/icons/metaref-32.png",
     "48": "content/icons/metaref-48.png",
     "96": "content/icons/metaref-96.png",
-    "128": "content/icons/metaref-128.png"
+    "128": "content/icons/metaref-128.png",
+    "256": "content/icons/metaref-256.png",
+    "512": "content/icons/metaref-512.png"
   },
   "applications": {
     "zotero": {

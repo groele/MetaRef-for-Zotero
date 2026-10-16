@@ -1,7 +1,9 @@
 import type { ESIJournalEntry, ESILookupMaps } from "./esi";
 import type { NatureIndexLookupMaps } from "./nature-index";
 import csv from "csvtojson";
+import { detectCSVDelimiter } from "./csv";
 import { buildESILookupMaps } from "./esi";
+import { buildJournalMaps, journalTitleKey } from "./journal-abbreviation";
 import { parseESIDataset, parseNatureDataset } from "./journal-datasets";
 import { createLogger } from "./logger";
 import { buildNatureIndexLookupMaps } from "./nature-index";
@@ -16,6 +18,9 @@ export interface Data {
 export interface JournalLookupMaps {
   abbrMap: Map<string, string>;
   titleMap: Map<string, string>;
+  exactAbbrMap?: Map<string, string>;
+  ambiguousKeys?: Set<string>;
+  exactAmbiguousKeys?: Set<string>;
 }
 
 export class DataLoader {
@@ -38,26 +43,22 @@ export class DataLoader {
     return pending;
   }
 
-  static getJournalAbbrMaps(): Promise<JournalLookupMaps> {
-    return this.derived("journal-abbr", async () => {
-      const data = await this.load("journalAbbr");
-      const abbrMap = new Map<string, string>();
-      const titleMap = new Map<string, string>();
-      const ambiguous = new Set<string>();
-      for (const [title, abbr] of Object.entries(data)) {
-        const normalized = normalizeKey(title);
-        if (abbrMap.has(normalized) && abbrMap.get(normalized) !== abbr)
-          ambiguous.add(normalized);
-        if (abbr && !abbrMap.has(normalized))
-          abbrMap.set(normalized, abbr);
-        if (!titleMap.has(normalized))
-          titleMap.set(normalized, title);
+  static getJournalAbbrMaps(profile = "combined"): Promise<JournalLookupMaps> {
+    return this.derived(`journal-abbr:${profile}`, async () => {
+      const combined = await this.load("journalAbbr");
+      if (profile === "combined")
+        return buildJournalMaps(combined);
+      const profiles = await this.load("journalAbbrProfiles") as Record<string, Record<string, string>>;
+      const selected = profiles[profile];
+      if (!selected)
+        return buildJournalMaps(combined);
+      const merged = { ...selected };
+      const keys = new Set(Object.keys(selected).map(journalTitleKey));
+      for (const [title, abbr] of Object.entries(combined)) {
+        if (!keys.has(journalTitleKey(title)))
+          merged[title] = abbr;
       }
-      for (const key of ambiguous) {
-        abbrMap.delete(key);
-        titleMap.delete(key);
-      }
-      return { abbrMap, titleMap };
+      return buildJournalMaps(merged);
     }, true);
   }
 
@@ -126,7 +127,7 @@ export class DataLoader {
     });
     // Share the in-flight read as well as its result between concurrent items.
     this.cache.set(cacheKey, pending);
-    if (["journalAbbr", "conferencesAbbr", "universityPlace", "esiJournals", "natureIndexJournals"].includes(key))
+    if (["journalAbbr", "journalAbbrProfiles", "conferencesAbbr", "universityPlace", "esiJournals", "natureIndexJournals"].includes(key))
       this.persistentKeys.add(cacheKey);
     try {
       return await pending;
@@ -169,6 +170,8 @@ export class DataLoader {
     switch (key) {
       case "journalAbbr":
         return { type: "json", path: `${rootURI}data/journal-abbr/journal-abbr.json` };
+      case "journalAbbrProfiles":
+        return { type: "json", path: `${rootURI}data/journal-abbr/journal-abbr-profiles.json` };
       case "conferencesAbbr":
         return { type: "json", path: `${rootURI}data/conference-abbr.json` };
       case "universityPlace":
@@ -195,7 +198,7 @@ export class DataLoader {
 
   private static async parseCSV(data: string, options?: any): Promise<any[]> {
     return csv({
-      delimiter: "auto",
+      delimiter: detectCSVDelimiter(data),
       trim: true,
       noheader: true,
       ...options,

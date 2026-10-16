@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="16" height="16">
+  <defs>
+    <linearGradient id="wingLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#4338CA" />
+    </linearGradient>
+    <linearGradient id="wingCenter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#8B5CF6" />
+    </linearGradient>
+    <linearGradient id="wingRight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06B6D4" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+    <filter id="softGlow3" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#312E81" flood-opacity="0.28" />
+    </filter>
+  </defs>
+  <g filter="url(#softGlow3)">
+    <!-- Left Floating Paper Pillar -->
+    <path d="M 16 32 C 16 23 27 19 33 25 L 52 44 L 52 98 C 52 106 42 110 36 104 L 16 84 Z" fill="url(#wingLeft)" />
+    <!-- Center Folding Meta Ribbon -->
+    <path d="M 33 25 L 68 60 L 68 96 L 33 61 Z" fill="url(#wingCenter)" opacity="0.95" />
+    <!-- Right Ascending Flow Arrow Wing -->
+    <path d="M 56 72 L 96 32 L 82 18 L 114 18 L 114 50 L 100 36 L 68 68 Z" fill="url(#wingRight)" />
+    <!-- Lower Right Balancing Meta Tag Dot -->
+    <circle cx="96" cy="86" r="12" fill="url(#wingRight)" />
+  </g>
+</svg>

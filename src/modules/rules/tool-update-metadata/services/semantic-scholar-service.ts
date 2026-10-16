@@ -1,21 +1,44 @@
 import type { Identifiers } from "../identifiers";
-import { requestGET } from "../../../../utils/http";
+import { clearServiceRequestCache, rememberServiceAliases, requestServiceGET } from "../../../../utils/http";
 import { getPref } from "../../../../utils/prefs";
 import { abortableDelay } from "../../../../utils/rule-execution";
 import { defineService } from "./base-service";
 
-async function request(paperID: string, fields: (keyof Result)[], signal?: AbortSignal): Promise<RequestResult> {
-  const url = `https://api.semanticscholar.org/graph/v1/paper/${encodeURIComponent(paperID.trim())}?fields=${fields.join(",")}`;
-  const res = await requestGET(url, {
+const paperAliases = new Map<string, { id: string; expires: number }>();
+const PAPER_FIELDS = ["paperId", "publicationTypes", "title", "authors", "abstract", "externalIds", "url", "venue", "publicationVenue", "publicationDate", "journal"];
+const normalizePaperID = (id: string) => /^DOI:/i.test(id.trim()) ? `DOI:${id.trim().slice(4).toLowerCase()}` : id.trim();
+const paperURL = (id: string) => `https://api.semanticscholar.org/graph/v1/paper/${encodeURIComponent(normalizePaperID(id))}?fields=${PAPER_FIELDS.join(",")}`;
+
+export function clearSemanticScholarCache() {
+  paperAliases.clear();
+  clearServiceRequestCache("semantic-scholar");
+}
+
+async function request(paperID: string, _fields: (keyof Result)[], signal?: AbortSignal): Promise<RequestResult> {
+  const key = String(getPref("semanticScholarToken") || "");
+  const alias = paperAliases.get(`${key}:${paperID.trim().toLowerCase()}`);
+  const id = alias && alias.expires > Date.now() ? alias.id : paperID.trim();
+  const url = paperURL(id);
+  const options = {
     timeout: 15_000,
     successCodes: [200, 400, 404],
     headers: {
-      ...getPref("semanticScholarToken") && { "x-api-key": getPref("semanticScholarToken") },
+      ...key && { "x-api-key": key },
       "User-Agent": "Zotero MetaFlow",
     },
-  }, signal);
-
-  return { _status: res.status, ...JSON.parse(res.response) };
+  };
+  const res = await requestServiceGET("semantic-scholar", url, options, signal);
+  const data = { _status: res.status, ...JSON.parse(res.response) } as RequestResult;
+  if (data._status === 200) {
+    const aliases = [data.paperId, data.externalIds?.DOI && `DOI:${data.externalIds.DOI}`, data.externalIds?.ArXiv && `ARXIV:${data.externalIds.ArXiv}`, data.externalIds?.PubMed && `PMID:${data.externalIds.PubMed}`].filter(Boolean).map(String);
+    await rememberServiceAliases("semantic-scholar", url, aliases.map(paperURL), options, res);
+    for (const alias of aliases) {
+      paperAliases.set(`${key}:${alias.toLowerCase()}`, { id, expires: Number((res as any)._metaflowCacheExpires) });
+    }
+    while (paperAliases.size > 512)
+      paperAliases.delete(paperAliases.keys().next().value!);
+  }
+  return data;
 }
 
 export function parsePaperID(type: keyof Identifiers, value: string): string {
@@ -47,8 +70,8 @@ export const SemanticScholarService = defineService<Result>({
   id: "semantic-scholar-service",
   lookup: "identifier",
   name: "Semantic Scholar Service",
-  // set cooldown to 1_000 when token is set,
-  get cooldown() { return getPref("semanticScholarToken") ? 1_000 : 3_000; },
+  // The HTTP layer throttles network misses; cached responses need no cooldown.
+  cooldown: 0,
   shouldApply: () => true,
 
   async updateIdentifiers({ item, identifiers, isPreprint, signal }) {
@@ -128,7 +151,9 @@ export const SemanticScholarService = defineService<Result>({
         : res.publicationTypes?.includes("Journal Article") || res.publicationTypes?.includes("Review")
           ? "journalArticle"
           : undefined,
-      creators: undefined,
+      creators: res.authors?.length && res.authors.every(author => typeof author.name === "string" && author.name.trim())
+        ? res.authors.map(author => ({ ...Zotero.Utilities.cleanAuthor(author.name.trim(), "author"), creatorType: "author" as const }))
+        : undefined,
       title: res.title,
       abstractNote: res.abstract,
       DOI: res.externalIds?.DOI,
@@ -155,7 +180,7 @@ interface Result {
   abstract?: string;
   authors?: {
     name: string;
-    authorId: string;
+    authorId?: string;
     externalIds?: {
       DBLP?: number[];
     };

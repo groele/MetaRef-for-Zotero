@@ -54,3 +54,21 @@ journal-database-issue-journals = At least one journal is required; conference-o
 journal-insights-match-detail = Match basis: { $basis }
 
 journal-insights-scope-note = Journal-level identification, for reference.
+
+menu-show-data-directory = Open the Zotero data directory
+    .label = Open the Zotero data directory
+menu-show-profile-directory = Open the Zotero profile directory
+    .label = Open the Zotero profile directory
+
+journal-rankings-heading = Journal quartiles and rankings
+journal-rankings-empty = No saved rankings. Click the MetaFlow sidebar icon to complete journal information.
+journal-rankings-refresh-failed = Journal refresh failed. Check your connection and data source settings, then click the MetaFlow icon again.
+journal-rankings-saved-note = Saved journal quartiles and rankings, for reference.
+
+journal-rankings-cancelled = This lookup was cancelled. Previously saved data is retained.
+journal-rankings-query-complete = Lookup complete. Saved journal information is shown below.
+
+journal-insights-api-source = EasyScholar API
+journal-insights-basis-API = API journal-name lookup
+journal-insights-api-missing = No usable API value: not yet queried, request failed, no match, or the dataset is not enabled in your account.
+journal-insights-api-fallback = No usable API value; showing local database results. Run an index query from the context menu to fetch API data.

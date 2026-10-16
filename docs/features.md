@@ -1,4 +1,12 @@
+Version 10.2.3 applies the supplied layered origami wings branding to all plugin brand surfaces and native menus. See the [icon update guide](brand-icons-10.2.3.md).
+
+Version 10.2.2 adds a hidden menu location, keeps detailed reports closed by default with an on-demand viewer, fixes access-date comparison, and adds consistent padding to detailed-rule cards. See the [quiet settings guide](quiet-settings-10.2.2.md).
+
+Version 10.2.1 verifies all journal-ranking field controls, adds conference ranking display, and synchronizes automatic lookup outcomes into the journal pane. See the [journal settings audit](journal-options-audit-10.2.1.md).
+
 # Features and Rules
+
+Version 10.2.0 uses consistent collapsible settings cards, configurable top-level context-menu placement, and a combined checking workflow. Journal rankings appear in the item-pane journal section without a query report popup. The plugin search and section-jump controls have been removed. See the [settings and workflow guide](unified-settings-workflow-10.2.0.md).
 
 This page outlines the rules supported (or planned) by this plugin. The purpose is to ensure the **existence, correctness, and accuracy** of all items and fields in a Zotero library.
 
@@ -113,6 +121,7 @@ Uses a built-in dataset (JabRef + Woodward Library) to look up journal abbreviat
 
 - If missing, infers abbreviation from the [ISSN LTWA list](https://www.issn.org/services/online-services/access-to-the-ltwa/).
 - If still missing, defaults to full journal title (can be disabled).
+- Abbreviations can retain or remove periods in settings.
 
 ### Independent ESI Discipline Insights (`tool-query-esi`)
 
@@ -122,6 +131,17 @@ Displays the journal's Essential Science Indicators (ESI) discipline in a dedica
 - **Customizable Format**: Supports formatting templates using `{subject}` (e.g., `物理学`), `{category}` (e.g., `PHYSICS`), and `{en}` (e.g., `Physics`). Default: `{subject}ESI`.
 - **Custom Dataset**: Built-in support for all 22 ESI disciplines in the Clarivate 2026 Release 6 dataset, with the option to load custom datasets (JSON or CSV).
 - **Preservation**: All existing fields and tags remain unchanged. Invalid custom data produces a warning and falls back to bundled data. Nature Index membership is also shown independently and does not imply article-level inclusion.
+
+### EasyScholar Journal Rankings (`tool-update-easyscholar`)
+
+Looks up journal or conference rankings with the EasyScholar Open API and merges selected results into the item's Extra field.
+
+- **Connection**: Store an API key in MetaFlow preferences, open EasyScholar's API documentation, or test the key from the preferences page.
+- **Field selection**: Independently enable JCR/CAS and NewSharp rankings, impact factors, index/rating systems, university rankings, and supported EasyScholar custom datasets. The original 23 fields remain enabled by default; additional ranking, university, and custom-dataset fields are opt-in. Custom results are returned only when the dataset is enabled in the user's EasyScholar account.
+- **Item-list columns**: Select which stored EasyScholar fields are registered as Zotero item-list columns. The columns read the existing Extra values and do not trigger network requests.
+- **Automation and shortcut**: An optional setting queries journal articles and conference papers when new items are added; it is off by default and follows MetaFlow's existing automatic-added-item setting. The EasyScholar command also has an editable shortcut, defaulting to Ctrl+J on Windows/Linux and Cmd+J on macOS.
+- **Preservation**: Lookup replaces only selected EasyScholar-managed fields, preserves unrelated Extra text, and removes an old affirmative index marker when the API explicitly reports that the journal is no longer indexed.
+- **Privacy**: Queries run only when the user invokes the EasyScholar action, tests the connection, or explicitly enables automatic lookup for newly added journal/conference items.
 
 ### No Leading Zeros (`no-issue-extra-zeros`, `no-pages-extra-zeros`, `no-volume-extra-zeros`)
 
@@ -208,6 +228,8 @@ Ensures ISO format: `YYYY-MM-DD`.
 Example: `2023-01-01`.
 
 ## Metadata Update Tool (`tool-update-metadata`)
+
+The Green Frog integration also provides opt-in automatic blank-field updates, Chinese-title CNKI lookup, author annotation and name-swap tools, literal title/journal replacements, directory commands, and optional supplemental journal sources. See the [integration and validation record](greenfrog-integration-2026-10-16.md) for the exact source boundaries, migration behavior, and outstanding online checks.
 
 Allows filling in missing fields (date, volume, issue, pages, etc.) from DOI, arXiv, Semantic Scholar, PMID, PMCID or a URL for supported article, preprint, conference and webpage item types. Zotero translators can also inspect identifiers already present in the item.
 

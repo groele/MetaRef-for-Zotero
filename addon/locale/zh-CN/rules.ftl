@@ -187,6 +187,8 @@ rule-require-journal-abbr-menu-field =
 
 rule-require-journal-abbr-option-infer =
   .label = 本地数据集没有期刊缩写时自动根据 ISO 4 规则推断缩写
+rule-require-journal-abbr-option-with-dots =
+  .label = 期刊缩写保留句点
 rule-require-journal-abbr-option-usefull = 仍没有期刊缩写时使用全称代替：
 rule-require-journal-abbr-option-usefull-en =
   .label = 英文期刊
@@ -365,7 +367,7 @@ rule-tool-update-metadata-dialog-allow-type-changed =
   .label = 允许更改条目类型
 rule-tool-update-metadata-dialog-notes = 说明
 rule-tool-update-metadata-dialog-note-rate-limit = 某些 API 有速率限制；请避免批量处理。
-rule-tool-update-metadata-dialog-note-chinese-limit = 由于数据源限制，中文出版物无法使用此功能。
+rule-tool-update-metadata-dialog-note-chinese-limit = 中文题目可尝试 CNKI 搜索；需标题唯一匹配，访问限制或验证页面会导致查询失败。
 rule-tool-update-metadata-dialog-note-type-change = 「所有字段」模式下若允许更改条目类型，Zotero 可能会移除新类型不支持的字段或调整作者角色；请先检查更新结果。
 
 
@@ -404,14 +406,16 @@ rule-tool-update-metadata-invalid-creators = 服务返回的作者类型无效�
 rule-tool-update-metadata-type-change-loss = 更改条目类型会删除已有字段或改变作者角色。只补全空白字段模式已保留原类型，并补全兼容的空白字段。
 rule-tool-query-esi-custom-data-error = 自定义 ESI 数据不可用，已回退至内置数据：{ $error }
 rule-tool-update-easyscholar = 查询 EasyScholar 期刊信息并写入 Extra
-rule-tool-update-easyscholar-description = 使用你提供的 EasyScholar 密钥查询期刊评级，并将返回字段合并到条目 Extra。该工具仅在手动运行时联网。
+rule-tool-update-easyscholar-description = 使用 EasyScholar 查询期刊评级并合并写入 Extra；可手动执行，也可明确启用新增条目自动查询。补充来源由独立开关控制。
 rule-tool-update-easyscholar-menu-item = 查询 EasyScholar 期刊信息
 rule-tool-update-easyscholar-no-title = 条目缺少期刊或会议名称，无法查询。
 rule-tool-update-easyscholar-unconfigured = 请先在 MetaFlow 设置中填写 EasyScholar API 密钥。
 rule-tool-update-easyscholar-not-found = EasyScholar 未返回“{ $title }”的评级信息。
 rule-tool-update-easyscholar-no-fields = EasyScholar 返回了“{ $title }”的记录，但没有可写入的评级字段。
+rule-tool-update-easyscholar-unchanged = “{ $title }”的已选 EasyScholar 字段与当前内容一致，无需更新。
 rule-tool-update-easyscholar-failed = EasyScholar 查询失败：{ $error }
 rule-tool-update-easyscholar-updated = 已获取“{ $title }”的 { $count } 项期刊字段，并合并写入 Extra。
+rule-tool-update-easyscholar-cleared = 已根据 EasyScholar 的最新结果，移除“{ $title }”中已失效的收录标记。
 rule-no-field-misuse-review = 请检查 { $field }：“{ $value }”可能是其他工具写入的信息，也可能是有效内容，已保留原值。
 rule-no-value-nullish-review = 请检查 { $field }：“{ $value }”可能是占位符或有效文字，已保留原值。
 rule-tool-update-metadata-identity-conflict = { $service } 返回的作品身份与当前条目不一致或缺少可靠匹配依据，已跳过该结果。
@@ -439,3 +443,51 @@ tool-language-input = 或手动输入语言
 tool-language-title = 设置条目语言
 tool-single-item-only = 请选中一个条目后使用此工具。
 rule-rollback-failed = 失败规则的状态恢复异常，已停止处理和保存此条目，并尝试重新读取数据库中的原状态。
+
+## Library maintenance tools
+rule-tool-creators-style = 作者加粗、加星与清除标记
+rule-tool-creators-style-menu-item = 作者加粗、加星与清除标记
+    .label = 作者加粗、加星与清除标记
+rule-tool-creators-swap = 交换作者姓和名
+rule-tool-creators-swap-menu-item = 交换作者姓和名
+    .label = 交换作者姓和名
+rule-tool-title-replace = 文献题目查找替换
+rule-tool-title-replace-menu-item = 文献题目查找替换
+    .label = 文献题目查找替换
+rule-tool-publication-replace = 期刊名称查找替换
+rule-tool-publication-replace-menu-item = 期刊名称查找替换
+    .label = 期刊名称查找替换
+rule-tool-clear-all-extra = 清空所选条目的全部 Extra
+rule-tool-clear-all-extra-menu-item = 清空所选条目的全部 Extra
+    .label = 清空所选条目的全部 Extra
+maintenance-author-action = 处理方式
+maintenance-author-name = 作者姓名（留空处理全部作者）
+maintenance-author-bold = 加粗
+maintenance-author-star = 加星
+maintenance-author-both = 同时加粗、加星
+maintenance-author-removeBold = 清除加粗
+maintenance-author-removeStar = 清除星号
+maintenance-author-removeAll = 清除加粗和星号
+maintenance-find = 查找文字（按字面匹配）
+maintenance-replacement = 替换为（可以留空）
+maintenance-replace-all = 替换每个字段中的全部匹配
+maintenance-find-required = 查找文字不能为空，未修改任何条目。
+maintenance-clear-extra-confirm = 将清空所选 { $count } 个条目的全部 Extra，包括手写备注和其他插件信息。是否继续？
+metadata-auto-update-on-added = 新增条目时自动补充文章元数据
+    .label = 新增条目时自动补充文章元数据
+metadata-auto-update-description = 默认关闭。依赖新增条目自动检查；启用后使用文章标识符或中文题目联网查询，只补空字段，不改变条目类型。
+
+rule-tool-update-easyscholar-supplemental-failed = 部分补充来源查询失败：{ $error }
+
+rule-tool-update-easyscholar-disabled = 未启用任何期刊输出字段，已跳过查询。
+rule-tool-update-easyscholar-source-deadline = EasyScholar 查询失败或超过独立来源时限。
+rule-tool-update-easyscholar-summary = “{ $title }”：返回 { $returned } 项，选中 { $selected } 项；Extra 新增 { $added } 项、修改 { $updated } 项、移除 { $removed } 项。
+
+rule-tool-update-easyscholar-no-selected-results = 查询已返回，但没有当前所选字段的可用数据；已保留原有信息。
+
+abbr-match-ambiguous = 刊名宽松匹配存在多个不同缩写，已跳过自动替换；请使用精确刊名或自定义映射。
+abbr-result = 期刊缩写：{ $value }；来源：{ $source }。
+abbr-source-custom = 自定义映射
+abbr-source-builtin = JabRef 内置映射
+abbr-source-iso4 = 离线 ISO 4 推断
+abbr-source-full = 全称回填

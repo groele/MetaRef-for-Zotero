@@ -1,3 +1,4 @@
+import type { AutomaticWorkflow } from "./utils/automatic-workflow";
 import { config } from "../package.json";
 import api from "./api";
 import hooks from "./hooks";
@@ -18,6 +19,7 @@ class Addon {
       window: Window;
     };
     dialogs: Map<string, Window>;
+    lastAutomaticWorkflow?: AutomaticWorkflow;
   };
 
   public runner: LintRunner;

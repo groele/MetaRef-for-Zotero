@@ -1,7 +1,7 @@
 {
   "name": "zotero-metaflow",
   "type": "module",
-  "version": "10.1.0",
+  "version": "10.4.0",
   "packageManager": "pnpm@12.3.4",
   "description": "Validate, organize and enrich reference metadata in Zotero.",
   "config": {
@@ -11,7 +11,7 @@
     "addonInstance": "MetaRef",
     "prefsPrefix": "extensions.zotero.metaref"
   },
-  "author": "northword",
+  "author": "groele",
   "license": "AGPL-3.0-or-later",
   "homepage": "https://github.com/groele/Zotero-MetaFlow",
   "repository": {

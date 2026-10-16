@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   locale: vi.fn(),
 }));
 vi.mock("./modules/item-tree", () => ({ registerExtraColumns: mocks.register, unregisterExtraColumns: mocks.unregister }));
-vi.mock("./modules/journal-pane", () => ({ registerJournalPane: mocks.register, unregisterJournalPane: mocks.unregister }));
+vi.mock("./modules/journal-pane", () => ({ registerJournalPane: mocks.register, unregisterJournalPane: mocks.unregister, refreshJournalPane: vi.fn(), setJournalUpdateResult: vi.fn() }));
 vi.mock("./modules/menu", () => ({ registerMenu: mocks.register, unregisterMenu: mocks.unregister }));
 vi.mock("./modules/notifier", () => ({ registerNotifier: mocks.register, unregisterNotifier: mocks.unregister }));
 vi.mock("./modules/preference", () => ({ registerPrefs: mocks.register, registerPrefsScripts: vi.fn(), registerPrefsWindow: vi.fn(), unregisterPrefsWindows: mocks.unregister }));
@@ -18,7 +18,7 @@ vi.mock("./modules/shortcuts", () => ({ registerShortcuts: vi.fn() }));
 vi.mock("./utils/dialog", () => ({ closeAllDialogs: mocks.unregister }));
 vi.mock("./utils/journal-insights", () => ({ loadJournalInsights: mocks.load }));
 vi.mock("./utils/locale", () => ({ initLocale: mocks.register, registerMainWindowLocale: vi.fn(), unloadLocale: mocks.locale, unregisterMainWindowLocale: vi.fn() }));
-vi.mock("./utils/logger", () => ({ logger: { error: vi.fn(), debug: vi.fn() } }));
+vi.mock("./utils/logger", () => ({ createLogger: () => ({ debug: vi.fn(), error: vi.fn() }), logger: { error: vi.fn(), debug: vi.fn() } }));
 vi.mock("./utils/prefs", () => ({ getPref: vi.fn() }));
 
 describe("startup cancellation and failure cleanup", () => {
@@ -74,3 +74,4 @@ describe("startup cancellation and failure cleanup", () => {
     expect((Zotero as any).MetaRef).toBe(replacement);
   });
 });
+vi.mock("./utils/greenfrog-migration", () => ({ migrateGreenFrogPreferences: vi.fn() }));

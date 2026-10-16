@@ -75,6 +75,9 @@ describe("metadata safety regressions", function () {
     const item = await create({ title: "Before export" });
     const picker = plugin().data.ztoolkit.FilePicker.prototype;
     const open = picker.open;
+    const autoReportKey = `${config.prefsPrefix}.lint.autoReport`;
+    const autoReport = Zotero.Prefs.get(autoReportKey, true);
+    Zotero.Prefs.set(autoReportKey, true, true);
     const path = PathUtils.join(PathUtils.tempDir, `metaflow-report-${Date.now()}.json`);
     picker.open = async () => path;
     try {
@@ -97,6 +100,7 @@ describe("metadata safety regressions", function () {
       report.close();
     }
     finally {
+      Zotero.Prefs.set(autoReportKey, autoReport as boolean, true);
       picker.open = open;
       for (const report of plugin().data.dialogs.values())
         report.close();

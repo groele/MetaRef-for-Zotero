@@ -7,6 +7,13 @@ afterEach(() => {
 });
 
 describe("semantic Scholar identifier fallback", () => {
+  it("transforms the returned author list instead of silently discarding it", () => {
+    const cleanAuthor = vi.fn((name: string) => ({ firstName: name.split(" ")[0], lastName: name.split(" ").slice(1).join(" "), creatorType: "author" }));
+    vi.stubGlobal("Zotero", { Utilities: { cleanAuthor } });
+    const data = SemanticScholarService.transform!({ paperId: "author-fixture", authors: [{ name: "Ada Lovelace" }, { name: "Grace Hopper" }] });
+    expect(data.creators).toEqual([{ firstName: "Ada", lastName: "Lovelace", creatorType: "author" }, { firstName: "Grace", lastName: "Hopper", creatorType: "author" }]);
+    expect(SemanticScholarService.transform!({ paperId: "invalid", authors: [{ name: "" }] }).creators).toBeUndefined();
+  });
   it("tries the next identifier after a rejected 404 and observes the cooldown", async () => {
     vi.useFakeTimers();
     const requests: string[] = [];

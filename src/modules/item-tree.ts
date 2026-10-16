@@ -1,11 +1,15 @@
 import { cleanupResourcesSync } from "../utils/cleanup";
+import { EASYSCHOLAR_EXTRA_ALIASES, EASYSCHOLAR_FIELD_DEFINITIONS, getEasyScholarFieldMessageID } from "../utils/easyscholar";
 import { cachedJournalInsights } from "../utils/journal-insights";
 import { getString } from "../utils/locale";
 import { logger } from "../utils/logger";
+import { getPref } from "../utils/prefs";
 
 const registeredColumns: string[] = [];
+const easyScholarColumns = new Map<string, string>();
 
 export function registerExtraColumns() {
+  registerEasyScholarColumns();
   if (registeredColumns.length)
     return;
   const abbreviationColumn = Zotero.ItemTreeManager.registerColumn({
@@ -55,6 +59,37 @@ export function registerExtraColumns() {
     registeredColumns.push(natureIndexColumn);
 }
 
+export function registerEasyScholarColumns() {
+  if (!addon?.data?.alive || !Zotero.ItemTreeManager)
+    return;
+  for (const field of EASYSCHOLAR_FIELD_DEFINITIONS) {
+    const existing = easyScholarColumns.get(field.key);
+    const enabled = getPref(`easyscholar.columns.${field.key}` as any, false) === true;
+    if (!enabled) {
+      if (existing && Zotero.ItemTreeManager.isCustomColumn(existing))
+        Zotero.ItemTreeManager.unregisterColumn(existing);
+      easyScholarColumns.delete(field.key);
+      continue;
+    }
+    if (existing && Zotero.ItemTreeManager.isCustomColumn(existing))
+      continue;
+    const registered = Zotero.ItemTreeManager.registerColumn({
+      dataKey: `easyScholar-${field.key}`,
+      label: getString(getEasyScholarFieldMessageID(field.key) as any),
+      dataProvider: (item: Zotero.Item) => addon.data.alive && ztoolkit?.ExtraField
+        ? [field.extraKey, ...EASYSCHOLAR_EXTRA_ALIASES[field.key] || []].map(key => ztoolkit.ExtraField.getExtraField(item, key)).find(Boolean) || ""
+        : "",
+      pluginID: addon.data.config.addonID,
+      zoteroPersist: ["width", "hidden", "sortDirection"],
+    });
+    if (registered)
+      easyScholarColumns.set(field.key, registered);
+  }
+}
+
 export function unregisterExtraColumns() {
+  const easyScholarIDs = [...easyScholarColumns.values()];
+  easyScholarColumns.clear();
+  cleanupResourcesSync(easyScholarIDs.map(id => () => Zotero.ItemTreeManager.unregisterColumn(id)), error => logger.error("EasyScholar column cleanup failed:", error));
   cleanupResourcesSync(registeredColumns.splice(0).map(id => () => Zotero.ItemTreeManager.unregisterColumn(id)), error => logger.error("Column cleanup failed:", error));
 }

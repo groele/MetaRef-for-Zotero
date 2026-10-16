@@ -1,7 +1,9 @@
+import type { EasyScholarResult } from "./easyscholar";
 import type { ESILookupMaps } from "./esi";
 import type { NatureIndexLookupMaps } from "./nature-index";
 import { DataLoader } from "./data-loader";
-import { formatESICategories, matchESICategories } from "./esi";
+import { fetchEasyScholarRank, peekEasyScholarRank } from "./easyscholar";
+import { ESI_CATEGORIES, formatESICategories, matchESICategories } from "./esi";
 import { journalDatabaseErrorMessage } from "./journal-database-error";
 import { isNatureIndexJournal } from "./nature-index";
 import { getPref } from "./prefs";
@@ -20,14 +22,17 @@ export interface JournalInsights {
   categories: string[];
   esi: string;
   natureIndex: boolean | undefined;
-  esiSource: "custom" | "builtin";
-  natureSource: "custom" | "builtin";
+  esiSource: "custom" | "builtin" | "api";
+  esiAPIWarning?: string;
+  natureAPIWarning?: string;
+  natureAPIDataset?: string;
+  natureSource: "custom" | "builtin" | "api";
   esiError?: string;
   natureError?: string;
   customFallback?: string;
   natureFallback?: string;
-  esiBasis?: "ISSN" | "publicationTitle" | "journalAbbreviation";
-  natureBasis?: "ISSN" | "publicationTitle" | "journalAbbreviation";
+  esiBasis?: "ISSN" | "publicationTitle" | "journalAbbreviation" | "API";
+  natureBasis?: "ISSN" | "publicationTitle" | "journalAbbreviation" | "API";
 }
 let currentPath: string | undefined;
 let pending: Promise<IndexData> | undefined;
@@ -102,10 +107,24 @@ export function cachedJournalInsights(item: Zotero.Item): JournalInsights | unde
     return undefined;
   return calculate(item, loaded);
 }
-export async function getJournalInsights(item: Zotero.Item): Promise<JournalInsights> {
-  return calculate(item, await loadJournalInsights());
+export async function getJournalInsights(item: Zotero.Item, options: { queryAPI?: boolean } = {}): Promise<JournalInsights> {
+  const data = await loadJournalInsights();
+  const local = calculateLocal(item, data);
+  const title = String(item.getField("publicationTitle") || "").trim();
+  const wantsAPI = ["esi", "nature"].some((kind) => {
+    const policy = sourcePriority(kind);
+    return policy === "api-first" || policy === "api-only" || (policy === "local-first" && (kind === "esi" ? !local.categories.length : !local.natureIndex));
+  });
+  const response = options.queryAPI && item.itemType === "journalArticle" && title && wantsAPI
+    ? await fetchEasyScholarRank(title)
+    : peekEasyScholarRank(title);
+  return resolveJournalSources(local, response);
 }
 function calculate(item: Zotero.Item, data: IndexData): JournalInsights {
+  return resolveJournalSources(calculateLocal(item, data), peekEasyScholarRank(String(item.getField("publicationTitle") || "")));
+}
+
+function calculateLocal(item: Zotero.Item, data: IndexData): JournalInsights {
   const result: JournalInsights = {
     categories: [],
     esi: "",
@@ -142,4 +161,72 @@ function calculate(item: Zotero.Item, data: IndexData): JournalInsights {
   }
   result.esi = formatESICategories(result.categories, getPref("insights.esiFormat") || "{subject}ESI");
   return result;
+}
+
+export function apiESICategories(value: string): string[] {
+  const lookup = new Map(Object.entries(ESI_CATEGORIES).flatMap(([key, names]) => [key, names.zh, names.en].map(name => [name.toUpperCase(), key] as const)));
+  const parse = (part: string): string[] => {
+    const normalized = part.trim().replace(/ESI$/i, "").trim().toUpperCase();
+    const exact = lookup.get(normalized);
+    return exact ? [exact] : normalized.split(/[,、]/).map(name => lookup.get(name.trim())).filter((key): key is string => Boolean(key));
+  };
+  return [...new Set(value.split(/[;；|]/).flatMap(parse))];
+}
+
+export function resolveJournalSources(local: JournalInsights, response?: EasyScholarResult): JournalInsights {
+  const result = { ...local, categories: [...local.categories] };
+  const api = response?.status === "success" ? response.data : undefined;
+  const categories = apiESICategories(api?.esi || "");
+  const nature = api?.natureIndex === "是" ? true : api?.natureIndex === "否" ? false : undefined;
+  for (const kind of ["esi", "nature"] as const) {
+    const policy = sourcePriority(kind);
+    if (policy === "local-only" || (policy === "local-first" && (kind === "esi" ? local.categories.length > 0 : local.natureIndex === true)))
+      continue;
+    const available = kind === "esi" ? categories.length > 0 : nature !== undefined;
+    if (available) {
+      if (kind === "esi") {
+        result.categories = categories;
+        result.esi = formatESICategories(categories, getPref("insights.esiFormat") || "{subject}ESI");
+        result.esiSource = "api";
+        result.esiBasis = "API";
+        result.esiError = undefined;
+        result.customFallback = undefined;
+      }
+      else {
+        result.natureIndex = nature;
+        result.natureSource = "api";
+        result.natureBasis = "API";
+        result.natureAPIDataset = api?.natureIndexDataset;
+        result.natureError = undefined;
+        result.natureFallback = undefined;
+      }
+    }
+    else if (policy === "api-only") {
+      if (kind === "esi") {
+        result.categories = [];
+        result.esi = "";
+        result.esiSource = "api";
+        result.esiError = "journal-insights-api-missing";
+        result.esiBasis = undefined;
+      }
+      else {
+        result.natureIndex = undefined;
+        result.natureSource = "api";
+        result.natureError = "journal-insights-api-missing";
+        result.natureBasis = undefined;
+      }
+    }
+    else {
+      if (kind === "esi")
+        result.esiAPIWarning = "journal-insights-api-fallback";
+      else
+        result.natureAPIWarning = "journal-insights-api-fallback";
+    }
+  }
+  return result;
+}
+
+function sourcePriority(kind: string): string {
+  const value = getPref(`insights.${kind}SourcePriority` as any, "local-only");
+  return typeof value === "string" && ["api-first", "local-first", "api-only", "local-only"].includes(value) ? value : "local-only";
 }

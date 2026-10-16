@@ -24,8 +24,10 @@ Zotero MetaFlow is an independently maintained Zotero add-on that validate, orga
 
 - Apply configurable metadata rules for titles, authors, DOI, dates, abbreviations, and scientific notation.
 - Use batch processing with progress reporting, cancellation and undo/redo where supported.
-- Inspect journal information through ESI and Nature Index views.
-- Manually query EasyScholar journal rankings and merge returned fields into item Extra.
+- Inspect saved rankings, ESI and Nature Index information in the journal sidebar; click its MetaFlow navigation icon to complete missing information.
+- Update article and journal metadata together using blank-field or overwrite policies; repair missing or incorrect authors.
+- Reuse successful EasyScholar and Semantic Scholar responses for 72 hours across restarts and share concurrent lookups.
+- Configure JabRef journal abbreviation profiles, custom mappings and offline ISO 4 fallback.
 - Customize data sources, keyboard shortcuts, and automatic cleanup settings.
 
 ## Screenshots
@@ -36,7 +38,7 @@ For interface examples and implementation details, see the [project documentatio
 
 | Item                  | Details                                                                                                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Add-on version        | `10.1.0`                                                                                                                              |
+| Add-on version        | `10.4.0`                                                                                                                              |
 | Add-on ID             | `metaflow@groele`                                                                                                                     |
 | Declared Zotero range | `10.0–11.*`                                                                                                                           |
 | Verification          | Zotero 11 checks include development builds; support declared by the manifest does not imply validation against every future release. |

@@ -14,10 +14,10 @@ export const NoJournalPreprint = defineRule({
         message: getString("rule-no-journal-preprint-report-message"),
         action: {
           label: getString("rule-no-journal-preprint-report-action"),
-          callback: () => {
+          callback: async () => {
             const currentItem = Zotero.Items.get(item.id);
             if (currentItem && !currentItem.deleted)
-              return addon.hooks.onLintInBatch(["tool-update-metadata"], [currentItem]);
+              await addon.hooks.onLintInBatch(["tool-update-metadata"], [currentItem]);
           },
         },
       });

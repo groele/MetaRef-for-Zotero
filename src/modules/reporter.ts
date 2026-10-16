@@ -18,6 +18,7 @@ export interface FieldChange {
 }
 
 export interface ReportInfo {
+  code?: string;
   level?: "info" | "warning" | "error";
   label?: string;
   message: string;
@@ -197,11 +198,12 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [])
   return openAndWaitClose(addon.data.config.addonName);
 }
 
-const PROGRESS_WINDOW_CLOSE_DELAY = 5000;
+const SUCCESS_CLOSE_DELAY = 1500;
 
 export class ProgressUI {
   private progressWindow?: ProgressWindowHelper;
   private _onCancel?: () => void;
+  private running = false;
 
   constructor(options?: { onCancel?: () => void }) {
     this._onCancel = options?.onCancel;
@@ -210,6 +212,7 @@ export class ProgressUI {
   public close(): void {
     this.progressWindow?.close();
     this.progressWindow = undefined;
+    this.running = false;
   }
 
   public async init(slient?: boolean): Promise<void> {
@@ -218,6 +221,7 @@ export class ProgressUI {
     if (slient || !getPref("lint.notify"))
       return;
 
+    this.running = true;
     this.progressWindow = new ztoolkit.ProgressWindow(addon.data.config.addonName, {
       closeOnClick: false,
       closeTime: -1,
@@ -282,6 +286,8 @@ export class ProgressUI {
     if (!this.progressWindow)
       return;
 
+    this.running = false;
+    const closeDelay = errorCount || preparationFailed ? 6000 : cancelled ? 2500 : details?.warnings ? 4000 : SUCCESS_CLOSE_DELAY;
     const text = cancelled
       ? getString("info-batch-cancelled", { args: { processed: successCount + errorCount, skipped } })
       : successCount + errorCount
@@ -298,12 +304,16 @@ export class ProgressUI {
       .changeLine({ text, progress: 100, idx: 0 })
       .changeLine({ text: details ? getString("info-batch-details", { args: details }) : "", progress: 100, idx: 1 })
       .changeLine({ text: getString("info-batch-duration", { args: { seconds: duration.toFixed(1) } }), idx: 2 })
-      .startCloseTimer(PROGRESS_WINDOW_CLOSE_DELAY);
+      .startCloseTimer(closeDelay, false);
     if (preparationFailed && successCount + errorCount)
       this.showError();
   }
 
   private handleStopRequest = (ev: MouseEvent): void => {
+    if (!this.running) {
+      this.close();
+      return;
+    }
     ev.stopPropagation();
     ev.preventDefault();
     this.progressWindow?.changeLine({

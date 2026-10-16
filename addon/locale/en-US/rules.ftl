@@ -186,6 +186,8 @@ rule-require-journal-abbr-menu-field =
 
 rule-require-journal-abbr-option-infer =
   .label = Auto infer abbreviation via ISO 4 if missing
+rule-require-journal-abbr-option-with-dots =
+  .label = Keep periods in journal abbreviations
 rule-require-journal-abbr-option-usefull = Use full name if abbreviation unavailable:
 rule-require-journal-abbr-option-usefull-en =
   .label = English journal
@@ -364,7 +366,7 @@ rule-tool-update-metadata-dialog-allow-type-changed =
   .label = Allow Change Item Type
 rule-tool-update-metadata-dialog-notes = Notes
 rule-tool-update-metadata-dialog-note-rate-limit = Some APIs have rate limits; please avoid bulk processing.
-rule-tool-update-metadata-dialog-note-chinese-limit = Chinese publications could not use this feature due to data source limitations.
+rule-tool-update-metadata-dialog-note-chinese-limit = Chinese titles may use CNKI search. A unique title match is required; access restrictions or verification pages may prevent results.
 rule-tool-update-metadata-dialog-note-type-change = In “All Fields” mode, allowing an item-type change may make Zotero remove fields that the new type does not support or change creator roles. Review the result after updating.
 
 
@@ -403,14 +405,16 @@ rule-tool-update-metadata-invalid-creators = Invalid creator types from the serv
 rule-tool-update-metadata-type-change-loss = Changing the item type would remove existing fields or change creator roles. The original type was preserved in blank-only mode; compatible empty fields were updated.
 rule-tool-query-esi-custom-data-error = Custom ESI data are unavailable; using built-in data: { $error }
 rule-tool-update-easyscholar = Look up EasyScholar journal information and write to Extra
-rule-tool-update-easyscholar-description = Look up journal rankings with your EasyScholar key and merge returned fields into the item's Extra. Network access occurs only when you run this tool manually.
+rule-tool-update-easyscholar-description = Query EasyScholar rankings and merge selected values into Extra. Run manually or explicitly enable lookups for added items. Supplemental sources have separate switches.
 rule-tool-update-easyscholar-menu-item = Look up EasyScholar journal information
 rule-tool-update-easyscholar-no-title = The item has no journal or conference title to look up.
 rule-tool-update-easyscholar-unconfigured = Enter an EasyScholar API key in MetaFlow settings first.
 rule-tool-update-easyscholar-not-found = EasyScholar returned no ranking data for “{ $title }”.
 rule-tool-update-easyscholar-no-fields = EasyScholar returned a record for “{ $title }” but no ranking fields that can be written.
+rule-tool-update-easyscholar-unchanged = The selected EasyScholar fields for “{ $title }” already match the current Extra content.
 rule-tool-update-easyscholar-failed = EasyScholar lookup failed: { $error }
 rule-tool-update-easyscholar-updated = Retrieved { $count } journal fields for “{ $title }” and merged them into Extra.
+rule-tool-update-easyscholar-cleared = Removed outdated index markers for “{ $title }” based on the latest EasyScholar response.
 rule-no-field-misuse-review = Review { $field }: “{ $value }” may be metadata from another tool. The original value was preserved.
 rule-no-value-nullish-review = Review { $field }: “{ $value }” may be a placeholder or legitimate text. The original value was preserved.
 rule-tool-update-metadata-identity-conflict = Skipped the result from { $service }: its identity conflicts with this item or could not be verified.
@@ -438,3 +442,51 @@ tool-language-input = Or enter a language
 tool-language-title = Set item language
 tool-single-item-only = Select one item to use this tool.
 rule-rollback-failed = A failed rule could not be restored. Processing and saving this item were stopped; its stored state was reloaded when available.
+
+## Library maintenance tools
+rule-tool-creators-style = Annotate authors with bold or stars, or remove annotations
+rule-tool-creators-style-menu-item = Annotate authors with bold or stars, or remove annotations
+    .label = Annotate authors with bold or stars, or remove annotations
+rule-tool-creators-swap = Swap creator first and last names
+rule-tool-creators-swap-menu-item = Swap creator first and last names
+    .label = Swap creator first and last names
+rule-tool-title-replace = Find and replace text in item titles
+rule-tool-title-replace-menu-item = Find and replace text in item titles
+    .label = Find and replace text in item titles
+rule-tool-publication-replace = Find and replace publication titles
+rule-tool-publication-replace-menu-item = Find and replace publication titles
+    .label = Find and replace publication titles
+rule-tool-clear-all-extra = Clear all Extra content of selected items
+rule-tool-clear-all-extra-menu-item = Clear all Extra content of selected items
+    .label = Clear all Extra content of selected items
+maintenance-author-action = Operation
+maintenance-author-name = Author name (leave blank for all creators)
+maintenance-author-bold = Add bold
+maintenance-author-star = Add a star
+maintenance-author-both = Add bold and a star
+maintenance-author-removeBold = Remove bold
+maintenance-author-removeStar = Remove stars
+maintenance-author-removeAll = Remove bold and stars
+maintenance-find = Find text (literal match)
+maintenance-replacement = Replace with (may be empty)
+maintenance-replace-all = Replace every occurrence in each field
+maintenance-find-required = Find text must not be empty. No items were changed.
+maintenance-clear-extra-confirm = Clear all Extra content in { $count } selected items, including manual notes and other plugins' fields?
+metadata-auto-update-on-added = Fill missing article metadata when items are added
+    .label = Fill missing article metadata when items are added
+metadata-auto-update-description = Off by default. Requires automatic checking of added items. Queries article identifiers or Chinese titles, fills empty fields, and keeps item types.
+
+rule-tool-update-easyscholar-supplemental-failed = Some supplemental sources failed: { $error }
+
+rule-tool-update-easyscholar-disabled = No journal output fields are enabled; lookup skipped.
+rule-tool-update-easyscholar-source-deadline = EasyScholar lookup failed or exceeded its source deadline.
+rule-tool-update-easyscholar-summary = “{ $title }”: { $returned } returned, { $selected } selected; Extra keys added: { $added }, changed: { $updated }, removed: { $removed }.
+
+rule-tool-update-easyscholar-no-selected-results = The response contains no usable values for the selected fields. Existing information was preserved.
+
+abbr-match-ambiguous = The title matches conflicting abbreviations. Automatic replacement was skipped; use an exact title or custom mapping.
+abbr-result = Journal abbreviation: { $value }; source: { $source }.
+abbr-source-custom = Custom mapping
+abbr-source-builtin = JabRef built-in mapping
+abbr-source-iso4 = Offline ISO 4 inference
+abbr-source-full = Full-title fallback

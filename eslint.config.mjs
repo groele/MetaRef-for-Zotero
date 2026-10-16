@@ -21,6 +21,7 @@ export default antfu(
     },
     ignores: [
       "addon/lib/**",
+      "src/vendor/**",
       "data",
       "docs",
       "CLAUDE.md",

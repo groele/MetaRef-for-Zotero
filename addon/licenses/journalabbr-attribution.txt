@@ -1,0 +1,6 @@
+Zotero MetaFlow integrates journal-abbreviation workflow ideas and the browser-compatible AbbrevIso module distributed by zoushucai/zotero-journalabbr (AGPL-3.0).
+Reference snapshot: 6d503318f3b51af0d51f5c50412f14ff7cf0db8f
+AbbrevIso: Copyright (C) 2017 Marcin Wrochna, MIT license.
+JabRef abbreviation lists: CC0, see JabRef-CC0.txt and packaged provenance.
+Existing MetaFlow/MetaRef contributions by northword and other upstream authors remain covered by the project license.
+LTWA 2021 data source: ISSN International Centre, retained from the project data directory.

@@ -54,3 +54,21 @@ journal-database-issue-journals = 数据库至少需要一条期刊记录，不�
 journal-insights-match-detail = 匹配依据：{ $basis }
 
 journal-insights-scope-note = 期刊层面识别，仅供参考。
+
+menu-show-data-directory = 打开 Zotero 数据目录
+    .label = 打开 Zotero 数据目录
+menu-show-profile-directory = 打开 Zotero 配置目录
+    .label = 打开 Zotero 配置目录
+
+journal-rankings-heading = 期刊分区与评级
+journal-rankings-empty = 暂无已保存的评级。点击右侧 MetaFlow 图标可补全期刊信息。
+journal-rankings-refresh-failed = 期刊信息补全失败，请检查网络和数据源设置后再次点击 MetaFlow 图标。
+journal-rankings-saved-note = 显示已保存的分区及评级，仅供参考。
+
+journal-rankings-cancelled = 本次查询已取消；此前保存的数据仍保留。
+journal-rankings-query-complete = 查询完成，下方显示已保存的期刊信息。
+
+journal-insights-api-source = EasyScholar API
+journal-insights-basis-API = API 期刊名称查询
+journal-insights-api-missing = API 尚无此字段的可用数据：可能尚未查询、请求失败、未匹配或账号未启用对应数据集。
+journal-insights-api-fallback = API 尚无可用数据，当前显示本地数据库结果；可从右键菜单执行查询。

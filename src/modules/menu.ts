@@ -1,11 +1,11 @@
 import type { RuleForRegularScopeField } from "./rules/rule-base";
 import { cleanupResourcesSync } from "../utils/cleanup";
+import { showZoteroDirectory } from "../utils/directories";
 import { getJournalInsights } from "../utils/journal-insights";
-import { presentJournalInsights } from "../utils/journal-insights-presentation";
-import { getLocaleID, getString } from "../utils/locale";
+import { getLocaleID } from "../utils/locale";
 import { logger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
-import { createReporter } from "./reporter";
+import { refreshJournalPane } from "./journal-pane";
 import { Rules } from "./rules";
 
 type FieldMenu = _ZoteroTypes.MenuManager.MenuData<_ZoteroTypes.MenuManager.ItemPaneMenuContext>;
@@ -26,7 +26,7 @@ function hasMenuItems(context: LibraryContext): boolean {
   return Boolean(context.collectionTreeRows?.length);
 }
 
-const icon = typeof rootURI !== "undefined" ? `${rootURI}/content/icons/metaref-96.png` : "";
+const icon = typeof rootURI !== "undefined" ? `${rootURI}content/icons/metaref-16.svg` : "";
 const registeredMenus: string[] = [];
 const handledCommands = new WeakSet<Event>();
 
@@ -64,7 +64,7 @@ function registerFieldMenus() {
     .map(rule => ({
       menuType: "menuitem",
       l10nID: getLocaleID(rule.fieldMenu?.l10nID),
-      icon: rule.fieldMenu?.icon,
+      icon,
       enableForTabTypes: rule.targetItemTypes,
       onShowing: (_event, context) => {
         const isPrefEnabled = isMenuVisible(rule.id);
@@ -111,45 +111,53 @@ export function shouldShowSeparator(
 
 export const MENU_SECTIONS = {
   primary: ["standard", "tool-update-metadata"],
-  title: ["correct-title-sentence-case", "correct-title-chemical-formula", "tool-title-guillemet"],
-  creators: ["correct-creators-case", "correct-creators-pinyin", "tool-creators-ext"],
+  title: ["correct-title-sentence-case", "correct-title-chemical-formula", "tool-title-guillemet", "tool-title-replace"],
+  creators: ["correct-creators-case", "correct-creators-pinyin", "tool-creators-ext", "tool-creators-style", "tool-creators-swap"],
   publication: ["require-language", "tool-set-language", "correct-publication-title-alias", "correct-publication-title-case", "require-journal-abbr", "correct-conference-abbr", "require-university-place"],
   indexing: ["tool-query-esi", "tool-query-nature-index", "tool-update-easyscholar"],
-  maintenance: ["correct-date-format", "no-doi-prefix", "tool-get-short-doi", "tool-csl-helper", "tool-clean-extra"],
+  maintenance: ["correct-date-format", "no-doi-prefix", "tool-get-short-doi", "tool-csl-helper", "tool-clean-extra", "tool-clear-all-extra", "tool-publication-replace", "show-data-directory", "show-profile-directory"],
 } satisfies Record<string, string[]>;
 
 export const MENU_GROUPS = Object.entries(MENU_SECTIONS).filter(([key]) => key !== "primary") as [Exclude<keyof typeof MENU_SECTIONS, "primary">, string[]][];
 
+export function isPrimaryMenu(key: string) {
+  return getPref(`menu.primary.${key}` as any, MENU_SECTIONS.primary.includes(key)) === true;
+}
+
 function registerItemMenus() {
   const isMenuVisible = (key: string): boolean => getPref(`menu.${key}` as any, true) ?? true;
-  const makeItem = (key: string): ItemMenu => {
+  const nestedVisible = (key: string) => isMenuVisible(key) && !isPrimaryMenu(key);
+  const makeItem = (key: string, primary = false): ItemMenu => {
+    const directory = key === "show-data-directory" || key === "show-profile-directory";
     const indexing = ["tool-query-esi", "tool-query-nature-index"].includes(key);
     const rule = key === "standard" ? undefined : Rules.getByID(key as ID);
     const custom = rule?.getItemMenu?.();
-    const l10nID = key === "standard" ? getLocaleID("menuitem-stdFormatFlow") : getLocaleID(custom?.l10nID || `rule-${key as ID}-menu-item` as Parameters<typeof getLocaleID>[0]);
+    const l10nID = directory ? getLocaleID(`menu-${key}` as any) : key === "standard" ? getLocaleID("menuitem-stdFormatFlow") : getLocaleID(custom?.l10nID || `rule-${key as ID}-menu-item` as Parameters<typeof getLocaleID>[0]);
     return {
       menuType: "menuitem",
+      icon,
       l10nID,
       onShowing(_event, context) {
-        context.setVisible(isMenuVisible(key));
+        context.setVisible(isMenuVisible(key) && isPrimaryMenu(key) === primary);
         const eligible = context.items?.filter(item => item.isRegularItem() && !item.deleted && (indexing || item.isEditable())
           && (!(rule?.scope === "item" || rule?.scope === "field") || !rule.targetItemTypes || rule.targetItemTypes.includes(item.itemType)));
-        context.setEnabled((context.items ? !!eligible?.length : hasMenuItems(context))
+        context.setEnabled((directory || (context.items ? !!eligible?.length : hasMenuItems(context)))
           && !(custom?.mutiltipleItems === false && (context.items?.length ?? 0) > 1));
       },
       onShown(_event, context) { checkL10nString(context.menuElem, key, l10nID); },
       async onCommand(_event, context) {
         if (!acceptCommand(_event))
           return;
+        if (directory) {
+          await showZoteroDirectory(key === "show-data-directory" ? "data" : "profile");
+          return;
+        }
         const items = await menuItems(context);
         if (indexing) {
-          const infos = await Promise.all(items.filter(item => item.isRegularItem() && !item.deleted && item.itemType === "journalArticle").map(async (item) => {
-            const result = await getJournalInsights(item);
-            const row = presentJournalInsights(result, Zotero.locale)[key === "tool-query-esi" ? 0 : 1];
-            return { itemID: item.id, title: item.getField("title") as string, ruleID: key, level: row.warning ? "warning" as const : "info" as const, label: row.label, message: [row.value, row.basis, row.source, row.warning, getString("journal-insights-boundary")].filter(Boolean).join("\n") };
-          }));
-          if (infos.length)
-            void createReporter(infos).catch(error => logger.error("Journal report failed:", error));
+          const journals = items.filter(item => item.isRegularItem() && !item.deleted && item.itemType === "journalArticle");
+          await Promise.all(journals.map(item => getJournalInsights(item, { queryAPI: true })));
+          Zotero.ItemTreeManager.refreshColumns();
+          await refreshJournalPane(journals.map(item => item.id));
           return;
         }
         const rules = key === "correct-date-format"
@@ -165,18 +173,19 @@ function registerItemMenus() {
     l10nID: getLocaleID("menuitem-label"),
     icon,
     onShowing(_event, context) {
-      context.setVisible(Object.values(MENU_SECTIONS).flat().some(isMenuVisible));
-      context.setEnabled(context.items ? context.items.some(item => item.isRegularItem() && !item.deleted) : hasMenuItems(context));
+      context.setVisible(Object.values(MENU_SECTIONS).flat().some(nestedVisible));
+      context.setEnabled(["show-data-directory", "show-profile-directory"].some(isMenuVisible) || (context.items ? context.items.some(item => item.isRegularItem() && !item.deleted) : hasMenuItems(context)));
     },
     menus: sections.flatMap((keys, index): ItemMenu[] => [
-      ...keys.map(makeItem),
+      ...keys.map(key => makeItem(key)),
       ...(index < sections.length - 1
         ? [{ menuType: "separator", onShowing(_event, context) {
-            context.setVisible(shouldShowSeparator(keys, sections.slice(index + 1), isMenuVisible));
+            context.setVisible(shouldShowSeparator(keys, sections.slice(index + 1), nestedVisible));
           } } as ItemMenu]
         : []),
     ]),
   }];
+  menus.push(...sections.flat().map(key => makeItem(key, true)));
   for (const target of ["main/library/item", "main/library/collection"] as const) {
     addMenu({ pluginID: addon.data.config.addonID, menuID: target.endsWith("item") ? "item-menu" : "collection-menu", target, menus });
   }

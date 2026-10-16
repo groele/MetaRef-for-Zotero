@@ -17,7 +17,42 @@ describe("menu module", () => {
     try {
       const root = registered();
       expect(root.menus.filter((menu: any) => menu.menuType === "submenu")).toHaveLength(0);
-      expect(root.menus.filter((menu: any) => menu.menuType === "menuitem")).toHaveLength(23);
+      expect(root.menus.filter((menu: any) => menu.menuType === "menuitem")).toHaveLength(30);
+    }
+    finally {
+      unregisterMenu();
+      vi.unstubAllGlobals();
+    }
+  });
+  it("moves a command between levels without displaying duplicate entries", () => {
+    try {
+      const options: any[] = [];
+      const values = new Map<string, unknown>();
+      vi.stubGlobal("addon", { data: { config: { addonRef: "metaref", addonID: "test", prefsPrefix: "test" } } });
+      vi.stubGlobal("Zotero", { Prefs: { get: (key: string) => values.get(key) }, MenuManager: { registerMenu: (option: any) => {
+        options.push(option);
+        return String(options.length);
+      }, unregisterMenu: vi.fn() } });
+      registerMenu();
+      const entries = options.find(option => option.target === "main/library/item").menus;
+      const label = "metaref-rule-tool-update-easyscholar-menu-item";
+      const nested = entries[0].menus.find((entry: any) => entry.l10nID === label);
+      const primary = entries.slice(1).find((entry: any) => entry.l10nID === label);
+      for (const pinned of [false, true, false]) {
+        values.set("extensions.zotero.metaref.menu.primary.tool-update-easyscholar", pinned);
+        const visible = vi.fn();
+        const context = { items: [], setVisible: visible, setEnabled: vi.fn() };
+        nested.onShowing(null, context);
+        expect(visible).toHaveBeenLastCalledWith(!pinned);
+        primary.onShowing(null, context);
+        expect(visible).toHaveBeenLastCalledWith(pinned);
+      }
+      values.set("extensions.zotero.metaref.menu.tool-update-easyscholar", false);
+      for (const entry of [nested, primary]) {
+        const visible = vi.fn();
+        entry.onShowing(null, { items: [], setVisible: visible, setEnabled: vi.fn() });
+        expect(visible).toHaveBeenLastCalledWith(false);
+      }
     }
     finally {
       unregisterMenu();
@@ -36,7 +71,9 @@ describe("menu module", () => {
       root.onShowing(null, { ...context, items: [], get collectionTreeRow() {
         throw new Error("must not read deprecated getter");
       } });
-      expect(enabled).toHaveBeenLastCalledWith(false);
+      expect(enabled).toHaveBeenLastCalledWith(true);
+      root.menus.find((menu: any) => menu.l10nID === "metaref-menu-show-data-directory").onShowing(null, { ...context, items: [] });
+      expect(enabled).toHaveBeenLastCalledWith(true);
     }
     finally {
       unregisterMenu();
@@ -118,16 +155,16 @@ describe("menu module", () => {
       expect(Rules.getStandard().every(rule => !rule.id.startsWith("tool-"))).toBe(true);
     });
 
-    it("covers all 23 menu items across all sections", () => {
+    it("covers all 30 menu items across all sections", () => {
       const allItemIDs = Object.values(MENU_SECTIONS).flat();
 
-      expect(allItemIDs).toHaveLength(23);
+      expect(allItemIDs).toHaveLength(30);
       const uniqueIDs = new Set(allItemIDs);
-      expect(uniqueIDs.size).toBe(23);
+      expect(uniqueIDs.size).toBe(30);
     });
 
     it("references valid registered rules for all rule-based menu items", () => {
-      const ruleBasedItems = Object.values(MENU_SECTIONS).flat().filter(id => id !== "standard");
+      const ruleBasedItems = Object.values(MENU_SECTIONS).flat().filter(id => id !== "standard" && !id.startsWith("show-"));
 
       const allRegisteredIDs = new Set(Rules.getAll().map(r => r.id));
 
