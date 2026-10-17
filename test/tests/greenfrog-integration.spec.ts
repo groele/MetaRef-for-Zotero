@@ -313,7 +313,7 @@ describe("green Frog integration in Zotero", function () {
   it("skips all ranking requests when outputs are disabled and preserves partial success after a source deadline", async function () {
     this.timeout(90_000);
     const keys = EASYSCHOLAR_FIELD_DEFINITIONS.map(field => `easyscholar.fields.${field.key}`);
-    keys.push("easyscholar.secretKey", "easyscholar.clearExtraBeforeUpdate");
+    keys.push("easyscholar.secretKey", "easyscholar.clearExtraBeforeUpdate", "easyscholar.writeToExtra");
     const previous = new Map(keys.map(key => [key, Zotero.Prefs.get(pref(key), true)]));
     const request = Zotero.HTTP.request;
     const item = new Zotero.Item("journalArticle");
@@ -329,6 +329,7 @@ describe("green Frog integration in Zotero", function () {
         Zotero.Prefs.set(pref(key), false, true);
       Zotero.Prefs.set(pref("easyscholar.secretKey"), "isolated-qa-key", true);
       Zotero.Prefs.set(pref("easyscholar.clearExtraBeforeUpdate"), true, true);
+      Zotero.Prefs.set(pref("easyscholar.writeToExtra"), true, true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (!["www.easyscholar.cc", "phq.njau.edu.cn"].includes(new URL(url).hostname))
           return request(method, url, options);

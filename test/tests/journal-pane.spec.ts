@@ -117,7 +117,7 @@ describe("independent journal insights in Zotero", function () {
     const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
     await section._handleRefresh();
     const body = section.querySelector("[data-type='body']") as HTMLElement;
-    const settings = ["easyscholar.secretKey", "easyscholar.clearExtraBeforeUpdate", "easyscholar.updateAbbreviation", "easyscholar.fields.jcr", "easyscholar.fields.impactFactor"];
+    const settings = ["easyscholar.secretKey", "easyscholar.clearExtraBeforeUpdate", "easyscholar.updateAbbreviation", "easyscholar.writeToExtra", "easyscholar.fields.jcr", "easyscholar.fields.impactFactor"];
     const previous = new Map(settings.map(key => [key, Zotero.Prefs.get(`${prefix}.${key}`, true)]));
     const request = Zotero.HTTP.request;
     let requests = 0;
@@ -126,6 +126,7 @@ describe("independent journal insights in Zotero", function () {
       Zotero.Prefs.set(`${prefix}.easyscholar.secretKey`, "pane-isolated-key", true);
       Zotero.Prefs.set(`${prefix}.easyscholar.clearExtraBeforeUpdate`, false, true);
       Zotero.Prefs.set(`${prefix}.easyscholar.updateAbbreviation`, false, true);
+      Zotero.Prefs.set(`${prefix}.easyscholar.writeToExtra`, true, true);
       Zotero.Prefs.set(`${prefix}.easyscholar.fields.jcr`, true, true);
       Zotero.Prefs.set(`${prefix}.easyscholar.fields.impactFactor`, true, true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {

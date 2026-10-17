@@ -92,6 +92,7 @@ describe("manual author repair in both MetaFlow actions", function () {
     const request = Zotero.HTTP.request;
     let requests = 0;
     pref("metadata.updateJournalInfo", true);
+    pref("easyscholar.writeToExtra", true);
     pref("easyscholar.secretKey", "unified-metadata-isolated-key");
     pref("easyscholar.fields.jcr", true);
     pref("easyscholar.fields.impactFactor", true);
@@ -120,6 +121,7 @@ describe("manual author repair in both MetaFlow actions", function () {
     finally {
       Zotero.HTTP.request = request;
       pref("metadata.updateJournalInfo", false);
+      pref("easyscholar.writeToExtra", false);
       pref("rule.tool-update-metadata.option.mode", "blank");
     }
   });
