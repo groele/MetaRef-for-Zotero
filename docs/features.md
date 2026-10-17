@@ -134,13 +134,14 @@ Displays the journal's Essential Science Indicators (ESI) discipline in a dedica
 
 ### EasyScholar Journal Rankings (`tool-update-easyscholar`)
 
-Looks up journal or conference rankings with the EasyScholar Open API and merges selected results into the item's Extra field.
+Looks up journal or conference rankings with the EasyScholar Open API and saves selected results either to MetaFlow's local journal ranking index or, when enabled in preferences, to the item's Extra field.
 
 - **Connection**: Store an API key in MetaFlow preferences, open EasyScholar's API documentation, or test the key from the preferences page.
 - **Field selection**: Independently enable JCR/CAS and NewSharp rankings, impact factors, index/rating systems, university rankings, and supported EasyScholar custom datasets. The original 23 fields remain enabled by default; additional ranking, university, and custom-dataset fields are opt-in. Custom results are returned only when the dataset is enabled in the user's EasyScholar account.
-- **Item-list columns**: Select which stored EasyScholar fields are registered as Zotero item-list columns. The columns read the existing Extra values and do not trigger network requests.
+- **Item-list columns**: Select which saved EasyScholar fields are registered as Zotero item-list columns. The columns read Extra and the local MetaFlow index and do not trigger network requests.
 - **Automation and shortcut**: An optional setting queries journal articles and conference papers when new items are added; it is off by default and follows MetaFlow's existing automatic-added-item setting. The EasyScholar command also has an editable shortcut, defaulting to Ctrl+J on Windows/Linux and Cmd+J on macOS.
-- **Preservation**: Lookup replaces only selected EasyScholar-managed fields, preserves unrelated Extra text, and removes an old affirmative index marker when the API explicitly reports that the journal is no longer indexed.
+- **Storage**: By default, selected results are saved in `metaflow-journal-rankings-v1.json` in the Zotero profile and matched by ISSN, then normalized journal title. The “Also write to Extra” switch is off by default; when on, selected values are merged into Extra while unrelated text is preserved. Existing Extra values remain readable either way. The local index does not sync with Zotero libraries or other profiles.
+- **Preservation**: Blank-only updates respect values already present in either storage. Overwrite mode updates only selected fields; unrelated Extra text and unselected local-index values are preserved. An explicit negative membership response removes the old positive marker in the chosen destination.
 - **Privacy**: Queries run only when the user invokes the EasyScholar action, tests the connection, or explicitly enables automatic lookup for newly added journal/conference items.
 
 ### No Leading Zeros (`no-issue-extra-zeros`, `no-pages-extra-zeros`, `no-volume-extra-zeros`)

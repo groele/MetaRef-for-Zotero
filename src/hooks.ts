@@ -18,6 +18,7 @@ import { migrateGreenFrogPreferences } from "./utils/greenfrog-migration";
 import { clearRequestCache } from "./utils/http";
 import { getJournalInsights, loadJournalInsights } from "./utils/journal-insights";
 import { canRunJournalRule, hasEnabledJournalMetrics } from "./utils/journal-permissions";
+import { flushJournalRankingIndex, loadJournalRankingIndex } from "./utils/journal-ranking-index";
 import { initLocale, registerMainWindowLocale, unloadLocale, unregisterMainWindowLocale } from "./utils/locale";
 import { logger } from "./utils/logger";
 import { getPref } from "./utils/prefs";
@@ -44,6 +45,7 @@ async function onStartup() {
     registerNotifier();
     registerMenu();
     await loadJournalInsights();
+    await loadJournalRankingIndex();
     if (!addon.data.alive)
       return;
     registerExtraColumns();
@@ -90,6 +92,7 @@ async function onShutdown() {
     unregisterPrefsWindows,
     closeAllDialogs,
     () => addon.runner.stop(),
+    flushJournalRankingIndex,
     closeAllDialogs,
     unregisterMenu,
     unregisterExtraColumns,

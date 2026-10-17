@@ -6,6 +6,7 @@ import { fetchEasyScholarRank, peekEasyScholarRank } from "./easyscholar";
 import { ESI_CATEGORIES, formatESICategories, matchESICategories } from "./esi";
 import { journalDatabaseErrorMessage } from "./journal-database-error";
 import { isJournalIndexEnabled } from "./journal-permissions";
+import { readJournalRankingIndex } from "./journal-ranking-index";
 import { isNatureIndexJournal } from "./nature-index";
 import { getPref } from "./prefs";
 
@@ -23,7 +24,7 @@ export interface JournalInsights {
   categories: string[];
   esi: string;
   natureIndex: boolean | undefined;
-  esiSource: "custom" | "builtin" | "api";
+  esiSource: "custom" | "builtin" | "api" | "saved";
   esiAPIWarning?: string;
   natureAPIWarning?: string;
   natureAPIDataset?: string;
@@ -32,7 +33,7 @@ export interface JournalInsights {
   natureError?: string;
   customFallback?: string;
   natureFallback?: string;
-  esiBasis?: "ISSN" | "publicationTitle" | "journalAbbreviation" | "API";
+  esiBasis?: "ISSN" | "publicationTitle" | "journalAbbreviation" | "API" | "saved";
   natureBasis?: "ISSN" | "publicationTitle" | "journalAbbreviation" | "API";
 }
 let currentPath: string | undefined;
@@ -165,6 +166,14 @@ function calculateLocal(item: Zotero.Item, data: IndexData): JournalInsights {
     if (data.nature && !result.natureIndex && isNatureIndexJournal({ [key]: value, maps: data.nature })) {
       result.natureIndex = true;
       result.natureBasis = field;
+    }
+  }
+  if (!result.categories.length) {
+    const savedCategories = apiESICategories(readJournalRankingIndex(item).get("esi") || "");
+    if (savedCategories.length) {
+      result.categories = savedCategories;
+      result.esiSource = "saved";
+      result.esiBasis = "saved";
     }
   }
   result.esi = formatESICategories(result.categories, getPref("insights.esiFormat") || "{subject}ESI");

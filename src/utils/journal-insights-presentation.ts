@@ -14,7 +14,7 @@ export function presentJournalInsights(result: JournalInsights, locale: string) 
         ? getString("journal-insights-unavailable")
         : formatESICategories(result.categories, locale.startsWith("zh") ? "{subject}" : "{en}") || getString("journal-insights-unmatched"),
       basis: result.esiError ? "" : basis(result.esiBasis),
-      source: result.esiSource === "api" ? getString("journal-insights-api-source") : getString(result.esiSource === "custom" ? "journal-insights-esi-custom" : "journal-insights-esi-builtin"),
+      source: result.esiSource === "api" ? getString("journal-insights-api-source") : result.esiSource === "saved" ? getString("journal-insights-saved-source") : getString(result.esiSource === "custom" ? "journal-insights-esi-custom" : "journal-insights-esi-builtin"),
       warning: (result.esiError === "journal-insights-api-missing" ? getString("journal-insights-api-missing") : result.esiError) || (result.esiAPIWarning ? getString("journal-insights-api-fallback") : "") || (result.customFallback ? `${getString("journal-insights-custom-fallback")} ${result.customFallback}` : ""),
     },
     {

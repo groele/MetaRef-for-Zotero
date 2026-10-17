@@ -1,16 +1,16 @@
 {
-  "version": "10.6.1",
-  "baselineCommit": "635c397fae78f44930745bca14434a1b96e990ce",
-  "baselineVersion": "10.6.0",
-  "verifiedAt": "2026-10-17T14:36:20.418686+08:00",
+  "version": "10.6.2",
+  "baselineCommit": "3b280bc25a8b83133e2117a60858647dfe86e868",
+  "baselineVersion": "10.6.1",
+  "verifiedAt": "2026-10-17T15:15:14.059263+08:00",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3423693,
-    "sha256": "003fdd653022bbbd92fe74522597130b3a9eaf6cbc2397f1f437be8a0c9f8c04",
+    "bytes": 3425414,
+    "sha256": "428fa85029539e987ab7d75179c4f774568a0673221444072a0a1939c8e1e56c",
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "10.6.1",
+      "version": "10.6.2",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
       "author": "groele",
@@ -31,43 +31,33 @@
           "strict_max_version": "11.*"
         }
       }
+    },
+    "offlineAssets": {
+      "ltwa.tsv": true,
+      "shortwords.txt": true
     }
   },
   "checks": {
-    "zotero10": {
-      "passed": 102,
-      "productionXpiInstalled": true,
-      "version": "10.0.6",
-      "gecko": 140,
-      "locale": "zh-CN"
-    },
-    "zotero11": {
-      "passed": 102,
-      "productionXpiInstalled": true,
-      "version": "11.0-dev.5+dac1ad489",
-      "gecko": 153,
-      "locale": "en-US"
-    },
     "unit": {
-      "passed": 451,
-      "files": 68
+      "passed": 456,
+      "files": 69
+    },
+    "settingsAudit": {
+      "defaultCount": 265,
+      "staticControlCount": 120,
+      "missingDefaults": [],
+      "duplicateStaticBindings": [],
+      "unresolvedVisibleBindings": []
     },
     "productionBuild": "passed",
     "typescript": "passed",
-    "testTypeScript": "passed",
     "eslint": "passed",
     "autocorrect": "passed",
-    "legacyBuildGuard": "passed"
-  },
-  "baselineRegressionRun": {
-    "failed": 16,
-    "passed": 40,
-    "files": 3
+    "zoteroE2E": "not run"
   },
   "limits": [
-    "Windows only; Zotero 11 coverage is limited to the named development build.",
-    "No new live-account API or Better BibTeX/LaTeX export acceptance run.",
-    "Pre-save field selection, local-only metric storage and mutation journal performance redesign are not implemented.",
-    "Unknown scientific acronyms still require user title terms."
+    "The XPI was inspected for manifest version and required offline assets, but was not installed into a live Zotero host in this release validation.",
+    "Three Zotero processes were active during validation; live-host tests were skipped to avoid interfering with user profiles.",
+    "The build emitted a non-blocking warning that zotero-types/entries/sandbox/tsconfig.json was unavailable; build and TypeScript checks completed successfully."
   ]
 }

@@ -4,8 +4,9 @@ import { buildESILookupMaps } from "./esi";
 import { cachedJournalInsights, clearJournalInsights, getJournalInsights } from "./journal-insights";
 import { buildNatureIndexLookupMaps } from "./nature-index";
 
-const prefs = vi.hoisted(() => ({ path: "", naturePath: "", format: "{subject}ESI", esiEnabled: true, natureEnabled: true }));
+const prefs = vi.hoisted(() => ({ path: "", naturePath: "", format: "{subject}ESI", esiEnabled: true, natureEnabled: true, saved: new Map<string, string>() }));
 vi.mock("./prefs", () => ({ getPref: (key: string, fallback: unknown) => key === "easyscholar.fields.esi" ? prefs.esiEnabled : key === "insights.natureEnabled" ? prefs.natureEnabled : key === "insights.natureCustomDataPath" ? prefs.naturePath : key === "insights.esiCustomDataPath" ? prefs.path : key === "insights.esiFormat" ? prefs.format : fallback }));
+vi.mock("./journal-ranking-index", () => ({ readJournalRankingIndex: () => new Map(prefs.saved) }));
 vi.mock("./data-loader", () => ({ DataLoader: { getESIJournalMaps: vi.fn(), getNatureIndexJournalMaps: vi.fn(), clearCache: vi.fn() } }));
 const esi = buildESILookupMaps([{ title: "Known Journal", issn: "1234-5678", category: "PHYSICS" }]);
 const nature = buildNatureIndexLookupMaps([{ title: "Known Journal", type: "journal", issn: ["1234-5678"] }]);
@@ -18,6 +19,7 @@ describe("independent journal insights", () => {
     prefs.format = "{subject}ESI";
     prefs.esiEnabled = true;
     prefs.natureEnabled = true;
+    prefs.saved.clear();
     clearJournalInsights();
     vi.mocked(DataLoader.getESIJournalMaps).mockReset().mockResolvedValue(esi);
     vi.mocked(DataLoader.getNatureIndexJournalMaps).mockReset().mockResolvedValue(nature);
@@ -45,6 +47,11 @@ describe("independent journal insights", () => {
     fields.publicationTitle = "Unknown Journal";
     expect(cachedJournalInsights(target)).toMatchObject({ esi: "", natureIndex: false });
     expect(fields.series).toBe("Manual");
+  });
+  it("uses saved MetaFlow ESI values when the local index has no match", async () => {
+    prefs.saved.set("esi", "物理学 ESI");
+    const result = await getJournalInsights(item({ publicationTitle: "Unknown Journal" }));
+    expect(result).toMatchObject({ categories: ["PHYSICS"], esiSource: "saved", esiBasis: "saved" });
   });
   it("falls back from custom ESI errors while preserving a healthy Nature Index result", async () => {
     prefs.path = "bad.json";

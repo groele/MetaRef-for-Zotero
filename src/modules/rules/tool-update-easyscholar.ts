@@ -1,6 +1,7 @@
 import type { EasyScholarField, EasyScholarRank } from "../../utils/easyscholar";
 import { EASYSCHOLAR_EXTRA_ALIASES, EASYSCHOLAR_FIELD_DEFINITIONS, EASYSCHOLAR_OUTPUT_FIELDS, fetchEasyScholarRank, isEasyScholarFieldEnabled } from "../../utils/easyscholar";
 import { watchItemFields } from "../../utils/field-conflicts";
+import { readJournalRankingIndex, saveJournalRankingIndex } from "../../utils/journal-ranking-index";
 import { readJournalRankingValues } from "../../utils/journal-ranking-rows";
 import { runJournalSource } from "../../utils/journal-source";
 import { getString } from "../../utils/locale";
@@ -115,6 +116,19 @@ export function summarizeEasyScholarChanges(before: string, after: string) {
   return summary;
 }
 
+function summarizeRankingMaps(before: ReadonlyMap<EasyScholarField, string>, after: ReadonlyMap<EasyScholarField, string>) {
+  const summary = { added: 0, updated: 0, removed: 0 };
+  for (const key of new Set([...before.keys(), ...after.keys()])) {
+    if (!before.has(key))
+      summary.added++;
+    else if (!after.has(key))
+      summary.removed++;
+    else if (before.get(key) !== after.get(key))
+      summary.updated++;
+  }
+  return summary;
+}
+
 export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
   id: "tool-update-easyscholar",
   scope: "item",
@@ -130,7 +144,7 @@ export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
       return;
     }
     const unchanged = watchItemFields(item, ["publicationTitle", "conferenceName", "proceedingsTitle"], report);
-    const originalRankings = readJournalRankingValues(String(item.getField("extra") || ""));
+    const originalRankings = new Map([...readJournalRankingValues(String(item.getField("extra") || "")), ...readJournalRankingIndex(item)]);
     const enabledFields = getEnabledEasyScholarFields();
     if (!enabledFields.size) {
       report({ level: "info", message: getString("rule-tool-update-easyscholar-disabled") });
@@ -177,18 +191,28 @@ export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
     if (!selected)
       report({ level: "info", message: getString("rule-tool-update-easyscholar-no-selected-results") });
     const current = String(item.getField("extra") || "");
-    const currentRankings = readJournalRankingValues(current);
+    const currentRankings = new Map([...readJournalRankingValues(current), ...readJournalRankingIndex(item)]);
     const edited = [...enabledFields].filter(key => originalRankings.get(key) !== currentRankings.get(key));
     if (edited.length) {
       edited.forEach(key => enabledFields.delete(key));
       report({ level: "warning", message: getString("rule-fields-edited", { args: { fields: edited.join(", ") } }) });
+    }
+    const mode = options.mode || "all";
+    const indexFields = new Set([...enabledFields].filter(key => mode !== "blank" || !originalRankings.has(key)));
+    await saveJournalRankingIndex(item, data, indexFields, mode);
+    if (!getPref("easyscholar.writeToExtra", false)) {
+      const after = new Map([...readJournalRankingValues(current), ...readJournalRankingIndex(item)]);
+      const changes = summarizeRankingMaps(originalRankings, after);
+      debug(`${title}: returned ${returned}, selected ${selected}; MetaFlow index changes: ${JSON.stringify(changes)}.`);
+      report({ level: "info", code: "journal-summary", message: getString("rule-tool-update-easyscholar-summary", { args: { title, returned, selected, ...changes } }) });
+      return;
     }
     const clearable = new Set(EASYSCHOLAR_FIELD_DEFINITIONS.filter(field => enabledFields.has(field.key)
       && (field.source === "supplemental" ? data[field.key] !== undefined : result.status === "success")).map(field => field.key));
     const base = getPref("easyscholar.clearExtraBeforeUpdate") && selected && options.mode !== "blank"
       ? clearSelectedJournalExtra(current, clearable)
       : current;
-    const updated = mergeExtra(base, data, enabledFields, options.mode || "all");
+    const updated = mergeExtra(base, data, indexFields, mode);
     const changes = summarizeEasyScholarChanges(current, updated);
     const summary = getString("rule-tool-update-easyscholar-summary", { args: { title, returned, selected, ...changes } });
     if (updated === current.trim()) {

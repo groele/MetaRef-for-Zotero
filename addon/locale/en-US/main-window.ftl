@@ -72,6 +72,7 @@ journal-rankings-query-complete = Lookup complete. Saved journal information is 
 
 journal-insights-api-source = EasyScholar API
 journal-insights-basis-API = API journal-name lookup
+journal-insights-basis-saved = MetaFlow local journal ranking index
 journal-insights-api-missing = No usable API value: not yet queried, request failed, no match, or the dataset is not enabled in your account.
 journal-insights-api-fallback = No usable API value; showing local database results. Run an index query from the context menu to fetch API data.
 field-esi-match = ESI match basis

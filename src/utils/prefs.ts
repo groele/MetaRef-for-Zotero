@@ -66,6 +66,7 @@ export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "insights.showPane": true,
   "insights.natureCustomDataPath": "",
   "easyscholar.secretKey": "",
+  "easyscholar.writeToExtra": false,
   "easyscholar.autoUpdateOnAdded": false,
   "easyscholar.fields.jcr": true,
   "easyscholar.fields.casUpgrade": true,

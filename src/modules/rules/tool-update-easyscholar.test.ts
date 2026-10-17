@@ -3,16 +3,29 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { EASYSCHOLAR_FIELD_DEFINITIONS } from "../../utils/easyscholar";
 import { clearSelectedJournalExtra, mergeEasyScholarExtra, summarizeEasyScholarChanges, ToolUpdateEasyScholar } from "./tool-update-easyscholar";
 
-const mocks = vi.hoisted(() => ({ fields: new Set<string>(), clear: false, fetch: vi.fn(), supplemental: vi.fn() }));
-vi.mock("../../utils/prefs", () => ({ getPref: (key: string, fallback: unknown) => key === "easyscholar.clearExtraBeforeUpdate" ? mocks.clear : key.startsWith("easyscholar.fields.") ? mocks.fields.has(key.slice("easyscholar.fields.".length)) : fallback }));
+const mocks = vi.hoisted(() => ({ fields: new Set<string>(), clear: false, writeToExtra: true, index: new Map<string, string>(), fetch: vi.fn(), supplemental: vi.fn() }));
+vi.mock("../../utils/prefs", () => ({ getPref: (key: string, fallback: unknown) => key === "easyscholar.clearExtraBeforeUpdate" ? mocks.clear : key === "easyscholar.writeToExtra" ? mocks.writeToExtra : key.startsWith("easyscholar.fields.") ? mocks.fields.has(key.slice("easyscholar.fields.".length)) : fallback }));
 vi.mock("../../utils/locale", () => ({ getString: (key: string, options?: unknown) => `${key} ${JSON.stringify(options || {})}` }));
 vi.mock("../../utils/easyscholar", async original => ({ ...await original<object>(), fetchEasyScholarRank: mocks.fetch }));
 vi.mock("../../utils/supplemental-journals", () => ({ fetchSupplementalJournalRank: mocks.supplemental }));
+vi.mock("../../utils/journal-ranking-index", () => ({
+  readJournalRankingIndex: () => new Map(mocks.index),
+  saveJournalRankingIndex: async (_item: unknown, data: Record<string, string>, selected: Set<string>, mode: string) => {
+    for (const key of selected) {
+      if (mode !== "blank" || !mocks.index.has(key)) {
+        if (data[key])
+          mocks.index.set(key, data[key]);
+      }
+    }
+  },
+}));
 
 beforeEach(() => {
   vi.useFakeTimers();
   mocks.fields.clear();
   mocks.clear = false;
+  mocks.writeToExtra = true;
+  mocks.index.clear();
   mocks.fetch.mockReset().mockResolvedValue({ status: "success", data: { impactFactor: "2.5" } });
   mocks.supplemental.mockReset().mockResolvedValue({ data: {}, errors: [] });
 });
@@ -128,6 +141,31 @@ it("does not query EasyScholar when only a supplemental field is selected", asyn
   await pending;
   expect(mocks.fetch).not.toHaveBeenCalled();
   expect(ctx.item.getField("extra")).toContain("local rank");
+});
+
+it("saves selected lookup values to the MetaFlow index without changing Extra when configured", async () => {
+  mocks.writeToExtra = false;
+  mocks.fields.add("impactFactor");
+  const ctx = context();
+  await ToolUpdateEasyScholar.apply(ctx);
+  expect(ctx.item.getField("extra")).toBe("Manual note");
+  expect(mocks.index.get("impactFactor")).toBe("2.5");
+});
+
+it("keeps existing Extra rankings in blank mode when saving to the MetaFlow index", async () => {
+  mocks.writeToExtra = false;
+  mocks.fields.add("jcr");
+  const fields: Record<string, string> = { publicationTitle: "Journal QA", extra: "JCR 分区: Q3" };
+  const item = {
+    itemType: "journalArticle",
+    getField: (key: string) => fields[key] || "",
+    setField: (key: string, value: string) => { fields[key] = value; },
+  } as unknown as Zotero.Item;
+  const ctx = { item, options: { mode: "blank" as const }, debug: vi.fn(), report: vi.fn() };
+  mocks.fetch.mockResolvedValue({ status: "success", data: { jcr: "Q1" } });
+  await ToolUpdateEasyScholar.apply(ctx);
+  expect(fields.extra).toBe("JCR 分区: Q3");
+  expect(mocks.index.has("jcr")).toBe(false);
 });
 
 it("keeps supplemental results when EasyScholar ignores cancellation and times out", async () => {

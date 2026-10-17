@@ -1,10 +1,11 @@
 import type { BatchResult } from "./runner";
 import { cleanupResourcesSync } from "../utils/cleanup";
-import { EASYSCHOLAR_FIELD_DEFINITIONS, isEasyScholarFieldEnabled } from "../utils/easyscholar";
+import { EASYSCHOLAR_FIELD_DEFINITIONS, getEasyScholarFieldMessageID, isEasyScholarFieldEnabled } from "../utils/easyscholar";
 import { isJournalFeedback } from "../utils/journal-feedback";
 import { cachedJournalInsights, clearJournalInsights, getJournalInsights, loadJournalInsights } from "../utils/journal-insights";
 import { presentJournalInsights } from "../utils/journal-insights-presentation";
 import { hasEnabledJournalMetrics, isJournalIndexEnabled } from "../utils/journal-permissions";
+import { readJournalRankingIndex } from "../utils/journal-ranking-index";
 import { journalRankingRows } from "../utils/journal-ranking-rows";
 import { getLocaleID, getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
@@ -108,7 +109,7 @@ async function completeFromNavigation(item: Zotero.Item) {
   updating.add(item.id);
   try {
     const insights = await getJournalInsights(item);
-    const saved = new Set(journalRankingRows(String(item.getField("extra") || "")).map(row => row.key));
+    const saved = new Set([...journalRankingRows(String(item.getField("extra") || "")).map(row => row.key), ...readJournalRankingIndex(item).keys()]);
     const enabled = getEnabledEasyScholarFields();
     const missingRankings = EASYSCHOLAR_FIELD_DEFINITIONS.some(field => enabled.has(field.key) && !saved.has(field.key));
     const missingIndexes = item.itemType === "journalArticle" && ((isJournalIndexEnabled("esi") && (!insights.categories.length || insights.esiAPIWarning)) || (isJournalIndexEnabled("nature") && (insights.natureIndex === undefined || insights.natureAPIWarning)));
@@ -206,12 +207,23 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   journalTitle.setAttribute("data-journal-title", "true");
   body.append(journalTitle);
   const sharedBasis = rows.length && rows.every(row => row.basis && row.basis === rows[0].basis) ? rows[0].basis : "";
-  const rankings = journalRankingRows(String(item.getField("extra") || "")).filter(row => isEasyScholarFieldEnabled(row.key));
+  const storedRankings = readJournalRankingIndex(item);
+  const rankings = journalRankingRows(String(item.getField("extra") || "")).map((row) => {
+    const value = storedRankings.get(row.key);
+    return value ? { ...row, value } : row;
+  });
+  for (const [key, value] of storedRankings) {
+    if (!rankings.some(row => row.key === key)) {
+      const field = EASYSCHOLAR_FIELD_DEFINITIONS.find(field => field.key === key);
+      if (field)
+        rankings.push({ key, value, labelID: getEasyScholarFieldMessageID(key) });
+    }
+  }
   const savedESI = rankings.find(row => row.key === "esi");
   if (isJournalIndexEnabled("esi") && rows.length && savedESI && !result.categories.length) {
     rows[0] = { ...rows[0], value: savedESI.value, matched: true, basis: "", source: getString("journal-insights-saved-source") };
   }
-  const displayedRankings = rankings.filter(row => item.itemType !== "journalArticle" || row.key !== "esi");
+  const displayedRankings = rankings.filter(row => isEasyScholarFieldEnabled(row.key) && (item.itemType !== "journalArticle" || row.key !== "esi"));
   const rankingSection = text("section", "", "margin-bottom:16px;");
   rankingSection.setAttribute("data-journal-rankings", "true");
   rankingSection.append(text("h3", getString("journal-rankings-heading"), "font-size:13px;margin:0 0 10px;font-weight:600;"));

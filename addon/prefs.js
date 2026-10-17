@@ -54,6 +54,7 @@ pref("insights.esiCustomDataPath", "");
 pref("insights.showPane", true);
 pref("insights.natureCustomDataPath", "");
 pref("easyscholar.secretKey", "");
+pref("easyscholar.writeToExtra", false);
 pref("easyscholar.fields.jcr", true);
 pref("easyscholar.fields.casUpgrade", true);
 pref("easyscholar.fields.casBasic", true);

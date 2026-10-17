@@ -51,6 +51,7 @@ declare namespace _ZoteroTypes {
       "insights.showPane": boolean;
       "insights.natureCustomDataPath": string;
       "easyscholar.secretKey": string;
+      "easyscholar.writeToExtra": boolean;
       "easyscholar.fields.jcr": boolean;
       "easyscholar.fields.casUpgrade": boolean;
       "easyscholar.fields.casBasic": boolean;
