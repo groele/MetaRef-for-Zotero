@@ -90,9 +90,11 @@ describe("manual author repair in both MetaFlow actions", function () {
 
   it("includes journal rankings in metadata updates and obeys blank versus all mode", async function () {
     const request = Zotero.HTTP.request;
+    const writeToExtra = Zotero.Prefs.get(pref("easyscholar.writeToExtra"), false);
     let requests = 0;
     pref("metadata.updateJournalInfo", true);
     pref("easyscholar.secretKey", "unified-metadata-isolated-key");
+    pref("easyscholar.writeToExtra", true);
     pref("easyscholar.fields.jcr", true);
     pref("easyscholar.fields.impactFactor", true);
     Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
@@ -120,6 +122,7 @@ describe("manual author repair in both MetaFlow actions", function () {
     finally {
       Zotero.HTTP.request = request;
       pref("metadata.updateJournalInfo", false);
+      pref("easyscholar.writeToExtra", writeToExtra);
       pref("rule.tool-update-metadata.option.mode", "blank");
     }
   });

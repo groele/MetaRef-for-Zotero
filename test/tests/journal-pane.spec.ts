@@ -167,7 +167,8 @@ describe("independent journal insights in Zotero", function () {
       for (let attempt = 0; attempt < 40 && !body.querySelector("[data-journal-ranking='ccf']"); attempt++)
         await Zotero.Promise.delay(50);
       assert.equal(body.querySelector("[data-journal-ranking='ccf']")?.textContent, "B");
-      assert.isNull(body.querySelector("[data-journal-ranking='jcr']"));
+      assert.equal(body.querySelector("[data-journal-ranking='jcr']")?.textContent, "Q1", "the profile index retains the fetched ranking after Extra is edited");
+      assert.equal(body.querySelector("[data-journal-ranking='impactFactor']")?.textContent, "8.4");
       assert.equal(requests, 1, "rendering saved rankings does not query the API");
       const other = await create("Unknown pane QA");
       await win.ZoteroPane.selectItem(other.id);
