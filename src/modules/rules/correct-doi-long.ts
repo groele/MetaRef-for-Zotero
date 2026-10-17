@@ -36,19 +36,7 @@ export const CorrectDOILong = defineRule({
       }
     }
     else {
-      debug("LongDOI detected, trying to validate long DOI");
-      const result = await makeRequest(cleanDOI, signal);
-      if (!unchanged())
-        return;
-      if (validateLongDOI(result)) {
-        debug("LongDOI validated");
-      }
-      else {
-        report({
-          level: "error",
-          message: getString("rule-doi-unresolvable"),
-        });
-      }
+      debug("Already a long DOI; no resolution is needed");
     }
   },
 });
@@ -85,10 +73,6 @@ function getLongDOI(result: Result): string | undefined {
     .value
     .toLocaleLowerCase();
   return longDOI;
-}
-
-function validateLongDOI(result: Result): boolean {
-  return result.values.some(v => v.type === "URL");
 }
 
 /**

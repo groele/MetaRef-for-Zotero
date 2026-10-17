@@ -110,6 +110,10 @@ const testItems: testItem[] = [
 ];
 
 const OFFICIAL_DATA_SKIP_LIST = [
+  // MetaFlow also restores the country name at the end of a conference title.
+  "Proceedings of the Sixth International Conference on Artificial Intelligence Planning Systems, April 23-27, 2002, Toulouse, France",
+  // MetaFlow preserves the proper name Rome, unlike the upstream fixture.
+  "Handbook of Evaluation for the ARPA/Rome Lab Planning Initiative",
   // https://github.com/northword/zotero-format-metadata/issues/383 - scientific names between italics tags
   "Instrumental <i>With/</i> and the Control Relation in English",
 
@@ -136,5 +140,26 @@ describe("toSentenceCase", () => {
         return;
       expect(toSentenceCase(key)).toBe(value);
     });
+  });
+});
+
+describe("audit regressions", () => {
+  it("preserves a scientific term at the beginning of an all-capital title", () => {
+    expect(toSentenceCase("FMRI STUDIES OF COVID-19")).toBe("fMRI studies of COVID-19");
+  });
+  it("preserves a country after punctuation", () => {
+    expect(toSentenceCase("Proceedings of the Sixth International Conference on Artificial Intelligence Planning Systems, April 23-27, 2002, Toulouse, France")).toBe("Proceedings of the sixth international conference on artificial intelligence planning systems, april 23-27, 2002, toulouse, France");
+  });
+  it("preserves Rome in the ARPA/Rome laboratory name", () => {
+    expect(toSentenceCase("Handbook of Evaluation for the ARPA/Rome Lab Planning Initiative")).toBe("Handbook of evaluation for the ARPA/Rome lab planning initiative");
+  });
+  it("restores geographical names after a verb", () => {
+    expect(toSentenceCase("Comparing China and America: An Empirical Study")).toBe("Comparing China and America: an empirical study");
+  });
+  it("keeps known scientific acronyms in all-capital titles", () => {
+    expect(toSentenceCase("STUDYING COVID-19 AND CRISPR WITH FMRI AND LLM")).toBe("Studying COVID-19 and CRISPR with fMRI and LLM");
+  });
+  it("does not capitalize ambiguous ordinary words unconditionally", () => {
+    expect(toSentenceCase("Patients May Eat Turkey")).toBe("Patients may eat turkey");
   });
 });

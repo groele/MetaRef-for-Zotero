@@ -77,3 +77,17 @@ describe("extractIdentifiers", () => {
     expect(result.ISBN).toBe("123-4567");
   });
 });
+
+describe("oSF identifiers", () => {
+  it.each([
+    "https://osf.io/k2y3z/",
+    "https://osf.io/k2y3z",
+    "https://osf.io/k2y3z/?view_only=token",
+    "https://osf.io/preprints/psyarxiv/k2y3z",
+  ])("keeps the identifier from %s", (url) => {
+    expect(extractIdentifiers(mockItem({ url })).OSF).toBe("k2y3z");
+  });
+  it("does not mistake another host or a lookalike URL for OSF", () => {
+    expect(extractIdentifiers(mockItem({ url: "https://example.com/https://osf.io/k2y3z/" })).OSF).toBeUndefined();
+  });
+});

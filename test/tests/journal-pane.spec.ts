@@ -178,6 +178,34 @@ describe("independent journal insights in Zotero", function () {
       assert.equal(plugin().data.dialogs.size, dialogCount, "query errors stay in the pane instead of opening a dialog");
       assert.include(body.querySelector("[data-journal-update-status]")?.textContent || "", "Controlled failure");
       assert.equal(other.getField("extra"), "");
+      const originalRefresh = plugin().hooks.onRefreshJournal;
+      let automaticCalls = 0;
+      let settled = false;
+      plugin().hooks.onRefreshJournal = async (...args: unknown[]) => {
+        automaticCalls++;
+        try {
+          return await originalRefresh(...args);
+        }
+        finally {
+          settled = true;
+        }
+      };
+      try {
+        icon.dispatchEvent(new win.MouseEvent("click", { bubbles: true, button: 0, detail: 1 }));
+        for (let attempt = 0; attempt < 200; attempt++) {
+          if (settled)
+            break;
+          await Zotero.Promise.delay(50);
+        }
+        assert.isTrue(settled, "automatic completion settles");
+        await Zotero.Promise.delay(100);
+        icon.dispatchEvent(new win.MouseEvent("click", { bubbles: true, button: 0, detail: 1 }));
+        await Zotero.Promise.delay(500);
+        assert.equal(automaticCalls, 1, "repeated navigation suppresses an already completed failed lookup");
+      }
+      finally {
+        plugin().hooks.onRefreshJournal = originalRefresh;
+      }
     }
     finally {
       Zotero.HTTP.request = request;

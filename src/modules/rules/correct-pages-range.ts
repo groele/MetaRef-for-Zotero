@@ -1,4 +1,5 @@
 import { watchItemFields } from "../../utils/field-conflicts";
+import { getString } from "../../utils/locale";
 import { defineRule } from "./rule-base";
 
 export const CorrectPagesRange = defineRule({
@@ -24,8 +25,13 @@ export const CorrectPagesRange = defineRule({
     }
 
     const newPages = generateRange(pages, numberOfPages);
-    if (newPages && newPages !== pages)
-      item.setField("pages", newPages);
+    if (newPages && newPages !== pages) {
+      report({
+        level: "warning",
+        field: "pages",
+        message: getString("rule-correct-pages-range-review", { args: { range: newPages, total: numberOfPages } }),
+      });
+    }
   },
 });
 

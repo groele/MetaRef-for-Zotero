@@ -255,7 +255,7 @@ rule-correct-pages-connector =
 
 ## correct-pages-range
 rule-correct-pages-range =
-  .label = Pages should be a range
+  .label = Review page range inferred from PDF
 
 
 ## no-issue-extra-zeros
@@ -491,3 +491,5 @@ abbr-source-builtin = JabRef built-in mapping
 abbr-source-iso4 = Offline ISO 4 inference
 abbr-source-full = Full-title fallback
 rule-fields-edited = Skipped a delayed result because these fields changed while waiting: { $fields }. Current values were preserved.
+
+rule-correct-pages-range-review = The PDF has { $total } pages; the candidate range is { $range }. Check the published pagination for covers or supplements and enter it manually. No change was made.

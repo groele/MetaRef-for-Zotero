@@ -23,6 +23,10 @@ export const CorrectThesisType = defineRule({
     if (!originalType)
       return;
 
+    // Postdoctoral reports are not degree dissertations.
+    if (/博士后|post[ -]?doctor/i.test(originalType))
+      return;
+
     let type = originalType;
 
     if (type.match("硕士")) {

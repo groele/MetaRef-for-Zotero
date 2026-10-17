@@ -76,7 +76,46 @@ describe("real reference files and PDF indexing", function () {
     assert.equal(plugin().runner.lastResult.failed, 0);
   });
 
-  it("imports and indexes a three-page PDF before completing a numeric page range", async function () {
+  it("keeps long DOI formatting offline and restores geographical names before saving", async function () {
+    const item = await create();
+    item.setField("title", "Comparing China and America: An Empirical Study");
+    item.setField("DOI", "10.1234/offline-audit");
+    await item.saveTx();
+    const request = Zotero.HTTP.request;
+    let calls = 0;
+    Zotero.HTTP.request = (async () => {
+      calls++;
+      throw new Error("Offline audit fixture");
+    }) as any;
+    try {
+      await plugin().hooks.onLintInBatch(["correct-doi-long", "correct-title-sentence-case"], [item]);
+      await item.reload(["itemData"], true);
+      assert.equal(calls, 0);
+      assert.equal(item.getField("DOI"), "10.1234/offline-audit");
+      assert.equal(item.getField("title"), "Comparing China and America: an empirical study");
+      assert.equal(plugin().runner.lastResult.failed, 0);
+    }
+    finally {
+      Zotero.HTTP.request = request;
+    }
+  });
+
+  it("preserves postdoctoral reports and curated campus places through database saving", async function () {
+    const item = new Zotero.Item("thesis");
+    item.setField("title", "Postdoctoral audit fixture");
+    item.setField("thesisType", "博士后研究报告");
+    item.setField("university", "清华大学");
+    item.setField("place", "深圳");
+    await item.saveTx();
+    created.push(item);
+    await plugin().hooks.onLintInBatch(["correct-thesis-type", "require-university-place"], [item]);
+    await item.reload(["itemData"], true);
+    assert.equal(item.getField("thesisType"), "博士后研究报告");
+    assert.equal(item.getField("place"), "深圳");
+    assert.equal(plugin().runner.lastResult.failed, 0);
+  });
+
+  it("imports and indexes a three-page PDF without inventing a publication page range", async function () {
     const fixtureRoot = Zotero.Prefs.get("metaref.test.fixturePath", true) as string;
     const item = await create();
     item.setField("pages", "12");
@@ -93,7 +132,8 @@ describe("real reference files and PDF indexing", function () {
     assert.equal((pages as { total: number }).total, 3);
     await plugin().hooks.onLintInBatch("correct-pages-range", [item]);
     await item.reload(["itemData"], true);
-    assert.equal(item.getField("pages"), "12-14");
+    assert.equal(item.getField("pages"), "12", "PDF page count must not be written as publication pagination");
+    assert.isTrue(plugin().runner.lastResult.records.some((record: { field?: string; level: string }) => record.field === "pages" && record.level === "warning"));
     for (const value of ["", "e01234", "12-14"]) {
       item.setField("pages", value);
       await item.saveTx();

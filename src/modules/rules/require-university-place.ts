@@ -13,19 +13,18 @@ export const RequireUniversityPlace = defineRule({
   },
   async apply({ item, debug, report }) {
     const university = item.getField("university") as string;
-    if (!university)
+    if (!university || String(item.getField("place") || "").trim())
       return;
 
     const unchanged = watchItemFields(item, ["university", "place"], report);
     const data = await DataLoader.load("universityPlace");
     if (!unchanged())
       return;
-    const place = data[university] || data[university.replace(/[（(].*[)）]/, "")];
+    const place = data[university];
 
-    const currentPlace = item.getField("place") as string;
-    if (!place && currentPlace)
-      debug(`${university} not existed in dataset, and original place not empty, skip it.`);
-    else if (place && place !== currentPlace)
+    if (place)
       item.setField("place", place);
+    else
+      debug(`${university} not found by exact match; leaving place empty.`);
   },
 });

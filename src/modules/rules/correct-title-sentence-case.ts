@@ -36,7 +36,7 @@ const dateWords = [
   "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December",
 ];
 
-const plantWords = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"];
+const planetWords = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"];
 
 const brands = [
   "Apple", "Microsoft", "Google", "Amazon", "Alibaba", "Tencent", "Facebook", "Twitter", "Instagram",
@@ -111,7 +111,7 @@ const specialWords = [
   ...geographyWords,
   ...dateWords,
   ...contriesAndCities,
-  ...plantWords,
+  ...planetWords,
 ];
 
 const specialWordsPattern = specialWords.map(escapeRegex).join("|");
@@ -124,6 +124,13 @@ const properNamePattern = new RegExp(
   `\\b(?:${functionWords.join("|")}|${localityWords.join("|")})\\s+(${specialWordsPattern})(?![\\p{L}\\p{N}_])`,
   "giu",
 );
+
+// Ambiguous common words retain contextual restoration above.
+const ambiguousNames = new Set(["turkey", "chad", "jordan", "georgia", "reading", "nice", "male", "victoria"]);
+const standaloneNames = [...new Set([...geographyWords, ...contriesAndCities, "America"])].filter(word => !ambiguousNames.has(word.toLowerCase()));
+const standaloneNameMap = new Map(standaloneNames.map(word => [word.toLowerCase(), word]));
+const standaloneNamePattern = new RegExp(`(?<![\\p{L}\\p{N}_])(?:${standaloneNames.sort((a, b) => b.length - a.length).map(escapeRegex).join("|")})(?![\\p{L}\\p{N}_])`, "giu");
+const scientificTerms = new Map(["COVID", "CRISPR", "LLM", "DNA", "RNA", "MRI", "fMRI", "EEG", "VASP"].map(word => [word.toLowerCase(), word]));
 
 /** =============================  Special Words End  ============================= */
 
@@ -155,7 +162,9 @@ export function toSentenceCase(text: string, locale: string = "en-US") {
   // patched to https://github.com/zotero/utilities/pull/31/files
   text.replace(/^([“"‘']?)(<[^>]+>)?(\p{Lu})/gu, (match, prefix, markup, char, offset) => {
     markup = markup || "";
-    preserve.push({ start: offset + prefix.length + markup.length, end: offset + prefix.length + markup.length + char.length });
+    const leadingTerm = text.slice(offset + prefix.length + markup.length).match(/^[\p{L}\p{N}]+/u)?.[0];
+    if (!allcaps || !scientificTerms.has(leadingTerm?.toLowerCase() || ""))
+      preserve.push({ start: offset + prefix.length + markup.length, end: offset + prefix.length + markup.length + char.length });
     return match; // northword patch: make tsc happy
   });
 
@@ -184,7 +193,7 @@ export function toSentenceCase(text: string, locale: string = "en-US") {
     // words, compound words, and acronyms (latter also catches U.S.A.)
     .replace(/([\u{FFFD}\p{L}\p{N}]+([\u{FFFD}\p{L}\p{N}\p{Pc}]*))|(\s(\p{Lu}+\.){2,})?/gu, (word) => {
       if (allcaps)
-        return word.toLocaleLowerCase(locale);
+        return scientificTerms.get(word.toLowerCase()) ?? word.toLocaleLowerCase(locale);
 
       const unmasked = word.replace(/\uFFFD/g, "");
 
@@ -220,6 +229,8 @@ export function toSentenceCase(text: string, locale: string = "en-US") {
         );
       },
     );
+
+  masked = masked.replace(standaloneNamePattern, word => standaloneNameMap.get(word.toLowerCase()) ?? word);
 
   for (const { start, end } of preserve) {
     masked = masked.substring(0, start) + text.substring(start, end) + masked.substring(end);

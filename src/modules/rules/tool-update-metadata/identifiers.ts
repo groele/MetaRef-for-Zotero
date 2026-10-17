@@ -55,7 +55,7 @@ const KNOW_PREPRINTER_SERVICES: {
   },
   {
     id: "OSF", // 涵盖 PsyArXiv, SocArXiv 等基于 OSF 框架的服务器
-    urlPattern: /https?:\/\/osf\.io\/[a-z0]+\//i,
+    urlPattern: /^https?:\/\/osf\.io\/(?:preprints\/[a-z0-9-]+\/)?(?=[a-z0-9]+(?:[/?#]|$))/i,
     doiPattern: /10\.31234\/osf\.io\//i,
     archiveIDPattern: /osf:/i,
   },
@@ -102,7 +102,7 @@ export function extractIdentifiers(item: Zotero.Item): Identifiers {
       matchedValue = URL.replace(service.urlPattern, "");
 
     if (matchedValue) {
-      result[service.id] = matchedValue.split(/[?#]/)[0].replace(/\/(?:pdf|html)$/i, "");
+      result[service.id] = matchedValue.split(/[?#]/)[0].replace(/\/(?:pdf|html)$/i, "").replace(/\/$/, "");
     }
   }
   const arxivMatch = [archiveID, DOI, URL].map(value => (value || "").match(/(?:arxiv[:.]|arxiv\.org\/(?:abs|pdf|html)\/)((?:\d{4}\.\d{4,5}|[a-z.-]+\/\d{7})(?:v\d+)?)/i)).find(Boolean);

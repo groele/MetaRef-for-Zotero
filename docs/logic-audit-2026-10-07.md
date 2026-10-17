@@ -28,7 +28,7 @@
 
 当前源码的 193 项单元测试（26 个文件）、中文和英文各 35 项真实 Zotero E2E、全量 ESLint／AutoCorrect、生产构建与插件及测试工程 TypeScript 检查通过。E2E 最后实际安装生产 XPI 并读取包内参考数据。
 
-最终验证结果见 [`dist/verification.json`](../dist/verification.json)，可安装生产包为 [`dist/linter-for-zotero.xpi`](../dist/linter-for-zotero.xpi)。安装包直接复制自 E2E 实际安装的生产文件，未在验收后重新构建。完整日志保留在 `.scaffold/qa/*-2026-10-07*`；版本提交使用维护仓库 `groele/Zotero-diy` 和标签 `v10.0.5`。
+最终验证结果见 [`dist/verification.json`](../dist/verification.json)。当时的生产包为 `linter-for-zotero.xpi`，现已从当前分发目录清理；历史文件仍可从 Git 记录追溯。安装包直接复制自 E2E 实际安装的生产文件，未在验收后重新构建。完整日志保留在 `.scaffold/qa/*-2026-10-07*`；版本提交使用维护仓库 `groele/Zotero-diy` 和标签 `v10.0.5`。
 
 ## 行为与验证边界
 

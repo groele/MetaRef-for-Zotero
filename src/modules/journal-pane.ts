@@ -8,6 +8,7 @@ import { hasEnabledJournalMetrics, isJournalIndexEnabled } from "../utils/journa
 import { journalRankingRows } from "../utils/journal-ranking-rows";
 import { getLocaleID, getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
+import { NavigationQueryCache } from "../utils/navigation-query-cache";
 import { getPref } from "../utils/prefs";
 import { registerExtraColumns } from "./item-tree";
 import { getEnabledEasyScholarFields } from "./rules/tool-update-easyscholar";
@@ -20,8 +21,10 @@ const items = new WeakMap<HTMLElement, Zotero.Item>();
 const queryMessages = new Map<number, { level?: string; message: string }[]>();
 const navigationListeners = new Map<Document, EventListener>();
 const updating = new Set<number>();
+const navigationQueries = new NavigationQueryCache();
 let settingsRefreshPending = false;
 let settingsRevision = 0;
+const navigationQueryKey = (item: Zotero.Item) => JSON.stringify([settingsRevision, item.itemType, ...["publicationTitle", "conferenceName", "ISSN", "extra"].map(field => item.getField(field as _ZoteroTypes.Item.ItemField))]);
 const logger = createLogger("journal-pane");
 const supportsRankings = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && ["journalArticle", "conferencePaper"].includes(item.itemType));
 type Context = _ZoteroTypes.ItemPaneManagerSection.SectionHookArgs;
@@ -100,7 +103,7 @@ export function registerJournalPane() {
 }
 
 async function completeFromNavigation(item: Zotero.Item) {
-  if (!hasEnabledJournalMetrics())
+  if (!hasEnabledJournalMetrics() || navigationQueries.has(item.id, navigationQueryKey(item)))
     return;
   updating.add(item.id);
   try {
@@ -113,9 +116,12 @@ async function completeFromNavigation(item: Zotero.Item) {
       return;
     queryMessages.set(item.id, [{ message: getString("journal-insights-loading") }]);
     await refreshJournalPane([item.id]);
-    await addon.hooks.onRefreshJournal(item);
+    const result = await addon.hooks.onRefreshJournal(item) as BatchResult | undefined;
+    if (!result?.cancelled)
+      navigationQueries.remember(item.id, navigationQueryKey(item), Boolean(result?.failed || result?.records.some(record => record.level === "warning" || record.level === "error")));
   }
   catch (error) {
+    navigationQueries.remember(item.id, navigationQueryKey(item), true);
     queryMessages.set(item.id, [{ level: "error", message: getString("journal-rankings-refresh-failed") }]);
     await refreshJournalPane([item.id]);
     throw error;
@@ -149,6 +155,7 @@ function refreshData() {
 }
 
 export async function refreshJournalInsights() {
+  navigationQueries.clear();
   clearJournalInsights();
   await loadJournalInsights();
   if (!addon.data.alive)
@@ -273,6 +280,7 @@ export function unregisterJournalPane() {
     doc.removeEventListener("click", listener);
   navigationListeners.clear();
   updating.clear();
+  navigationQueries.clear();
   cleanupResourcesSync([
     ...observers.splice(0).map(id => () => Zotero.Prefs.unregisterObserver(id)),
     () => id && Zotero.ItemPaneManager.unregisterSection(id),

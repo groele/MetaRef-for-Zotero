@@ -256,7 +256,7 @@ rule-correct-pages-connector =
 
 ## correct-pages-range
 rule-correct-pages-range =
-  .label = Pages 应为范围
+  .label = 核对 PDF 推断的页码范围
 
 
 ## no-issue-extra-zeros
@@ -492,3 +492,5 @@ abbr-source-builtin = JabRef 内置映射
 abbr-source-iso4 = 离线 ISO 4 推断
 abbr-source-full = 全称回填
 rule-fields-edited = 等待期间以下字段发生变化，已跳过延迟结果并保留当前值：{ $fields }。
+
+rule-correct-pages-range-review = PDF 共 { $total } 页，候选页码为 { $range }。文件可能含封面或补充材料，请核对出版页码后手动填写；未自动修改。

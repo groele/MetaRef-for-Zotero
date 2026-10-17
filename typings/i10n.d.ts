@@ -330,6 +330,7 @@ export type FluentMessageId =
   | 'rule-correct-issue-date-format'
   | 'rule-correct-pages-connector'
   | 'rule-correct-pages-range'
+  | 'rule-correct-pages-range-review'
   | 'rule-correct-priority-date-format'
   | 'rule-correct-proceedingsTitle-sentence-case'
   | 'rule-correct-publication-title-alias'

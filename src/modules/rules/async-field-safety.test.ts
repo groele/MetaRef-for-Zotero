@@ -7,6 +7,8 @@ import { CorrectDOILong } from "./correct-doi-long";
 import { CorrectPagesRange } from "./correct-pages-range";
 import { CorrectPublicationTitleAlias } from "./correct-publication-title-alias";
 import { CorrectPublicationTitleCase } from "./correct-publication-title-case";
+import { CorrectThesisType } from "./correct-thesis-type";
+import { NoItemDuplication } from "./no-item-duplication";
 import { CorrectConferenceAbbr, RequireJournalAbbr } from "./require-abbr";
 import { RequireDOI } from "./require-doi";
 import { RequireUniversityPlace } from "./require-university-place";
@@ -119,5 +121,52 @@ describe("asynchronous field writes", () => {
     const ctx = context(fields);
     await RequireJournalAbbr.apply({ ...ctx, options: { customDataPath: "", infer: true, sourceMode: "iso4", withDots: true, usefull: false, usefullZh: false } });
     expect(fields.journalAbbreviation).toBe(field === "journalAbbreviation" ? "Manual value" : "");
+  });
+});
+
+describe("audit metadata regressions", () => {
+  it("does not query the network for an existing long DOI", async () => {
+    const fields = { DOI: "10.1234/offline" };
+    await CorrectDOILong.apply(context(fields));
+    expect(requestCachedGET).not.toHaveBeenCalled();
+    expect(fields.DOI).toBe("10.1234/offline");
+  });
+  it.each(["博士后研究报告", "Postdoctoral research report", "post-doctoral report"])("preserves %s", async (thesisType) => {
+    const fields = { thesisType };
+    await CorrectThesisType.apply(context(fields));
+    expect(fields.thesisType).toBe(thesisType);
+  });
+  it("preserves an existing university campus location", async () => {
+    const fields = { university: "University\uFF08Campus\uFF09", place: "Campus city" };
+    vi.mocked(DataLoader.load).mockResolvedValue({ University: "Headquarters" });
+    await RequireUniversityPlace.apply(context(fields));
+    expect(fields.place).toBe("Campus city");
+  });
+  it("does not strip a campus qualifier to fill a headquarters location", async () => {
+    const fields = { university: "University\uFF08Campus\uFF09", place: "" };
+    vi.mocked(DataLoader.load).mockResolvedValue({ University: "Headquarters" });
+    await RequireUniversityPlace.apply(context(fields));
+    expect(fields.place).toBe("");
+  });
+  it("still fills an empty place from an exact university match", async () => {
+    const fields = { university: "University", place: "" };
+    vi.mocked(DataLoader.load).mockResolvedValue({ University: "Known city" });
+    await RequireUniversityPlace.apply(context(fields));
+    expect(fields.place).toBe("Known city");
+  });
+  it("reports a PDF-based range as a suggestion without writing it", async () => {
+    const fields = { pages: "105" };
+    const ctx = context(fields);
+    ctx.item.getBestAttachment = async () => ({ attachmentContentType: "application/pdf", id: 2 }) as Zotero.Item;
+    vi.stubGlobal("Zotero", { ...Zotero, Fulltext: { getPages: async () => ({ total: 24 }) } });
+    await CorrectPagesRange.apply(ctx);
+    expect(fields.pages).toBe("105");
+    expect(ctx.report).toHaveBeenCalledWith(expect.objectContaining({ level: "warning", field: "pages" }));
+  });
+  it("reports duplicate findings as warnings", async () => {
+    const ctx = context({});
+    Object.assign(ctx.item, { id: 5, libraryID: 1 });
+    await NoItemDuplication.apply({ ...ctx, options: { failedLibraries: new Map(), duplicateItemIdsByLibrary: new Map([[1, new Set([5])]]) } });
+    expect(ctx.report).toHaveBeenCalledWith(expect.objectContaining({ level: "warning" }));
   });
 });

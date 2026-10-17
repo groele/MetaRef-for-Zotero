@@ -50,7 +50,7 @@ export const NoItemDuplication = defineRule<NoItemDuplicationOptions>({
 
     if (isDuplicate) {
       report({
-        level: "error",
+        level: "warning",
         message: getString("rule-no-item-duplication-report-message"),
         action: {
           label: getString("rule-no-item-duplication-report-action"),
