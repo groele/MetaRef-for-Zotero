@@ -18,8 +18,11 @@ export class ItemMutationJournal {
     finally {
       const after = this.item.toJSON() as Record<string, unknown>;
       for (const field of new Set([...Object.keys(before), ...Object.keys(after)])) {
-        if (JSON.stringify(before[field]) !== JSON.stringify(after[field]))
-          this.writes.set(field, { before: this.writes.has(field) ? this.writes.get(field)!.before : before[field], after: after[field] });
+        if (JSON.stringify(before[field]) !== JSON.stringify(after[field])) {
+          const previous = this.writes.get(field);
+          // A discontinuity belongs to an external writer, and becomes the rollback baseline.
+          this.writes.set(field, { before: previous && JSON.stringify(before[field]) === JSON.stringify(previous.after) ? previous.before : before[field], after: after[field] });
+        }
       }
     }
   };

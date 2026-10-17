@@ -1,8 +1,17 @@
+// autocorrect-disable
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getEnabledEasyScholarFields, mergeEasyScholarExtra } from "../modules/rules/tool-update-easyscholar";
 import { clearEasyScholarCache, EASYSCHOLAR_DEFAULT_FIELDS, EASYSCHOLAR_FIELD_DEFINITIONS, fetchEasyScholarRank, getEasyScholarFieldMessageID, parseEasyScholarRank, testEasyScholarConnection } from "./easyscholar";
 
 describe("easyScholar data integration", () => {
+  it("does not turn malformed metrics and unknown membership markers into usable rankings", () => {
+    const rank = parseEasyScholarRank({ sciif: { value: 34.9 }, sci: "暂无", eii: "-", utd24: [], ft50: "unknown" });
+    expect(rank.impactFactor).toBeUndefined();
+    expect(rank.sci).toBeUndefined();
+    expect(rank.ei).toBeUndefined();
+    expect(rank.utd24).toBeUndefined();
+    expect(rank.ft50).toBeUndefined();
+  });
   afterEach(() => {
     clearEasyScholarCache();
     vi.unstubAllGlobals();
@@ -107,7 +116,8 @@ describe("easyScholar data integration", () => {
   });
 
   it("fills missing CCF from the custom dataset without overwriting an official or curated value", () => {
-    expect(mergeEasyScholarExtra("", { ccfCustom: "A" }, new Set(["ccfCustom"]))).toContain("CCF: A");
+    expect(mergeEasyScholarExtra("", { ccfCustom: "A" }, new Set(["ccf", "ccfCustom"]))).toContain("CCF: A");
+    expect(mergeEasyScholarExtra("", { ccfCustom: "A" }, new Set(["ccfCustom"]))).not.toContain("CCF: A");
     const merged = mergeEasyScholarExtra("CCF: B", { ccfCustom: "A" }, new Set(["ccfCustom"]));
     expect(merged).toContain("CCF: B");
     expect(merged).not.toContain("CCF: A");
@@ -202,4 +212,24 @@ it("reads Nature Index membership only from the selected or named custom dataset
   expect(parseEasyScholarRank({}, { ...raw, rank: [] }).natureIndex).toBeUndefined();
   expect(parseEasyScholarRank({}, raw, "another-library").natureIndex).toBeUndefined();
   expect(parseEasyScholarRank({}, { ...raw, rankInfo: [{ ...raw.rankInfo[0], name: "Unrelated directory" }] }).natureIndex).toBeUndefined();
+});
+
+it("reads the live 2026 Nature dataset shape with its blank level label", () => {
+  const custom = { rankInfo: [{ uuid: "1615199999904223232", abbName: "自然指数", oneRankText: " " }], rank: ["1615199999904223232&&&1"] };
+  expect(parseEasyScholarRank({}, custom)).toMatchObject({ natureIndex: "是", natureIndexDataset: "自然指数" });
+  expect(parseEasyScholarRank({}, { ...custom, rank: [] }).natureIndex).toBeUndefined();
+  expect(parseEasyScholarRank({}, custom, "different-uuid").natureIndex).toBeUndefined();
+  expect(parseEasyScholarRank({}, { ...custom, rank: ["1615199999904223232&&&9"] }).natureIndex).toBeUndefined();
+  const named = { rankInfo: [{ uuid: "future-fixture", name: "177种自然指数统计期刊-2026", oneRankText: " " }], rank: ["future-fixture&&&1"] };
+  expect(parseEasyScholarRank({}, named).natureIndex).toBe("是");
+  expect(parseEasyScholarRank({}, named).natureIndexDataset).toBe("177种自然指数统计期刊-2026");
+});
+
+it("reads all five documented custom rank levels and rejects object labels", () => {
+  const uuid = "1614919989423271936";
+  const rankInfo = [{ uuid, oneRankText: "A", twoRankText: "B", threeRankText: "C", fourRankText: "D", fiveRankText: "E" }];
+  for (const level of [1, 2, 3, 4, 5])
+    expect(parseEasyScholarRank({}, { rankInfo, rank: [`${uuid}&&&${level}`] }).ccfCustom).toBe("ABCDE"[level - 1]);
+  expect(parseEasyScholarRank({}, { rankInfo: [{ uuid, oneRankText: {} }], rank: [`${uuid}&&&1`] }).ccfCustom).toBeUndefined();
+  expect(parseEasyScholarRank({}, { rankInfo: [{ uuid: "1635615726460694528", oneRankText: "否" }], rank: ["1635615726460694528&&&1"] }).scopus).toBe("否");
 });

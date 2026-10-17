@@ -1,4 +1,5 @@
 import { DataLoader } from "../../utils/data-loader";
+import { watchItemFields } from "../../utils/field-conflicts";
 import { functionWords, isFullUpperCase } from "../../utils/str";
 import { defineRule } from "./rule-base";
 
@@ -11,11 +12,16 @@ export const CorrectPublicationTitleCase = defineRule({
   fieldMenu: {
     l10nID: "rule-correct-publication-title-case-menu-field",
   },
-  async apply({ item, debug }) {
+  async apply({ item, debug, report }) {
     const publicationTitle = item.getField("publicationTitle", false, true) as string;
+    if (!publicationTitle)
+      return;
+    const unchanged = watchItemFields(item, ["publicationTitle"], report);
 
     // If this publicationTitle matches key of build-in data, do not change it
     const data = await DataLoader.load("journalAbbr");
+    if (!unchanged())
+      return;
     if (data[publicationTitle]) {
       debug(`Skip capitalize for ${publicationTitle}, it's a standard name in build-in data`);
       return;

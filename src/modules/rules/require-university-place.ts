@@ -1,4 +1,5 @@
 import { DataLoader } from "../../utils/data-loader";
+import { watchItemFields } from "../../utils/field-conflicts";
 import { defineRule } from "./rule-base";
 
 export const RequireUniversityPlace = defineRule({
@@ -10,13 +11,16 @@ export const RequireUniversityPlace = defineRule({
   fieldMenu: {
     l10nID: "rule-require-university-place-menu-field",
   },
-  async apply({ item, debug }) {
+  async apply({ item, debug, report }) {
     const university = item.getField("university") as string;
     if (!university)
       return;
 
-    const place = await getUniversityPlace(university)
-      || await getUniversityPlace(university.replace(/[（(].*[)|）]/, ""));
+    const unchanged = watchItemFields(item, ["university", "place"], report);
+    const data = await DataLoader.load("universityPlace");
+    if (!unchanged())
+      return;
+    const place = data[university] || data[university.replace(/[（(].*[)）]/, "")];
 
     const currentPlace = item.getField("place") as string;
     if (!place && currentPlace)
@@ -25,14 +29,3 @@ export const RequireUniversityPlace = defineRule({
       item.setField("place", place);
   },
 });
-
-async function getUniversityPlace(university: string) {
-  const data = await DataLoader.load("universityPlace");
-  const place = data[university];
-  if (place === "" || place === null || place === undefined) {
-    return "";
-  }
-  else {
-    return place;
-  }
-}

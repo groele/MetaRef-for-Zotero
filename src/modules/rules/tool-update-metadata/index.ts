@@ -25,6 +25,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     const original = item.toJSON() as TransformedData;
     // 1. extract identifiers
     const identifiers = extractIdentifiers(item);
+    const initialIdentifiers = { ...identifiers };
     const originalDOI = normalizeDOI(identifiers.DOI);
     const allowRelatedDOI = isPreprint(item, identifiers);
     debug("Identifiers: ", identifiers);
@@ -182,6 +183,14 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
       return false;
     };
 
+    const currentIdentifiers = extractIdentifiers(item);
+    const changedIdentifiers = [...new Set([...Object.keys(initialIdentifiers), ...Object.keys(currentIdentifiers)])]
+      .filter(key => initialIdentifiers[key as keyof typeof initialIdentifiers] !== currentIdentifiers[key as keyof typeof currentIdentifiers]);
+    if (changedIdentifiers.length) {
+      report({ level: "warning", message: getString("rule-tool-update-metadata-edited", { args: { field: changedIdentifiers.join(", ") } }) });
+      return;
+    }
+
     // 4. apply field changes
     function applyItemType(data: TransformedData) {
       if (!data.itemType) {
@@ -215,7 +224,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
         return;
       }
 
-      const incompatible = Object.entries(original).filter(([field, value]) => typeof value === "string" && value
+      const incompatible = Object.entries(item.toJSON()).filter(([field, value]) => typeof value === "string" && value
         && Zotero.ItemFields.getID(field) && !isFieldValidForItemType(field as _ZoteroTypes.Item.ItemField, newItemTypeID));
       if (incompatible.length) {
         report({ level: "warning", message: getString("rule-tool-update-metadata-type-fields-preserved", { args: { fields: incompatible.map(([field]) => field).join(", ") } }) });

@@ -1,0 +1,78 @@
+// autocorrect-disable
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { EASYSCHOLAR_FIELD_DEFINITIONS } from "../utils/easyscholar";
+import { journalNumericDisplayValue } from "../utils/journal-column-sort";
+import { registerEasyScholarColumns, registerExtraColumns, unregisterExtraColumns } from "./item-tree";
+
+const mocks = vi.hoisted(() => ({ preferences: new Map<string, unknown>(), insights: vi.fn() }));
+vi.mock("../utils/prefs", () => ({ getPref: (key: string, fallback: unknown) => mocks.preferences.get(key) ?? fallback }));
+vi.mock("../utils/locale", () => ({ getString: (key: string) => key }));
+vi.mock("../utils/logger", () => ({ logger: { error: vi.fn() }, createLogger: () => ({ error: vi.fn(), warn: vi.fn(), debug: vi.fn() }) }));
+vi.mock("../utils/journal-insights", () => ({ cachedJournalInsights: mocks.insights }));
+const columns = new Map<string, any>();
+beforeEach(() => {
+  columns.clear();
+  mocks.preferences.clear();
+  mocks.insights.mockReset();
+  vi.stubGlobal("addon", { data: { alive: true, config: { addonID: "test" } } });
+  vi.stubGlobal("Zotero", { locale: "zh-CN", ItemTreeManager: {
+    registerColumn: (column: any) => {
+      columns.set(column.dataKey, column);
+      return column.dataKey;
+    },
+    unregisterColumn: (key: string) => columns.delete(key),
+    isCustomColumn: (key: string) => columns.has(key),
+  } });
+});
+afterEach(() => {
+  unregisterExtraColumns();
+  vi.unstubAllGlobals();
+});
+
+it("makes all 61 ranking fields available without enabling writes or making API calls", () => {
+  for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
+    mocks.preferences.set(`easyscholar.fields.${field.key}`, true);
+  registerExtraColumns();
+  expect(columns.size).toBe(67);
+  for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
+    expect(columns.has(field.key === "esi" ? "esiDiscipline" : `easyScholar-${field.key}`), field.key).toBe(true);
+  expect(columns.get("easyScholar-impactFactor").columnPickerSubMenu).toBe(true);
+  mocks.preferences.set("easyscholar.columns.impactFactor", true);
+  registerEasyScholarColumns();
+  expect(columns.size).toBe(67);
+  expect(columns.get("easyScholar-impactFactor").columnPickerSubMenu).toBe(false);
+  mocks.preferences.set("easyscholar.columns.impactFactor", false);
+  registerEasyScholarColumns();
+  expect(columns.has("easyScholar-impactFactor")).toBe(true);
+  expect(columns.get("easyScholar-impactFactor").columnPickerSubMenu).toBe(true);
+});
+
+it("treats the field switch as authoritative even with a saved value and a column shortcut", () => {
+  mocks.preferences.set("easyscholar.fields.jcr", true);
+  mocks.preferences.set("easyscholar.columns.jcr", true);
+  registerExtraColumns();
+  const provider = columns.get("easyScholar-jcr").dataProvider;
+  const item = { itemType: "journalArticle", getField: () => "JCR 分区: Q1" } as unknown as Zotero.Item;
+  expect(provider(item)).toBe("Q1");
+  mocks.preferences.set("easyscholar.fields.jcr", false);
+  registerExtraColumns();
+  expect(columns.has("easyScholar-jcr")).toBe(false);
+  expect(provider(item)).toBe("");
+  expect(item.getField("extra")).toBe("JCR 分区: Q1");
+  mocks.preferences.set("insights.natureEnabled", false);
+  registerExtraColumns();
+  expect(columns.has("natureIndex")).toBe(false);
+  expect(columns.has("natureSource")).toBe(false);
+});
+
+it("matches pane values for canonical, legacy and fullwidth-colon Extra, and refreshes edits", () => {
+  registerExtraColumns();
+  let extra = "JCR分区: Q3\nJCR 分区：Q1\n影响因子：34.9\nSCI: 是";
+  const item = { itemType: "journalArticle", getField: () => extra } as unknown as Zotero.Item;
+  expect(columns.get("easyScholar-jcr").dataProvider(item)).toBe("Q1");
+  expect(journalNumericDisplayValue(columns.get("easyScholar-impactFactor").dataProvider(item))).toBe("34.9");
+  expect(columns.get("easyScholar-sci").dataProvider(item)).toBe("是");
+  extra = "影响因子: 9.8";
+  expect(journalNumericDisplayValue(columns.get("easyScholar-impactFactor").dataProvider(item))).toBe("9.8");
+  expect(columns.get("easyScholar-jcr").dataProvider(item)).toBe("");
+});

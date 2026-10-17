@@ -168,6 +168,10 @@ export const EASYSCHOLAR_DEFAULT_FIELDS: ReadonlySet<EasyScholarField> = new Set
   "technologyCore",
 ]);
 
+export function isEasyScholarFieldEnabled(key: EasyScholarField): boolean {
+  return getPref(`easyscholar.fields.${key}` as any, EASYSCHOLAR_DEFAULT_FIELDS.has(key)) === true;
+}
+
 const FIELD_MESSAGE_SUFFIX: Partial<Record<EasyScholarField, string>> = {
   compoundIF: "compound-if",
   comprehensiveIF: "comprehensive-if",
@@ -218,7 +222,7 @@ const MAX_CACHE_SIZE = 256;
 function value(record: Record<string, unknown>, ...keys: string[]): string | undefined {
   for (const key of keys) {
     const raw = record[key] ?? record[key.replace(/\s+/g, "")];
-    if (raw !== undefined && raw !== null && String(raw).trim())
+    if ((typeof raw === "string" || typeof raw === "boolean" || (typeof raw === "number" && Number.isFinite(raw))) && String(raw).trim())
       return String(raw).trim();
   }
 }
@@ -227,10 +231,24 @@ function membership(record: Record<string, unknown>, ...keys: string[]): string 
   const result = value(record, ...keys);
   if (!result)
     return undefined;
-  return /^(?:否|no|false|0)$/i.test(result) ? "否" : "是";
+  if (/^(?:否|no|false|0|未收录|不收录)$/i.test(result))
+    return "否";
+  return /^(?:[是1]|yes|true|y|收录|SCIE?|EI|UTD24|FT50|Q[1-4](?:\s*区)?)$/i.test(result) ? "是" : undefined;
 }
 
 const CUSTOM_RANK_FIELDS = EASYSCHOLAR_FIELD_DEFINITIONS.filter(field => field.source === "custom");
+export const EASYSCHOLAR_NATURE_DATASET_UUID = "1615199999904223232";
+const CUSTOM_LEVEL_KEYS = ["oneRankText", "twoRankText", "threeRankText", "fourRankText", "fiveRankText"];
+
+function customRankLevel(ranks: unknown[], uuid: string): number | undefined {
+  for (const rank of ranks) {
+    if (typeof rank !== "string")
+      continue;
+    const match = rank.match(/^(.*?)(&&&|000)([1-5])$/);
+    if (match?.[1] === uuid)
+      return Number(match[3]);
+  }
+}
 
 function parseCustomRank(raw: unknown): Partial<EasyScholarRank> {
   if (!raw || typeof raw !== "object")
@@ -241,12 +259,12 @@ function parseCustomRank(raw: unknown): Partial<EasyScholarRank> {
   const output: Partial<EasyScholarRank> = {};
   for (const field of CUSTOM_RANK_FIELDS) {
     const info = rankInfo.find(entry => entry && typeof entry === "object" && entry.uuid === field.uuid);
-    const rankValue = ranks.find(entry => typeof entry === "string" && entry.slice(0, -4) === field.uuid);
-    const rankNumber = typeof rankValue === "string" ? Number(rankValue.slice(-1)) : 0;
-    const levelKey = rankNumber === 1 ? "oneRankText" : rankNumber === 2 ? "twoRankText" : undefined;
-    const level = levelKey ? info?.[levelKey] : undefined;
-    if (level !== undefined && level !== null && String(level).trim())
-      (output as Record<string, string>)[field.key] = ["clsci", "scopus", "esci", "predatoryReports"].includes(field.key) ? "是" : String(level).trim();
+    const level = customRankLevel(ranks, field.uuid);
+    if (!info || !level)
+      continue;
+    const text = value(info, CUSTOM_LEVEL_KEYS[level - 1]);
+    if (text)
+      (output as Record<string, string>)[field.key] = ["clsci", "scopus", "esci", "predatoryReports"].includes(field.key) ? membership(info, CUSTOM_LEVEL_KEYS[level - 1]) || "是" : text;
   }
   return output;
 }
@@ -311,18 +329,21 @@ function parseNatureDataset(raw: unknown, uuid: string): Partial<EasyScholarRank
   const custom = raw as { rankInfo?: Record<string, unknown>[]; rank?: unknown[] };
   if (!Array.isArray(custom.rankInfo) || !Array.isArray(custom.rank))
     return {};
-  const name = (entry: Record<string, unknown>) => String(entry.name || entry.rankName || entry.datasetName || "");
+  const name = (entry: Record<string, unknown>) => value(entry, "name", "rankName", "datasetName")
+    || value(entry, "abbName") || (entry.uuid === EASYSCHOLAR_NATURE_DATASET_UUID ? "Nature Index" : "");
   const info = custom.rankInfo.find(entry => entry && (uuid
     ? String(entry.uuid) === uuid
-    : /^(?:\d+\s*种)?自然指数(?:统计)?期刊$|^Nature Index(?: Journals)?$/i.test(name(entry).trim())));
+    : entry.uuid === EASYSCHOLAR_NATURE_DATASET_UUID
+      || /^(?:\d+\s*种)?自然指数(?:统计)?期刊(?:\s*[-—–]\s*\d{4})?$|^Nature Index(?: Journals)?(?:\s*[-—–]\s*\d{4})?$/i.test(name(entry).trim())));
   if (!info || typeof info.uuid !== "string")
     return {};
-  const rank = custom.rank.find(rank => typeof rank === "string" && rank.slice(0, -4) === info.uuid);
-  const level = typeof rank === "string" ? Number(rank.slice(-4)) : 0;
-  const text = level === 1 ? info.oneRankText : level === 2 ? info.twoRankText : undefined;
-  if (typeof text !== "string" || !text.trim())
+  const level = customRankLevel(custom.rank, info.uuid);
+  if (!level)
     return {};
-  return { natureIndex: /^(?:否|no|false|0|不收录|未收录)$/i.test(text.trim()) ? "否" : "是", natureIndexDataset: name(info) || info.uuid };
+  const rawText = info[CUSTOM_LEVEL_KEYS[level - 1]];
+  if (rawText !== undefined && typeof rawText !== "string")
+    return {};
+  return { natureIndex: /^(?:否|no|false|0|不收录|未收录)$/i.test((rawText || "").trim()) ? "否" : "是", natureIndexDataset: name(info) || info.uuid };
 }
 
 function rankCacheKey(title: string) {

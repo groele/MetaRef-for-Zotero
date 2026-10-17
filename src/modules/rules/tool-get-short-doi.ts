@@ -1,3 +1,4 @@
+import { watchItemFields } from "../../utils/field-conflicts";
 import { requestCachedGET } from "../../utils/http";
 import { getString } from "../../utils/locale";
 import { defineRule } from "./rule-base";
@@ -46,7 +47,11 @@ export const ToolGetShortDOI = defineRule({
     }
 
     const url = `https://shortdoi.org/${encodeURIComponent(cleanDOI)}?format=json`;
+    const unchanged = watchItemFields(item, ["DOI"], report);
     const req = await requestCachedGET(url, {}, signal);
+
+    if (!unchanged() || ztoolkit.ExtraField.getExtraField(item, "short-doi") !== exists)
+      return;
 
     if (req.status !== 200) {
       report({ level: "warning", message: getString("rule-short-doi-failed", { args: { status: req.status } }) });

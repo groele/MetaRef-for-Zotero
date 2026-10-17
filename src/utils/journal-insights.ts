@@ -5,6 +5,7 @@ import { DataLoader } from "./data-loader";
 import { fetchEasyScholarRank, peekEasyScholarRank } from "./easyscholar";
 import { ESI_CATEGORIES, formatESICategories, matchESICategories } from "./esi";
 import { journalDatabaseErrorMessage } from "./journal-database-error";
+import { isJournalIndexEnabled } from "./journal-permissions";
 import { isNatureIndexJournal } from "./nature-index";
 import { getPref } from "./prefs";
 
@@ -40,6 +41,7 @@ let loaded: IndexData | undefined;
 let generation: object | undefined;
 const message = journalDatabaseErrorMessage;
 const paths = () => [getPref("insights.esiCustomDataPath") || "", getPref("insights.natureCustomDataPath") || ""] as const;
+const indexConfiguration = () => JSON.stringify([...paths(), isJournalIndexEnabled("esi"), isJournalIndexEnabled("nature")]);
 
 export function clearJournalInsights() {
   DataLoader.clearCache();
@@ -51,7 +53,7 @@ export function clearJournalInsights() {
 
 export function loadJournalInsights(): Promise<IndexData> {
   const [path, naturePath] = paths();
-  const key = JSON.stringify([path, naturePath]);
+  const key = indexConfiguration();
   if (pending && currentPath === key)
     return pending;
   currentPath = key;
@@ -62,6 +64,8 @@ export function loadJournalInsights(): Promise<IndexData> {
     const data: IndexData = { path, naturePath };
     await Promise.all([
       (async () => {
+        if (!isJournalIndexEnabled("esi"))
+          return;
         try {
           data.esi = await DataLoader.getESIJournalMaps(path);
         }
@@ -79,6 +83,8 @@ export function loadJournalInsights(): Promise<IndexData> {
         }
       })(),
       (async () => {
+        if (!isJournalIndexEnabled("nature"))
+          return;
         try {
           data.nature = await DataLoader.getNatureIndexJournalMaps(naturePath);
         }
@@ -103,7 +109,7 @@ export function loadJournalInsights(): Promise<IndexData> {
 }
 
 export function cachedJournalInsights(item: Zotero.Item): JournalInsights | undefined {
-  if (currentPath !== JSON.stringify(paths()) || !loaded)
+  if (currentPath !== indexConfiguration() || !loaded)
     return undefined;
   return calculate(item, loaded);
 }
@@ -112,6 +118,8 @@ export async function getJournalInsights(item: Zotero.Item, options: { queryAPI?
   const local = calculateLocal(item, data);
   const title = String(item.getField("publicationTitle") || "").trim();
   const wantsAPI = ["esi", "nature"].some((kind) => {
+    if (!isJournalIndexEnabled(kind as "esi" | "nature"))
+      return false;
     const policy = sourcePriority(kind);
     return policy === "api-first" || policy === "api-only" || (policy === "local-first" && (kind === "esi" ? !local.categories.length : !local.natureIndex));
   });
@@ -179,6 +187,20 @@ export function resolveJournalSources(local: JournalInsights, response?: EasySch
   const categories = apiESICategories(api?.esi || "");
   const nature = api?.natureIndex === "是" ? true : api?.natureIndex === "否" ? false : undefined;
   for (const kind of ["esi", "nature"] as const) {
+    if (!isJournalIndexEnabled(kind)) {
+      if (kind === "esi") {
+        result.categories = [];
+        result.esi = "";
+        result.esiBasis = undefined;
+        result.esiAPIWarning = undefined;
+      }
+      else {
+        result.natureIndex = undefined;
+        result.natureBasis = undefined;
+        result.natureAPIWarning = undefined;
+      }
+      continue;
+    }
     const policy = sourcePriority(kind);
     if (policy === "local-only" || (policy === "local-first" && (kind === "esi" ? local.categories.length > 0 : local.natureIndex === true)))
       continue;

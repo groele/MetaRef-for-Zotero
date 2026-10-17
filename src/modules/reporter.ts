@@ -1,5 +1,4 @@
 import type { ProgressWindowHelper, TagElementProps } from "zotero-plugin-toolkit";
-import { groupBy } from "es-toolkit";
 import { useDialog } from "../utils/dialog";
 import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
@@ -34,10 +33,16 @@ export interface ReportInfo {
 }
 
 export function createReporter(infos: ReportInfo[], changes: FieldChange[] = []) {
-  const resolvedInfos: Record<number, ReportInfo[]> = groupBy(
-    infos,
-    info => info.itemID,
-  );
+  const entries = new Map<number, { itemID: number; title: string; infos: ReportInfo[]; changes: FieldChange[] }>();
+  const entryFor = (itemID: number, title?: string) => {
+    if (!entries.has(itemID)) {
+      const item = itemID && Zotero.Items.get(itemID);
+      entries.set(itemID, { itemID, title: title ?? (item ? item.getDisplayTitle() : String(itemID)), infos: [], changes: [] });
+    }
+    return entries.get(itemID)!;
+  };
+  infos.forEach(info => entryFor(info.itemID, info.title).infos.push(info));
+  changes.forEach(change => entryFor(change.itemID).changes.push(change));
 
   const { dialog, openAndWaitClose, close } = useDialog(new ztoolkit.Dialog(1, 1));
   dialog.addCell(0, 0, {
@@ -71,7 +76,7 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [])
           }
         },
       },
-    }, ...Object.values(resolvedInfos).flatMap(infos => [
+    }, ...[...entries.values()].map(entry => (
       {
         tag: "div",
         styles: {
@@ -84,7 +89,7 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [])
           {
             tag: "a",
             properties: {
-              textContent: infos[0].itemID ? `${infos[0].itemID} - ${infos[0].title}` : infos[0].title,
+              textContent: entry.itemID ? `${entry.itemID} - ${entry.title}` : entry.title,
             },
             styles: {
               fontWeight: "bold",
@@ -98,14 +103,14 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [])
               {
                 type: "click",
                 listener: () => {
-                  if (infos[0].itemID)
-                    Zotero.getActiveZoteroPane()?.selectItem(infos[0].itemID);
+                  if (entry.itemID)
+                    Zotero.getActiveZoteroPane()?.selectItem(entry.itemID);
                 },
               },
             ],
           },
-          ...infos.map(createRuleResultRows),
-          ...changes.filter(change => change.itemID === infos[0].itemID).map(change => ({
+          ...entry.infos.map(createRuleResultRows),
+          ...entry.changes.map(change => ({
             tag: "details",
             children: [{ tag: "summary", properties: { textContent: `${change.field}${change.source ? ` · ${change.source}` : ""}` } }, {
               tag: "pre",
@@ -114,8 +119,8 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [])
             }],
           } satisfies TagElementProps)),
         ],
-      },
-    ] satisfies TagElementProps[])],
+      }
+    ) satisfies TagElementProps)],
   });
 
   function createRuleResultRows(info: ReportInfo): TagElementProps {

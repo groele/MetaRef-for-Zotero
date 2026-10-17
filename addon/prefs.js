@@ -296,3 +296,4 @@ pref("rule.require-journal-abbr.matchMode", "exact");
 pref("rule.require-journal-abbr.existingPolicy", "known");
 pref("rule.require-journal-abbr.letterCase", "keep");
 pref("rule.require-journal-abbr.tagSource", false);
+pref("insights.natureEnabled", true);

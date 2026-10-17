@@ -1,6 +1,6 @@
-import type { Data, JournalLookupMaps } from "../../utils/data-loader";
+import type { JournalLookupMaps } from "../../utils/data-loader";
 import { DataLoader } from "../../utils/data-loader";
-import { requestCachedGET } from "../../utils/http";
+import { watchItemFields } from "../../utils/field-conflicts";
 import { buildJournalMaps, lookupJournalAbbreviation, styleJournalAbbreviation } from "../../utils/journal-abbreviation";
 import { inferJournalAbbreviation } from "../../utils/journal-abbreviation-iso";
 import { getString } from "../../utils/locale";
@@ -61,6 +61,7 @@ export const RequireJournalAbbr = defineRule<Options>({
     if (publicationTitle === "")
       return;
 
+    const unchanged = watchItemFields(item, ["publicationTitle", "journalAbbreviation"], report);
     const currentAbbr = String(item.getField("journalAbbreviation") || "");
     const policy = options.existingPolicy || "known";
     if (currentAbbr && policy === "blank")
@@ -126,6 +127,8 @@ export const RequireJournalAbbr = defineRule<Options>({
     if (!journalAbbr)
       return;
 
+    if (!unchanged())
+      return;
     journalAbbr = formatJournalAbbreviation(styleJournalAbbreviation(journalAbbr, options.letterCase), options.withDots !== false);
     if (currentAbbr !== journalAbbr) {
       item.setField("journalAbbreviation", journalAbbr);
@@ -164,6 +167,8 @@ export const CorrectConferenceAbbr = defineRule<Options>({
     l10nID: "rule-require-journal-abbr-menu-field",
   },
   async apply({ item, options, report }) {
+    const unchanged = watchItemFields(item, ["conferenceName", "proceedingsTitle"], report);
+    const originalShortConf = ztoolkit.ExtraField.getExtraField(item, "shortConferenceName");
     const conferenceNames = [
       item.getField("conferenceName") as string,
       item.getField("proceedingsTitle") as string,
@@ -213,6 +218,8 @@ export const CorrectConferenceAbbr = defineRule<Options>({
       return;
 
     const currentShortConf = ztoolkit.ExtraField.getExtraField(item, "shortConferenceName");
+    if (!unchanged() || currentShortConf !== originalShortConf)
+      return;
     if (currentShortConf !== shortConferenceName) {
       await ztoolkit.ExtraField.setExtraField(item, "shortConferenceName", shortConferenceName, { save: false });
     }
@@ -221,49 +228,6 @@ export const CorrectConferenceAbbr = defineRule<Options>({
   prepare: () => prepare(true),
 
 });
-
-async function _getAbbrLocally(publicationTitle: string, data: Data): Promise<string | undefined> {
-  const normalizedPublicationTitle = normalizeKey(publicationTitle);
-
-  for (const term in data) {
-    if (normalizedPublicationTitle === normalizeKey(term) && data[term]) {
-      return data[term];
-    }
-  }
-
-  return undefined;
-}
-
-/**
- *
- * Get abbreviation from abbreviso API.
- * This API infer journal abbreviation from ISSN List of Title Word Abbreviations.
- * Until March 31, 2023, this API uses the LTWA released in 2017.
- * @param publicationTitle
- * @returns
- * - String of `ISO 4 with dot abbr` when API returns a valid response
- * - `undefined` when API returns an invalid response
- */
-async function _getAbbrFromLTWAOnline(publicationTitle: string, signal?: AbortSignal): Promise<string | undefined> {
-  publicationTitle = encodeURIComponent(publicationTitle);
-  const url = `https://abbreviso.toolforge.org/abbreviso/a/${publicationTitle}`;
-  const res = await requestCachedGET(url, {}, signal);
-  const result = res.response as string;
-  if (result === "" || result === null || result === undefined) {
-    return undefined;
-  }
-  return result;
-}
-
-async function _getAbbrFromLTWALocally(publicationTitle: string): Promise<string | undefined> {
-  const shortwords = await Zotero.File.getContentsAsync(`${rootURI}/lib/abbreviso/shortwords.txt`);
-  const ltwa = await Zotero.File.getContentsAsync(`${rootURI}/lib/abbreviso/LTWA_20210702-modified.csv`);
-  Services.scriptloader.loadSubScript(`${rootURI}/lib/abbreviso/browserBundle.js`);
-  // @ts-expect-error AbbrevIso 来自引入的脚本
-  const abbrevIso = new AbbrevIso.AbbrevIso(ltwa, shortwords);
-  const abbr = abbrevIso.makeAbbreviation(publicationTitle);
-  return abbr;
-}
 
 interface CustomAbbreviationMap extends JournalLookupMaps {
   size: number;

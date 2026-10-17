@@ -490,3 +490,4 @@ abbr-source-custom = Custom mapping
 abbr-source-builtin = JabRef built-in mapping
 abbr-source-iso4 = Offline ISO 4 inference
 abbr-source-full = Full-title fallback
+rule-fields-edited = Skipped a delayed result because these fields changed while waiting: { $fields }. Current values were preserved.

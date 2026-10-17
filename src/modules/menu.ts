@@ -2,6 +2,7 @@ import type { RuleForRegularScopeField } from "./rules/rule-base";
 import { cleanupResourcesSync } from "../utils/cleanup";
 import { showZoteroDirectory } from "../utils/directories";
 import { getJournalInsights } from "../utils/journal-insights";
+import { canRunJournalRule } from "../utils/journal-permissions";
 import { getLocaleID } from "../utils/locale";
 import { logger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
@@ -56,7 +57,7 @@ export function registerMenu() {
 }
 
 function registerFieldMenus() {
-  const isMenuVisible = (key: string): boolean => getPref(`menu.${key}` as any, true) ?? true;
+  const isMenuVisible = (key: string): boolean => canRunJournalRule(key) && (getPref(`menu.${key}` as any, true) ?? true);
 
   const menus: FieldMenu[] = Rules
     .getAll()
@@ -125,7 +126,7 @@ export function isPrimaryMenu(key: string) {
 }
 
 function registerItemMenus() {
-  const isMenuVisible = (key: string): boolean => getPref(`menu.${key}` as any, true) ?? true;
+  const isMenuVisible = (key: string): boolean => canRunJournalRule(key) && (getPref(`menu.${key}` as any, true) ?? true);
   const nestedVisible = (key: string) => isMenuVisible(key) && !isPrimaryMenu(key);
   const makeItem = (key: string, primary = false): ItemMenu => {
     const directory = key === "show-data-directory" || key === "show-profile-directory";
@@ -146,7 +147,7 @@ function registerItemMenus() {
       },
       onShown(_event, context) { checkL10nString(context.menuElem, key, l10nID); },
       async onCommand(_event, context) {
-        if (!acceptCommand(_event))
+        if (!acceptCommand(_event) || !canRunJournalRule(key))
           return;
         if (directory) {
           await showZoteroDirectory(key === "show-data-directory" ? "data" : "profile");

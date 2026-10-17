@@ -1,13 +1,15 @@
 import type { BatchResult } from "./runner";
 import { cleanupResourcesSync } from "../utils/cleanup";
-import { EASYSCHOLAR_FIELD_DEFINITIONS } from "../utils/easyscholar";
+import { EASYSCHOLAR_FIELD_DEFINITIONS, isEasyScholarFieldEnabled } from "../utils/easyscholar";
 import { isJournalFeedback } from "../utils/journal-feedback";
 import { cachedJournalInsights, clearJournalInsights, getJournalInsights, loadJournalInsights } from "../utils/journal-insights";
 import { presentJournalInsights } from "../utils/journal-insights-presentation";
+import { hasEnabledJournalMetrics, isJournalIndexEnabled } from "../utils/journal-permissions";
 import { journalRankingRows } from "../utils/journal-ranking-rows";
 import { getLocaleID, getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
+import { registerExtraColumns } from "./item-tree";
 import { getEnabledEasyScholarFields } from "./rules/tool-update-easyscholar";
 
 let sectionID: string | undefined;
@@ -18,6 +20,8 @@ const items = new WeakMap<HTMLElement, Zotero.Item>();
 const queryMessages = new Map<number, { level?: string; message: string }[]>();
 const navigationListeners = new Map<Document, EventListener>();
 const updating = new Set<number>();
+let settingsRefreshPending = false;
+let settingsRevision = 0;
 const logger = createLogger("journal-pane");
 const supportsRankings = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && ["journalArticle", "conferencePaper"].includes(item.itemType));
 type Context = _ZoteroTypes.ItemPaneManagerSection.SectionHookArgs;
@@ -50,7 +54,7 @@ export function registerJournalPane() {
         navigationListeners.set(doc, listener);
       }
       refreshers.set(body, async () => {
-        setEnabled(getPref("insights.showPane", true) && supportsRankings(items.get(body)));
+        setEnabled(getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(items.get(body)));
         await refresh();
       });
     },
@@ -73,38 +77,38 @@ export function registerJournalPane() {
         items.delete(body);
       renders.delete(body);
       body.replaceChildren();
-      setEnabled(getPref("insights.showPane", true) && supportsRankings(item));
+      setEnabled(getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item));
     },
     onRender({ body, item, setEnabled }) {
       if (item)
         items.set(body, item);
       renders.delete(body);
-      setEnabled(getPref("insights.showPane", true) && supportsRankings(item));
+      setEnabled(getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item));
       body.textContent = getString("journal-insights-loading");
     },
     onAsyncRender: render,
   });
   if (id)
     sectionID = id;
-  for (const pref of ["insights.showPane", "insights.esiCustomDataPath", "insights.esiFormat", "insights.natureCustomDataPath", "insights.esiSourcePriority", "insights.natureSourcePriority", "insights.natureDatasetUUID", "easyscholar.secretKey"]) {
+  for (const pref of ["insights.showPane", "insights.esiCustomDataPath", "insights.esiFormat", "insights.natureCustomDataPath", "insights.esiSourcePriority", "insights.natureSourcePriority", "insights.natureDatasetUUID", "easyscholar.secretKey", "insights.natureEnabled", ...EASYSCHOLAR_FIELD_DEFINITIONS.map(field => `easyscholar.fields.${field.key}`)]) {
     observers.push(Zotero.Prefs.registerObserver(`${addon.data.config.prefsPrefix}.${pref}`, () => {
       if (pref.endsWith("DataPath"))
         clearJournalInsights();
       refreshData();
-      for (const refresh of refreshers.values())
-        void Promise.resolve().then(refresh).catch(error => logger.error(error));
     }, true));
   }
 }
 
 async function completeFromNavigation(item: Zotero.Item) {
+  if (!hasEnabledJournalMetrics())
+    return;
   updating.add(item.id);
   try {
     const insights = await getJournalInsights(item);
     const saved = new Set(journalRankingRows(String(item.getField("extra") || "")).map(row => row.key));
     const enabled = getEnabledEasyScholarFields();
     const missingRankings = EASYSCHOLAR_FIELD_DEFINITIONS.some(field => enabled.has(field.key) && !saved.has(field.key));
-    const missingIndexes = item.itemType === "journalArticle" && (!insights.categories.length || insights.natureIndex === undefined || insights.esiAPIWarning || insights.natureAPIWarning);
+    const missingIndexes = item.itemType === "journalArticle" && ((isJournalIndexEnabled("esi") && (!insights.categories.length || insights.esiAPIWarning)) || (isJournalIndexEnabled("nature") && (insights.natureIndex === undefined || insights.natureAPIWarning)));
     if (!missingRankings && !missingIndexes)
       return;
     queryMessages.set(item.id, [{ message: getString("journal-insights-loading") }]);
@@ -122,10 +126,26 @@ async function completeFromNavigation(item: Zotero.Item) {
 }
 
 function refreshData() {
-  void loadJournalInsights().then(() => {
-    if (addon.data.alive)
+  settingsRevision++;
+  if (settingsRefreshPending)
+    return;
+  settingsRefreshPending = true;
+  let renderedRevision = settingsRevision;
+  void Promise.resolve().then(async () => {
+    renderedRevision = settingsRevision;
+    if (!addon.data.alive)
+      return;
+    registerExtraColumns();
+    await loadJournalInsights();
+    if (addon.data.alive) {
       Zotero.ItemTreeManager.refreshColumns();
-  }).catch(error => logger.error(error));
+      await Promise.all([...refreshers.values()].map(refresh => refresh()));
+    }
+  }).catch(error => logger.error(error)).finally(() => {
+    settingsRefreshPending = false;
+    if (addon.data.alive && renderedRevision !== settingsRevision)
+      refreshData();
+  });
 }
 
 export async function refreshJournalInsights() {
@@ -158,7 +178,7 @@ export function setJournalUpdateResult(itemIDs: number[], result?: BatchResult) 
 }
 
 async function render({ item, body, doc, setSectionSummary }: Context) {
-  if (!item || !supportsRankings(item) || !getPref("insights.showPane", true))
+  if (!item || !supportsRankings(item) || !hasEnabledJournalMetrics() || !getPref("insights.showPane", true))
     return;
   const token = {};
   renders.set(body, token);
@@ -167,7 +187,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     return;
   body.replaceChildren();
   body.style.cssText = "padding:10px 12px 12px;line-height:1.5;overflow-wrap:anywhere;color:var(--fill-primary);";
-  const rows = item.itemType === "journalArticle" ? presentJournalInsights(result, Zotero.locale) : [];
+  const rows = item.itemType === "journalArticle" ? presentJournalInsights(result, Zotero.locale).filter((_row, index) => isJournalIndexEnabled(index === 0 ? "esi" : "nature")) : [];
   const text = (tag: string, value: string, style = "") => {
     const node = doc.createElementNS("http://www.w3.org/1999/xhtml", tag);
     node.textContent = value;
@@ -179,9 +199,9 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   journalTitle.setAttribute("data-journal-title", "true");
   body.append(journalTitle);
   const sharedBasis = rows.length && rows.every(row => row.basis && row.basis === rows[0].basis) ? rows[0].basis : "";
-  const rankings = journalRankingRows(String(item.getField("extra") || ""));
+  const rankings = journalRankingRows(String(item.getField("extra") || "")).filter(row => isEasyScholarFieldEnabled(row.key));
   const savedESI = rankings.find(row => row.key === "esi");
-  if (rows.length && savedESI && !result.categories.length) {
+  if (isJournalIndexEnabled("esi") && rows.length && savedESI && !result.categories.length) {
     rows[0] = { ...rows[0], value: savedESI.value, matched: true, basis: "", source: getString("journal-insights-saved-source") };
   }
   const displayedRankings = rankings.filter(row => item.itemType !== "journalArticle" || row.key !== "esi");
@@ -241,7 +261,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   sources.append(note);
   if (rows.length)
     body.append(sources);
-  setSectionSummary([rankings.find(row => row.key === "jcr")?.value || "", result.categories.length ? rows[0].value : "", result.natureIndex ? "Nature Index" : ""].filter(Boolean).join(" · "));
+  setSectionSummary([rankings.find(row => row.key === "jcr")?.value || "", isJournalIndexEnabled("esi") && result.categories.length ? rows[0]?.value || "" : "", isJournalIndexEnabled("nature") && result.natureIndex ? "Nature Index" : ""].filter(Boolean).join(" · "));
 }
 
 export function unregisterJournalPane() {

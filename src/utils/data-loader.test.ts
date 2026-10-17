@@ -90,4 +90,17 @@ describe("batch data cache", () => {
     expect(read).toHaveBeenCalledTimes(1);
     expect(await DataLoader.load("json", "custom.JSON")).toEqual({ Nature: "Nat." });
   });
+  it.each(["esi", "nature"])("invalidates the derived %s index along with its custom file", async (kind) => {
+    vi.stubGlobal("rootURI", "test/");
+    read.mockResolvedValue(JSON.stringify(kind === "esi"
+      ? [{ title: "Nature", category: "PHYSICS" }]
+      : { venues: [{ title: "Nature", type: "journal" }] }));
+    const load = (path: string) => kind === "esi" ? DataLoader.getESIJournalMaps(path) : DataLoader.getNatureIndexJournalMaps(path);
+    const first = await load("selected.json");
+    const other = await load("other.json");
+    DataLoader.invalidateFile("selected.json");
+    expect(await load("selected.json")).not.toBe(first);
+    expect(await load("other.json")).toBe(other);
+    expect(read.mock.calls.filter(([path]) => path === "selected.json")).toHaveLength(2);
+  });
 });

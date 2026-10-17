@@ -574,7 +574,7 @@ describe("data processing resilience in Zotero", function () {
     assert.equal(entries.length, 1, "the main menu is registered only once");
     assert.equal((Zotero.PreferencePanes as any).pluginPanes.filter((pane: any) => pane.pluginID === config.addonID).length, 1, "the settings sidebar contains only one MetaFlow entry");
     const columns = (Zotero.ItemTreeManager as any).getCustomColumns(undefined, { pluginID: config.addonID });
-    assert.equal(columns.length, 3);
+    assert.equal(columns.length, 29);
     const countESI = (menus: any[]): number => menus.reduce((count, menu) => count + (menu.l10nID === "metaref-rule-tool-query-esi-menu-item" ? 1 : 0) + countESI(menu.menus || []), 0);
     assert.equal(countESI(entries.flatMap((entry: any) => entry.menus)), 2, "one registered view per supported placement");
     const views = entries.flatMap((entry: any) => [...entry.menus, ...entry.menus.flatMap((menu: any) => menu.menus || [])]).filter((menu: any) => menu.l10nID === "metaref-rule-tool-query-esi-menu-item");

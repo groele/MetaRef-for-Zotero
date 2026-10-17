@@ -127,4 +127,31 @@ describe("metadata safety regressions", function () {
       await Zotero.Promise.delay(30);
     assert.equal(plugin().data.dialogs.size, 0);
   });
+
+  it("marks only the final committed field value as saved", async function () {
+    const item = await create({ title: "Original before two rules" });
+    await plugin().runner.add({ items: [item], silent: true, rules: [
+      { id: "safety-intermediate", scope: "item", apply({ item: target }: { item: Zotero.Item }) { target.setField("title", "Intermediate value"); } },
+      { id: "safety-final", scope: "item", apply({ item: target }: { item: Zotero.Item }) { target.setField("title", "Final value"); } },
+    ] });
+    const changes = plugin().runner.lastResult.changes;
+    assert.isFalse(changes.find((change: any) => change.after === "Intermediate value").saved);
+    assert.isTrue(changes.find((change: any) => change.after === "Final value").saved);
+    await item.reload(["itemData"], true);
+    assert.equal(item.getField("title"), "Final value");
+  });
+
+  it("restores a manual edit between two failed rule writes after reloading", async function () {
+    const item = await create({ title: "Repeated original" });
+    await plugin().runner.add({ items: [item], silent: true, rules: [{ id: "safety-repeated", scope: "item", async apply({ item: target }: { item: Zotero.Item }) {
+      target.setField("title", "First write");
+      await Zotero.Promise.delay(5);
+      item.setField("title", "Intervening manual value");
+      target.setField("title", "Second write");
+      throw new Error("Injected repeated-write failure");
+    } }] });
+    assert.equal(item.getField("title"), "Intervening manual value");
+    await item.reload(["itemData"], true);
+    assert.equal(item.getField("title"), "Intervening manual value");
+  });
 });

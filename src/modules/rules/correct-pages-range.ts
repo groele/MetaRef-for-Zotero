@@ -1,3 +1,4 @@
+import { watchItemFields } from "../../utils/field-conflicts";
 import { defineRule } from "./rule-base";
 
 export const CorrectPagesRange = defineRule({
@@ -5,7 +6,7 @@ export const CorrectPagesRange = defineRule({
   scope: "field",
   targetItemTypes: ["journalArticle"],
   targetItemField: "pages",
-  async apply({ item, debug }) {
+  async apply({ item, debug, report }) {
     const pages = item.getField("pages").trim();
 
     if (!shouldApply(pages)) {
@@ -13,7 +14,10 @@ export const CorrectPagesRange = defineRule({
       return;
     }
 
+    const unchanged = watchItemFields(item, ["pages"], report);
     const numberOfPages = await getPDFPages(item);
+    if (!unchanged())
+      return;
     if (!numberOfPages) {
       debug(`Can not get number of pages from PDF`);
       return;

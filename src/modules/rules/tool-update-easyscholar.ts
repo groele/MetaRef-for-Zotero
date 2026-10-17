@@ -1,5 +1,7 @@
 import type { EasyScholarField, EasyScholarRank } from "../../utils/easyscholar";
-import { EASYSCHOLAR_DEFAULT_FIELDS, EASYSCHOLAR_EXTRA_ALIASES, EASYSCHOLAR_FIELD_DEFINITIONS, EASYSCHOLAR_OUTPUT_FIELDS, fetchEasyScholarRank } from "../../utils/easyscholar";
+import { EASYSCHOLAR_EXTRA_ALIASES, EASYSCHOLAR_FIELD_DEFINITIONS, EASYSCHOLAR_OUTPUT_FIELDS, fetchEasyScholarRank, isEasyScholarFieldEnabled } from "../../utils/easyscholar";
+import { watchItemFields } from "../../utils/field-conflicts";
+import { readJournalRankingValues } from "../../utils/journal-ranking-rows";
 import { runJournalSource } from "../../utils/journal-source";
 import { getString } from "../../utils/locale";
 import { getPref } from "../../utils/prefs";
@@ -30,7 +32,16 @@ function formatFieldValue(key: EasyScholarField, value: string): string {
 }
 
 export function getEnabledEasyScholarFields(): Set<EasyScholarField> {
-  return new Set(EASYSCHOLAR_OUTPUT_FIELDS.filter(key => getPref(`easyscholar.fields.${key}` as any, EASYSCHOLAR_DEFAULT_FIELDS.has(key)) !== false));
+  return new Set(EASYSCHOLAR_OUTPUT_FIELDS.filter(isEasyScholarFieldEnabled));
+}
+
+export function clearSelectedJournalExtra(extra: string, fields: ReadonlySet<EasyScholarField>): string {
+  const keys = new Set(EASYSCHOLAR_FIELD_DEFINITIONS.filter(field => fields.has(field.key))
+    .flatMap(field => [field.extraKey, ...EASYSCHOLAR_EXTRA_ALIASES[field.key] || []]));
+  return extra.split(/\r?\n/).filter((line) => {
+    const separator = line.search(/[:：]/);
+    return separator < 0 || !keys.has(line.slice(0, separator).trim());
+  }).join("\n");
 }
 
 function isNegativeMembership(value: string): boolean {
@@ -63,7 +74,7 @@ function mergeExtra(existing: string, data: EasyScholarRank, enabledFields: Read
       updates.set(extraKey, null);
     }
   }
-  if (enabledFields.has("ccfCustom") && data.ccfCustom && !data.ccf && !/^CCF\s*[:：]\s*\S/m.test(existing))
+  if (enabledFields.has("ccf") && enabledFields.has("ccfCustom") && data.ccfCustom && !data.ccf && !/^CCF\s*[:：]\s*\S/m.test(existing))
     updates.set("CCF", data.ccfCustom.trim());
   const lines = existing.split(/\r?\n/);
   const kept = lines.filter((line) => {
@@ -118,6 +129,8 @@ export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
       report({ level: "warning", message: getString("rule-tool-update-easyscholar-no-title") });
       return;
     }
+    const unchanged = watchItemFields(item, ["publicationTitle", "conferenceName", "proceedingsTitle"], report);
+    const originalRankings = readJournalRankingValues(String(item.getField("extra") || ""));
     const enabledFields = getEnabledEasyScholarFields();
     if (!enabledFields.size) {
       report({ level: "info", message: getString("rule-tool-update-easyscholar-disabled") });
@@ -132,6 +145,14 @@ export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
       fetchSupplementalJournalRank(title, enabledFields, signal),
     ]);
     signal?.throwIfAborted();
+    if (!unchanged())
+      return;
+    for (const key of enabledFields) {
+      if (!isEasyScholarFieldEnabled(key))
+        enabledFields.delete(key);
+    }
+    if (!enabledFields.size)
+      return;
     if (supplemental.errors.length)
       report({ level: "warning", message: getString("rule-tool-update-easyscholar-supplemental-failed", { args: { error: supplemental.errors.join("; ") } }) });
     const hasSupplemental = Object.values(supplemental.data).some(Boolean);
@@ -156,7 +177,18 @@ export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
     if (!selected)
       report({ level: "info", message: getString("rule-tool-update-easyscholar-no-selected-results") });
     const current = String(item.getField("extra") || "");
-    const updated = mergeExtra(current, data, enabledFields, options.mode || "all");
+    const currentRankings = readJournalRankingValues(current);
+    const edited = [...enabledFields].filter(key => originalRankings.get(key) !== currentRankings.get(key));
+    if (edited.length) {
+      edited.forEach(key => enabledFields.delete(key));
+      report({ level: "warning", message: getString("rule-fields-edited", { args: { fields: edited.join(", ") } }) });
+    }
+    const clearable = new Set(EASYSCHOLAR_FIELD_DEFINITIONS.filter(field => enabledFields.has(field.key)
+      && (field.source === "supplemental" ? data[field.key] !== undefined : result.status === "success")).map(field => field.key));
+    const base = getPref("easyscholar.clearExtraBeforeUpdate") && selected && options.mode !== "blank"
+      ? clearSelectedJournalExtra(current, clearable)
+      : current;
+    const updated = mergeExtra(base, data, enabledFields, options.mode || "all");
     const changes = summarizeEasyScholarChanges(current, updated);
     const summary = getString("rule-tool-update-easyscholar-summary", { args: { title, returned, selected, ...changes } });
     if (updated === current.trim()) {

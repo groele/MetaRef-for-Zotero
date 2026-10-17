@@ -118,6 +118,12 @@ const OFFICIAL_DATA_SKIP_LIST = [
 ];
 
 describe("toSentenceCase", () => {
+  it.each([
+    ["Studies in Cocos (Keeling) Islands", "Studies in Cocos (Keeling) Islands"],
+    ["Studies in Rangoon (Yangon)", "Studies in Rangoon (Yangon)"],
+  ])("restores literal proper names with regex punctuation: %s", (input, expected) => {
+    expect(toSentenceCase(input)).toBe(expected);
+  });
   testItems.forEach((testItem) => {
     it(testItem.name, () => {
       expect(toSentenceCase(testItem.original)).toBe(testItem.expected);

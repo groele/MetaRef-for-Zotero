@@ -122,19 +122,27 @@ describe("green Frog integration in Zotero", function () {
       await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-es-cards-two-column.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
       for (const field of EASYSCHOLAR_FIELD_DEFINITIONS) {
         for (const kind of ["fields", "columns"]) {
+          const master = pane.querySelector<HTMLInputElement>(`input[preference='${pref(`easyscholar.fields.${field.key}`)}']`)!;
+          const masterWasEnabled = master.checked;
+          if (kind === "columns" && !masterWasEnabled)
+            master.click();
           const key = pref(`easyscholar.${kind}.${field.key}`);
           const control = pane.querySelector<HTMLInputElement>(`input[preference='${key}']`)!;
           assert.isNotNull(control, `${kind}.${field.key} has a control`);
           const previous = control.checked;
           control.click();
           assert.equal(Zotero.Prefs.get(key, true), !previous, `${kind}.${field.key} persists`);
-          const registered = () => (Zotero.ItemTreeManager as any).getCustomColumns(undefined, { pluginID: config.addonID }).some((entry: any) => entry.dataKey.endsWith(field.key === "esi" ? "esiDiscipline" : `easyScholar-${field.key}`));
+          const column = () => (Zotero.ItemTreeManager as any).getCustomColumns(undefined, { pluginID: config.addonID }).find((entry: any) => entry.dataKey.endsWith(field.key === "esi" ? "esiDiscipline" : `easyScholar-${field.key}`));
           if (kind === "columns")
-            assert.equal(registered(), !previous, `${field.key} column registration follows the switch`);
+            assert.equal(!column().columnPickerSubMenu, !previous, `${field.key} main-menu placement follows the switch`);
           control.click();
           assert.equal(Zotero.Prefs.get(key, true), previous);
           if (kind === "columns")
-            assert.equal(registered(), previous, `${field.key} column registration is restored`);
+            assert.equal(!column().columnPickerSubMenu, previous, `${field.key} main-menu placement is restored`);
+          if (kind === "columns" && !masterWasEnabled) {
+            master.click();
+            assert.notExists(column(), `${field.key} disappears when its master switch is disabled`);
+          }
         }
       }
       const statusButton = pane.querySelector("#metaref-integration-status")!;
@@ -166,7 +174,7 @@ describe("green Frog integration in Zotero", function () {
       assert.isTrue(columns().some((entry: any) => entry.dataKey.includes("easyScholar-jcr")));
       column.checked = false;
       column.dispatchEvent(new win.Event("command", { bubbles: true }));
-      assert.isFalse(columns().some((entry: any) => entry.dataKey.includes("easyScholar-jcr")));
+      assert.isTrue(columns().find((entry: any) => entry.dataKey.includes("easyScholar-jcr")).columnPickerSubMenu);
     }
     finally {
       for (const [key, value] of originalChoices)
@@ -303,14 +311,16 @@ describe("green Frog integration in Zotero", function () {
   });
 
   it("skips all ranking requests when outputs are disabled and preserves partial success after a source deadline", async function () {
+    this.timeout(90_000);
     const keys = EASYSCHOLAR_FIELD_DEFINITIONS.map(field => `easyscholar.fields.${field.key}`);
-    keys.push("easyscholar.secretKey");
+    keys.push("easyscholar.secretKey", "easyscholar.clearExtraBeforeUpdate");
     const previous = new Map(keys.map(key => [key, Zotero.Prefs.get(pref(key), true)]));
     const request = Zotero.HTTP.request;
     const item = new Zotero.Item("journalArticle");
     item.setField("title", "Source deadline QA");
     item.setField("publicationTitle", "Deadline QA Journal");
-    item.setField("extra", "Manual note");
+    const originalExtra = ["Manual note", ["南农高质量", String.fromCharCode(58), " old"].join("")].join("\n");
+    item.setField("extra", originalExtra);
     await item.saveTx();
     created.push(item);
     let requests = 0;
@@ -318,6 +328,7 @@ describe("green Frog integration in Zotero", function () {
       for (const key of keys.filter(key => key.startsWith("easyscholar.fields.")))
         Zotero.Prefs.set(pref(key), false, true);
       Zotero.Prefs.set(pref("easyscholar.secretKey"), "isolated-qa-key", true);
+      Zotero.Prefs.set(pref("easyscholar.clearExtraBeforeUpdate"), true, true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (!["www.easyscholar.cc", "phq.njau.edu.cn"].includes(new URL(url).hostname))
           return request(method, url, options);
@@ -332,13 +343,14 @@ describe("green Frog integration in Zotero", function () {
       } }] });
       await run();
       assert.equal(requests, 0);
-      assert.equal(item.getField("extra"), "Manual note");
+      assert.equal(item.getField("extra"), originalExtra);
       Zotero.Prefs.set(pref("easyscholar.fields.impactFactor"), true, true);
       Zotero.Prefs.set(pref("easyscholar.fields.njauQuality"), true, true);
       await run();
       assert.equal(requests, 2);
       assert.include(item.getField("extra"), "8.4");
       assert.include(item.getField("extra"), "Manual note");
+      assert.include(item.getField("extra"), originalExtra.split("\n")[1], "a failed supplemental source retains its saved ranking even in replacement-clearing mode");
       assert.equal(plugin().runner.lastResult.saved, 1);
       assert.isAbove(plugin().runner.lastResult.warnings, 0);
       assert.isFalse(item.hasChanged());

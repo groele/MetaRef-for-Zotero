@@ -17,6 +17,7 @@ import { toArray } from "./utils/general";
 import { migrateGreenFrogPreferences } from "./utils/greenfrog-migration";
 import { clearRequestCache } from "./utils/http";
 import { getJournalInsights, loadJournalInsights } from "./utils/journal-insights";
+import { canRunJournalRule, hasEnabledJournalMetrics } from "./utils/journal-permissions";
 import { initLocale, registerMainWindowLocale, unloadLocale, unregisterMainWindowLocale } from "./utils/locale";
 import { logger } from "./utils/logger";
 import { getPref } from "./utils/prefs";
@@ -266,10 +267,8 @@ async function onLintInBatch(
   );
   items = [...new Map(items.map(item => [item.id || item, item])).values()];
 
-  const requestedIDs = [...toArray(ruleIDs)];
+  const requestedIDs = [...toArray(ruleIDs)].filter(canRunJournalRule);
   if (requestedIDs.includes("tool-update-easyscholar")) {
-    if (getPref("easyscholar.clearExtraBeforeUpdate"))
-      requestedIDs.unshift("tool-clear-all-extra");
     if (getPref("easyscholar.updateAbbreviation", true))
       requestedIDs.push("require-journal-abbr", "correct-conference-abbr");
   }
@@ -286,14 +285,14 @@ async function onLintInBatch(
     else if (getPref("metadata.repairCreators" as any, true) && rules.some(rule => rule.id === "require-creators") && !rules.some(rule => rule.id === "tool-update-metadata")) {
       rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false, repairCreators: true, creatorsOnly: true }) });
     }
-    if (getPref("workflow.updateJournalRankings" as any, false) && !rules.some(rule => rule.id === "tool-update-easyscholar"))
+    if (hasEnabledJournalMetrics() && getPref("workflow.updateJournalRankings" as any, false) && !rules.some(rule => rule.id === "tool-update-easyscholar"))
       rules.push(Rules.getByID("tool-update-easyscholar")!);
   }
 
   if (rules.length === 0 || items.length === 0)
     return;
 
-  const updateJournal = !context.automatic && getPref("metadata.updateJournalInfo" as any, true)
+  const updateJournal = hasEnabledJournalMetrics() && !context.automatic && getPref("metadata.updateJournalInfo" as any, true)
     && (requestedIDs.includes("tool-update-metadata") || (requestedIDs.includes("standard") && getPref("workflow.updateMetadata" as any, false)));
   if (updateJournal) {
     const mode = getPref("rule.tool-update-metadata.option.mode") === "all" && !requestedIDs.includes("standard") ? "all" as const : "blank" as const;
@@ -324,7 +323,7 @@ async function onLintInBatch(
 }
 
 function onRefreshJournal(item: Zotero.Item) {
-  if (!item.isEditable() || !["journalArticle", "conferencePaper"].includes(item.itemType))
+  if (!hasEnabledJournalMetrics() || !item.isEditable() || !["journalArticle", "conferencePaper"].includes(item.itemType))
     return Promise.resolve();
   const existing = journalRefreshes.get(item.id);
   if (existing)

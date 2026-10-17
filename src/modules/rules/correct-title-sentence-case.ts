@@ -21,7 +21,7 @@ export const chemElements = [
 ];
 
 // unshift 'Be' for function word 'be'
-const _chemElements = chemElements.filter(e => !["Be"].includes(e));
+const _chemElements = new Set(chemElements.filter(e => e !== "Be"));
 
 const geographyWords = [
   "Asia", "Europe", "Africa", "North America", "South America",
@@ -112,10 +112,18 @@ const specialWords = [
   ...dateWords,
   ...contriesAndCities,
   ...plantWords,
-]
-  .map(v => escapeRegex(v));
+];
 
-const specialWordsPattern = specialWords.join("|");
+const specialWordsPattern = specialWords.map(escapeRegex).join("|");
+const specialWordsByKey = new Map<string, string>();
+for (const word of specialWords) {
+  if (!specialWordsByKey.has(word.toLowerCase()))
+    specialWordsByKey.set(word.toLowerCase(), word);
+}
+const properNamePattern = new RegExp(
+  `\\b(?:${functionWords.join("|")}|${localityWords.join("|")})\\s+(${specialWordsPattern})(?![\\p{L}\\p{N}_])`,
+  "giu",
+);
 
 /** =============================  Special Words End  ============================= */
 
@@ -195,7 +203,7 @@ export function toSentenceCase(text: string, locale: string = "en-US") {
       }
 
       // northword patch: 支持化学元素识别
-      if (_chemElements.includes(word)) {
+      if (_chemElements.has(word)) {
         return word;
       }
 
@@ -204,14 +212,11 @@ export function toSentenceCase(text: string, locale: string = "en-US") {
 
     // northword patch: 支持月、周、国家城市、大洲大洋等专有名词
     .replace(
-      new RegExp(
-        `\\b(?:${functionWords.join("|")}|${localityWords.join("|")})\\s+(${specialWordsPattern})\\b`,
-        "gi",
-      ),
+      properNamePattern,
       (match, specialWord) => {
         return match.replace(
           specialWord,
-          specialWords.find(word => word.toLocaleLowerCase(locale) === specialWord.toLocaleLowerCase(locale)) ?? specialWord,
+          specialWordsByKey.get(specialWord.toLowerCase()) ?? specialWord,
         );
       },
     );

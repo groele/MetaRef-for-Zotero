@@ -4,8 +4,8 @@ import { buildESILookupMaps } from "./esi";
 import { cachedJournalInsights, clearJournalInsights, getJournalInsights } from "./journal-insights";
 import { buildNatureIndexLookupMaps } from "./nature-index";
 
-const prefs = vi.hoisted(() => ({ path: "", naturePath: "", format: "{subject}ESI" }));
-vi.mock("./prefs", () => ({ getPref: (key: string) => key === "insights.natureCustomDataPath" ? prefs.naturePath : key === "insights.esiCustomDataPath" ? prefs.path : prefs.format }));
+const prefs = vi.hoisted(() => ({ path: "", naturePath: "", format: "{subject}ESI", esiEnabled: true, natureEnabled: true }));
+vi.mock("./prefs", () => ({ getPref: (key: string, fallback: unknown) => key === "easyscholar.fields.esi" ? prefs.esiEnabled : key === "insights.natureEnabled" ? prefs.natureEnabled : key === "insights.natureCustomDataPath" ? prefs.naturePath : key === "insights.esiCustomDataPath" ? prefs.path : key === "insights.esiFormat" ? prefs.format : fallback }));
 vi.mock("./data-loader", () => ({ DataLoader: { getESIJournalMaps: vi.fn(), getNatureIndexJournalMaps: vi.fn(), clearCache: vi.fn() } }));
 const esi = buildESILookupMaps([{ title: "Known Journal", issn: "1234-5678", category: "PHYSICS" }]);
 const nature = buildNatureIndexLookupMaps([{ title: "Known Journal", type: "journal", issn: ["1234-5678"] }]);
@@ -16,9 +16,24 @@ describe("independent journal insights", () => {
     prefs.path = "";
     prefs.naturePath = "";
     prefs.format = "{subject}ESI";
+    prefs.esiEnabled = true;
+    prefs.natureEnabled = true;
     clearJournalInsights();
     vi.mocked(DataLoader.getESIJournalMaps).mockReset().mockResolvedValue(esi);
     vi.mocked(DataLoader.getNatureIndexJournalMaps).mockReset().mockResolvedValue(nature);
+  });
+  it("loads only enabled local indexes and invalidates the combined cache when masters change", async () => {
+    prefs.esiEnabled = false;
+    prefs.natureEnabled = false;
+    const target = item({ publicationTitle: "Known Journal" });
+    expect(await getJournalInsights(target)).toMatchObject({ esi: "", natureIndex: undefined });
+    expect(DataLoader.getESIJournalMaps).not.toHaveBeenCalled();
+    expect(DataLoader.getNatureIndexJournalMaps).not.toHaveBeenCalled();
+    prefs.natureEnabled = true;
+    expect(cachedJournalInsights(target)).toBeUndefined();
+    expect(await getJournalInsights(target)).toMatchObject({ esi: "", natureIndex: true });
+    expect(DataLoader.getESIJournalMaps).not.toHaveBeenCalled();
+    expect(DataLoader.getNatureIndexJournalMaps).toHaveBeenCalledTimes(1);
   });
   it("matches ISSN without writing fields or tags and recomputes changed metadata", async () => {
     const fields = { ISSN: "1234-5678", publicationTitle: "Known Journal", series: "Manual", archive: "Archive" };

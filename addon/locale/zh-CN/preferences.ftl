@@ -8,15 +8,16 @@ easyscholar-test-button = 测试连接
 easyscholar-test-success = 连接成功，API 密钥有效。
 easyscholar-test-empty = 请先输入 API 密钥。
 easyscholar-test-failed = 连接失败：{ $error }
-easyscholar-fields-description = 选择写入「额外」字段的 EasyScholar 信息。更改只影响之后的查询；未勾选字段会保留条目中已有的内容。
+easyscholar-fields-description = 这里是指标总开关：仅勾选的指标可被查询、写入 Extra、显示在侧栏或添加为列表列。未勾选的指标不显示、不调用，已有条目内容保留。
 easyscholar-field-group-rank = 分区与影响因子
 easyscholar-field-group-index = 收录与评价体系
 easyscholar-field-group-university = 大学期刊分类
 easyscholar-field-group-custom = EasyScholar 自定义数据集
 easyscholar-custom-dataset-description = 还需在 EasyScholar 网站登录并启用对应数据集；此处只控制查询后是否写入。
 easyscholar-field-group-newsharp = 新锐分区
-easyscholar-field-group-columns = 条目列表列显示
-easyscholar-columns-description = 勾选后在 Zotero 条目列表的列菜单中提供对应字段；是否写入 Extra 由上方独立设置控制。
+easyscholar-field-group-columns = 常用列表列入口
+easyscholar-columns-description = 上方启用的指标才可在侧栏、列菜单和查询中使用。这里仅决定已启用指标放在列主菜单还是“更多列”，不能越过上方总开关；关闭指标保留已有 Extra 数据。
+journal-nature-enabled = 启用 Nature Index
 easyscholar-auto-update-on-added = 新增期刊或会议论文时自动查询 EasyScholar
     .label = 新增期刊或会议论文时自动查询 EasyScholar
 easyscholar-auto-update-on-added-description = 仅在 Zotero MetaFlow 的“新增条目时自动检查”开启时生效。默认关闭；启用后会向 EasyScholar 发送期刊名或会议名。
@@ -287,10 +288,10 @@ easyscholar-supplemental-description = 默认关闭。南农核心来自 2010 �
 easyscholar-update-abbreviation = 手动查询期刊信息时同时更新缩写
     .label = 手动查询期刊信息时同时更新缩写
 
-easyscholar-clear-extra-before-update = 手动查询前清空全部 Extra（每次确认）
-    .label = 手动查询前清空全部 Extra（每次确认）
+easyscholar-clear-extra-before-update = 覆盖更新时先移除所选评级旧值
+    .label = 覆盖更新时先移除所选评级旧值
 
-easyscholar-clear-extra-description = 默认关闭。会清除手写备注和其他插件字段；手动查询前需要确认。新增条目的后台查询始终保留已有 Extra。
+easyscholar-clear-extra-description = 默认关闭。仅在成功响应后的覆盖模式中处理当前启用的评级；保留未选字段、手写备注、其他插件字段与等待期间的人工修改。补空和后台查询保留已有值。
 
 integration-status-button = 查看迁移与自动处理状态
     .label = 查看迁移与自动处理状态
@@ -349,7 +350,7 @@ index-source-api-only = 仅 API
 index-source-local-only = 仅本地数据库
 index-source-description = 两项独立设置。API 使用现有 EasyScholar 密钥；本地沿用已启用的自定义或内置数据库。选择文献仅显示缓存和本地结果，不发起网络请求；从右键菜单查询 ESI/自然指数或更新 EasyScholar 后刷新。默认仅本地数据库。
 index-source-nature-uuid = 自然指数自定义数据集 UUID（可选）
-index-source-nature-description = EasyScholar 账号需启用自然指数数据集。有 UUID 时优先精确匹配；留空时按响应中的自然指数目录名称识别。缺失数据不代表不收录。面板显示返回的数据集名称，请核对 82 种或 145 种等目录版本。
+index-source-nature-description = 在 EasyScholar 账号中添加“177 种自然指数统计期刊（2026）”（编号 1615199999904223232）。UUID 留空会自动识别该数据集；填写其他 UUID 时按指定目录匹配。接口缺失不代表不收录。此目录当前标注 178 条，面板会显示数据集来源。
 
 abbr-setting-sourcemode = 缩写来源
 abbr-setting-profile = 内置映射风格

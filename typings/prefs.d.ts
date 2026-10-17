@@ -270,6 +270,7 @@ declare namespace _ZoteroTypes {
       "rule.require-journal-abbr.existingPolicy": string;
       "rule.require-journal-abbr.letterCase": string;
       "rule.require-journal-abbr.tagSource": boolean;
+      "insights.natureEnabled": boolean;
     };
   }
 }

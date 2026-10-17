@@ -143,7 +143,7 @@ export class DataLoader {
 
   static invalidateFile(path: string) {
     for (const key of this.cache.keys()) {
-      if (!this.persistentKeys.has(key) && key.includes(`:${path}:`))
+      if (!this.persistentKeys.has(key) && (key.includes(`:${path}:`) || key === `derived:esi:${path}` || key === `derived:nature-index:${path}`))
         this.cache.delete(key);
     }
   }

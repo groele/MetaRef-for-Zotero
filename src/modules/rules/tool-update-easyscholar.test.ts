@@ -1,10 +1,10 @@
 // autocorrect-disable
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { EASYSCHOLAR_FIELD_DEFINITIONS } from "../../utils/easyscholar";
-import { mergeEasyScholarExtra, summarizeEasyScholarChanges, ToolUpdateEasyScholar } from "./tool-update-easyscholar";
+import { clearSelectedJournalExtra, mergeEasyScholarExtra, summarizeEasyScholarChanges, ToolUpdateEasyScholar } from "./tool-update-easyscholar";
 
-const mocks = vi.hoisted(() => ({ fields: new Set<string>(), fetch: vi.fn(), supplemental: vi.fn() }));
-vi.mock("../../utils/prefs", () => ({ getPref: (key: string, fallback: unknown) => key.startsWith("easyscholar.fields.") ? mocks.fields.has(key.slice("easyscholar.fields.".length)) : fallback }));
+const mocks = vi.hoisted(() => ({ fields: new Set<string>(), clear: false, fetch: vi.fn(), supplemental: vi.fn() }));
+vi.mock("../../utils/prefs", () => ({ getPref: (key: string, fallback: unknown) => key === "easyscholar.clearExtraBeforeUpdate" ? mocks.clear : key.startsWith("easyscholar.fields.") ? mocks.fields.has(key.slice("easyscholar.fields.".length)) : fallback }));
 vi.mock("../../utils/locale", () => ({ getString: (key: string, options?: unknown) => `${key} ${JSON.stringify(options || {})}` }));
 vi.mock("../../utils/easyscholar", async original => ({ ...await original<object>(), fetchEasyScholarRank: mocks.fetch }));
 vi.mock("../../utils/supplemental-journals", () => ({ fetchSupplementalJournalRank: mocks.supplemental }));
@@ -12,6 +12,7 @@ vi.mock("../../utils/supplemental-journals", () => ({ fetchSupplementalJournalRa
 beforeEach(() => {
   vi.useFakeTimers();
   mocks.fields.clear();
+  mocks.clear = false;
   mocks.fetch.mockReset().mockResolvedValue({ status: "success", data: { impactFactor: "2.5" } });
   mocks.supplemental.mockReset().mockResolvedValue({ data: {}, errors: [] });
 });
@@ -47,6 +48,74 @@ it("makes zero source calls when every output field is disabled", async () => {
   await pending;
   expect(mocks.fetch).not.toHaveBeenCalled();
   expect(mocks.supplemental).not.toHaveBeenCalled();
+  expect(ctx.item.getField("extra")).toBe("Manual note");
+});
+
+it("clears only selected managed rankings and preserves unselected fields and notes", () => {
+  expect(clearSelectedJournalExtra("JCR分区: Q3\n影响因子：4.0\nCCF: A\nManual note\nCitation Key: retain", new Set(["impactFactor"])))
+    .toBe("JCR分区: Q3\nCCF: A\nManual note\nCitation Key: retain");
+});
+
+it("preserves rankings from failed sources when replacement clearing is enabled", async () => {
+  mocks.clear = true;
+  mocks.fields.add("impactFactor");
+  mocks.fields.add("njauQuality");
+  for (const failed of ["main", "supplemental"]) {
+    const ctx = context();
+    ctx.item.setField("extra", "影响因子: 4.0\n南农高质量: old\nManual note");
+    mocks.fetch.mockResolvedValue(failed === "main" ? { status: "error", message: "unavailable" } : { status: "success", data: { impactFactor: "8.4" } });
+    mocks.supplemental.mockResolvedValue(failed === "supplemental" ? { data: {}, errors: ["unavailable"] } : { data: { njauQuality: "new" }, errors: [] });
+    await ToolUpdateEasyScholar.apply(ctx);
+    expect(ctx.item.getField("extra")).toContain(failed === "main" ? "影响因子: 4.0" : "南农高质量: old");
+    expect(ctx.item.getField("extra")).toContain(failed === "main" ? "new" : "8.4");
+    expect(ctx.item.getField("extra")).toContain("Manual note");
+  }
+});
+
+it("discards a response if the journal was changed while waiting", async () => {
+  mocks.fields.add("impactFactor");
+  const fields: Record<string, string> = { publicationTitle: "Original journal", extra: "Manual note" };
+  const ctx = { item: {
+    itemType: "journalArticle",
+    getField: (key: string) => fields[key] || "",
+    setField: (key: string, value: string) => { fields[key] = value; },
+  } as unknown as Zotero.Item, options: {}, debug: vi.fn(), report: vi.fn() };
+  mocks.fetch.mockImplementation(async () => {
+    fields.publicationTitle = "Different journal";
+    return { status: "success", data: { impactFactor: "34.9" } };
+  });
+  await ToolUpdateEasyScholar.apply(ctx);
+  expect(fields.extra).toBe("Manual note");
+  expect(ctx.report.mock.calls.some(([info]) => info.level === "warning")).toBe(true);
+});
+
+it("preserves a ranking edited while waiting and still updates untouched rankings", async () => {
+  mocks.fields.add("impactFactor");
+  mocks.fields.add("jcr");
+  const fields: Record<string, string> = { publicationTitle: "Journal QA", extra: "影响因子: 4.0\nJCR 分区: Q3" };
+  const ctx = { item: {
+    itemType: "journalArticle",
+    getField: (key: string) => fields[key] || "",
+    setField: (key: string, value: string) => { fields[key] = value; },
+  } as unknown as Zotero.Item, options: {}, debug: vi.fn(), report: vi.fn() };
+  mocks.fetch.mockImplementation(async () => {
+    fields.extra = "影响因子: 5.0\nJCR 分区: Q3\nManual note";
+    return { status: "success", data: { impactFactor: "34.9", jcr: "Q1" } };
+  });
+  await ToolUpdateEasyScholar.apply(ctx);
+  expect(fields.extra).toContain("影响因子: 5.0");
+  expect(fields.extra).toContain("JCR 分区: Q1");
+  expect(fields.extra).toContain("Manual note");
+});
+
+it("does not write a field disabled while its response was pending", async () => {
+  mocks.fields.add("impactFactor");
+  const ctx = context();
+  mocks.fetch.mockImplementation(async () => {
+    mocks.fields.delete("impactFactor");
+    return { status: "success", data: { impactFactor: "34.9" } };
+  });
+  await ToolUpdateEasyScholar.apply(ctx);
   expect(ctx.item.getField("extra")).toBe("Manual note");
 });
 
@@ -100,7 +169,7 @@ it("each of the 61 field switches writes only its selected result and preserves 
     expect(extra, field.key).toContain(`${field.extraKey}: QA-A`);
     expect(extra).toContain("Manual note");
     for (const other of EASYSCHOLAR_FIELD_DEFINITIONS) {
-      if (other.key !== field.key && !(field.key === "ccfCustom" && other.key === "ccf"))
+      if (other.key !== field.key)
         expect(extra.split("\n"), `${field.key} must not write ${other.key}`).not.toContain(`${other.extraKey}: QA-A`);
     }
   }

@@ -8,15 +8,16 @@ easyscholar-test-button = Test connection
 easyscholar-test-success = Connection succeeded; the API key is valid.
 easyscholar-test-empty = Enter an API key first.
 easyscholar-test-failed = Connection failed: { $error }
-easyscholar-fields-description = Choose which EasyScholar values to write to Extra. Changes affect future lookups; unchecked fields already in an item are left unchanged.
+easyscholar-fields-description = These are the master metric switches. Only enabled metrics can be queried, written to Extra, shown in the pane or added as columns. Disabled metrics are hidden and not used; existing item data is preserved.
 easyscholar-field-group-rank = Rankings and impact factors
 easyscholar-field-group-index = Indexes and rating systems
 easyscholar-field-group-university = University journal categories
 easyscholar-field-group-custom = EasyScholar custom datasets
 easyscholar-custom-dataset-description = Sign in to EasyScholar and enable each dataset there as well. These switches control whether returned values are written.
 easyscholar-field-group-newsharp = NewSharp rankings
-easyscholar-field-group-columns = Item list columns
-easyscholar-columns-description = Selected fields become available in Zotero's item-list column menu. Extra writing is controlled separately above.
+easyscholar-field-group-columns = Common column shortcuts
+easyscholar-columns-description = Only metrics enabled above can appear in the pane, column menu or queries. These shortcuts choose the main column menu or More Columns; they cannot override the master switches. Disabling a metric preserves its saved Extra data.
+journal-nature-enabled = Enable Nature Index
 easyscholar-auto-update-on-added = Query EasyScholar when a journal article or conference paper is added
     .label = Query EasyScholar when a journal article or conference paper is added
 easyscholar-auto-update-on-added-description = Only runs when MetaFlow's automatic check for added items is enabled. Off by default; enabling it sends the journal or conference name to EasyScholar.
@@ -288,10 +289,10 @@ easyscholar-supplemental-description = Off by default. NJAU core uses a 2010 his
 easyscholar-update-abbreviation = Also update abbreviations during manual journal lookups
     .label = Also update abbreviations during manual journal lookups
 
-easyscholar-clear-extra-before-update = Clear all Extra before manual lookups (confirm each time)
-    .label = Clear all Extra before manual lookups (confirm each time)
+easyscholar-clear-extra-before-update = Reset selected rankings during replacement updates
+    .label = Reset selected rankings during replacement updates
 
-easyscholar-clear-extra-description = Off by default. Removes manual notes and other plugins' fields; requires confirmation before a manual lookup. Background lookups always preserve existing Extra.
+easyscholar-clear-extra-description = Off by default. Resets only enabled rankings after a successful response in replacement mode. Unselected fields, notes, other plugins' data and intervening edits are preserved. Fill-blank and background updates retain existing values.
 
 integration-status-button = View migration and automatic processing status
     .label = View migration and automatic processing status
@@ -350,7 +351,7 @@ index-source-api-only = API only
 index-source-local-only = Local database only
 index-source-description = Configure each independently. API uses the existing EasyScholar key; local uses your custom or bundled database. Selecting an item reads cached/local results without network requests. Run an index query or EasyScholar update to fetch API data. The default is local only.
 index-source-nature-uuid = Nature Index custom dataset UUID (optional)
-index-source-nature-description = Enable the Nature Index dataset in your EasyScholar account. A UUID selects it exactly; otherwise its returned dataset name is matched. Missing data does not mean nonmembership. The pane shows the dataset name; check whether it is the 82-journal or 145-journal edition.
+index-source-nature-description = Add “177 Nature Index Journals-2026” (ID 1615199999904223232) to your EasyScholar account. An empty UUID automatically recognizes this dataset; an explicit UUID selects that directory instead. Missing API data does not mean nonmembership. The directory currently reports 178 records; the pane displays the dataset source.
 
 abbr-setting-sourcemode = Abbreviation source
 abbr-setting-profile = Built-in style

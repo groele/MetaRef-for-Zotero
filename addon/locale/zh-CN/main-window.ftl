@@ -74,3 +74,7 @@ journal-insights-api-source = EasyScholar API
 journal-insights-basis-API = API 期刊名称查询
 journal-insights-api-missing = API 尚无此字段的可用数据：可能尚未查询、请求失败、未匹配或账号未启用对应数据集。
 journal-insights-api-fallback = API 尚无可用数据，当前显示本地数据库结果；可从右键菜单执行查询。
+field-esi-match = ESI 匹配依据
+field-nature-match = Nature Index 匹配依据
+field-esi-source = ESI 数据来源
+field-nature-source = Nature Index 数据来源

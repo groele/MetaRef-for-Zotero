@@ -491,3 +491,4 @@ abbr-source-custom = 自定义映射
 abbr-source-builtin = JabRef 内置映射
 abbr-source-iso4 = 离线 ISO 4 推断
 abbr-source-full = 全称回填
+rule-fields-edited = 等待期间以下字段发生变化，已跳过延迟结果并保留当前值：{ $fields }。

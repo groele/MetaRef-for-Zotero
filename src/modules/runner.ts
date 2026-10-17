@@ -109,7 +109,7 @@ export class LintRunner {
   private unsafeItems = new Set<Zotero.Item>();
   private preparationFailed = 0;
   private changes: FieldChange[] = [];
-  private savedIDs = new Set<number>();
+  private savedValues = new Map<number, Record<string, unknown>>();
   private applicableIDs = new Set<number>();
   private lastProgressTime = 0;
   private lastProgressPhase?: RunnerStats["phase"];
@@ -347,14 +347,14 @@ export class LintRunner {
 
     try {
       let savedCount = 0;
-      const committedIDs: number[] = [];
+      const committedValues = new Map<number, Record<string, unknown>>();
       await Zotero.DB.executeTransaction(async () => {
         for (const item of items) {
           if (!item.hasChanged())
             continue;
           await item.save({ skipSelect: true });
           savedCount++;
-          committedIDs.push(item.id);
+          committedValues.set(item.id, item.toJSON() as Record<string, unknown>);
           this.updateProgress(savedCount, items.length);
         }
         if (savedCount > 0) {
@@ -366,7 +366,7 @@ export class LintRunner {
         }
       });
       this.saved = savedCount;
-      committedIDs.forEach(id => this.savedIDs.add(id));
+      this.savedValues = committedValues;
     }
     catch (err) {
       logger.warn("Batch transaction save failed, falling back to individual saveTx:", err);
@@ -378,7 +378,7 @@ export class LintRunner {
           item.fromJSON(snapshots.get(item)!, { strict: true });
           await item.saveTx({ skipSelect: true, ...{ undoAction: "metaref-undo-action-lint-metadata", undoActionArgs: { count: 1 } } });
           this.saved++;
-          this.savedIDs.add(item.id);
+          this.savedValues.set(item.id, item.toJSON() as Record<string, unknown>);
         }
         catch (itemErr) {
           this.stats.records.push({
@@ -510,7 +510,7 @@ export class LintRunner {
     this.lastProgressPhase = undefined;
     this.failedItems.clear();
     this.changes = [];
-    this.savedIDs.clear();
+    this.savedValues.clear();
     this.applicableIDs.clear();
     if (!this.stats.startTime)
       this.stats.startTime = Date.now();
@@ -533,7 +533,7 @@ export class LintRunner {
       skipped: this.stats.total - this.stats.current,
       preparationFailed: this.preparationFailed,
       records: [...this.stats.records],
-      changes: this.changes.map(change => ({ ...change, saved: this.savedIDs.has(change.itemID) })),
+      changes: this.changes.map(change => ({ ...change, saved: this.savedValues.has(change.itemID) && JSON.stringify(this.savedValues.get(change.itemID)![change.field] ?? null) === JSON.stringify(change.after) })),
       changed,
       unchanged: this.stats.current - changed,
       notApplicable: this.stats.current - this.applicableIDs.size,
@@ -541,6 +541,8 @@ export class LintRunner {
     };
     // Release batch state before opening UI, which may fail when a window closes.
     this.modifiedItems.clear();
+    this.savedValues.clear();
+    this.changes = [];
     DataLoader.clearBatchCache();
     this.stats = this.emptyStats();
     logger.debug(`Batch tasks completed in ${duration}s`);
@@ -548,7 +550,7 @@ export class LintRunner {
       try {
         this.ui.showFinished(this.lastResult.passed, this.lastResult.failed, duration, this.cancelled, this.lastResult.skipped, this.preparationFailed, this.lastResult);
         updateBatchFeedback(this.lastResult);
-        if (!silent && getPref("lint.autoReport" as any, false) && this.lastResult.records.length)
+        if (!silent && getPref("lint.autoReport" as any, false) && (this.lastResult.records.length || this.lastResult.changes.length))
           createReporter(this.lastResult.records, this.lastResult.changes).catch(error => logger.error("Failed to display batch report:", error));
       }
       catch (error) {

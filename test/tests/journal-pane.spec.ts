@@ -187,32 +187,41 @@ describe("independent journal insights in Zotero", function () {
   });
 
   it("shows every saved ranking for journals and conferences, with no journal-only claims on conferences", async function () {
-    const item = await create("All ranking fields QA");
-    item.setField("extra", mergeEasyScholarExtra("Manual note", Object.fromEntries(EASYSCHOLAR_FIELD_DEFINITIONS.map(field => [field.key, "QA-A"]))));
-    await item.saveTx();
-    const win = Zotero.getMainWindow();
-    await win.ZoteroPane.selectItem(item.id);
-    const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
-    await section._handleRefresh();
-    const body = section.querySelector("[data-type='body']") as HTMLElement;
-    for (const field of EASYSCHOLAR_FIELD_DEFINITIONS.filter(field => field.key !== "esi"))
-      assert.equal(body.querySelector(`[data-journal-ranking='${field.key}']`)?.textContent, "QA-A", field.key);
-    assert.isNull(body.querySelector("[data-journal-ranking='esi']"), "ESI has only one primary presentation");
-    assert.include(body.querySelector("[data-journal-result] dd")?.textContent || "", "QA-A", "saved ESI remains visible when no current category is available");
-    const conference = new Zotero.Item("conferencePaper");
-    conference.setField("title", "Conference rankings QA");
-    conference.setField("proceedingsTitle", "Conference QA");
-    conference.setField("extra", "CCF: A\nCORE Rankings: A*\nManual conference note");
-    await conference.saveTx();
-    created.push(conference);
-    await win.ZoteroPane.selectItem(conference.id);
-    await section._handleRefresh();
-    assert.isFalse(section.hidden, "conference rankings use the same pane");
-    assert.equal(body.querySelector("[data-journal-title]")?.textContent, "Conference QA");
-    assert.equal(body.querySelector("[data-journal-ranking='ccf']")?.textContent, "A");
-    assert.equal(body.querySelector("[data-journal-ranking='coreRankings']")?.textContent, "A*");
-    assert.lengthOf(body.querySelectorAll("[data-journal-result]"), 0, "ESI and Nature Index remain journal-only");
-    assert.isNull(body.querySelector("[data-journal-ranking='jcr']"));
+    const previous = new Map(EASYSCHOLAR_FIELD_DEFINITIONS.map(field => [field.key, Zotero.Prefs.get(`${prefix}.easyscholar.fields.${field.key}`, true) as boolean]));
+    for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
+      Zotero.Prefs.set(`${prefix}.easyscholar.fields.${field.key}`, true, true);
+    try {
+      const item = await create("All ranking fields QA");
+      item.setField("extra", mergeEasyScholarExtra("Manual note", Object.fromEntries(EASYSCHOLAR_FIELD_DEFINITIONS.map(field => [field.key, "QA-A"]))));
+      await item.saveTx();
+      const win = Zotero.getMainWindow();
+      await win.ZoteroPane.selectItem(item.id);
+      const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
+      await section._handleRefresh();
+      const body = section.querySelector("[data-type='body']") as HTMLElement;
+      for (const field of EASYSCHOLAR_FIELD_DEFINITIONS.filter(field => field.key !== "esi"))
+        assert.equal(body.querySelector(`[data-journal-ranking='${field.key}']`)?.textContent, "QA-A", field.key);
+      assert.isNull(body.querySelector("[data-journal-ranking='esi']"), "ESI has only one primary presentation");
+      assert.include(body.querySelector("[data-journal-result] dd")?.textContent || "", "QA-A", "saved ESI remains visible when no current category is available");
+      const conference = new Zotero.Item("conferencePaper");
+      conference.setField("title", "Conference rankings QA");
+      conference.setField("proceedingsTitle", "Conference QA");
+      conference.setField("extra", "CCF: A\nCORE Rankings: A*\nManual conference note");
+      await conference.saveTx();
+      created.push(conference);
+      await win.ZoteroPane.selectItem(conference.id);
+      await section._handleRefresh();
+      assert.isFalse(section.hidden, "conference rankings use the same pane");
+      assert.equal(body.querySelector("[data-journal-title]")?.textContent, "Conference QA");
+      assert.equal(body.querySelector("[data-journal-ranking='ccf']")?.textContent, "A");
+      assert.equal(body.querySelector("[data-journal-ranking='coreRankings']")?.textContent, "A*");
+      assert.lengthOf(body.querySelectorAll("[data-journal-result]"), 0, "ESI and Nature Index remain journal-only");
+      assert.isNull(body.querySelector("[data-journal-ranking='jcr']"));
+    }
+    finally {
+      for (const [key, value] of previous)
+        Zotero.Prefs.set(`${prefix}.easyscholar.fields.${key}`, value, true);
+    }
   });
 
   it("keeps not-found, disabled and unselected responses distinct from successful updates", async function () {
@@ -282,6 +291,45 @@ describe("independent journal insights in Zotero", function () {
       await plugin().hooks.onNotify("add", "item", [item.id], {});
       const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
       assert.include(section.querySelector("[data-journal-update-status]")?.textContent || "", "Automatic fixture failure");
+    }
+    finally {
+      Zotero.HTTP.request = request;
+      for (const [key, value] of previous)
+        Zotero.Prefs.set(`${prefix}.${key}`, value as string | boolean, true);
+    }
+  });
+
+  it("recognizes the captured 2026 Nature API response in the pane and column", async function () {
+    const keys = ["insights.natureSourcePriority", "insights.natureDatasetUUID", "insights.natureEnabled", "easyscholar.secretKey"];
+    const previous = new Map(keys.map(key => [key, Zotero.Prefs.get(`${prefix}.${key}`, true)]));
+    const request = Zotero.HTTP.request;
+    let requests = 0;
+    try {
+      Zotero.Prefs.set(`${prefix}.insights.natureSourcePriority`, "api-only", true);
+      Zotero.Prefs.set(`${prefix}.insights.natureDatasetUUID`, "", true);
+      Zotero.Prefs.set(`${prefix}.insights.natureEnabled`, true, true);
+      Zotero.Prefs.set(`${prefix}.easyscholar.secretKey`, "nature-2026-isolated-fixture", true);
+      Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
+        if (new URL(url).hostname !== "www.easyscholar.cc")
+          return request(method, url, options);
+        requests++;
+        return { responseText: JSON.stringify({ code: 200, data: { customRank: { rankInfo: [{ uuid: "1615199999904223232", abbName: "自然指数", oneRankText: " " }], rank: ["1615199999904223232&&&1"] }, officialRank: { all: {} } } }) };
+      }) as any;
+      const item = await create("Nature 2026 captured response QA");
+      const win = Zotero.getMainWindow();
+      await win.ZoteroPane.selectItem(item.id);
+      await plugin().hooks.onLintInBatch("tool-query-nature-index", [item]);
+      const result = await plugin().api.getJournalInsights(item);
+      assert.isTrue(result.natureIndex);
+      assert.equal(result.natureSource, "api");
+      assert.equal(result.natureAPIDataset, "自然指数");
+      const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
+      await section._handleRefresh();
+      assert.include(section.textContent!, "自然指数");
+      const columns = (Zotero.ItemTreeManager as any).getCustomColumns(undefined, { pluginID: config.addonID });
+      assert.isNotEmpty(columns.find((column: any) => column.dataKey.endsWith("natureIndex")).dataProvider(item));
+      assert.equal(requests, 1);
+      assert.equal(item.getField("extra"), "");
     }
     finally {
       Zotero.HTTP.request = request;

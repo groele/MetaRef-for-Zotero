@@ -1,3 +1,4 @@
+import { watchItemFields } from "../../utils/field-conflicts";
 import { requestCachedGET } from "../../utils/http";
 import { getString } from "../../utils/locale";
 import { defineRule } from "./rule-base";
@@ -15,10 +16,13 @@ export const CorrectDOILong = defineRule({
     const cleanDOI = Zotero.Utilities.cleanDOI(doi);
     if (!cleanDOI)
       return;
+    const unchanged = watchItemFields(item, ["DOI"], report);
 
     if (/^10\/\S+$/.test(cleanDOI)) {
       debug("ShortDOI detected, resolving to long DOI");
       const result = await makeRequest(cleanDOI, signal);
+      if (!unchanged())
+        return;
       const longDOI = getLongDOI(result);
       if (longDOI) {
         item.setField("DOI", longDOI);
@@ -34,6 +38,8 @@ export const CorrectDOILong = defineRule({
     else {
       debug("LongDOI detected, trying to validate long DOI");
       const result = await makeRequest(cleanDOI, signal);
+      if (!unchanged())
+        return;
       if (validateLongDOI(result)) {
         debug("LongDOI validated");
       }

@@ -141,4 +141,29 @@ describe("rule-level rollback", () => {
     } }] as any });
     expect(item.getField("title")).toBe("Next batch");
   }, 1000);
+  it("does not label superseded rule values as saved", async () => {
+    const runner = new LintRunner();
+    await runner.add({ items: [createItem()], silent: true, rules: [
+      { id: "first", scope: "item", apply({ item }: ApplyContext) { item.setField("title", "Intermediate"); } },
+      { id: "second", scope: "item", apply({ item }: ApplyContext) { item.setField("title", "Final"); } },
+    ] as any });
+    expect(runner.lastResult?.changes).toEqual([
+      expect.objectContaining({ after: "Intermediate", saved: false }),
+      expect.objectContaining({ after: "Final", saved: true }),
+    ]);
+  });
+
+  it("restores an intervening manual edit when a failed rule writes the same field twice", async () => {
+    const runner = new LintRunner();
+    const item = createItem();
+    await runner.add({ items: [item], silent: true, rules: [{ id: "repeated-write", scope: "item", async apply({ item: guarded }: ApplyContext) {
+      guarded.setField("title", "First attempt");
+      await Promise.resolve();
+      item.setField("title", "Manual edit");
+      guarded.setField("title", "Second attempt");
+      throw new Error("Failed");
+    } }] as any });
+    expect(item.getField("title")).toBe("Manual edit");
+    expect(runner.lastResult?.changes).toEqual([]);
+  });
 });

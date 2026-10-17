@@ -1,5 +1,5 @@
 import { homepage } from "../../package.json";
-import { clearEasyScholarCache, EASYSCHOLAR_DEFAULT_FIELDS, EASYSCHOLAR_FIELD_DEFINITIONS, getEasyScholarFieldMessageID, testEasyScholarConnection } from "../utils/easyscholar";
+import { clearEasyScholarCache, EASYSCHOLAR_DEFAULT_FIELDS, EASYSCHOLAR_FIELD_DEFINITIONS, getEasyScholarFieldMessageID, isEasyScholarFieldEnabled, testEasyScholarConnection } from "../utils/easyscholar";
 
 import { getString } from "../utils/locale";
 import { preferenceListeners, releasePreferenceListeners } from "../utils/preference-listeners";
@@ -9,7 +9,7 @@ import { clearStoredServiceCache } from "../utils/service-cache-storage";
 import { normalizeShortcut, recordShortcut, SHORTCUT_DEFAULTS, shortcutPreview } from "../utils/shortcuts";
 import { setupBatchFeedback } from "./batch-feedback";
 import { setupCustomDataFiles } from "./custom-data-settings";
-import { registerEasyScholarColumns } from "./item-tree";
+import { registerExtraColumns } from "./item-tree";
 import { setupJournalDatabases } from "./journal-database-settings";
 import { isPrimaryMenu, MENU_GROUPS, MENU_SECTIONS } from "./menu";
 import { Rules } from "./rules";
@@ -179,8 +179,14 @@ function setupEasyScholarSettings(pane: Element) {
     label.append(control, caption);
     const update = () => {
       setPref(pref as any, control.checked as any);
-      if (pref.startsWith("easyscholar.columns."))
-        registerEasyScholarColumns();
+      if (pref.startsWith("easyscholar.columns.") || pref.startsWith("easyscholar.fields.") || pref === "insights.natureEnabled") {
+        registerExtraColumns();
+        for (const field of EASYSCHOLAR_FIELD_DEFINITIONS) {
+          const column = columnsHost!.querySelector<HTMLInputElement>(`input[preference$='.easyscholar.columns.${field.key}']`);
+          if (column)
+            column.disabled = !isEasyScholarFieldEnabled(field.key);
+        }
+      }
     };
     listen(control, "change", update);
     listen(control, "command", update);
@@ -211,7 +217,9 @@ function setupEasyScholarSettings(pane: Element) {
       customHost.appendChild(makeControl(field, "fields"));
     else if (field.source === "supplemental")
       supplementalHost?.appendChild(makeControl(field, "fields"));
-    columnsHost.appendChild(makeControl(field, "columns"));
+    const columnControl = makeControl(field, "columns");
+    columnControl.querySelector("input")!.disabled = !isEasyScholarFieldEnabled(field.key);
+    columnsHost.appendChild(columnControl);
   }
   const cardGroups = pane.querySelectorAll<Element>(".metaref-field-groups > groupbox, #metaref-easyscholar-settings > groupbox");
   for (const group of cardGroups) {

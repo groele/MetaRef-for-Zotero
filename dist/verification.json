@@ -1,58 +1,17 @@
 {
-  "date": "2026-10-17",
-  "version": "10.5.0",
-  "name": "Zotero MetaFlow",
-  "identity": {
-    "addonName": "Zotero MetaFlow",
-    "addonID": "metaflow@groele",
-    "addonRef": "metaref",
-    "addonInstance": "MetaRef",
-    "prefsPrefix": "extensions.zotero.metaref"
-  },
-  "unit": {
-    "passed": 396,
-    "files": 63
-  },
-  "e2e": {
-    "status": "passed",
-    "isolatedProfileAndData": true,
-    "fullRuntimeRegression": {
-      "samePackageOnBothHosts": true,
-      "packageSha256": "96caf7212debeacfefb9b86eceb1f7856f6a1fffcca5c5b6ebc1cbeed10df463",
-      "hosts": [
-        {
-          "zotero": "10.0.6",
-          "gecko": 140,
-          "locale": "zh-CN",
-          "passed": 94
-        },
-        {
-          "zotero": "11.0-dev.5+dac1ad489",
-          "gecko": 153,
-          "locale": "en-US",
-          "passed": 94
-        }
-      ]
-    },
-    "productionXpiInstallation": "passed on both hosts"
-  },
-  "validation": {
-    "productionBuild": "passed",
-    "pluginTypeScript": "passed",
-    "unitTests": "passed",
-    "eslint": "passed",
-    "autocorrect": "passed",
-    "updateManifestConsistency": "passed",
-    "trackedSourceAssets": "passed, including vendor code and licenses"
-  },
+  "version": "10.6.0",
+  "verifiedAt": "2026-10-17T09:43:24.320623+08:00",
+  "sourceRoot": "D:\\Dev Studio\\Linter for Zotero\\.scaffold\\publish\\metaflow-10.0.1",
+  "baselineCommit": "45a71cb1daff85fb8b752b546efaf8b01e0e69cb",
+  "baselineVersion": "10.5.0",
   "package": {
-    "path": "zotero-metaflow.xpi",
-    "sha256": "96caf7212debeacfefb9b86eceb1f7856f6a1fffcca5c5b6ebc1cbeed10df463",
-    "bytes": 3420054,
+    "filename": "zotero-metaflow-10.6.0.xpi",
+    "bytes": 3422914,
+    "sha256": "9ee214b552eceb1789175555d21eee77f3bf8c99a8efdec22479bf8a49b700d1",
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "10.5.0",
+      "version": "10.6.0",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
       "author": "groele",
@@ -75,30 +34,50 @@
       }
     }
   },
-  "publication": {
-    "repository": "https://github.com/groele/Zotero-MetaFlow",
-    "targetBranch": "main",
-    "targetTag": "V10.5.0"
+  "checks": {
+    "unit": {
+      "passed": 429,
+      "files": 67
+    },
+    "productionBuild": "passed",
+    "typescript": "passed",
+    "testTypeScript": "passed",
+    "eslint": "passed",
+    "autocorrect": "passed",
+    "zotero10": {
+      "version": "10.0.6",
+      "gecko": 140,
+      "locale": "zh-CN",
+      "passed": 100,
+      "productionXpiInstalled": true
+    },
+    "zotero11": {
+      "version": "11.0-dev.5+dac1ad489",
+      "gecko": 153,
+      "locale": "en-US",
+      "passed": 100,
+      "productionXpiInstalled": true
+    }
   },
-  "logs": [
-    "../docs/assets/metaflow-10.5.0-zotero10-e2e.txt",
-    "../docs/assets/metaflow-10.5.0-zotero11-e2e.txt",
-    "../docs/assets/metaflow-10.5.0-unit.txt",
-    "../docs/assets/metaflow-10.5.0-lint.txt"
+  "natureApi": {
+    "liveQuery": "Nature",
+    "code": 200,
+    "datasetUUID": "1615199999904223232",
+    "datasetNameFromAccount": "177 种自然指数统计期刊 -2026",
+    "datasetModified": "2026-06-15",
+    "recordsReportedByAccount": 178,
+    "responseShape": "customRank.rankInfo + customRank.rank UUID&&&1; blank oneRankText",
+    "pluginValidation": "captured response replay in unit and native Zotero tests"
+  },
+  "limits": [
+    "Windows only; Zotero 11 validation is limited to the named development build.",
+    "All 61 remote field permissions were not individually tested with the live account.",
+    "EasyScholar dataset records were not exported and compared one by one with the Nature list.",
+    "The slow-source E2E test uses 90 seconds of host scheduling margin; production source and rule deadlines are unchanged."
   ],
-  "limitations": [
-    "Authenticated provider availability and account-specific dataset permissions were not tested; API integration tests use controlled responses.",
-    "Zotero 11 validation covers the listed development build, not every future release.",
-    "macOS and combinations with third-party plugins were not tested. Linux headless CI is recorded in the GitHub commit checks.",
-    "Legacy Chinese impact-factor and NJAU remote service availability remains provider-dependent."
-  ],
-  "settingsAudit": {
-    "defaults": 263,
-    "staticBindings": 118,
-    "missingDefaults": 0,
-    "duplicateStaticBindings": 0,
-    "unresolvedVisibleBindings": 0,
-    "matrix": "../docs/assets/settings-matrix-10.5.0.json",
-    "report": "../docs/settings-audit-10.5.0.md"
+  "deployment": {
+    "dailyProfileModified": false,
+    "published": false,
+    "committed": false
   }
 }

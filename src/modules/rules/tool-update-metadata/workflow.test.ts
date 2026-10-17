@@ -5,7 +5,7 @@ import { services } from "./services";
 vi.mock("./services", () => ({ services: [] }));
 vi.mock("./identifiers", async importOriginal => ({ ...await importOriginal<typeof import("./identifiers")>(), extractIdentifiers: (item: any) => ({ DOI: item.getField("DOI") }), isPreprint: () => false }));
 vi.mock("../../../utils/locale", () => ({ getString: (id: string) => id }));
-vi.mock("../../../utils/zotero", () => ({ isFieldValidForItemType: (field: string) => ["title", "date", "publicationTitle", "DOI", "volume"].includes(field) }));
+vi.mock("../../../utils/zotero", () => ({ isFieldValidForItemType: (field: string, type: string | number) => ["title", "date", "publicationTitle", "DOI", ...type === 2 ? [] : ["volume"]].includes(field) }));
 
 function createItem() {
   const fields: Record<string, any> = { itemType: "journalArticle", title: "Original title", DOI: "10.1234/original", creators: [] };
@@ -16,17 +16,18 @@ function createItem() {
     setField: vi.fn((field: string, value: string) => { fields[field] = value; }),
     getCreators: () => fields.creators,
     setCreators: vi.fn((creators: unknown[]) => { fields.creators = creators; }),
+    setType: vi.fn(),
     toJSON: () => structuredClone(fields),
   };
 }
 const response = (name: string, data: Record<string, any>, fetch = async () => data) => ({ id: name, name, lookup: "identifier" as const, cooldown: 0, shouldApply: () => true, fetch, transform: (data: any) => data });
-function run(item: ReturnType<typeof createItem>, mode: "blank" | "all" = "blank", options: { repairCreators?: boolean; creatorsOnly?: boolean } = {}) {
+function run(item: ReturnType<typeof createItem>, mode: "blank" | "all" = "blank", options: { repairCreators?: boolean; creatorsOnly?: boolean; allowTypeChanged?: boolean } = {}) {
   const report = vi.fn();
   return { report, pending: ToolUpdateMetadata.apply({ item: item as unknown as Zotero.Item, options: { mode, allowTypeChanged: false, ...options }, debug: vi.fn(), report }) };
 }
 beforeEach(() => {
   services.splice(0);
-  vi.stubGlobal("Zotero", { CreatorTypes: { getID: () => 1, isValidForItemType: () => true } });
+  vi.stubGlobal("Zotero", { CreatorTypes: { getID: () => 1, isValidForItemType: () => true }, ItemTypes: { getID: (type: string) => type === "webpage" ? 2 : 1 }, ItemFields: { getID: (field: string) => ["title", "date", "publicationTitle", "DOI", "volume"].includes(field) ? 1 : false } });
 });
 afterEach(() => vi.unstubAllGlobals());
 
@@ -125,5 +126,29 @@ describe("trusted metadata update workflow", () => {
     expect(item.getField("title")).toBe("Edited while waiting");
     expect(item.getField("date")).toBe("2026");
     expect(report).toHaveBeenCalledWith(expect.objectContaining({ message: "rule-tool-update-metadata-edited" }));
+  });
+  it("discards the old work's response if its DOI changes during the request", async () => {
+    const item = createItem();
+    services.push(response("old-work", {}, async () => {
+      item.setField("DOI", "10.9999/new-work");
+      return { DOI: "10.1234/original", title: "Old work's title", date: "2026" };
+    }));
+    const { report, pending } = run(item, "all");
+    await pending;
+    expect(item.getField("DOI")).toBe("10.9999/new-work");
+    expect(item.getField("title")).toBe("Original title");
+    expect(item.getField("date")).toBe("");
+    expect(report).toHaveBeenCalledWith(expect.objectContaining({ message: "rule-tool-update-metadata-edited" }));
+  });
+
+  it("preserves incompatible fields added while a type-changing response is pending", async () => {
+    const item = createItem();
+    services.push(response("type-change", {}, async () => {
+      item.setField("volume", "Manual volume");
+      return { itemType: "webpage", title: "Updated title", date: "2026" };
+    }));
+    await run(item, "all", { allowTypeChanged: true }).pending;
+    expect(item.setType).not.toHaveBeenCalled();
+    expect(item.getField("volume")).toBe("Manual volume");
   });
 });

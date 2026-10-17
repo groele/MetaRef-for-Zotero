@@ -1,4 +1,5 @@
 import { getJournalInsights } from "../../utils/journal-insights";
+import { isJournalIndexEnabled } from "../../utils/journal-permissions";
 import { getString } from "../../utils/locale";
 import { defineRule } from "./rule-base";
 
@@ -8,6 +9,8 @@ export const ToolQueryESI = defineRule({
   category: "tool",
   targetItemTypes: ["journalArticle"],
   async apply({ item, debug, report }) {
+    if (!isJournalIndexEnabled("esi"))
+      return;
     const result = await getJournalInsights(item, { queryAPI: true });
     const error = result.esiError || result.customFallback;
     if (error)

@@ -1,3 +1,4 @@
+import { watchItemFields } from "../../utils/field-conflicts";
 import { requestCachedGET } from "../../utils/http";
 import { defineRule } from "./rule-base";
 
@@ -20,6 +21,7 @@ export const RequireDOI = defineRule({
       return;
 
     debug("DOI is empty, trying CrossRef lookup");
+    const unchanged = watchItemFields(item, ["DOI", "title", "date", "publicationTitle"], report);
 
     // @ts-expect-error miss types
     const ctx = Zotero.OpenURL.createContextObject(item, "1.0");
@@ -41,6 +43,9 @@ export const RequireDOI = defineRule({
     if (req.status !== 200) {
       throw new Error(`CrossRef request error: ${req.status}`);
     }
+
+    if (!unchanged())
+      return;
 
     const response = req.responseXML?.getElementsByTagName("query")[0];
     if (!response) {
