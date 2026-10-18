@@ -293,6 +293,8 @@ function setupMenuSettings(pane: Element) {
   const doc = pane.ownerDocument!;
   for (const [key, keys] of [["primary", MENU_SECTIONS.primary], ...MENU_GROUPS]) {
     const group = doc.createXULElement("groupbox");
+    if (key === "primary")
+      group.id = "metaref-primary-menu-controls";
     const label = doc.createXULElement("label");
     doc.l10n!.setAttributes(label, `metaref-menu-group-${key}`);
     group.appendChild(label);
@@ -332,10 +334,23 @@ function setupMenuSettings(pane: Element) {
       listen(row, "change", syncVisibility);
       listen(row, "command", syncVisibility);
       row.append(control, placement);
+      if (key === "primary") {
+        row.setAttribute("data-core-menu-command", id);
+        doc.l10n!.setAttributes(control, "metaref-menu-core-visible");
+      }
       group.appendChild(row);
     }
     container.appendChild(group);
   }
+  const updateCompact = () => {
+    const compact = getPref("menu.compact" as any, true) === true;
+    pane.querySelector<HTMLElement>("#metaref-additional-menu-options")!.hidden = compact;
+    for (const placement of pane.querySelectorAll<HTMLSelectElement>("[data-core-menu-command] select"))
+      placement.hidden = compact;
+  };
+  listen(pane, "change", updateCompact);
+  listen(pane, "command", updateCompact);
+  updateCompact();
 }
 
 function setupCustomDataReset(pane: Element) {

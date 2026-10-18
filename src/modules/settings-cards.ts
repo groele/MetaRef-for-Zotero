@@ -10,7 +10,7 @@ export function setupFunctionCards(pane: Element) {
     const top = group.parentElement === pane;
     const card = doc.createElementNS("http://www.w3.org/1999/xhtml", "details") as HTMLDetailsElement;
     card.className = `metaref-setting-card${top ? " metaref-section-card" : ""}`;
-    card.open = top && Boolean(heading.querySelector("[data-l10n-id$='section-general'], [data-l10n-id$='section-rules']"));
+    card.open = top && Boolean(heading.querySelector("[data-l10n-id$='section-general'], [data-l10n-id$='core-workflows-heading']"));
     const summary = doc.createElementNS("http://www.w3.org/1999/xhtml", "summary");
     summary.append(heading);
     group.before(card);
@@ -44,7 +44,7 @@ export function setupFunctionCards(pane: Element) {
     }
   }
   const sections = [...pane.querySelectorAll(":scope > .metaref-section-card")];
-  for (const id of ["section-general", "core-workflows-heading", "section-rules", "section-article-abbreviation", "section-updateMetadata", "duplicates-heading", "workflow-tool-center", "section-menu", "shortcuts-header", "section-rich-text", "section-about"]) {
+  for (const id of ["section-general", "core-workflows-heading", "section-rules", "section-article-abbreviation", "section-updateMetadata", "duplicates-heading", "data-settings-heading", "workflow-tool-center", "shortcuts-header", "section-rich-text", "section-about"]) {
     const section = sections.find(section => section.querySelector(`:scope > summary [data-l10n-id$='${id}']`));
     if (section)
       pane.append(section);

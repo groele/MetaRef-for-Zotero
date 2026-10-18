@@ -18,6 +18,7 @@ describe("authenticated service response cache", () => {
     vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
     vi.stubGlobal("IOUtils", {
       exists: async (path: string) => files.has(path),
+      stat: async (path: string) => ({ size: JSON.stringify(files.get(path) || {}).length }),
       readJSON: async (path: string) => structuredClone(files.get(path)),
       writeJSON: async (path: string, data: any) => { files.set(path, structuredClone(data)); },
     });
@@ -48,7 +49,7 @@ describe("authenticated service response cache", () => {
     await fetch();
     await flushServiceCache();
     expect(JSON.stringify([...files.values()])).not.toContain("test-secret");
-    await vi.advanceTimersByTimeAsync(71 * 60 * 60_000);
+    await vi.advanceTimersByTimeAsync(23 * 60 * 60_000);
     clearRequestCache();
     resetServiceCacheSession();
     await fetch();
@@ -132,7 +133,7 @@ describe("authenticated service response cache", () => {
     await rememberServiceAliases("semantic-scholar", "https://example.test/paper/1", ["https://example.test/paper/DOI:1"], { headers: { "x-api-key": "test-secret" } }, value);
     await flushServiceCache();
     const snapshot = files.values().next().value;
-    expect(snapshot.version).toBe(2);
+    expect(snapshot.version).toBe(3);
     expect(snapshot.entries.filter(([, entry]: any) => entry.value)).toHaveLength(1);
     expect(snapshot.entries.filter(([, entry]: any) => entry.alias)).toHaveLength(1);
     clearRequestCache();
@@ -161,5 +162,78 @@ describe("authenticated service response cache", () => {
       expect(write).toHaveBeenCalledTimes(1);
     }
     finally { write.mockRestore(); }
+  });
+  it("keeps journal data for 72 hours while paper data expires after 24 hours", async () => {
+    request.mockResolvedValue(response({ code: 200, data: { officialRank: { all: { sciif: "8.4" } } } } as any));
+    const journal = () => requestServiceGET("easyscholar", "https://example.test/journal?publicationName=Nature");
+    await journal();
+    await flushServiceCache();
+    await vi.advanceTimersByTimeAsync(71 * 60 * 60_000);
+    clearRequestCache();
+    resetServiceCacheSession();
+    await journal();
+    expect(request).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(61 * 60_000);
+    await journal();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("rechecks a successful empty journal response after five minutes", async () => {
+    request.mockResolvedValue(response({ code: 200, data: { officialRank: { all: {} } } } as any));
+    const journal = () => requestServiceGET("easyscholar", "https://example.test/empty?publicationName=Unknown");
+    await journal();
+    await vi.advanceTimersByTimeAsync(299_999);
+    await journal();
+    expect(request).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(2);
+    await journal();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not rewrite an unchanged disk cache after a restored hit", async () => {
+    await fetch();
+    await flushServiceCache();
+    clearRequestCache();
+    resetServiceCacheSession();
+    const write = vi.spyOn(IOUtils, "writeJSON");
+    try {
+      await fetch();
+      await flushServiceCache();
+      expect(write).not.toHaveBeenCalled();
+      expect(request).toHaveBeenCalledTimes(1);
+    }
+    finally { write.mockRestore(); }
+  });
+
+  it("shortens old version-two paper deadlines without extending old results", async () => {
+    await fetch();
+    await flushServiceCache();
+    const snapshot = files.values().next().value;
+    snapshot.version = 2;
+    snapshot.entries[0][1].expires = Date.now() + 72 * 60 * 60_000;
+    await vi.advanceTimersByTimeAsync(25 * 60 * 60_000);
+    clearRequestCache();
+    resetServiceCacheSession();
+    await fetch();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("serves an oversized response without keeping it in memory or on disk", async () => {
+    request.mockResolvedValue(response({ paperId: "large", abstract: "x".repeat(600_000) } as any));
+    await fetch();
+    await fetch();
+    await flushServiceCache();
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(files.values().next().value.entries).toHaveLength(0);
+  });
+
+  it("bounds the serialized durable cache by bytes as well as count", async () => {
+    request.mockResolvedValue(response({ paperId: "large", abstract: "x".repeat(200_000) } as any));
+    for (let index = 0; index < 30; index++)
+      await requestServiceGET("semantic-scholar", `https://example.test/large/${index}`);
+    await flushServiceCache();
+    const snapshot = files.values().next().value;
+    expect(snapshot.entries.length).toBeLessThan(30);
+    expect(new TextEncoder().encode(JSON.stringify(snapshot)).byteLength).toBeLessThanOrEqual(8 * 1024 * 1024);
   });
 });

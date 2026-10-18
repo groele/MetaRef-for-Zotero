@@ -1,16 +1,17 @@
 import type { TransformedData } from "../rules/tool-update-metadata/services/base-service";
+import type { DuplicatePair, DuplicateRecord } from "./duplicate-matching";
 import type { MasterStrategy } from "./duplicate-policy";
-import type { DuplicatePair, DuplicateRecord } from "./policy";
-import { useDialog } from "../../utils/dialog";
 import { getString } from "../../utils/locale";
 import { getPref } from "../../utils/prefs";
 import { isFieldValidForItemType } from "../../utils/zotero";
 import { extractIdentifiers, isPreprint } from "../rules/tool-update-metadata/identifiers";
 import { assertReviewFresh } from "./apply";
 import { cell, displayValue, fieldLabel } from "./dialog";
+import { duplicateMatchEvents, duplicatePairs } from "./duplicate-matching";
 import { canMergePair, chooseMaster } from "./duplicate-policy";
 import { isNonDuplicate, markNonDuplicate, transferNonDuplicates } from "./non-duplicates";
-import { duplicatePairs, REVIEW_FIELDS } from "./policy";
+import { useReviewPanel } from "./panel";
+import { REVIEW_FIELDS } from "./policy";
 
 export interface DuplicateDecision {
   pair: DuplicatePair;
@@ -51,9 +52,20 @@ export async function findDuplicates(items: Zotero.Item[], signal?: AbortSignal)
       snapshots.set(id, duplicateRecord(Zotero.Items.get(id) as Zotero.Item));
     return snapshots.get(id)!;
   };
-  return duplicatePairs(new Set(items.map(item => item.id)), records)
-    .filter(pair => !isNonDuplicate(Zotero.Items.get(pair.left.id) as Zotero.Item, Zotero.Items.get(pair.right.id) as Zotero.Item))
-    .map(pair => ({ ...pair, left: snapshot(pair.left.id), right: snapshot(pair.right.id) }));
+  signal?.throwIfAborted();
+  const pairs: DuplicatePair[] = [];
+  for (const event of duplicateMatchEvents(new Set(items.map(item => item.id)), records)) {
+    if (event.kind === "checkpoint") {
+      await Zotero.Promise.delay(0);
+      signal?.throwIfAborted();
+      continue;
+    }
+    const pair = event.pair;
+    if (!isNonDuplicate(Zotero.Items.get(pair.left.id) as Zotero.Item, Zotero.Items.get(pair.right.id) as Zotero.Item))
+      pairs.push({ ...pair, left: snapshot(pair.left.id), right: snapshot(pair.right.id) });
+  }
+  signal?.throwIfAborted();
+  return pairs;
 }
 
 export async function reviewDuplicate(pair: DuplicatePair, signal?: AbortSignal): Promise<DuplicateDecision | false> {
@@ -61,7 +73,7 @@ export async function reviewDuplicate(pair: DuplicatePair, signal?: AbortSignal)
   const master = chooseMaster([pair.left, pair.right], getPref("duplicates.masterStrategy" as any, "oldest") as MasterStrategy);
   const decision: DuplicateDecision = { pair, action: "skip", masterID: master.id, donors: new Map() };
   let accepted = false;
-  const { dialog, openAndWaitClose } = useDialog(new ztoolkit.Dialog(1, 1), signal);
+  const { dialog, openAndWaitClose } = useReviewPanel(signal);
   const details = (record: DuplicateRecord) => {
     const item = Zotero.Items.get(record.id);
     if (!item)
@@ -71,7 +83,7 @@ export async function reviewDuplicate(pair: DuplicatePair, signal?: AbortSignal)
   dialog.addCell(0, 0, {
     tag: "div",
     properties: { id: "metaref-duplicate-review" },
-    styles: { width: "min(950px, 78vw)", fontSize: "14px" },
+    styles: { width: "100%", fontSize: "14px" },
     children: [
       { tag: "p", properties: { textContent: getString(`review-duplicate-${pair.reason}`) } },
       { tag: "p", properties: { textContent: getString(mergeable ? "review-merge-note" : "review-relate-note") } },
@@ -125,6 +137,7 @@ export async function reviewDuplicate(pair: DuplicatePair, signal?: AbortSignal)
 export async function applyDuplicateDecision(decision: DuplicateDecision, signal?: AbortSignal): Promise<"merged" | "related" | "skipped" | "excluded"> {
   if (decision.action === "skip")
     return "skipped";
+  signal?.throwIfAborted();
   const { pair } = decision;
   const left = Zotero.Items.get(pair.left.id);
   const right = Zotero.Items.get(pair.right.id);
@@ -144,19 +157,26 @@ export async function applyDuplicateDecision(decision: DuplicateDecision, signal
   const master = decision.masterID === right.id ? right : left;
   const other = master === left ? right : left;
   // Include children in failure recovery; the host merge owns their movement and key remapping.
-  const children = await Zotero.Items.getAsync([...left.getAttachments(true), ...right.getAttachments(true), ...left.getNotes(true), ...right.getNotes(true)]);
+  const children = decision.action === "merge" ? await Zotero.Items.getAsync([...left.getAttachments(true), ...right.getAttachments(true), ...left.getNotes(true), ...right.getNotes(true)]) : [];
   if (children.some(item => item.hasChanged()))
     throw new Error(getString("review-stale"));
   signal?.throwIfAborted();
   assertReviewFresh(left, pair.left.data);
   assertReviewFresh(right, pair.right.data);
+  const relatedMutations = new Set<Zotero.Item>();
   try {
     if (decision.action === "relate") {
       await Zotero.DB.executeTransaction(async () => {
         signal?.throwIfAborted();
+        assertReviewFresh(left, pair.left.data);
+        assertReviewFresh(right, pair.right.data);
+        relatedMutations.add(left);
         left.addRelatedItem(right);
-        right.addRelatedItem(left);
         await left.save();
+        signal?.throwIfAborted();
+        assertReviewFresh(right, pair.right.data);
+        relatedMutations.add(right);
+        right.addRelatedItem(left);
         await right.save();
       });
     }
@@ -202,8 +222,14 @@ export async function applyDuplicateDecision(decision: DuplicateDecision, signal
     }
   }
   catch (error) {
-    for (const item of [left, right, ...children])
-      await item.reload(["primaryData", "itemData", "creators", "relations", "tags", "collections", "childItems"], true);
+    if (decision.action === "relate") {
+      for (const item of relatedMutations)
+        await item.reload(["primaryData", "relations"], true);
+    }
+    else {
+      for (const item of [left, right, ...children])
+        await item.reload(["primaryData", "itemData", "creators", "relations", "tags", "collections", "childItems"], true);
+    }
     throw error;
   }
   return decision.action === "merge" ? "merged" : "related";

@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-11.0.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-11.1.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,7 +19,7 @@
 
 ---
 
-> **11.0.0 major release:** consolidates metadata verification, preprint version management and duplicate review into two core workflows, with integrated settings and safer batch recovery. See the [systematic acceptance report](docs/systematic-acceptance-2026-10-18.md) for scope and verification boundaries.
+> **11.1.0 release:** adds automatic identity-checked metadata filling, bulk duplicate merging, complete-command scheduling and feedback, and bounded local runtime records. See the [release notes](docs/releases/metaflow-v11.1.0.md) for behavior changes and verification boundaries.
 
 ## 📖 Overview
 
@@ -35,7 +35,7 @@ When importing items from academic databases, web pages, or DOI translators, met
 
 - **Title Case Formatting**: Convert messy or all-caps titles into standard Sentence case or Title Case with one click. An intelligent dictionary preserves chemical formulas ($\text{CO}_2$, $\text{H}_2\text{O}$), gene symbols, mRNA, and proper nouns.
 - **Author & Creator Normalization**: Fix inverted names, handle Pinyin transliteration and tone markers, purge invalid creators, and correct creator roles.
-- **DOI Normalization & ShortDOI**: Strip redundant URL prefixes (e.g. `https://doi.org/`), validate DOI syntax, and automatically query and replace with shortDOIs via the Crossref API.
+- **DOI Normalization & ShortDOI**: Strip redundant URL prefixes, validate DOI syntax, and resolve shortDOIs to full DOIs while preserving the short identifier in Extra.
 - **Page Range Optimization**: Normalize range delimiters to standard en-dashes (`-`) and remove redundant leading zeroes (e.g. `001-008` or `101--108` $\rightarrow$ `101-108`).
 - **Date Standardization**: Format all publication dates into standard ISO 8601 (`YYYY-MM-DD`).
 - **Field Misuse & Redundancy Removal**: Safely scrub `null` and `undefined` strings, strip extraneous trailing periods in titles, and correct misused fields (such as journal articles incorrectly catalogued as web pages).
@@ -81,7 +81,7 @@ When importing items from academic databases, web pages, or DOI translators, met
 
 | Item                          | Details                                                                                          |
 | :---------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Add-on Version**            | `11.0.0`                                                                                         |
+| **Add-on Version**            | `11.1.0`                                                                                         |
 | **Add-on ID**                 | `metaflow@groele`                                                                                |
 | **Supported Zotero Versions** | `Zotero 10.0 – 11.*` (Verified on Windows Zotero 10.0.6 & Zotero 11 dev Gecko 153)               |
 | **Operating Systems**         | Windows / macOS / Linux                                                                          |
@@ -96,7 +96,7 @@ When importing items from academic databases, web pages, or DOI translators, met
 3. **Install from File**: Click the gear icon in the top right, select **Install Add-on From File...**, and choose the downloaded `.xpi` file.
 4. **Restart Zotero**: Follow Zotero's prompt to restart the application.
 
-> 💡 **Automatic Updates**: MetaFlow includes built-in auto-update support via [update.json](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/update.json).
+> 💡 **Automatic Updates**: MetaFlow includes built-in auto-update support via [update.json](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json).
 
 ---
 
@@ -110,7 +110,7 @@ When importing items from academic databases, web pages, or DOI translators, met
    - Provide your EasyScholar Secret Key if you want to retrieve CAS Tiers or CCF ratings.
    - Select your preferred metrics and choose whether to register them as columns in the item tree.
 4. **Run MetaFlow**:
-   - Select one or more items in your library, right-click, and select **Zotero MetaFlow** $\rightarrow$ choose a specific tool or execute enabled standard rules.
+   - Select one or more items, then use **Zotero MetaFlow: Check and Repair Metadata** or **Zotero MetaFlow: Update Metadata** from the item context menu. Configure optional stages in the core command settings; specialized tools remain available in preferences.
 
 ---
 
@@ -182,3 +182,7 @@ Distributed under the **[GNU Affero General Public License v3.0 or later (AGPL-3
 - All derivative modifications and new features remain free and open source.
 - Third-party components, datasets, and icons retain their respective licenses and copyright notices.
 - Zotero is a registered trademark of the Corporation for Digital Scholarship. This project is an independent third-party add-on and is not affiliated with or endorsed by Zotero.
+
+### Workflow and data design
+
+Version 11.1.0 combines automatic metadata decisions, complete-command scheduling and feedback, and a bounded local runtime history file. See [workflow and data layout](docs/global-workflow-and-data-layout.md) and [automatic metadata and cache policy](docs/automatic-metadata-and-runtime-cache.md) for settings, data retention and verification limits.

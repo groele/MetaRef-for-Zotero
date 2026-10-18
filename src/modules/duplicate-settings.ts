@@ -53,6 +53,8 @@ export function setupDuplicateSettings(pane: Element) {
     if (Number.isInteger(value) && value >= 1 && value <= 8) {
       setPref("duplicates.concurrency" as any, value);
       concurrency.removeAttribute("aria-invalid");
+      if (status.textContent === getString("duplicates-concurrency-invalid"))
+        status.textContent = "";
     }
     else {
       concurrency.setAttribute("aria-invalid", "true");
@@ -62,6 +64,8 @@ export function setupDuplicateSettings(pane: Element) {
   const action = (id: string, task: () => Promise<unknown>) => {
     const button = host.querySelector<HTMLButtonElement>(`#metaref-duplicates-${id}`)!;
     listen(button, "command", async () => {
+      if (button.disabled)
+        return;
       button.disabled = true;
       try {
         await task();

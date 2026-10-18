@@ -1,5 +1,5 @@
 import { abortableDelay, waitForOperation } from "./rule-execution";
-import { publicationCacheName, SERVICE_CACHE_LIMIT, SERVICE_CACHE_TTL } from "./service-cache-policy";
+import { PUBLIC_CACHE_BYTES, PUBLIC_CACHE_LIMIT, PUBLIC_CACHE_TTL, publicationCacheName, SERVICE_CACHE_ENTRY_BYTES, SERVICE_CACHE_MEMORY_LIMIT, SERVICE_MEMORY_BYTES, serviceCacheTTL } from "./service-cache-policy";
 import { clearStoredServiceCache, readServiceCache, storeServiceAliases, storeServiceCache } from "./service-cache-storage";
 import { withThrottle } from "./throttle";
 
@@ -11,6 +11,7 @@ interface CachedRequest {
   users: number;
   settled: boolean;
   expires: number;
+  bytes: number;
 }
 const publicRequests = new Map<string, CachedRequest>();
 const serviceRequests = new Map<string, CachedRequest>();
@@ -37,7 +38,7 @@ export function clearServiceRequestCache(namespace: string) {
 }
 
 export function requestServiceGET(namespace: string, url: string, options: RequestOptions = {}, signal?: AbortSignal) {
-  return cachedGET(url, options, signal, serviceRequests, serviceKey(namespace, url, options), SERVICE_CACHE_TTL);
+  return cachedGET(url, options, signal, serviceRequests, serviceKey(namespace, url, options), serviceCacheTTL(namespace));
 }
 
 const easyScholarNetwork = withThrottle(requestGET, 500);
@@ -82,33 +83,66 @@ export async function requestCachedGET(url: string, options: RequestOptions = {}
   if (options.headers && Object.keys(options.headers).length)
     return requestGET(url, options, signal);
   const key = JSON.stringify([url, options.responseType || "text"]);
-  return cachedGET(url, options, signal, publicRequests, key, 300_000);
+  return cachedGET(url, options, signal, publicRequests, key, PUBLIC_CACHE_TTL);
+}
+
+function trimRequests(store: Map<string, CachedRequest>) {
+  const limit = store === serviceRequests ? SERVICE_CACHE_MEMORY_LIMIT : PUBLIC_CACHE_LIMIT;
+  const budget = store === serviceRequests ? SERVICE_MEMORY_BYTES : PUBLIC_CACHE_BYTES;
+  let bytes = 0;
+  for (const [key, entry] of store) {
+    if (entry.settled && entry.expires <= Date.now())
+      store.delete(key);
+    else
+      bytes += entry.bytes;
+  }
+  for (const [key, entry] of store) {
+    if (store.size <= limit && bytes <= budget)
+      break;
+    if (entry.settled) {
+      bytes -= entry.bytes;
+      store.delete(key);
+    }
+  }
 }
 
 async function cachedGET(url: string, options: RequestOptions, signal: AbortSignal | undefined, store: Map<string, CachedRequest>, key: string, ttl: number) {
   signal?.throwIfAborted();
   let entry = store.get(key);
   if (!entry || entry.expires <= Date.now()) {
+    store.delete(key);
     const Controller = typeof Zotero.getMainWindow === "function" ? (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController : AbortController;
     const controller = new Controller();
     const fetch = () => networkGET(key, url, options, controller.signal);
-    const created: CachedRequest = { controller, users: 0, settled: false, expires: Number.POSITIVE_INFINITY, promise: store === serviceRequests ? readServiceCache(key).then(value => value as unknown as Awaited<ReturnType<typeof requestGET>> || fetch()) : fetch() };
+    const created: CachedRequest = { controller, users: 0, settled: false, expires: Number.POSITIVE_INFINITY, bytes: 0, promise: store === serviceRequests ? readServiceCache(key).then(value => value as unknown as Awaited<ReturnType<typeof requestGET>> || fetch()) : fetch() };
     created.promise = created.promise.then((result) => {
       controller.signal.throwIfAborted();
       created.settled = true;
       let valid = result.status === undefined || result.status === 200;
+      let lifetime = ttl;
       if (store === serviceRequests) {
         try {
           const data = JSON.parse(String(result.responseText || result.response || ""));
           valid = result.status === 200 && (key.startsWith("easyscholar:") ? data.code === 200 : typeof data.paperId === "string");
+          if (key.startsWith("easyscholar:") && valid) {
+            const all = data.data?.officialRank?.all;
+            const custom = data.data?.customRank;
+            const found = (all && Object.values(all).some(value => value !== null && value !== undefined && String(value).trim())) || custom?.rankInfo?.length;
+            if (!found)
+              lifetime = Math.min(ttl, PUBLIC_CACHE_TTL);
+          }
         }
         catch { valid = false; }
       }
+      created.bytes = new TextEncoder().encode(typeof result.response === "string" ? result.response : JSON.stringify(result.response || result.responseText || "")).byteLength;
+      if (created.bytes > SERVICE_CACHE_ENTRY_BYTES)
+        valid = false;
       if (!valid && store.get(key) === created)
         store.delete(key);
-      created.expires = Math.min(Date.now() + ttl, Number((result as any)._metaflowCacheExpires) || Number.POSITIVE_INFINITY);
+      created.expires = Math.min(Date.now() + lifetime, Number((result as any)._metaflowCacheExpires) || Number.POSITIVE_INFINITY);
       if (valid && store === serviceRequests && !(result as any)._metaflowCacheExpires)
         void storeServiceCache(key, { status: 200, response: String(result.response || result.responseText || ""), responseText: String(result.responseText || result.response || "") }, created.expires);
+      trimRequests(store);
       if (store === serviceRequests)
         return { status: result.status, response: result.response, responseText: result.responseText, _metaflowCacheExpires: created.expires } as unknown as Awaited<ReturnType<typeof requestGET>>;
       return result;
@@ -118,14 +152,11 @@ async function cachedGET(url: string, options: RequestOptions, signal: AbortSign
       throw error;
     });
     store.set(key, created);
-    const limit = store === serviceRequests ? SERVICE_CACHE_LIMIT : 128;
-    if (store.size > limit) {
-      const oldest = [...store].find(([, value]) => value.settled);
-      if (oldest)
-        store.delete(oldest[0]);
-    }
+    trimRequests(store);
     entry = created;
   }
+  store.delete(key);
+  store.set(key, entry);
   const current = entry;
   current.users++;
   try {

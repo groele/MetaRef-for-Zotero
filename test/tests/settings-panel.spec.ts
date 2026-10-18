@@ -183,6 +183,89 @@ describe("settings panel layout and validation in Zotero", function () {
     }
   });
 
+  it("groups cache and runtime controls together without expanding advanced rules by default", async function () {
+    const data = pane.querySelector("#metaref-data-settings")!;
+    assert.isNotNull(data.querySelector("#metaref-runtime-data-open"));
+    assert.isNotNull(data.querySelector("#metaref-last-batch-report"));
+    assert.isNotNull(data.querySelector("#metaref-clear-api-cache"));
+    assert.include(data.querySelector("#metaref-runtime-data-policy")!.textContent!, "200");
+    assert.include(data.querySelector("#metaref-runtime-data-policy")!.textContent!, "30");
+    assert.lengthOf(pane.querySelectorAll("#metaref-clear-api-cache"), 1);
+    const cards = [...pane.querySelectorAll<HTMLDetailsElement>(":scope > .metaref-section-card")];
+    assert.isTrue(cards[1].open, "core commands are easy to find on initial opening");
+    const rules = cards.find(card => card.querySelector(":scope > summary [data-l10n-id$='section-rules']"))!;
+    assert.isFalse(rules.open, "advanced rules remain available without filling the initial screen");
+    const card = data.closest("details") as HTMLDetailsElement;
+    card.open = true;
+    data.scrollIntoView({ block: "start" });
+    await Zotero.Promise.delay(100);
+    const rect = card.getBoundingClientRect();
+    const canvas = win.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
+    canvas.width = Math.ceil(rect.width);
+    canvas.height = Math.min(Math.ceil(rect.height), win.innerHeight - Math.ceil(rect.top));
+    (canvas.getContext("2d") as any).drawWindow(win, rect.left, rect.top, canvas.width, canvas.height, "rgb(245,245,245)");
+    await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-global-data-settings.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
+    card.open = false;
+  });
+
+  it("unifies command visibility and execution settings without duplicate bindings", async function () {
+    const core = pane.querySelector<HTMLElement>("#metaref-core-workflows")!;
+    const compact = find("menu.compact") as HTMLInputElement;
+    const additional = core.querySelector<HTMLElement>("#metaref-additional-menu-options")!;
+    const saved = new Map(["menu.compact", "menu.standard", "menu.tool-update-metadata"].map(key => [key, Zotero.Prefs.get(pref(key), true) as boolean]));
+    const stages = ["workflow.updateMetadata", "workflow.updateBibliographic", "workflow.formatAfterUpdate"];
+    const beforeStages = stages.map(key => Zotero.Prefs.get(pref(key), true));
+    const cards = [...pane.querySelectorAll<HTMLDetailsElement>("details")];
+    const opened = cards.map(card => card.open);
+    try {
+      assert.isTrue(core.contains(compact));
+      assert.include(compact.closest(".metaref-check-option")!.textContent!, config.addonName);
+      assert.isNull(pane.querySelector(":scope > .metaref-section-card > summary [data-l10n-id$='section-menu']"));
+      for (const [key, id] of [["menu.standard", "metaref-workflow-settings"], ["menu.tool-update-metadata", "metaref-update-workflow-settings"]]) {
+        const visible = find(key) as HTMLInputElement;
+        assert.lengthOf(pane.querySelectorAll(`[preference='${pref(key)}']`), 1);
+        assert.equal(visible.closest("details")!.id, id);
+        visible.click();
+        assert.equal(Zotero.Prefs.get(pref(key), true), visible.checked);
+        assert.deepEqual(stages.map(key => Zotero.Prefs.get(pref(key), true)), beforeStages);
+      }
+      for (const enabled of [false, true]) {
+        if (compact.checked !== enabled)
+          compact.click();
+        assert.equal(Zotero.Prefs.get(pref("menu.compact"), true), enabled);
+        assert.equal(additional.hidden, enabled);
+        for (const placement of core.querySelectorAll<HTMLSelectElement>("[data-core-menu-command] select"))
+          assert.equal(placement.hidden, enabled);
+      }
+      for (const [key, value] of saved) {
+        if (key === "menu.compact")
+          continue;
+        const input = find(key) as HTMLInputElement;
+        if (input.checked !== value)
+          input.click();
+      }
+      cards.forEach(card => card.open = false);
+      (core.closest("details") as HTMLDetailsElement).open = true;
+      win.resizeTo(920, 900);
+      core.scrollIntoView({ block: "start" });
+      await Zotero.Promise.delay(100);
+      const rect = core.closest("details")!.getBoundingClientRect();
+      const canvas = win.document.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
+      canvas.width = Math.ceil(rect.width);
+      canvas.height = Math.ceil(rect.height);
+      (canvas.getContext("2d") as any).drawWindow(win, rect.left, rect.top, canvas.width, canvas.height, "rgb(245,245,245)");
+      await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-menu-workflow-unified.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
+    }
+    finally {
+      for (const [key, value] of saved) {
+        const input = find(key) as HTMLInputElement;
+        if (input.checked !== value)
+          input.click();
+      }
+      cards.forEach((card, index) => card.open = opened[index]);
+    }
+  });
+
   it("saves metadata update policy in preferences and never reopens the mode dialog", async function () {
     const modeKey = "rule.tool-update-metadata.option.mode";
     const typeKey = "rule.tool-update-metadata.option.allow-type-changed";

@@ -1,4 +1,5 @@
 import type { Arrayable } from "./utils/types";
+import { closeCoreFeedback } from "./modules/batch-feedback";
 import { localDOICheck, runCoreWorkflow } from "./modules/core-workflow";
 import { invalidateDuplicateStats, registerDuplicateStats, unregisterDuplicateStats } from "./modules/duplicate-stats";
 import { registerExtraColumns, unregisterExtraColumns } from "./modules/item-tree";
@@ -8,6 +9,7 @@ import { registerNotifier, unregisterNotifier } from "./modules/notifier";
 import { registerPrefs, registerPrefsScripts, registerPrefsWindow, unregisterPrefsWindows } from "./modules/preference";
 import { REVIEW_COMMANDS, runReviewCommand } from "./modules/review";
 import { processImportedDuplicates } from "./modules/review/duplicate-batch";
+import { closeReviewPanels } from "./modules/review/panel";
 import { RichTextToolBar, setHtmlTag } from "./modules/rich-text";
 import { Rules } from "./modules/rules";
 import { ToolUpdateEasyScholar } from "./modules/rules/tool-update-easyscholar";
@@ -26,13 +28,16 @@ import { canRunJournalRule, hasEnabledJournalMetrics } from "./utils/journal-per
 import { flushJournalRankingIndex, loadJournalRankingIndex } from "./utils/journal-ranking-index";
 import { initLocale, registerMainWindowLocale, unloadLocale, unregisterMainWindowLocale } from "./utils/locale";
 import { logger } from "./utils/logger";
+import { registerPersistenceShutdown } from "./utils/persistence-shutdown";
 import { getPref } from "./utils/prefs";
+import { flushRuntimeData } from "./utils/runtime-data-storage";
 import { selectedCollections } from "./utils/selection";
 import { flushServiceCache } from "./utils/service-cache-storage";
 import { REMOTE_STANDARD_RULES } from "./utils/workflow-policy";
 
 const shortcutCleanups = new Map<Window, () => void>();
 const toolbars = new Map<Window, RichTextToolBar>();
+let unregisterPersistence: (() => void) | undefined;
 const journalRefreshes = new Map<number, Promise<unknown>>();
 const automaticItems = new AutomaticItems(processAddedItems, () => {
   const configuredDelay = getPref("lint.delayOnAdded");
@@ -44,6 +49,14 @@ async function onStartup() {
   if (!addon.data.alive)
     return;
   try {
+    unregisterPersistence?.();
+    unregisterPersistence = registerPersistenceShutdown(async () => {
+      const results = await Promise.allSettled([flushRuntimeData(), flushServiceCache(), flushJournalRankingIndex()]);
+      for (const result of results) {
+        if (result.status === "rejected")
+          Zotero.debug(`[MetaFlow shutdown persistence] ${String(result.reason)}`);
+      }
+    });
     migrateGreenFrogPreferences();
     initLocale();
     await registerPrefs();
@@ -94,15 +107,23 @@ async function onShutdown() {
   addon.data.alive = false;
   await cleanupResources([
     () => automaticItems.cancelPending(),
-    flushServiceCache,
     clearRequestCache,
     unregisterNotifier,
     unregisterDuplicateStats,
     clearDuplicateSearchCache,
     unregisterPrefsWindows,
+    closeReviewPanels,
+    closeCoreFeedback,
     closeAllDialogs,
     () => addon.runner.stop(),
+    flushRuntimeData,
+    flushServiceCache,
     flushJournalRankingIndex,
+    () => {
+      unregisterPersistence?.();
+      unregisterPersistence = undefined;
+    },
+    closeReviewPanels,
     closeAllDialogs,
     unregisterMenu,
     unregisterExtraColumns,

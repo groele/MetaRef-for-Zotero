@@ -25,7 +25,8 @@ describe("reference verification, versions and duplicate decisions", function ()
   const apply = (item: Zotero.Item, choice: any) => plugin().runner.add({ items: [item], rules: [{ id: "tool-review-metadata", category: "tool", scope: "item", apply: ({ item, report }: any) => plugin().api.review.applyReviewedMetadata(item, choice, report) }], silent: true });
   const dialog = async (selector: string) => {
     for (let attempt = 0; attempt < 200; attempt++) {
-      const win = [...plugin().data.dialogs.values()].find((win: any) => !win.closed && win.document.querySelector(selector)) as Window | undefined;
+      const main = Zotero.getMainWindow();
+      const win = main.document.querySelector(selector) ? main : undefined;
       if (win)
         return win;
       await Zotero.Promise.delay(25);
@@ -68,6 +69,7 @@ describe("reference verification, versions and duplicate decisions", function ()
     (Zotero.Translate as any).Search = Search;
     Zotero.HTTP.request = request;
     Zotero.alert = alert;
+    (Zotero.getMainWindow().document.getElementById("metaref-review-cancel") as HTMLButtonElement | null)?.click();
     for (const win of plugin().data.dialogs.values())
       win.close();
     await plugin().runner.add({ items: [], rules: [], silent: true });
@@ -98,18 +100,15 @@ describe("reference verification, versions and duplicate decisions", function ()
     assert.equal(item.getField("DOI"), "10.1234/current");
   });
 
-  it("reviews actual dialog controls and only persists selected fields", async function () {
+  it("automatically fills blank fields without a window or review panel", async function () {
     const item = await create("Optical response of layered materials");
     item.setField("DOI", response.DOI);
     item.setField("publicationTitle", "My manually corrected journal");
     await item.saveTx();
     const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-    const win = await dialog("#metaref-metadata-review");
-    const manual = win.document.querySelector("input[value='publicationTitle']") as HTMLInputElement;
-    assert.isFalse(manual.checked, "existing fields are not selected for overwrite");
-    assert.isTrue((win.document.querySelector("input[value='date']") as HTMLInputElement).checked);
-    (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
     await pending;
+    assert.equal(plugin().data.dialogs.size, 0);
+    assert.isNull(Zotero.getMainWindow().document.querySelector("#metaref-review-panel"));
     await item.reload(["itemData", "creators"], true);
     assert.equal(item.getField("publicationTitle"), "My manually corrected journal");
     assert.equal(item.getField("date"), "2026");
@@ -117,16 +116,94 @@ describe("reference verification, versions and duplicate decisions", function ()
     assert.isFalse(item.hasChanged());
   });
 
-  it("cancels review without writing metadata", async function () {
+  it("repairs incomplete authors automatically while preserving ordinary fields in blank mode", async function () {
+    const mode = `${config.prefsPrefix}.rule.tool-update-metadata.option.mode`;
+    const previous = Zotero.Prefs.get(mode, true);
+    const item = await create("Optical response of layered materials");
+    item.setField("DOI", response.DOI);
+    item.setField("publicationTitle", "Manual journal");
+    item.setCreators(response.creators);
+    await item.saveTx();
+    response.creators.push({ creatorType: "author", firstName: "John", lastName: "Roe" });
+    Zotero.Prefs.set(mode, "blank", true);
+    try {
+      await plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
+      assert.lengthOf(item.getCreators(), 2);
+      assert.equal(item.getField("publicationTitle"), "Manual journal");
+      Zotero.Prefs.set(`${config.prefsPrefix}.metadata.repairCreators`, false, true);
+      item.setCreators(item.getCreators().slice(0, 1));
+      await item.saveTx();
+      await plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
+      assert.lengthOf(item.getCreators(), 1);
+      assert.isNull(Zotero.getMainWindow().document.getElementById("metaref-review-panel"));
+    }
+    finally {
+      Zotero.Prefs.set(`${config.prefsPrefix}.metadata.repairCreators`, true, true);
+      if (previous === undefined)
+        Zotero.Prefs.clear(mode, true);
+      else Zotero.Prefs.set(mode, previous as string, true);
+    }
+  });
+
+  it("merges several selected duplicate groups from the command in a single batch", async function () {
+    const groups: Zotero.Item[][] = [];
+    for (let index = 0; index < 3; index++) {
+      const group: Zotero.Item[] = [];
+      for (let copy = 0; copy < 3; copy++) {
+        const item = await create(`Batch group ${index}`);
+        item.setField("DOI", `10.1234/batch-command-${index}`);
+        await item.saveTx();
+        group.push(item);
+      }
+      groups.push(group);
+    }
+    const pending = plugin().hooks.onLintInBatch("tool-review-duplicates", groups.map(group => group[0]));
+    const win = await dialog("#metaref-duplicate-batch-review");
+    assert.equal(plugin().data.dialogs.size, 0);
+    const inputs = [...win.document.querySelectorAll<HTMLInputElement>(".metaref-duplicate-group")];
+    assert.lengthOf(inputs, 3);
+    const excluded = inputs.find(input => input.closest("label")!.textContent!.includes("10.1234/batch-command-2"))!;
+    assert.isDefined(excluded);
+    excluded.checked = false;
+    excluded.dispatchEvent(new (win as any).Event("change", { bubbles: true }));
+    (win.document.getElementById("metaref-duplicate-batch-apply") as HTMLButtonElement).click();
+    await pending;
+    const result = plugin().runner.lastResult;
+    assert.equal(result.failed, 0);
+    assert.equal(result.saved, 6);
+    assert.equal(result.processed, 6);
+    assert.equal(result.skipped, 3);
+    assert.lengthOf(groups.flat().filter(item => !item.deleted), 5);
+    assert.lengthOf(groups[2].filter(item => !item.deleted), 3);
+    assert.isNull(win.document.getElementById("metaref-review-panel"));
+    assert.isEmpty(messages, "no completion alert is opened");
+  });
+
+  it("cancels automatic metadata writing during a lookup without opening UI", async function () {
     const item = await create("Optical response of layered materials");
     item.setField("DOI", response.DOI);
     await item.saveTx();
-    const pending = plugin().hooks.onLintInBatch("tool-review-metadata", [item]);
-    const win = await dialog("#metaref-metadata-review");
-    (win.document.getElementById("metaref-review-cancel") as HTMLButtonElement).click();
-    await pending;
+    (Zotero.Translate as any).Search = function () {
+      return { setIdentifier() {}, getTranslators: async () => ["controlled"], setTranslator() {}, translate: async () => {
+        plugin().runner.cancel();
+        return [structuredClone(response)];
+      } };
+    };
+    await plugin().hooks.onLintInBatch("tool-review-metadata", [item]);
+    assert.isTrue(plugin().runner.lastResult.cancelled);
     assert.equal(item.getField("date"), "");
-    assert.isFalse(item.hasChanged());
+    assert.isNull(Zotero.getMainWindow().document.getElementById("metaref-review-panel"));
+  });
+
+  it("preserves a conflicting identity without asking for acknowledgement", async function () {
+    const item = await create("A completely different reference");
+    item.setField("DOI", response.DOI);
+    await item.saveTx();
+    await plugin().hooks.onLintInBatch("tool-review-metadata", [item]);
+    assert.equal(item.getField("date"), "");
+    assert.isAbove(plugin().runner.lastResult.warnings, 0);
+    assert.equal(plugin().data.dialogs.size, 0);
+    assert.isNull(Zotero.getMainWindow().document.getElementById("metaref-review-panel"));
   });
 
   it("rejects stale review snapshots and preserves edits made during review", async function () {
@@ -188,11 +265,8 @@ describe("reference verification, versions and duplicate decisions", function ()
     await note.saveTx();
     const attachment = await Zotero.Attachments.linkFromURL({ url: "https://arxiv.org/pdf/2610.12345v1", parentItemID: item.id, title: "Annotated preprint" });
     const id = item.id;
-    const pending = plugin().hooks.onLintInBatch("tool-review-preprint", [item]);
-    const win = await dialog("#metaref-metadata-review");
-    changeSelect(win, win.document.querySelector(".metaref-review-action") as HTMLSelectElement, "update");
-    (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
-    await pending;
+    const proposal = await plugin().api.review.inspectPreprint(item, { kind: "arXiv", value: "2610.12345v1", source: "item" }, item.toJSON());
+    await apply(item, selection(proposal));
     await item.reload(["primaryData", "itemData", "childItems"], true);
     assert.equal(item.id, id);
     assert.equal(item.itemType, "journalArticle");
@@ -297,7 +371,7 @@ describe("reference verification, versions and duplicate decisions", function ()
     assert.equal(item.getField("date"), "");
   });
 
-  it("merges only after a native decision dialog and retains notes, tags and collections", async function () {
+  it("merges only after a docked decision and retains notes, tags and collections", async function () {
     const left = await create("Duplicate optical response");
     const right = await create("Duplicate optical response");
     for (const item of [left, right]) {
@@ -320,7 +394,7 @@ describe("reference verification, versions and duplicate decisions", function ()
     await right.saveTx();
     const pending = plugin().hooks.onLintInBatch("tool-review-duplicates", [left]);
     const win = await dialog("#metaref-duplicate-review");
-    assert.include(win.document.body!.textContent!, String(right.id));
+    assert.include(win.document.getElementById("metaref-duplicate-review")!.textContent!, String(right.id));
     changeSelect(win, win.document.getElementById("metaref-duplicate-action") as HTMLSelectElement, "merge");
     const volume = win.document.querySelector(`select[aria-label='${Zotero.ItemFields.getLocalizedString("volume")}']`) as HTMLSelectElement;
     changeSelect(win, volume, String(right.id));
@@ -334,7 +408,7 @@ describe("reference verification, versions and duplicate decisions", function ()
     assert.include(left.getAttachments(), attachment.id);
     assert.include(left.getCollections(), collection.id);
     await collection.eraseTx();
-    assert.isNotEmpty(messages);
+    assert.isEmpty(messages, "completion is retained in the batch results without alerts");
   });
 
   it("relates different publication versions and rejects stale merge decisions", async function () {

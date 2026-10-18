@@ -177,10 +177,9 @@ wip =
 
 
 ## 菜单设置
-section-menu = 右键菜单设置
 section-menu-description = 自定义右键菜单中显示的功能项。取消勾选只会隐藏相应菜单项，不会关闭自动规则或删除该功能。
-menu-standard-description = 「检查并修复元数据」按组合流程执行已启用规则，模块开关与详细规则联动，不创建第二套实现；可能联网的功能在对应设置中控制。
-menu-update-metadata-description = 「更新元数据」只从数据源获取并更新文章题录，可选择补空或替换模式；不自动运行格式规则。「检查并修复元数据」执行已启用的检查与格式规则，也可在组合流程卡片中加入补空和期刊评级查询。
+menu-additional-heading = 更多条目右键菜单选项
+menu-core-visible = 在条目右键菜单显示此命令
 section-menu-field = 字段右键菜单
 menu-standard =
     .label = Zotero MetaFlow：检查并修复元数据
@@ -315,7 +314,7 @@ settings-group-count = 已选 { $selected } / { $total } 项
 
 workflow-heading = 检查并修复元数据：执行步骤
 workflow-description = 下面的格式模块与详细规则共享同一组开关，半选表示仅启用部分规则。先运行可选联网核验，再整理本地格式，最后执行可选期刊查询和重复核对。完整书目核验已包含作者，不会再单独查一遍作者；不含清空 Extra 等维护操作。
-workflow-metadata = 先联网核验书目信息（逐字段确认，包含作者核验）
+workflow-metadata = 先联网核验并自动补全书目信息（包含作者核验）
 workflow-rankings = 最后更新期刊分区与评级
 workflow-title = 标题及短标题的全部检查与格式功能
 workflow-creators = 作者信息的全部检查与格式功能
@@ -328,10 +327,10 @@ menu-placement =
 menu-placement-primary = 右键一级菜单
 menu-placement-nested = MetaFlow 子菜单
 
-metadata-update-saved-description = 两个核心命令均显示逐字段核对；“更新元数据”依据补空／覆盖模式预选字段，“检查并修复”默认仅预选空字段。类型变更开关用于自动补全与旧版直接工具；arXiv 版本迁移始终另行确认。
+metadata-update-saved-description = 两个核心命令均按判据直接填充，不显示审阅或确认界面。“更新元数据”遵循补空／覆盖模式，“检查并修复”默认仅补空字段。身份冲突或证据不足时保留原值并记录原因；启用 arXiv 正式版查询后，自动建立或复用关联正式版并保留预印本。类型变更开关仍用于自动导入与旧版直接工具。
 metadata-repair-creators =
     .label = 按核验后的文献来源修复作者名单（含缺失、删除部分和已有错误）
-metadata-repair-creators-description = 控制完整书目核验是否展示作者差异。核心流程只有在核对界面选中后才采纳；单独开启“联网核验作者”时按该明确选择执行。自动新增与旧版直接更新继续遵守原补空／覆盖策略。
+metadata-repair-creators-description = 控制书目信息自动填充是否包含作者。身份核验通过且开关开启时，会补全已有但不完整的作者名单；关闭时不改作者，关联正式版也保留原有作者。
 
 menu-placement-none = 无（隐藏）
 batch-feedback-heading = 运行反馈与报告
@@ -408,15 +407,15 @@ metadata-update-journal-info =
 metadata-update-journal-info-description = 此项是“更新元数据”的独立步骤；书目未变或关闭书目核验时仍可查询。遵循补空／覆盖偏好、字段选择与数据源优先级，复用有效缓存。
 
 menu-group-review = 文献核验、版本与去重
-workflow-execution-overview = 自动导入：按独立开关后台处理，默认本地校验、保留全部条目。两个手动核心命令的执行步骤及耗时选项统一在“两个核心功能与耗时选项”中配置。
-workflow-compact-menu = 右键仅显示“检查并修复元数据”和“更新元数据”
+workflow-execution-overview = 自动导入：按独立开关后台处理，默认本地校验、保留全部条目。手动命令的显示、执行步骤及耗时选项统一在“右键菜单与核心功能”中配置。
+workflow-compact-menu = Zotero MetaFlow：仅显示“检查并修复元数据”和“更新元数据”
     .label = 右键仅显示“检查并修复元数据”和“更新元数据”
-workflow-compact-description = 默认开启。低频工具仍可在下方工具入口、标题工具栏和快捷键中使用；关闭后恢复原有菜单位置设置。
+workflow-compact-description = 默认开启，仅保留上面的两条 Zotero MetaFlow 命令。每条命令的显示开关和执行步骤在下面分别配置；关闭此选项可配置更多菜单及其位置。低频工具也可从“按需工具”或快捷键执行。
 workflow-remote-authors-check = 检查并修复时同时联网核验作者
     .label = 检查并修复时同时联网核验作者
 workflow-remote-authors-description = 默认关闭以缩短本地检查时间。开启后仅手动检查联网，自动导入仍不使用此选项。仅需核验作者时，也可使用“更新元数据”。
 workflow-tool-center = 按需工具
-workflow-tool-description = 先在主窗口选中文献，再选择工具执行。格式转换、批量替换、Extra 清理、版本处理与合并均保留原有开关或确认步骤；工具不会因为菜单隐藏而自动运行。
+workflow-tool-description = 先在主窗口选中文献，再选择工具执行。元数据按身份与来源判据直接填充；合并仍需选择重复组。格式转换、批量替换与 Extra 清理遵循各自设置；隐藏工具不会因此自动执行。
 workflow-tool-choice =
     .aria-label = 选择按需工具
 workflow-run-tool = 对主窗口所选文献执行
@@ -479,12 +478,12 @@ duplicates-stats-refreshed = 已刷新统计；条目变更后会清除旧统计
 duplicates-already-running = 已有批量合并正在执行。
 duplicates-select-one-library = 请先选中一个文库，再执行此去重操作；同时选中多个文库时不会自动选择处理范围。
 
-core-workflows-heading = 两个核心功能与耗时选项
-core-workflows-description = 在这里决定两个右键命令各执行哪些步骤。联网、检索和交互核对分别开启；同一轮不会重复查询作者或重复扫描去重。自动导入使用一般设置中的独立开关。
+core-workflows-heading = 右键菜单与核心功能
+core-workflows-description = 统一配置命令是否显示、执行步骤及耗时选项。隐藏菜单只影响入口，自动导入仍由一般设置中的独立开关控制；同一轮不会重复查询作者或重复扫描去重。
 workflow-update-heading = 更新元数据：执行步骤
 workflow-update-description = 按顺序执行已启用的书目核验、格式整理、期刊指标和重复核对。关闭书目核验后仍可单独更新期刊指标。取消会停止后续步骤，已保存的前序步骤不会自动回滚。
-workflow-update-bibliographic = 联网核验书目信息并逐字段确认
-workflow-update-versions = 查询 arXiv 对应正式版（额外联网，类型迁移仍须确认）
+workflow-update-bibliographic = 联网核验书目信息并按判据自动填充
+workflow-update-versions = 查询并关联 arXiv 对应正式版（额外联网，保留预印本）
 workflow-update-format = 采纳后运行已启用的本地格式规则（不扫描重复、不额外补全）
 workflow-check-duplicates = 检查完成后交互核对重复候选（代替重复提醒扫描）
 workflow-update-duplicates = 更新完成后交互核对重复候选（大文库可能耗时）
@@ -497,3 +496,41 @@ workflow-legacy-description = 此 DOI 长型规则开关保留给旧版直接调
 
 core-feedback-completed = 本次组合流程已结束，已保留 { $stages } 个阶段的修改与提示；点击查看完整报告。
 core-feedback-cancelled = 本次组合流程已停止，已保留 { $stages } 个阶段的结果；前序保存未自动回滚。
+
+review-panel-unavailable = 无法打开主界面审阅面板，请先打开 Zotero 主窗口。
+
+review-batch-note = 可一次合并所选重复组（共 { $groups } 组），按照去重设置保留主条目并合并附件、笔记、标签和分类。版本关系条目不会自动合并；请先核对所选组。
+review-batch-select-all = 全选 / 取消全选
+review-batch-group = { $count } 个条目 → 保留 { $id } · { $title }
+review-batch-individual = 逐对审阅
+
+review-auto-ambiguous = 标识符存在多个不同候选，已保留原值并跳过，不要求确认。
+review-auto-blocked = 来源标识符核验失败，已保留原值。
+review-auto-conflict = 文献身份信息冲突，已保留原值并跳过。
+review-auto-evidence = 仅有标题或 PDF 线索，缺少年份或作者的交叉证据，已保留原值。
+
+runtime-data-open = 打开本地运行记录
+
+data-settings-heading = 数据、缓存与运行反馈
+data-settings-description = 文献与附件保存在 Zotero 文献库；插件设置由 Zotero 管理；可复用的联网响应和运行摘要独立保存在配置目录。清理接口缓存不会删除文献、设置、已保存评级或运行记录。
+runtime-data-policy = 运行摘要保留 { $days } 天，最多 { $count } 次、{ $size } MiB；不记录题名、字段原文和密钥。每个核心命令只记一次，详细字段变更保留在当前会话的报告中。
+core-feedback-errors = 本次组合流程遇到错误，已保留前序保存和各阶段结果；请查看详情。
+core-feedback-empty = 本次命令未执行任何阶段，请在核心功能设置中启用所需步骤。
+core-task-running = { $command } · { $index }/{ $total }：{ $stage }
+core-task-stopping = 正在停止；已保存的更改会保留，后续阶段将跳过。
+core-task-check = 检查并修复元数据
+core-task-update = 更新元数据
+core-task-metadata = 核验与补全
+core-task-authors = 作者核验
+core-task-format = 本地检查与格式修复
+core-task-journal = 期刊信息
+core-task-duplicates = 重复文献处理
+core-task-preparing = 准备任务
+core-task-stop = 停止后续执行
+core-task-details = 查看结果
+core-task-dismiss = 收起
+core-task-result = { $outcome } · 已保存 { $saved }/{ $total }
+core-task-finished = 已完成
+core-task-attention = 有待处理问题
+core-task-stopped = 已停止
+core-task-no-stages = 未启用执行步骤

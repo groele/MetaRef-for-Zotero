@@ -2,6 +2,7 @@ import type { ApplyContext, PrepareContext } from "./rules/rule-base";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LintRunner } from "./runner";
 
+vi.mock("../utils/runtime-data-storage", () => ({ recordRuntimeResult: vi.fn() }));
 vi.mock("./rules", () => ({ Rules: {} }));
 vi.mock("./reporter", () => ({ createReporter: vi.fn(async () => {}), ProgressUI: class { async init() {} close() {} updateProgress() {} showFinished() {} } }));
 vi.mock("../utils/logger", () => ({ createLogger: () => ({ debug() {}, warn() {}, error() {} }), logger: { debug() {} } }));

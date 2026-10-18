@@ -1,12 +1,12 @@
 import type { ApplyContext } from "../rules/rule-base";
 import type { TransformedData } from "../rules/tool-update-metadata/services/base-service";
-import type { ReviewSelection } from "./dialog";
+import type { MetadataDecision } from "./policy";
 import { getString } from "../../utils/locale";
 import { isFieldValidForItemType } from "../../utils/zotero";
 import { normalizeDOI } from "../rules/tool-update-metadata/policy";
 import { REVIEW_FIELDS } from "./policy";
 
-export function selectionIssue(selection: ReviewSelection): string | undefined {
+export function selectionIssue(selection: MetadataDecision): string | undefined {
   const { proposal, action, fields, acknowledged } = selection;
   if (action === "skip")
     return getString("review-skipped");
@@ -27,7 +27,7 @@ export function assertReviewFresh(item: Zotero.Item, original: TransformedData):
     throw new Error(getString("review-stale"));
 }
 
-function preprintExtra(item: Zotero.Item, selection: ReviewSelection, type: _ZoteroTypes.Item.ItemType): string {
+function preprintExtra(item: Zotero.Item, selection: MetadataDecision, type: _ZoteroTypes.Item.ItemType): string {
   const { proposal } = selection;
   let extra = String(item.getField("extra") || "");
   const add = (line: string) => {
@@ -45,7 +45,7 @@ function preprintExtra(item: Zotero.Item, selection: ReviewSelection, type: _Zot
   return extra;
 }
 
-export function applyReviewedMetadata(item: Zotero.Item, selection: ReviewSelection, report: ApplyContext["report"]): void {
+export function applyReviewedMetadata(item: Zotero.Item, selection: MetadataDecision, report: ApplyContext["report"]): void {
   const issue = selectionIssue(selection);
   if (issue) {
     report({ level: "warning", message: issue });
@@ -82,12 +82,12 @@ export function applyReviewedMetadata(item: Zotero.Item, selection: ReviewSelect
       item.setField(change.field, change.after as string);
     else
       continue;
-    report({ level: "info", field: change.field, source: proposal.source, message: getString("review-field-applied", { args: { field: change.field } }) });
+    report({ level: "info", code: "metadata-field-filled", field: change.field, source: proposal.source, message: getString("review-field-applied", { args: { field: change.field } }) });
   }
 }
 
 /** Reuse an existing published record when possible, without overwriting its metadata. */
-export async function createRelatedVersion(item: Zotero.Item, selection: ReviewSelection, signal?: AbortSignal): Promise<Zotero.Item> {
+export async function createRelatedVersion(item: Zotero.Item, selection: MetadataDecision, signal?: AbortSignal): Promise<Zotero.Item> {
   const issue = selectionIssue(selection);
   if (issue || selection.action !== "related")
     throw new Error(issue || getString("review-skipped"));

@@ -50,3 +50,13 @@ it("preserves existing index values in blank mode and removes negative membershi
   expect(index.readJournalRankingIndex(item()).has("sci")).toBe(false);
   await index.flushJournalRankingIndex();
 });
+
+it("does not rewrite unchanged journal data across repeated flushes", async () => {
+  const index = await setup();
+  await index.saveJournalRankingIndex(item(), { jcr: "Q1" }, new Set(["jcr"]));
+  await index.flushJournalRankingIndex();
+  await index.flushJournalRankingIndex();
+  await index.saveJournalRankingIndex(item(), { jcr: "Q1" }, new Set(["jcr"]));
+  await index.flushJournalRankingIndex();
+  expect(stored.writes).toBe(1);
+});

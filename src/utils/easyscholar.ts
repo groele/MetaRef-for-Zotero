@@ -1,6 +1,6 @@
 import { clearServiceRequestCache, requestGET, requestServiceGET } from "./http";
 import { getPref } from "./prefs";
-import { publicationCacheName, SERVICE_CACHE_TTL } from "./service-cache-policy";
+import { PUBLIC_CACHE_TTL, publicationCacheName, SERVICE_CACHE_TTL } from "./service-cache-policy";
 
 export interface EasyScholarRank {
   natureIndex?: string;
@@ -351,8 +351,15 @@ function rankCacheKey(title: string) {
 }
 
 export function peekEasyScholarRank(title: string): EasyScholarResult | undefined {
-  const entry = cache.get(rankCacheKey(title));
-  return entry && entry.expires > Date.now() ? entry.result : undefined;
+  const key = rankCacheKey(title);
+  const entry = cache.get(key);
+  if (!entry || entry.expires <= Date.now()) {
+    cache.delete(key);
+    return;
+  }
+  cache.delete(key);
+  cache.set(key, entry);
+  return entry.result;
 }
 
 async function request(url: string, signal?: AbortSignal, fresh = false) {
@@ -395,8 +402,11 @@ export async function fetchEasyScholarRank(title: string, signal?: AbortSignal):
   const natureDatasetUUID = String(getPref("insights.natureDatasetUUID" as any, "") || "").trim();
   const cacheKey = rankCacheKey(normalizedTitle);
   const cached = cache.get(cacheKey);
-  if (cached && cached.expires > Date.now())
+  if (cached && cached.expires > Date.now()) {
+    cache.delete(cacheKey);
+    cache.set(cacheKey, cached);
     return cached.result;
+  }
 
   try {
     const response = await request(createRequestURL(secretKey, normalizedTitle), signal);
@@ -419,9 +429,14 @@ export async function fetchEasyScholarRank(title: string, signal?: AbortSignal):
 }
 
 function remember(key: string, result: EasyScholarResult, expires: number): EasyScholarResult {
+  cache.delete(key);
+  for (const [old, entry] of cache) {
+    if (entry.expires <= Date.now())
+      cache.delete(old);
+  }
   if (cache.size >= MAX_CACHE_SIZE)
     cache.delete(cache.keys().next().value!);
-  cache.set(key, { expires: Math.min(expires, Date.now() + CACHE_TTL), result });
+  cache.set(key, { expires: Math.min(expires, Date.now() + (result.status === "not-found" ? PUBLIC_CACHE_TTL : CACHE_TTL)), result });
   return result;
 }
 

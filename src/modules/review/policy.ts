@@ -27,6 +27,13 @@ export interface ReviewProposal {
   excludedFields?: ReviewField[];
 }
 
+export interface MetadataDecision {
+  proposal: ReviewProposal;
+  fields: Set<string>;
+  acknowledged: boolean;
+  action: "skip" | "update" | "related";
+}
+
 export function normalizeArxiv(value: string): string {
   return value.trim().match(/^(?:https?:\/\/(?:export\.)?arxiv\.org\/(?:abs|pdf|html)\/|(?:doi:|https?:\/\/doi\.org\/)?10\.48550\/arxiv\.|arxiv:\s*)?((?:\d{4}\.\d{4,5}|[a-z.-]+\/\d{7})(?:v[1-9]\d*)?)(?:\.pdf)?(?:[?#].*)?$/i)?.[1].toLowerCase() || "";
 }
@@ -85,7 +92,7 @@ export function reviewChanges(original: TransformedData, candidate: TransformedD
   });
 }
 
-function firstCreator(data: TransformedData): string {
+export function firstCreator(data: TransformedData): string {
   const creator = data.creators?.[0];
   return creator ? (("name" in creator ? creator.name : creator.lastName) || "").normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "") : "";
 }
@@ -101,65 +108,4 @@ export function identityConflicts(original: TransformedData, candidate: Transfor
   if (firstCreator(original) && firstCreator(candidate) && firstCreator(original) !== firstCreator(candidate))
     conflicts.push("creators");
   return conflicts;
-}
-
-export interface DuplicateRecord {
-  id: number;
-  libraryID: number;
-  data: TransformedData;
-  preprint: boolean;
-}
-export interface DuplicatePair {
-  left: DuplicateRecord;
-  right: DuplicateRecord;
-  reason: "doi" | "title" | "arxiv";
-  mergeable: boolean;
-}
-
-function titleKey(data: TransformedData): string {
-  const title = (data.title || "").normalize("NFKC").replace(/<[^>]*>/g, "").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
-  const year = data.date?.match(/\b\d{4}\b/)?.[0] || "";
-  const creator = firstCreator(data);
-  return title.length >= 12 && year && creator ? `${title}:${year}:${creator}` : "";
-}
-
-export function duplicatePairs(selected: Set<number>, records: DuplicateRecord[]): DuplicatePair[] {
-  const buckets = new Map<string, DuplicateRecord[]>();
-  const keys = (record: DuplicateRecord) => {
-    const doi = normalizeDOI(record.data.DOI);
-    const title = titleKey(record.data);
-    const arxiv = normalizeArxiv(record.data.url || "") || normalizeArxiv(record.data.DOI || "");
-    return [doi && `doi:${doi}`, title && `title:${title}`, arxiv && `arxiv:${arxiv.replace(/v\d+$/, "")}`].filter(Boolean).map(key => `${record.libraryID}:${key}`);
-  };
-  for (const record of records) {
-    for (const key of keys(record)) {
-      if (!buckets.has(key))
-        buckets.set(key, []);
-      buckets.get(key)!.push(record);
-    }
-  }
-  const pairs = new Map<string, DuplicatePair>();
-  for (const left of records.filter(record => selected.has(record.id))) {
-    for (const key of keys(left)) {
-      for (const right of buckets.get(key) || []) {
-        if (left.id === right.id)
-          continue;
-        const pairKey = [left.id, right.id].sort((a, b) => a - b).join(":");
-        if (pairs.has(pairKey))
-          continue;
-        const leftDOI = normalizeDOI(left.data.DOI);
-        const rightDOI = normalizeDOI(right.data.DOI);
-        const leftArxiv = normalizeArxiv(left.data.url || "") || normalizeArxiv(left.data.DOI || "");
-        const rightArxiv = normalizeArxiv(right.data.url || "") || normalizeArxiv(right.data.DOI || "");
-        pairs.set(pairKey, {
-          left,
-          right,
-          reason: key.includes(":doi:") ? "doi" : key.includes(":arxiv:") ? "arxiv" : "title",
-          mergeable: left.data.itemType === right.data.itemType && left.preprint === right.preprint && !(leftDOI && rightDOI && leftDOI !== rightDOI)
-            && !(leftArxiv && rightArxiv && leftArxiv !== rightArxiv),
-        });
-      }
-    }
-  }
-  return [...pairs.values()];
 }
