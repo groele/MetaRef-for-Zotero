@@ -18,6 +18,20 @@
       data-l10n-id="lint-on-item-added-description"
       class="metaref-pref-description"
     />
+    <description
+      data-l10n-id="workflow-execution-overview"
+      class="metaref-pref-description"
+    />
+    <checkbox
+      data-l10n-id="workflow-remote-authors-check"
+      preference="workflow.remoteAuthorsOnCheck"
+      native="true"
+    />
+    <description
+      data-l10n-id="workflow-remote-authors-description"
+      class="metaref-pref-description"
+    />
+
     <!-- 添加时自动执行格式化（群组条目） -->
     <checkbox
       data-l10n-id="lint-on-groupItem-added"
@@ -95,6 +109,29 @@
   </groupbox>
 
   <!-- 是否启用富文本工具 -->
+  <groupbox id="metaref-core-workflows">
+    <label><html:h2 data-l10n-id="core-workflows-heading" /></label>
+    <description
+      data-l10n-id="core-workflows-description"
+      class="metaref-pref-description"
+    />
+  </groupbox>
+
+  <groupbox id="metaref-tool-center">
+    <label><html:h2 data-l10n-id="workflow-tool-center" /></label>
+    <description
+      data-l10n-id="workflow-tool-description"
+      class="metaref-pref-description"
+    />
+    <html:select id="metaref-tool-choice" data-l10n-id="workflow-tool-choice" />
+    <button
+      id="metaref-run-tool"
+      data-l10n-id="workflow-run-tool"
+      native="true"
+    />
+    <html:div id="metaref-tool-status" role="status" aria-live="polite" />
+  </groupbox>
+
   <groupbox>
     <label><html:h2 data-l10n-id="section-rich-text" /></label>
     <checkbox
@@ -262,6 +299,16 @@
   <!-- 右键菜单设置 -->
   <groupbox>
     <label><html:h2 data-l10n-id="section-menu" /></label>
+    <checkbox
+      data-l10n-id="workflow-compact-menu"
+      preference="menu.compact"
+      native="true"
+    />
+    <description
+      data-l10n-id="workflow-compact-description"
+      class="metaref-pref-description"
+    />
+
     <description
       data-l10n-id="section-menu-description"
       class="metaref-pref-description"
@@ -1336,12 +1383,6 @@
         preference="rule.no-doi-prefix"
         native="true"
       />
-      <!-- DOI: 应为长型 -->
-      <checkbox
-        data-l10n-id="rule-correct-doi-long"
-        preference="rule.correct-doi-long"
-        native="true"
-      />
     </html:details>
 
     <!-- General Field: Others -->
@@ -1444,6 +1485,20 @@
       />
     </groupbox>
 
+    <groupbox>
+      <label><html:h3 data-l10n-id="workflow-legacy-heading" /></label>
+      <description
+        data-l10n-id="workflow-legacy-description"
+        class="metaref-pref-description"
+      />
+      <!-- DOI: 应为长型 -->
+      <checkbox
+        data-l10n-id="rule-correct-doi-long"
+        preference="rule.correct-doi-long"
+        native="true"
+      />
+    </groupbox>
+
     <!-- Semantic Scholar Token -->
     <groupbox>
       <label><html:h3 data-l10n-id="metadata-provider-options" /></label>
@@ -1472,6 +1527,108 @@
         class="metaref-pref-description"
       />
     </groupbox>
+  </groupbox>
+
+  <groupbox id="metaref-duplicate-settings">
+    <label><html:h2 data-l10n-id="duplicates-heading" /></label>
+    <description
+      data-l10n-id="duplicates-description"
+      class="metaref-pref-description"
+    />
+    <groupbox>
+      <label><html:h3 data-l10n-id="duplicates-default-heading" /></label>
+      <html:div
+        id="metaref-duplicates-default-action"
+        role="radiogroup"
+        data-l10n-id="duplicates-default-aria"
+      />
+    </groupbox>
+    <groupbox>
+      <label><html:h3 data-l10n-id="duplicates-master-heading" /></label>
+      <html:div
+        id="metaref-duplicates-master"
+        role="radiogroup"
+        data-l10n-id="duplicates-master-aria"
+      />
+      <label
+        control="metaref-duplicates-concurrency"
+        data-l10n-id="duplicates-concurrency"
+      />
+      <html:input
+        id="metaref-duplicates-concurrency"
+        type="number"
+        min="1"
+        max="8"
+        step="1"
+        data-l10n-id="duplicates-concurrency-aria"
+      />
+    </groupbox>
+    <groupbox>
+      <label><html:h3 data-l10n-id="duplicates-type-heading" /></label>
+      <checkbox
+        data-l10n-id="duplicates-different-types"
+        preference="duplicates.mergeDifferentTypes"
+        native="true"
+      />
+      <description
+        data-l10n-id="duplicates-type-description"
+        class="metaref-pref-description"
+      />
+    </groupbox>
+    <groupbox>
+      <label><html:h3 data-l10n-id="duplicates-view-heading" /></label>
+      <checkbox
+        data-l10n-id="duplicates-show-stats"
+        preference="duplicates.showStats"
+        native="true"
+      />
+      <button
+        id="metaref-duplicates-refresh"
+        data-l10n-id="duplicates-refresh"
+        native="true"
+      />
+    </groupbox>
+    <groupbox>
+      <label><html:h3 data-l10n-id="duplicates-actions-heading" /></label>
+      <button
+        id="metaref-duplicates-review"
+        data-l10n-id="duplicates-review"
+        native="true"
+      />
+      <button
+        id="metaref-duplicates-bulk"
+        data-l10n-id="duplicates-bulk"
+        native="true"
+      />
+      <button
+        id="metaref-duplicates-pause"
+        data-l10n-id="duplicates-pause"
+        native="true"
+      />
+      <button
+        id="metaref-duplicates-cancel"
+        data-l10n-id="duplicates-cancel"
+        native="true"
+      />
+    </groupbox>
+    <groupbox>
+      <label><html:h3 data-l10n-id="duplicates-data-heading" /></label>
+      <description
+        data-l10n-id="duplicates-data-description"
+        class="metaref-pref-description"
+      />
+      <button
+        id="metaref-duplicates-export"
+        data-l10n-id="duplicates-export"
+        native="true"
+      />
+      <button
+        id="metaref-duplicates-import"
+        data-l10n-id="duplicates-import"
+        native="true"
+      />
+    </groupbox>
+    <html:div id="metaref-duplicates-status" role="status" aria-live="polite" />
   </groupbox>
 
   <!-- 关于 -->

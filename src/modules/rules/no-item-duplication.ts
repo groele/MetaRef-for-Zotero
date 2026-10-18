@@ -1,4 +1,6 @@
+import { cachedDuplicateSearch } from "../../utils/duplicate-search-cache";
 import { getString } from "../../utils/locale";
+import { isNonDuplicate } from "../review/non-duplicates";
 import { defineRule } from "./rule-base";
 
 interface NoItemDuplicationOptions {
@@ -22,11 +24,21 @@ export const NoItemDuplication = defineRule<NoItemDuplicationOptions>({
     const failedLibraries = new Map<number, string>();
     for (const libraryID of libraryIds) {
       try {
-        // @ts-expect-error miss types for `Zotero.Duplicates`
-        const duplicates = new Zotero.Duplicates(libraryID);
-        const search = (await duplicates.getSearchObject()) as Zotero.Search;
-        const searchResult = await search.search();
-        duplicateItemIdsByLibrary.set(libraryID, new Set(searchResult as number[]));
+        duplicateItemIdsByLibrary.set(libraryID, await cachedDuplicateSearch(libraryID, async () => {
+          // @ts-expect-error miss types for `Zotero.Duplicates`
+          const duplicates = new Zotero.Duplicates(libraryID);
+          const search = (await duplicates.getSearchObject()) as Zotero.Search;
+          const found = await search.search();
+          return new Set(found.filter((id) => {
+            const item = Zotero.Items.get(id);
+            if (!item)
+              return false;
+            return duplicates.getSetItemsByItemID(id).some((otherID: number) => {
+              const other = Zotero.Items.get(otherID);
+              return other && otherID !== id && !isNonDuplicate(item, other);
+            });
+          }));
+        }));
       }
       catch (e) {
         failedLibraries.set(libraryID, e instanceof Error ? e.message : String(e));
@@ -54,7 +66,7 @@ export const NoItemDuplication = defineRule<NoItemDuplicationOptions>({
         message: getString("rule-no-item-duplication-report-message"),
         action: {
           label: getString("rule-no-item-duplication-report-action"),
-          callback: () => {
+          callback: async () => {
             const mainWindow = Zotero.getMainWindow();
             if (!mainWindow)
               return;
@@ -71,6 +83,9 @@ export const NoItemDuplication = defineRule<NoItemDuplicationOptions>({
 
             // Focus to 'duplicates' collection
             mainWindow.ZoteroPane.setVirtual(item.libraryID, "duplicates", true, true);
+            const current = Zotero.Items.get(item.id);
+            if (current && !current.deleted)
+              await addon.hooks.onLintInBatch("tool-review-duplicates", [current]);
           },
         },
       });

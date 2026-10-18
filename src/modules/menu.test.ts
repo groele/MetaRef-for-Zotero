@@ -6,7 +6,7 @@ describe("menu module", () => {
   const registered = () => {
     const options: any[] = [];
     vi.stubGlobal("addon", { data: { config: { addonRef: "metaref", addonID: "test", prefsPrefix: "test" } } });
-    vi.stubGlobal("Zotero", { MenuManager: { registerMenu: (option: any) => {
+    vi.stubGlobal("Zotero", { Prefs: { get: (key: string) => key.endsWith("menu.compact") ? false : undefined }, MenuManager: { registerMenu: (option: any) => {
       options.push(option);
       return String(options.length);
     }, unregisterMenu: vi.fn() } });
@@ -17,7 +17,7 @@ describe("menu module", () => {
     try {
       const root = registered();
       expect(root.menus.filter((menu: any) => menu.menuType === "submenu")).toHaveLength(0);
-      expect(root.menus.filter((menu: any) => menu.menuType === "menuitem")).toHaveLength(30);
+      expect(root.menus.filter((menu: any) => menu.menuType === "menuitem")).toHaveLength(33);
     }
     finally {
       unregisterMenu();
@@ -28,6 +28,7 @@ describe("menu module", () => {
     try {
       const options: any[] = [];
       const values = new Map<string, unknown>();
+      values.set("extensions.zotero.metaref.menu.compact", false);
       vi.stubGlobal("addon", { data: { config: { addonRef: "metaref", addonID: "test", prefsPrefix: "test" } } });
       vi.stubGlobal("Zotero", { Prefs: { get: (key: string) => values.get(key) }, MenuManager: { registerMenu: (option: any) => {
         options.push(option);
@@ -98,14 +99,14 @@ describe("menu module", () => {
       vi.unstubAllGlobals();
     }
   });
-  it("updates metadata without implicitly running standard formatters", async () => {
+  it("dispatches metadata updating through the configurable reviewed core workflow", async () => {
     try {
       const root = registered();
       const run = vi.fn();
       (addon as any).hooks = { onLintInBatch: run };
       const command = root.menus.find((menu: any) => menu.l10nID === "metaref-rule-tool-update-metadata-menu-item");
       await command.onCommand(new Event("command"), { items: [] });
-      expect(run).toHaveBeenCalledWith(["tool-update-metadata"], []);
+      expect(run).toHaveBeenCalledWith(["tool-update-metadata"], [], { review: true });
     }
     finally {
       unregisterMenu();
@@ -155,12 +156,12 @@ describe("menu module", () => {
       expect(Rules.getStandard().every(rule => !rule.id.startsWith("tool-"))).toBe(true);
     });
 
-    it("covers all 30 menu items across all sections", () => {
+    it("covers all 33 menu items across all sections", () => {
       const allItemIDs = Object.values(MENU_SECTIONS).flat();
 
-      expect(allItemIDs).toHaveLength(30);
+      expect(allItemIDs).toHaveLength(33);
       const uniqueIDs = new Set(allItemIDs);
-      expect(uniqueIDs.size).toBe(30);
+      expect(uniqueIDs.size).toBe(33);
     });
 
     it("references valid registered rules for all rule-based menu items", () => {

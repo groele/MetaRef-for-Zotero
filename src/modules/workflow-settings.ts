@@ -4,6 +4,7 @@ import { getPref, setPref } from "../utils/prefs";
 import { Rules } from "./rules";
 
 export function workflowGroup(id: string) {
+  id = id.toLowerCase();
   if (/creators/.test(id))
     return "creators";
   if (/title/.test(id) && !/publication/.test(id))
@@ -20,7 +21,7 @@ export function workflowGroup(id: string) {
 export function setupWorkflowSettings(pane: Element) {
   const doc = pane.ownerDocument!;
   const listen = preferenceListeners(pane);
-  const host = pane.querySelector(":scope > groupbox")!;
+  const host = pane.querySelector("#metaref-core-workflows")!;
   const card = doc.createElementNS("http://www.w3.org/1999/xhtml", "details") as HTMLDetailsElement;
   card.className = "metaref-setting-card";
   card.id = "metaref-workflow-settings";
@@ -30,7 +31,7 @@ export function setupWorkflowSettings(pane: Element) {
   const description = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
   doc.l10n!.setAttributes(description, "metaref-workflow-description");
   card.append(description);
-  const makeChoice = (id: string) => {
+  const makeChoice = (id: string, target: Element = card) => {
     const label = doc.createElementNS("http://www.w3.org/1999/xhtml", "label");
     label.className = "metaref-check-option metaref-workflow-module";
     const input = doc.createElementNS("http://www.w3.org/1999/xhtml", "input") as HTMLInputElement;
@@ -41,18 +42,63 @@ export function setupWorkflowSettings(pane: Element) {
     input.setAttribute("aria-labelledby", caption.id);
     doc.l10n!.setAttributes(caption, `metaref-workflow-${id}`);
     label.append(input, caption);
-    card.append(label);
+    target.append(label);
     return input;
   };
-  for (const [id, pref] of [["metadata", "workflow.updateMetadata"], ["rankings", "workflow.updateJournalRankings"]]) {
-    const input = makeChoice(id);
+  const choice = (id: string, pref: string, fallback: boolean, target: Element = card) => {
+    const input = makeChoice(id, target);
     input.setAttribute("preference", `${addon.data.config.prefsPrefix}.${pref}`);
     input.setAttribute("aria-label", getString(`workflow-${id}` as any));
-    input.checked = getPref(pref as any, false) === true;
+    input.checked = getPref(pref as any, fallback) === true;
     listen(input, "change", () => setPref(pref as any, input.checked));
-  }
+    return input;
+  };
+  for (const [id, pref] of [["metadata", "workflow.updateMetadata"], ["rankings", "workflow.updateJournalRankings"], ["check-duplicates", "workflow.reviewDuplicatesOnCheck"]])
+    choice(id, pref, false);
+  const moveChoice = (pref: string, target: Element) => {
+    const input = pane.querySelector(`[preference='${addon.data.config.prefsPrefix}.${pref}']`);
+    if (!input)
+      return;
+    const control = input.closest(".metaref-check-option") || input;
+    const description = control.nextElementSibling;
+    target.append(control);
+    if (description?.localName === "description")
+      target.append(description);
+  };
+  moveChoice("workflow.remoteAuthorsOnCheck", card);
+  const makeCard = (id: string, heading: string, description: string) => {
+    const section = doc.createElementNS("http://www.w3.org/1999/xhtml", "details");
+    section.id = id;
+    section.className = "metaref-setting-card";
+    const title = doc.createElementNS("http://www.w3.org/1999/xhtml", "summary");
+    doc.l10n!.setAttributes(title, heading);
+    const note = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
+    doc.l10n!.setAttributes(note, description);
+    section.append(title, note);
+    host.append(section);
+    return section;
+  };
+  host.append(card);
+  const update = makeCard("metaref-update-workflow-settings", "metaref-workflow-update-heading", "metaref-workflow-update-description");
+  const bibliographic = choice("update-bibliographic", "workflow.updateBibliographic", true, update);
+  const versions = choice("update-versions", "workflow.updateVersions", false, update);
+  choice("update-format", "workflow.formatAfterUpdate", true, update);
+  moveChoice("metadata.updateJournalInfo", update);
+  choice("update-duplicates", "workflow.reviewDuplicatesOnUpdate", false, update);
+  const search = makeCard("metaref-search-workflow-settings", "metaref-workflow-search-heading", "metaref-workflow-search-description");
+  const pdf = choice("scan-pdf", "workflow.scanPDF", false, search);
+  const title = choice("search-title", "workflow.searchTitle", false, search);
+  const updateDependencies = () => {
+    versions.disabled = !bibliographic.checked;
+    const metadata = pane.querySelector<HTMLInputElement>("#metaref-workflow-metadata")!;
+    const authors = pane.querySelector<HTMLInputElement>(`input[preference='${addon.data.config.prefsPrefix}.workflow.remoteAuthorsOnCheck']`);
+    pdf.disabled = title.disabled = !bibliographic.checked && !metadata.checked && !authors?.checked;
+  };
+  listen(pane, "change", updateDependencies);
+  listen(pane, "command", updateDependencies);
+  updateDependencies();
   for (const group of ["title", "creators", "identifiers", "pagination", "publication", "other"]) {
-    const rules = Rules.getStandard().filter(rule => workflowGroup(rule.id) === group);
+    const rules = Rules.getStandard().filter(rule => rule.id !== "correct-doi-long" && workflowGroup(rule.id) === group);
     const input = makeChoice(group);
     const update = () => {
       const enabled = rules.filter(rule => getPref(`rule.${rule.id}` as any) === true).length;
@@ -73,5 +119,4 @@ export function setupWorkflowSettings(pane: Element) {
     listen(pane, "command", update);
     update();
   }
-  host.append(card);
 }

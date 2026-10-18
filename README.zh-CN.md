@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-10.6.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-11.0.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,17 +19,19 @@
 
 ---
 
+> **11.0.0 大版本更新：**将文献元数据核验、预印本版本管理和重复条目审查整合到两个核心工作流，并统一设置入口、强化批处理恢复。功能范围与验证边界见[系统性逐项验收报告](docs/systematic-acceptance-2026-10-18.md)。
+
 ## 📖 项目简介
 
 **Zotero MetaFlow** 是专为 Zotero 设计的高性能、工业级文献元数据治理与期刊指标管理插件（隶属于 Zotero Flow Series 生产力套件）。
 
-日常科研中，从各大数据库、网页或 DOI 导入的文献元数据往往存在标题大小写混乱、作者姓名格式不一、缺失期刊缩写、无效字段冗余、缺少期刊学术评级等问题。Zotero MetaFlow 提供了 **49 项开箱即用的专业校验整理规则**、**61 项 EasyScholar 期刊评价指标**、**Nature Index 2026 与 ESI 学科收录认证**，以及**智能网络元数据自动补全**，让您的个人知识库井然有序、规范专业。
+日常科研中，从各大数据库、网页或 DOI 导入的文献元数据往往存在标题大小写混乱、作者姓名格式不一、缺失期刊缩写、无效字段冗余、缺少期刊学术评级等问题。Zotero MetaFlow 提供了 **58 项内置规则与工具**、**61 项 EasyScholar 期刊评价指标**、**Nature Index 2026 与 ESI 学科收录认证**，以及**智能网络元数据自动补全**，让您的个人知识库井然有序、规范专业。
 
 ---
 
 ## ✨ 核心特性
 
-### 1. 🧹 深度元数据清洗与规范化（49 项内置规则）
+### 1. 🧹 深度元数据清洗与规范化（58 项规则与工具）
 
 - **标题格式规整**：支持将全大写或杂乱标题一键转换为规范的句首字母大写（Sentence case）或标题大写（Title Case），内置智能词典自动保护化学式（如 $\text{CO}_2$、$\text{H}_2\text{O}$）、基因命名、mRNA 及专有名词。
 - **作者与创作者修复**：智能识别姓名前后颠倒、拼音转换与声调标注，剔除无效作者并修复作者角色。
@@ -79,7 +81,7 @@
 
 | 项目                   | 说明                                                                                  |
 | :--------------------- | :------------------------------------------------------------------------------------ |
-| **插件版本**           | `10.6.0`                                                                              |
+| **插件版本**           | `11.0.0`                                                                              |
 | **插件 ID**            | `metaflow@groele`                                                                     |
 | **支持的 Zotero 版本** | `Zotero 10.0 – 11.*`（严格测试覆盖 Windows Zotero 10.0.6 与 Zotero 11 dev Gecko 153） |
 | **操作系统**           | Windows / macOS / Linux                                                               |

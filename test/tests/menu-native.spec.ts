@@ -8,16 +8,20 @@ describe("native flat menu commands", function () {
   const plugin = () => (Zotero as any)[config.addonInstance];
   const items: Zotero.Item[] = [];
   let original: unknown;
+  let compact: unknown;
 
   before(function () {
     original = Zotero.Prefs.get(key, true);
     Zotero.Prefs.set(key, false, true);
+    compact = Zotero.Prefs.get(`${config.prefsPrefix}.menu.compact`, true);
+    Zotero.Prefs.set(`${config.prefsPrefix}.menu.compact`, false, true);
   });
 
   after(async function () {
     for (const item of items)
       await item.eraseTx();
     Zotero.Prefs.set(key, original as boolean, true);
+    Zotero.Prefs.set(`${config.prefsPrefix}.menu.compact`, compact as boolean, true);
   });
 
   afterEach(async function () {
@@ -76,7 +80,7 @@ describe("native flat menu commands", function () {
     await wait(() => sub.state === "open", "MetaRef popup opening");
     await shown;
     assert.equal(sub.querySelectorAll(":scope > menu").length, 0, "no nested menu arrows");
-    assert.equal(sub.querySelectorAll(":scope > menuitem").length, 30);
+    assert.equal(sub.querySelectorAll(":scope > menuitem").length, 33);
     for (const entry of [root, ...sub.querySelectorAll("menuitem"), ...popup.querySelectorAll(":scope > menuitem[data-l10n-id^='metaref-']")]) {
       assert.include(entry.style.getPropertyValue("--custom-menu-icon-light"), "metaref-16.svg", "all MetaFlow menu entries have the selected icon");
       assert.include(entry.style.getPropertyValue("--custom-menu-icon-dark"), "metaref-16.svg");

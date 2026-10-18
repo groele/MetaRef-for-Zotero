@@ -23,6 +23,7 @@ describe("manual author repair in both MetaFlow actions", function () {
     pref("lint.autoReport", false);
     pref("metadata.repairCreators", true);
     pref("workflow.updateMetadata", false);
+    pref("workflow.remoteAuthorsOnCheck", true);
     pref("workflow.updateJournalRankings", false);
     pref("rule.tool-update-metadata.option.mode", "blank");
     for (const rule of Rules.getStandard())

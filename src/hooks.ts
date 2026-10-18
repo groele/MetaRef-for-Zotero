@@ -1,9 +1,13 @@
 import type { Arrayable } from "./utils/types";
+import { localDOICheck, runCoreWorkflow } from "./modules/core-workflow";
+import { invalidateDuplicateStats, registerDuplicateStats, unregisterDuplicateStats } from "./modules/duplicate-stats";
 import { registerExtraColumns, unregisterExtraColumns } from "./modules/item-tree";
 import { refreshJournalPane, registerJournalPane, setJournalUpdateResult, unregisterJournalPane } from "./modules/journal-pane";
 import { registerMenu, unregisterMenu } from "./modules/menu";
 import { registerNotifier, unregisterNotifier } from "./modules/notifier";
 import { registerPrefs, registerPrefsScripts, registerPrefsWindow, unregisterPrefsWindows } from "./modules/preference";
+import { REVIEW_COMMANDS, runReviewCommand } from "./modules/review";
+import { processImportedDuplicates } from "./modules/review/duplicate-batch";
 import { RichTextToolBar, setHtmlTag } from "./modules/rich-text";
 import { Rules } from "./modules/rules";
 import { ToolUpdateEasyScholar } from "./modules/rules/tool-update-easyscholar";
@@ -13,6 +17,7 @@ import { AutomaticItems } from "./utils/automatic-items";
 import { createAutomaticWorkflow, runAutomaticWorkflow } from "./utils/automatic-workflow";
 import { cleanupResources } from "./utils/cleanup";
 import { closeAllDialogs } from "./utils/dialog";
+import { clearDuplicateSearchCache } from "./utils/duplicate-search-cache";
 import { toArray } from "./utils/general";
 import { migrateGreenFrogPreferences } from "./utils/greenfrog-migration";
 import { clearRequestCache } from "./utils/http";
@@ -22,7 +27,9 @@ import { flushJournalRankingIndex, loadJournalRankingIndex } from "./utils/journ
 import { initLocale, registerMainWindowLocale, unloadLocale, unregisterMainWindowLocale } from "./utils/locale";
 import { logger } from "./utils/logger";
 import { getPref } from "./utils/prefs";
+import { selectedCollections } from "./utils/selection";
 import { flushServiceCache } from "./utils/service-cache-storage";
+import { REMOTE_STANDARD_RULES } from "./utils/workflow-policy";
 
 const shortcutCleanups = new Map<Window, () => void>();
 const toolbars = new Map<Window, RichTextToolBar>();
@@ -44,6 +51,7 @@ async function onStartup() {
       return;
     registerNotifier();
     registerMenu();
+    registerDuplicateStats();
     await loadJournalInsights();
     await loadJournalRankingIndex();
     if (!addon.data.alive)
@@ -89,6 +97,8 @@ async function onShutdown() {
     flushServiceCache,
     clearRequestCache,
     unregisterNotifier,
+    unregisterDuplicateStats,
+    clearDuplicateSearchCache,
     unregisterPrefsWindows,
     closeAllDialogs,
     () => addon.runner.stop(),
@@ -116,6 +126,11 @@ async function onNotify(
   extraData: { [key: string]: unknown },
 ) {
   logger.debug("notify", event, type, ids, extraData);
+
+  if (type === "item" && ["add", "modify", "delete", "trash", "refresh"].includes(event)) {
+    clearDuplicateSearchCache();
+    invalidateDuplicateStats();
+  }
 
   if (event === "modify" && type === "item") {
     await refreshJournalPane(ids.map(Number));
@@ -193,6 +208,8 @@ async function processAddedItems(ids: number[]) {
         return result;
       },
     }, () => addon.data.alive && getPref("lint.onAdded"));
+    if (addon.data.alive && getPref("lint.onAdded") && !workflow.stages.some(stage => stage.status === "cancelled"))
+      await processImportedDuplicates(items);
   }
 
   logger.debug("automatic batch completed for", ids);
@@ -245,7 +262,7 @@ function onShortcuts(type: string, win?: Window) {
 async function onLintInBatch(
   ruleIDs: Arrayable<ID | "standard">,
   items: Zotero.Item[] | "item" | "collection" | string,
-  context: { automatic?: boolean } = {},
+  context: { automatic?: boolean; review?: boolean; core?: boolean } = {},
 ) {
   if (typeof items === "string") {
     switch (items) {
@@ -253,7 +270,7 @@ async function onLintInBatch(
         items = Zotero.getActiveZoteroPane()?.getSelectedItems() ?? [];
         break;
       case "collection":
-        items = Zotero.getActiveZoteroPane()?.getSelectedCollection()?.getChildItems() ?? [];
+        items = selectedCollections(Zotero.getActiveZoteroPane()).flatMap(collection => collection.getChildItems());
         break;
       default:
         items = Zotero.getActiveZoteroPane()?.getSelectedItems() ?? [];
@@ -270,6 +287,15 @@ async function onLintInBatch(
   );
   items = [...new Map(items.map(item => [item.id || item, item])).values()];
 
+  const requested = [...toArray(ruleIDs)];
+  if (!context.automatic && ((context.core && requested.includes("standard")) || (context.review && requested.includes("tool-update-metadata"))))
+    return runCoreWorkflow(requested.includes("standard") ? "check" : "update", items);
+  for (const command of REVIEW_COMMANDS) {
+    if (requested.includes(command as ID))
+      await runReviewCommand(command, items);
+  }
+  ruleIDs = requested.filter(id => !REVIEW_COMMANDS.includes(id as typeof REVIEW_COMMANDS[number]));
+
   const requestedIDs = [...toArray(ruleIDs)].filter(canRunJournalRule);
   if (requestedIDs.includes("tool-update-easyscholar")) {
     if (getPref("easyscholar.updateAbbreviation", true))
@@ -277,15 +303,19 @@ async function onLintInBatch(
   }
   const requestedRules = requestedIDs.map(id =>
     id === "standard"
-      ? Rules.getEnabledStandard()
+      ? Rules.getEnabledStandard().filter(rule => !REMOTE_STANDARD_RULES.has(rule.id)
+        && !(context.automatic && rule.id === "no-item-duplication" && getPref("duplicates.defaultAction" as any, "cancel") !== "cancel"))
       : Rules.getByID(id)!,
   ).flat();
   const rules = [...new Map(requestedRules.filter(Boolean).map(rule => [rule.id, rule])).values()];
+  if (requestedIDs.includes("standard") && !requestedIDs.includes("require-doi") && getPref("rule.require-doi")) {
+    rules.push(localDOICheck());
+  }
   if (requestedIDs.includes("standard") && !context.automatic) {
     if (getPref("workflow.updateMetadata" as any, false) && !rules.some(rule => rule.id === "tool-update-metadata")) {
       rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false, repairCreators: getPref("metadata.repairCreators" as any, true) === true }) });
     }
-    else if (getPref("metadata.repairCreators" as any, true) && rules.some(rule => rule.id === "require-creators") && !rules.some(rule => rule.id === "tool-update-metadata")) {
+    else if (getPref("workflow.remoteAuthorsOnCheck" as any, false) && getPref("metadata.repairCreators" as any, true) && rules.some(rule => rule.id === "require-creators") && !rules.some(rule => rule.id === "tool-update-metadata")) {
       rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false, repairCreators: true, creatorsOnly: true }) });
     }
     if (hasEnabledJournalMetrics() && getPref("workflow.updateJournalRankings" as any, false) && !rules.some(rule => rule.id === "tool-update-easyscholar"))
@@ -308,7 +338,7 @@ async function onLintInBatch(
   }
 
   const journalUpdate = rules.some(rule => rule.id === "tool-update-easyscholar");
-  const tasks = { items, rules, silent: journalUpdate && !requestedIDs.includes("standard") };
+  const tasks = { items, rules, silent: context.automatic || (journalUpdate && !requestedIDs.includes("standard")) };
   const result = await addon.runner.add(tasks);
   if (updateJournal && !result?.cancelled && addon.data.alive) {
     await Promise.all(items.filter(item => item.itemType === "journalArticle").map(item => getJournalInsights(item, { queryAPI: true })));

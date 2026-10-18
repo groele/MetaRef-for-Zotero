@@ -3,7 +3,7 @@
     "metaflow@groele": {
       "updates": [
         {
-          "version": "10.6.2",
+          "version": "11.0.0",
           "update_link": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi",
           "applications": {
             "zotero": {
