@@ -135,13 +135,18 @@ describe("settings panel layout and validation in Zotero", function () {
   });
 
   it("uses one card style for every section and links workflow modules to existing rule switches", async function () {
-    assert.lengthOf(pane.querySelectorAll(":scope > .metaref-section-card"), 8);
+    assert.isAtLeast(pane.querySelectorAll(":scope > .metaref-section-card").length, 10);
+    assert.isNotNull(pane.querySelector(":scope > .metaref-section-card > #metaref-core-workflows"));
+    assert.isNotNull(pane.querySelector(":scope > .metaref-section-card > #metaref-tool-center"));
+    const sections = [...pane.querySelectorAll(":scope > .metaref-section-card")];
+    assert.isNotNull(sections[0].querySelector(":scope > summary [data-l10n-id$='section-general']"));
+    assert.isNotNull(sections[1].querySelector(":scope > summary [data-l10n-id$='core-workflows-heading']"));
     assert.lengthOf(pane.querySelectorAll("checkbox[preference]"), 0, "all preference checkboxes use the same visible native control");
     for (const card of pane.querySelectorAll(":scope > .metaref-section-card"))
       assert.isNotNull(card.querySelector(":scope > summary"));
     for (const label of pane.querySelectorAll(".metaref-check-option"))
       assert.isNotEmpty(label.textContent!.trim(), "every native checkbox has a readable label");
-    const titleRules = Rules.getStandard().filter(rule => /title/.test(rule.id) && !/publication/.test(rule.id));
+    const titleRules = Rules.getStandard().filter(rule => /title/i.test(rule.id) && !/publication/i.test(rule.id));
     const before = new Map(titleRules.map(rule => [rule.id, Zotero.Prefs.get(pref(`rule.${rule.id}`), true)]));
     const module = pane.querySelector<HTMLInputElement>("#metaref-workflow-title")!;
     try {
@@ -211,6 +216,130 @@ describe("settings panel layout and validation in Zotero", function () {
         Zotero.Prefs.set(pref(key), value as string | boolean, true);
       mode.value = previous.get(modeKey);
       allowType.checked = previous.get(typeKey) as boolean;
+    }
+  });
+
+  it("preserves workflow and field dependencies after unrelated settings change", function () {
+    const keys = ["workflow.updateBibliographic", "workflow.updateMetadata", "workflow.remoteAuthorsOnCheck", "easyscholar.fields.jcr"];
+    const before = new Map(keys.map(key => [key, Zotero.Prefs.get(pref(key), true)]));
+    const set = (key: string, checked: boolean) => {
+      const input = find(key) as HTMLInputElement;
+      input.checked = checked;
+      input.dispatchEvent(new win.Event("change", { bubbles: true }));
+    };
+    try {
+      for (const key of keys)
+        set(key, false);
+      const versions = pane.querySelector<HTMLInputElement>("#metaref-workflow-update-versions")!;
+      const pdf = pane.querySelector<HTMLInputElement>("#metaref-workflow-scan-pdf")!;
+      const title = pane.querySelector<HTMLInputElement>("#metaref-workflow-search-title")!;
+      const column = find("easyscholar.columns.jcr") as HTMLInputElement;
+      pane.dispatchEvent(new win.Event("command", { bubbles: true }));
+      for (const input of [versions, pdf, title, column])
+        assert.isTrue(input.disabled, input.id);
+      set("workflow.updateMetadata", true);
+      assert.isFalse(pdf.disabled);
+      assert.isFalse(title.disabled);
+      assert.isTrue(versions.disabled, "checking metadata does not enable the update-only publication option");
+      set("workflow.updateBibliographic", true);
+      set("easyscholar.fields.jcr", true);
+      assert.isFalse(versions.disabled);
+      assert.isFalse(column.disabled);
+    }
+    finally {
+      for (const [key, value] of before)
+        set(key, value as boolean);
+    }
+  });
+
+  it("persists every bound boolean control and exports a live control inventory", async function () {
+    const controls = [...pane.querySelectorAll<HTMLInputElement>("input[type='checkbox'][preference]")];
+    assert.isAtLeast(controls.length, 150);
+    const inventory = [];
+    for (const input of controls) {
+      const key = input.getAttribute("preference")!;
+      const before = Zotero.Prefs.get(key, true) as boolean;
+      assert.isBoolean(before, key);
+      inventory.push({ id: input.id, preference: key, disabled: input.disabled, value: before });
+      try {
+        for (const value of [!before, before]) {
+          input.checked = value;
+          input.dispatchEvent(new win.Event("change", { bubbles: true }));
+          assert.equal(Zotero.Prefs.get(key, true), value, key);
+        }
+      }
+      finally {
+        input.checked = before;
+        input.dispatchEvent(new win.Event("change", { bubbles: true }));
+      }
+    }
+    const allControls = [...pane.querySelectorAll<HTMLInputElement>("[preference]")].map(input => ({ id: input.id, preference: input.getAttribute("preference"), element: input.localName, type: input.type, disabled: input.disabled }));
+    for (const select of pane.querySelectorAll<HTMLSelectElement>("select[data-abbr-option], select[data-index-policy]")) {
+      const key = select.dataset.abbrOption ? `rule.require-journal-abbr.${select.dataset.abbrOption}` : `insights.${select.dataset.indexPolicy}SourcePriority`;
+      allControls.push({ id: select.id, preference: pref(key), element: "select", type: select.type, disabled: select.disabled });
+    }
+    await IOUtils.writeUTF8(PathUtils.join(PathUtils.tempDir, "metaflow-live-setting-controls.json"), JSON.stringify({ booleanControlsChecked: inventory, controls: allControls }, null, 2));
+  });
+
+  it("persists all abbreviation and journal-index source choices", function () {
+    const controls = [...pane.querySelectorAll<HTMLSelectElement>("select[data-abbr-option], select[data-index-policy]")];
+    assert.lengthOf(controls, 7);
+    for (const input of controls) {
+      const key = pref(input.dataset.abbrOption ? `rule.require-journal-abbr.${input.dataset.abbrOption}` : `insights.${input.dataset.indexPolicy}SourcePriority`);
+      const before = Zotero.Prefs.get(key, true);
+      try {
+        const values = [...input.querySelectorAll("option[value], menuitem[value]")].map(option => option.getAttribute("value")!);
+        assert.isNotEmpty(values, key);
+        for (const value of values) {
+          input.value = value;
+          input.dispatchEvent(new win.Event("change", { bubbles: true }));
+          input.dispatchEvent(new win.Event("command", { bubbles: true }));
+          assert.equal(String(Zotero.Prefs.get(key, true)), value, key);
+        }
+      }
+      finally {
+        input.value = String(before);
+        input.dispatchEvent(new win.Event("change", { bubbles: true }));
+        input.dispatchEvent(new win.Event("command", { bubbles: true }));
+      }
+    }
+  });
+
+  it("redraws the duplicate collection when its statistics display switch changes", async function () {
+    const input = find("duplicates.showStats") as HTMLInputElement;
+    const before = input.checked;
+    let redraws = 0;
+    let requested = 0;
+    let changed = 0;
+    const onChange = () => changed++;
+    input.addEventListener("change", onChange);
+    const trigger = Zotero.Notifier.trigger;
+    Zotero.Notifier.trigger = function (...args: Parameters<typeof trigger>) {
+      if (args[0] === "redraw" && args[1] === "collection")
+        requested++;
+      return trigger.apply(this, args);
+    };
+    const observer = Zotero.Notifier.registerObserver({ notify(event: string) {
+      if (event === "redraw")
+        redraws++;
+    } }, ["collection"], "metaflow-show-stats-setting-test", 1);
+    try {
+      input.click();
+      for (let attempt = 0; attempt < 50; attempt++) {
+        if (redraws)
+          break;
+        await Zotero.Promise.delay(10);
+      }
+      assert.equal(input.checked, !before);
+      assert.isAtLeast(requested, 1, JSON.stringify({ connected: input.isConnected, disabled: input.disabled, changed, requested }));
+      assert.isAtLeast(redraws, 1, JSON.stringify({ connected: input.isConnected, disabled: input.disabled, checked: input.checked, changed, requested, preference: Zotero.Prefs.get(pref("duplicates.showStats"), true) }));
+    }
+    finally {
+      Zotero.Notifier.unregisterObserver(observer);
+      Zotero.Notifier.trigger = trigger;
+      input.removeEventListener("change", onChange);
+      input.checked = before;
+      input.dispatchEvent(new win.Event("change", { bubbles: true }));
     }
   });
 

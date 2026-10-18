@@ -1,5 +1,6 @@
 import type { Rule, RuleForRegularItemScopeItem, RuleForRegularScopeField } from "./rule-base";
 import { getPref } from "../../utils/prefs";
+import { ToolReviewDuplicates, ToolReviewMetadata, ToolReviewPreprint } from "../review";
 import { CorrectCreatorsCase } from "./correct-creators-case";
 import { CorrectCreatorsPinyin } from "./correct-creators-pinyin";
 import { CorrectDateFormat, CorrectFilingDateFormat, CorrectIssueDateFormat, CorrectPriorityDateFormat } from "./correct-date-format";
@@ -110,6 +111,9 @@ const register: Rule<any>[] = [
   ToolCreatorsExt,
   ToolSetLanguage,
   ToolUpdateMetadata,
+  ToolReviewMetadata,
+  ToolReviewPreprint,
+  ToolReviewDuplicates,
   ToolGetShortDOI,
   ToolQueryNatureIndex,
   ToolUpdateEasyScholar,

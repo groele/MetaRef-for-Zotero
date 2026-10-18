@@ -19,7 +19,10 @@ jobs:
       release: |
         version="${GITHUB_REF_NAME#v}"
         version="${version#V}"
-        notes_file="$(find docs/releases -maxdepth 1 -type f -iname "v${version}.md" -print -quit)"
+        notes_file="$(find docs/releases -maxdepth 1 -type f -iname "metaflow-v${version}.md" -print -quit)"
+        if [ -z "$notes_file" ]; then
+          notes_file="$(find docs/releases -maxdepth 1 -type f -iname "v${version}.md" -print -quit)"
+        fi
         if [ -n "$notes_file" ]; then
           gh release create "$GITHUB_REF_NAME" dist/zotero-metaflow.xpi --title "Zotero MetaFlow ${version}" --notes-file "$notes_file"
         else

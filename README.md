@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-10.6.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-11.0.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,17 +19,19 @@
 
 ---
 
+> **11.0.0 major release:** consolidates metadata verification, preprint version management and duplicate review into two core workflows, with integrated settings and safer batch recovery. See the [systematic acceptance report](docs/systematic-acceptance-2026-10-18.md) for scope and verification boundaries.
+
 ## 📖 Overview
 
 **Zotero MetaFlow** is a high-performance, production-grade Zotero add-on for reference metadata governance and journal academic metrics management (part of the Zotero Flow Series).
 
-When importing items from academic databases, web pages, or DOI translators, metadata is often fraught with issues: messy title letter cases, inconsistent author name formats, missing journal abbreviations, redundant or null fields, and absence of journal tier ratings. Zotero MetaFlow provides **49 built-in metadata cleaning and linting rules**, **61 EasyScholar journal ranking and metric fields**, **official Nature Index 2026 & ESI indexed datasets**, and **intelligent online metadata enrichment**, keeping your scholarly library standardized, accurate, and professional.
+When importing items from academic databases, web pages, or DOI translators, metadata is often fraught with issues: messy title letter cases, inconsistent author name formats, missing journal abbreviations, redundant or null fields, and absence of journal tier ratings. Zotero MetaFlow provides **40 metadata rules and 18 tools**, **61 EasyScholar journal ranking and metric fields**, **official Nature Index 2026 & ESI indexed datasets**, and **intelligent online metadata enrichment**, keeping your scholarly library standardized, accurate, and professional.
 
 ---
 
 ## ✨ Key Features
 
-### 1. 🧹 Deep Metadata Cleaning & Standardization (49 Built-in Rules)
+### 1. 🧹 Deep Metadata Cleaning & Standardization (58 Rules and Tools)
 
 - **Title Case Formatting**: Convert messy or all-caps titles into standard Sentence case or Title Case with one click. An intelligent dictionary preserves chemical formulas ($\text{CO}_2$, $\text{H}_2\text{O}$), gene symbols, mRNA, and proper nouns.
 - **Author & Creator Normalization**: Fix inverted names, handle Pinyin transliteration and tone markers, purge invalid creators, and correct creator roles.
@@ -79,7 +81,7 @@ When importing items from academic databases, web pages, or DOI translators, met
 
 | Item                          | Details                                                                                          |
 | :---------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Add-on Version**            | `10.6.0`                                                                                         |
+| **Add-on Version**            | `11.0.0`                                                                                         |
 | **Add-on ID**                 | `metaflow@groele`                                                                                |
 | **Supported Zotero Versions** | `Zotero 10.0 – 11.*` (Verified on Windows Zotero 10.0.6 & Zotero 11 dev Gecko 153)               |
 | **Operating Systems**         | Windows / macOS / Linux                                                                          |

@@ -42,6 +42,13 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("rule-level rollback", () => {
+  it("does not prepare irrelevant rules or load their datasets", async () => {
+    const runner = new LintRunner();
+    const prepare = vi.fn();
+    await runner.add({ items: [createItem()], silent: true, rules: [{ id: "irrelevant", scope: "item", targetItemTypes: ["thesis"], prepare, apply: vi.fn() }] as any });
+    expect(prepare).not.toHaveBeenCalled();
+    expect(runner.lastResult).toMatchObject({ processed: 1, notApplicable: 1, preparationFailed: 0 });
+  });
   it.each(["reject", "timeout", "report"])("discards partial %s writes while preserving healthy sibling changes", async (mode) => {
     const runner = new LintRunner();
     const item = createItem();

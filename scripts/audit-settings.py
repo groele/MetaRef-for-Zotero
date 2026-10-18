@@ -33,7 +33,8 @@ def audit(root: Path):
         if path.name.endswith(".test.ts") or path.name == "prefs.ts":
             continue
         text = path.read_text(encoding="utf-8")
-        for match in re.finditer(r'getPref\(\s*(["\'`])(.*?)\1', text):
+        read_call = r'(?:getPref|pref)' if path.name == "core-workflow.ts" else r'getPref'
+        for match in re.finditer(read_call + r'\(\s*(["\'`])(.*?)\1', text):
             readers[match[2]].append(f"{path.relative_to(root).as_posix()}:{text[:match.start()].count(chr(10)) + 1}")
 
     def route(key):
@@ -81,13 +82,27 @@ def audit(root: Path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--live-inventory", type=Path)
     args = parser.parse_args()
     result = audit(Path(__file__).resolve().parent.parent)
+    if args.live_inventory:
+        inventory = json.loads(args.live_inventory.read_text(encoding="utf-8-sig"))
+        live = collections.Counter(control["preference"].removeprefix("extensions.zotero.metaref.") for control in inventory["controls"])
+        preferences = {preference["key"]: preference for preference in result["preferences"]}
+        result["liveInventory"] = {
+            "controlCount": sum(live.values()),
+            "booleanControlsExercised": len(inventory["booleanControlsChecked"]),
+            "missingDefaults": sorted(set(live) - preferences.keys()),
+            "duplicateBindings": sorted(key for key, count in live.items() if count > 1),
+            "unresolvedBindings": sorted(key for key in live if key in preferences and preferences[key]["runtime"]["kind"] == "review-required"),
+        }
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({k: v for k, v in result.items() if k not in {"preferences", "generatedControls"}}, ensure_ascii=False))
     if result["missingDefaults"] or result["duplicateStaticBindings"] or result["unresolvedVisibleBindings"]:
+        raise SystemExit(1)
+    if args.live_inventory and any(result["liveInventory"][key] for key in ["missingDefaults", "duplicateBindings", "unresolvedBindings"]):
         raise SystemExit(1)
 
 

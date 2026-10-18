@@ -1,4 +1,6 @@
+import type { BatchResult } from "./modules/runner";
 import type { AutomaticWorkflow } from "./utils/automatic-workflow";
+import type { CoreStage } from "./utils/core-workflow";
 import { config } from "../package.json";
 import api from "./api";
 import hooks from "./hooks";
@@ -20,6 +22,7 @@ class Addon {
     };
     dialogs: Map<string, Window>;
     lastAutomaticWorkflow?: AutomaticWorkflow;
+    lastCoreWorkflow?: { lastResult: BatchResult; stages: { stage: CoreStage; result: BatchResult }[] };
   };
 
   public runner: LintRunner;

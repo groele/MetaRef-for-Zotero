@@ -9,6 +9,7 @@ import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
 import { executeRule, normalizedConcurrency, waitForOperation } from "../utils/rule-execution";
+import { ruleSupportsItems } from "../utils/workflow-policy";
 import { isFieldValidForItemType } from "../utils/zotero";
 import { updateBatchFeedback } from "./batch-feedback";
 import { createReporter, ProgressUI } from "./reporter";
@@ -27,6 +28,7 @@ interface RunnerStats {
 }
 
 export interface BatchResult {
+  durationMs?: number;
   total: number;
   processed: number;
   passed: number;
@@ -154,6 +156,29 @@ export class LintRunner {
     return result;
   }
 
+  /** Native merge/create operations share the same queue and shutdown cancellation as rules. */
+  public async exclusive<T>(operation: (signal: AbortSignal) => Promise<T>): Promise<T | undefined> {
+    let result: T | undefined;
+    const task = async () => {
+      if (!addon.data.alive)
+        return;
+      this.cancelled = false;
+      const controller = new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController();
+      this.preparation = controller;
+      try {
+        result = await operation(controller.signal);
+      }
+      finally {
+        if (this.preparation === controller)
+          this.preparation = undefined;
+      }
+    };
+    const pending = this.runningQueue.then(task, task);
+    this.runningQueue = pending.then(() => {}, () => {});
+    await pending;
+    return result;
+  }
+
   private async runBatch(params: {
     items: Arrayable<Zotero.Item>;
     rules: Arrayable<Rule<any>>;
@@ -182,6 +207,9 @@ export class LintRunner {
       this.stats.total = items.length;
       const optionsMap = await this.prepareRules(rules, items);
       const hasActiveRules = [...optionsMap.values()].some(opt => opt !== false);
+
+      if (!hasActiveRules && !this.cancelled && rules.every(rule => !ruleSupportsItems(rule, items)))
+        this.stats.current = items.length;
 
       if (items.length === 0 || !hasActiveRules) {
         return;
@@ -222,6 +250,10 @@ export class LintRunner {
     for (const rule of rules) {
       if (this.cancelled)
         break;
+      if (!ruleSupportsItems(rule, items)) {
+        optionsMap.set(rule.id, false);
+        continue;
+      }
       const controller = new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController();
       this.preparation = controller;
       try {
@@ -524,6 +556,7 @@ export class LintRunner {
     const duration = (Date.now() - this.stats.startTime) / 1000;
     const changed = new Set(this.changes.map(change => change.itemID)).size;
     this.lastResult = {
+      durationMs: Math.round(duration * 1000),
       total: this.stats.total,
       processed: this.stats.current,
       passed: this.stats.current - this.failedItems.size,

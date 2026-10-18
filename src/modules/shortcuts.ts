@@ -39,7 +39,10 @@ export function registerShortcuts(win: Window): () => void {
       event.preventDefault();
       event.stopPropagation();
       const ruleID = action === "lint" ? "standard" : action === "chemicalFormula" ? "correct-title-chemical-formula" : action === "titleSentence" ? "correct-title-sentence-case" : action === "publicationCase" ? "correct-publication-title-case" : "tool-update-easyscholar";
-      void addon.hooks.onLintInBatch(ruleID, items);
+      if (ruleID === "standard")
+        void addon.hooks.onLintInBatch(ruleID, items, { core: true });
+      else
+        void addon.hooks.onLintInBatch(ruleID, items);
     }
     else if (getPref("richtext.hotkey") && editor) {
       event.preventDefault();

@@ -43,4 +43,10 @@ export function setupFunctionCards(pane: Element) {
       grid.append(...run);
     }
   }
+  const sections = [...pane.querySelectorAll(":scope > .metaref-section-card")];
+  for (const id of ["section-general", "core-workflows-heading", "section-rules", "section-article-abbreviation", "section-updateMetadata", "duplicates-heading", "workflow-tool-center", "section-menu", "shortcuts-header", "section-rich-text", "section-about"]) {
+    const section = sections.find(section => section.querySelector(`:scope > summary [data-l10n-id$='${id}']`));
+    if (section)
+      pane.append(section);
+  }
 }

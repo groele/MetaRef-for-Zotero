@@ -37,7 +37,7 @@ describe("no-journal-preprint", () => {
     expect(action.label).toBe("rule-no-journal-preprint-report-action");
     await action.callback();
     expect(getItem).toHaveBeenCalledWith(item.id);
-    expect(onLintInBatch).toHaveBeenCalledWith(["tool-update-metadata"], [item]);
+    expect(onLintInBatch).toHaveBeenCalledWith(["tool-update-metadata"], [item], { review: true });
   });
 
   it("does not offer an action for deleted or missing items", async () => {

@@ -5,6 +5,21 @@ const PREFS_PREFIX = config.prefsPrefix;
 type PluginPrefsMap = _ZoteroTypes.Prefs["PluginPrefsMap"];
 
 export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
+  "menu.compact": true,
+  "workflow.remoteAuthorsOnCheck": false,
+  "workflow.updateBibliographic": true,
+  "workflow.updateVersions": false,
+  "workflow.formatAfterUpdate": true,
+  "workflow.scanPDF": false,
+  "workflow.searchTitle": false,
+  "workflow.reviewDuplicatesOnCheck": false,
+  "workflow.reviewDuplicatesOnUpdate": false,
+  "duplicates.defaultAction": "cancel",
+  "duplicates.masterStrategy": "oldest",
+  "duplicates.concurrency": 3,
+  "duplicates.mergeDifferentTypes": false,
+  "duplicates.showStats": true,
+  "duplicates.nonDuplicatePairs": "[]",
   "metadata.repairCreators": true,
   "metadata.updateJournalInfo": true,
   "easyscholar.columns.esi": true,

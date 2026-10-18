@@ -6,6 +6,7 @@ import { canRunJournalRule } from "../utils/journal-permissions";
 import { getLocaleID } from "../utils/locale";
 import { logger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
+import { commandPrimary, commandVisible } from "../utils/workflow-policy";
 import { refreshJournalPane } from "./journal-pane";
 import { Rules } from "./rules";
 
@@ -112,6 +113,7 @@ export function shouldShowSeparator(
 
 export const MENU_SECTIONS = {
   primary: ["standard", "tool-update-metadata"],
+  review: ["tool-review-metadata", "tool-review-preprint", "tool-review-duplicates"],
   title: ["correct-title-sentence-case", "correct-title-chemical-formula", "tool-title-guillemet", "tool-title-replace"],
   creators: ["correct-creators-case", "correct-creators-pinyin", "tool-creators-ext", "tool-creators-style", "tool-creators-swap"],
   publication: ["require-language", "tool-set-language", "correct-publication-title-alias", "correct-publication-title-case", "require-journal-abbr", "correct-conference-abbr", "require-university-place"],
@@ -122,11 +124,11 @@ export const MENU_SECTIONS = {
 export const MENU_GROUPS = Object.entries(MENU_SECTIONS).filter(([key]) => key !== "primary") as [Exclude<keyof typeof MENU_SECTIONS, "primary">, string[]][];
 
 export function isPrimaryMenu(key: string) {
-  return getPref(`menu.primary.${key}` as any, MENU_SECTIONS.primary.includes(key)) === true;
+  return commandPrimary(key, getPref("menu.compact" as any, true) === true, getPref(`menu.primary.${key}` as any, MENU_SECTIONS.primary.includes(key)) === true);
 }
 
 function registerItemMenus() {
-  const isMenuVisible = (key: string): boolean => canRunJournalRule(key) && (getPref(`menu.${key}` as any, true) ?? true);
+  const isMenuVisible = (key: string): boolean => canRunJournalRule(key) && commandVisible(key, getPref("menu.compact" as any, true) === true, (getPref(`menu.${key}` as any, true) ?? true) === true);
   const nestedVisible = (key: string) => isMenuVisible(key) && !isPrimaryMenu(key);
   const makeItem = (key: string, primary = false): ItemMenu => {
     const directory = key === "show-data-directory" || key === "show-profile-directory";
@@ -164,7 +166,12 @@ function registerItemMenus() {
         const rules = key === "correct-date-format"
           ? ["correct-date-format", "correct-filing-date-format", "correct-issue-date-format", "correct-priority-date-format"] as const
           : [key as ID | "standard"];
-        await addon.hooks.onLintInBatch([...rules], items);
+        if (key === "tool-update-metadata")
+          await addon.hooks.onLintInBatch([...rules], items, { review: true });
+        else if (key === "standard")
+          await addon.hooks.onLintInBatch([...rules], items, { core: true });
+        else
+          await addon.hooks.onLintInBatch([...rules], items);
       },
     };
   };

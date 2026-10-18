@@ -1,0 +1,255 @@
+import type { TransformedData } from "../rules/tool-update-metadata/services/base-service";
+import type { BatchResult } from "../runner";
+import type { ReviewSelection } from "./dialog";
+import type { ReviewProposal } from "./policy";
+import { getString } from "../../utils/locale";
+import { createLogger } from "../../utils/logger";
+import { updateBatchFeedback } from "../batch-feedback";
+import { defineRule } from "../rules/rule-base";
+import { applyReviewedMetadata, createRelatedVersion, selectionIssue } from "./apply";
+import { chooseIdentifier, showMetadataReview } from "./dialog";
+import { applyDuplicateDecision, findDuplicates, reviewDuplicate } from "./duplicates";
+import { discoverIdentifiers, inspectMetadata, inspectPreprint } from "./metadata";
+import { identityConflicts, reviewChanges } from "./policy";
+
+export const REVIEW_COMMANDS = ["tool-review-metadata", "tool-review-preprint", "tool-review-duplicates"] as const;
+export type ReviewCommand = typeof REVIEW_COMMANDS[number];
+interface ReviewOptions {
+  selections: ReviewSelection[];
+  failures: Map<number, string>;
+}
+
+interface ReviewFeatures {
+  scanPDF?: boolean;
+  searchTitle?: boolean;
+  creatorsOnly?: boolean;
+  repairCreators?: boolean;
+  overwrite?: boolean;
+}
+
+function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => void, integrated = false, features: ReviewFeatures = {}) {
+  return defineRule<ReviewOptions>({
+    id: version ? "tool-review-preprint" : "tool-review-metadata",
+    category: "tool",
+    scope: "item",
+    targetItemTypes: version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "book", "bookSection"],
+    async prepare({ items, signal }) {
+      const proposals: ReviewProposal[] = [];
+      const evidence = new Map<string, typeof proposals[number]>();
+      const failures = new Map<number, string>();
+      const supported = version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "book", "bookSection"];
+      for (const item of items.filter(item => supported.includes(item.itemType))) {
+        signal?.throwIfAborted();
+        const original = JSON.parse(JSON.stringify(item.toJSON())) as TransformedData;
+        try {
+          const allCandidates = await discoverIdentifiers(item, signal, features.scanPDF !== false);
+          if (!version && features.searchTitle !== false && !allCandidates.length && original.title)
+            allCandidates.push({ kind: "Title", value: original.title, source: getString("review-source-title") });
+          const arxiv = allCandidates.filter(candidate => candidate.kind === "arXiv");
+          const candidates = version || (integrated && arxiv.length) ? arxiv : allCandidates;
+          if (!candidates.length)
+            throw new Error(getString(version ? "review-no-arxiv" : "review-no-identifier"));
+          const identifier = await chooseIdentifier(item, candidates, signal);
+          if (!identifier)
+            continue;
+          const key = `${identifier.kind}:${identifier.value}`;
+          const cached = evidence.get(key);
+          if (cached) {
+            proposals.push({ ...cached, itemID: item.id, original, conflicts: identityConflicts(original, cached.candidate, !!cached.preprintURL), changes: reviewChanges(original, cached.candidate, !!cached.preprintURL) });
+          }
+          else {
+            const proposal = await (version || (integrated && identifier.kind === "arXiv")
+              ? inspectPreprint(item, identifier, original, signal, integrated)
+              : inspectMetadata(item, identifier, original, signal));
+            evidence.set(key, proposal);
+            proposals.push(proposal);
+          }
+        }
+        catch (error) {
+          signal?.throwIfAborted();
+          failures.set(item.id, `${item.getDisplayTitle()} · ${String(error)}`);
+        }
+      }
+      for (const proposal of proposals) {
+        proposal.excludedFields = features.repairCreators === false ? ["creators"] : [];
+        proposal.changes = proposal.changes.filter(change => features.creatorsOnly ? change.field === "creators" : features.repairCreators !== false || change.field !== "creators");
+      }
+      const selections = await showMetadataReview(proposals, [...failures.values()], version, signal, features.overwrite);
+      if (selections === false)
+        return false;
+      const options = { selections, failures };
+      prepared?.(options);
+      return options;
+    },
+    apply({ item, options, report }) {
+      if (options.failures.has(item.id)) {
+        report({ level: "warning", message: options.failures.get(item.id)! });
+        return;
+      }
+      const selection = options.selections.find(selection => selection.proposal.itemID === item.id);
+      if (selection)
+        applyReviewedMetadata(item, selection, report);
+    },
+  });
+}
+
+export const ToolReviewMetadata = reviewRule(false);
+export const ToolReviewPreprint = reviewRule(true);
+export const ToolReviewDuplicates = defineRule({
+  id: "tool-review-duplicates",
+  category: "tool",
+  scope: "item",
+  apply({ report }) {
+    report({ level: "warning", message: getString("review-use-command") });
+  },
+});
+
+function emptyResult(total: number): BatchResult {
+  return { total, processed: 0, passed: 0, failed: 0, saved: 0, cancelled: false, skipped: 0, preparationFailed: 0, records: [], changes: [], changed: 0, unchanged: 0, notApplicable: 0, warnings: 0 };
+}
+
+function publishResult(result: BatchResult) {
+  addon.runner.lastResult = result;
+  if (addon.data.alive)
+    updateBatchFeedback(result);
+}
+
+export async function runReviewCommand(command: ReviewCommand, items: Zotero.Item[], integrated = false, features: ReviewFeatures = {}) {
+  const eligible = [...new Map(items.filter(item => item.id && item.isRegularItem() && !item.deleted && item.isEditable()).map(item => [item.id, item])).values()];
+  if (!eligible.length)
+    return;
+  if (command === "tool-review-duplicates") {
+    return addon.runner.exclusive(async (signal) => {
+      const result = emptyResult(eligible.length);
+      const results: string[] = [];
+      const processed = new Set<number>();
+      const failed = new Set<number>();
+      const saved = new Set<number>();
+      const touched = new Set<number>();
+      try {
+        const pairs = await findDuplicates(eligible, signal);
+        result.total = pairs.length ? new Set(pairs.flatMap(pair => [pair.left.id, pair.right.id])).size : eligible.length;
+        if (!pairs.length) {
+          result.notApplicable = eligible.length;
+          result.records.push({ itemID: eligible[0].id, title: eligible[0].getDisplayTitle(), ruleID: command, level: "info", message: getString("review-no-duplicates") });
+        }
+        for (const pair of pairs) {
+          signal.throwIfAborted();
+          if (touched.has(pair.left.id) || touched.has(pair.right.id))
+            continue;
+          const decision = await reviewDuplicate(pair, signal);
+          if (!decision) {
+            result.cancelled = true;
+            break;
+          }
+          processed.add(pair.left.id);
+          processed.add(pair.right.id);
+          try {
+            const outcome = await applyDuplicateDecision(decision, signal);
+            if (outcome === "merged" || outcome === "related") {
+              for (const id of [pair.left.id, pair.right.id]) {
+                touched.add(id);
+                saved.add(id);
+              }
+            }
+            const message = `${pair.left.id} / ${pair.right.id}: ${getString(outcome === "skipped" ? "review-skipped" : `review-result-${outcome}`)}`;
+            results.push(message);
+            result.records.push({ itemID: decision.masterID, title: String(pair.left.data.title || ""), ruleID: command, level: "info", message });
+          }
+          catch (error) {
+            signal.throwIfAborted();
+            failed.add(pair.left.id);
+            failed.add(pair.right.id);
+            const message = `${pair.left.id} / ${pair.right.id}: ${String(error)}`;
+            results.push(message);
+            result.records.push({ itemID: pair.left.id, title: String(pair.left.data.title || ""), ruleID: command, level: "error", message });
+          }
+        }
+      }
+      catch (error) {
+        if (signal.aborted) {
+          result.cancelled = true;
+        }
+        else {
+          result.preparationFailed++;
+          result.records.push({ itemID: 0, title: "", ruleID: command, level: "error", message: String(error) });
+          results.push(String(error));
+        }
+      }
+      finally {
+        result.processed = processed.size;
+        result.failed = failed.size;
+        result.passed = processed.size - failed.size;
+        result.saved = result.changed = saved.size;
+        result.unchanged = processed.size - saved.size;
+        result.skipped = result.total - processed.size;
+        publishResult(result);
+      }
+      if (addon.data.alive && !signal.aborted) {
+        if (result.cancelled) {
+          result.records.push({ itemID: eligible[0].id, title: eligible[0].getDisplayTitle(), ruleID: command, level: "warning", message: getString("review-operation-cancelled") });
+          result.warnings++;
+          publishResult(result);
+        }
+        Zotero.alert(Zotero.getMainWindow(), getString("rule-tool-review-duplicates"), results.join("\n") || getString(result.notApplicable ? "review-no-duplicates" : "review-skipped"));
+      }
+      return result;
+    });
+  }
+  let approved: ReviewOptions | undefined;
+  const version = command === "tool-review-preprint";
+  const rule = reviewRule(version, options => approved = options, integrated, features);
+  const result = await addon.runner.add({ items: eligible, rules: [rule] });
+  if (result && !result.cancelled && approved && addon.data.alive) {
+    const related = approved.selections.filter(selection => selection.action === "related" && !selectionIssue(selection));
+    if (related.length) {
+      await addon.runner.exclusive(async (signal) => {
+        const results: string[] = [];
+        const failed = new Set(result.records.filter(record => record.level === "error").map(record => record.itemID));
+        for (const selection of related) {
+          if (signal.aborted) {
+            result.cancelled = true;
+            break;
+          }
+          try {
+            const source = Zotero.Items.get(selection.proposal.itemID);
+            if (!source)
+              throw new Error(getString("review-stale"));
+            const before = JSON.parse(JSON.stringify(source.getRelations()));
+            const published = await createRelatedVersion(source, selection, signal);
+            const after = JSON.parse(JSON.stringify(source.getRelations()));
+            if (JSON.stringify(before) !== JSON.stringify(after)) {
+              if (!result.changes.some(change => change.itemID === source.id)) {
+                result.changed++;
+                result.unchanged = Math.max(0, result.unchanged - 1);
+              }
+              if (!result.changes.some(change => change.itemID === source.id && change.saved))
+                result.saved++;
+              result.changes.push({ itemID: source.id, ruleID: rule.id, field: "relations", before, after, saved: true, source: selection.proposal.source });
+            }
+            results.push(`${source.id} → ${published.id}`);
+            result.records.push({ itemID: source.id, title: source.getDisplayTitle(), ruleID: rule.id, level: "info", code: "version-related", source: selection.proposal.source, message: getString("review-related-applied", { args: { id: published.id } }) });
+          }
+          catch (error) {
+            if (signal.aborted) {
+              result.cancelled = true;
+              break;
+            }
+            createLogger("version-review").error(error);
+            results.push(`${selection.proposal.itemID}: ${String(error)}`);
+            result.records.push({ itemID: selection.proposal.itemID, title: String(selection.proposal.original.title || ""), ruleID: rule.id, level: "error", code: "version-related-failed", message: String(error) });
+            if (!failed.has(selection.proposal.itemID)) {
+              failed.add(selection.proposal.itemID);
+              result.failed++;
+              result.passed = Math.max(0, result.passed - 1);
+            }
+          }
+        }
+        publishResult(result);
+        if (addon.data.alive && !signal.aborted)
+          Zotero.alert(Zotero.getMainWindow(), getString("rule-tool-review-preprint"), results.join("\n"));
+      });
+    }
+  }
+  return result;
+}

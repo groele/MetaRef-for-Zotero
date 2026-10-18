@@ -29,6 +29,7 @@ describe("data processing resilience in Zotero", function () {
   } };
 
   before(function () {
+    pref("menu.compact", false);
     pref("lint.onAdded", false);
     pref("lint.numConcurrent", 1);
     pref("rule.require-journal-abbr.infer", false);
@@ -585,7 +586,7 @@ describe("data processing resilience in Zotero", function () {
     const metarefMenu = entries.flatMap((entry: any) => entry.menus).find((menu: any) => menu.l10nID === "metaref-menuitem-label");
     assert.isDefined(metarefMenu, "the MetaRef root item is registered");
     assert.equal(metarefMenu.menus.filter((menu: any) => menu.menuType === "submenu").length, 0, "all commands are directly accessible without nested submenus");
-    assert.equal(metarefMenu.menus.filter((menu: any) => menu.menuType === "menuitem").length, 30);
+    assert.equal(metarefMenu.menus.filter((menu: any) => menu.menuType === "menuitem").length, 33);
     assert.equal(metarefMenu.menus.filter((menu: any) => menu.l10nID === "metaref-tool-query-nature-index-menu-item").length, 1);
     const item = await create("inline title formatting");
     await win.ZoteroPane.selectItem(item.id);

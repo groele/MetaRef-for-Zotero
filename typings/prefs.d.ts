@@ -272,6 +272,27 @@ declare namespace _ZoteroTypes {
       "rule.require-journal-abbr.letterCase": string;
       "rule.require-journal-abbr.tagSource": boolean;
       "insights.natureEnabled": boolean;
+      "menu.tool-review-metadata": boolean;
+      "menu.primary.tool-review-metadata": boolean;
+      "menu.tool-review-preprint": boolean;
+      "menu.primary.tool-review-preprint": boolean;
+      "menu.tool-review-duplicates": boolean;
+      "menu.primary.tool-review-duplicates": boolean;
+      "menu.compact": boolean;
+      "workflow.remoteAuthorsOnCheck": boolean;
+      "workflow.updateBibliographic": boolean;
+      "workflow.updateVersions": boolean;
+      "workflow.formatAfterUpdate": boolean;
+      "workflow.scanPDF": boolean;
+      "workflow.searchTitle": boolean;
+      "workflow.reviewDuplicatesOnCheck": boolean;
+      "workflow.reviewDuplicatesOnUpdate": boolean;
+      "duplicates.defaultAction": string;
+      "duplicates.masterStrategy": string;
+      "duplicates.concurrency": number;
+      "duplicates.mergeDifferentTypes": boolean;
+      "duplicates.showStats": boolean;
+      "duplicates.nonDuplicatePairs": string;
     };
   }
 }

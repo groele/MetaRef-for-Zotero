@@ -2,6 +2,7 @@ import { homepage } from "../../package.json";
 import { clearEasyScholarCache, EASYSCHOLAR_DEFAULT_FIELDS, EASYSCHOLAR_FIELD_DEFINITIONS, getEasyScholarFieldMessageID, isEasyScholarFieldEnabled, testEasyScholarConnection } from "../utils/easyscholar";
 
 import { getString } from "../utils/locale";
+import { createLogger } from "../utils/logger";
 import { preferenceListeners, releasePreferenceListeners } from "../utils/preference-listeners";
 import { watchPreferencePane } from "../utils/preference-window";
 import { getPref, setPref } from "../utils/prefs";
@@ -9,13 +10,15 @@ import { clearStoredServiceCache } from "../utils/service-cache-storage";
 import { normalizeShortcut, recordShortcut, SHORTCUT_DEFAULTS, shortcutPreview } from "../utils/shortcuts";
 import { setupBatchFeedback } from "./batch-feedback";
 import { setupCustomDataFiles } from "./custom-data-settings";
+import { setupDuplicateSettings } from "./duplicate-settings";
 import { registerExtraColumns } from "./item-tree";
 import { setupJournalDatabases } from "./journal-database-settings";
-import { isPrimaryMenu, MENU_GROUPS, MENU_SECTIONS } from "./menu";
+import { MENU_GROUPS, MENU_SECTIONS } from "./menu";
 import { Rules } from "./rules";
 import { clearSemanticScholarCache } from "./rules/tool-update-metadata/services/semantic-scholar-service";
 import { setupFunctionCards } from "./settings-cards";
 import { setupSettingsPanel } from "./settings-panel";
+import { setupToolCenter } from "./tool-center";
 import { setupWorkflowSettings } from "./workflow-settings";
 
 const initializedPanes = new WeakSet<Element>();
@@ -74,6 +77,9 @@ export function unregisterPrefsWindows() {
   for (const cleanup of preferenceWindows.values())
     cleanup();
   releasePreferenceListeners();
+  preferenceRegistration = undefined;
+  for (const pane of (Zotero.PreferencePanes as any).pluginPanes.filter((pane: any) => pane.pluginID === addon.data.config.addonID))
+    Zotero.PreferencePanes.unregister(pane.id);
 }
 
 export function registerPrefsScripts(_window: Window) {
@@ -98,6 +104,8 @@ export function registerPrefsScripts(_window: Window) {
   setupMenuSettings(pane);
   setupEasyScholarSettings(pane);
   setupWorkflowSettings(pane);
+  setupToolCenter(pane);
+  setupDuplicateSettings(pane);
   setupFunctionCards(pane);
   setupCustomDataReset(pane);
   setupCustomDataFiles(pane);
@@ -179,6 +187,8 @@ function setupEasyScholarSettings(pane: Element) {
     label.append(control, caption);
     const update = () => {
       setPref(pref as any, control.checked as any);
+      if (pref === "duplicates.showStats")
+        void Zotero.Notifier.trigger("redraw", "collection", [], {}, true).catch(error => createLogger("preferences").error(error));
       if (pref.startsWith("easyscholar.columns.") || pref.startsWith("easyscholar.fields.") || pref === "insights.natureEnabled") {
         registerExtraColumns();
         for (const field of EASYSCHOLAR_FIELD_DEFINITIONS) {
@@ -305,7 +315,8 @@ function setupMenuSettings(pane: Element) {
         doc.l10n!.setAttributes(option, `metaref-menu-placement-${value}`);
         placement.append(option);
       }
-      placement.value = control.checked ? isPrimaryMenu(id) ? "primary" : "nested" : "none";
+      const preferredPrimary = () => getPref(`menu.primary.${id}` as any, MENU_SECTIONS.primary.includes(id)) === true;
+      placement.value = control.checked ? preferredPrimary() ? "primary" : "nested" : "none";
       listen(placement, "change", () => {
         const visible = placement.value !== "none";
         setPref(`menu.${id}` as any, visible);
@@ -316,7 +327,7 @@ function setupMenuSettings(pane: Element) {
       const syncVisibility = (event: Event) => {
         if (!(event.target as Element)?.matches("input[preference]"))
           return;
-        placement.value = (event.target as HTMLInputElement).checked ? isPrimaryMenu(id) ? "primary" : "nested" : "none";
+        placement.value = (event.target as HTMLInputElement).checked ? preferredPrimary() ? "primary" : "nested" : "none";
       };
       listen(row, "change", syncVisibility);
       listen(row, "command", syncVisibility);
@@ -365,7 +376,8 @@ function setupDependencies(pane: Element) {
   const group = controls.find(control => key(control) === "lint.onGroup");
   const update = () => {
     for (const { control, parents } of dependencies) {
-      control.disabled = parents.some(parent => !parent.control.checked);
+      if (parents.length)
+        control.disabled = parents.some(parent => !parent.control.checked);
     }
     if (auto && group)
       group.disabled = !auto.checked;

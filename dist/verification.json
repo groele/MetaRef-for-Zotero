@@ -1,63 +1,72 @@
 {
-  "version": "10.6.2",
-  "baselineCommit": "3b280bc25a8b83133e2117a60858647dfe86e868",
-  "baselineVersion": "10.6.1",
-  "verifiedAt": "2026-10-17T15:15:14.059263+08:00",
+  "version": "11.0.0",
+  "verifiedAt": "2026-10-18T10:20:00+08:00",
+  "sourceBaselineCommit": "4b7fedbbfd1ca1ab6913dea5af64aa17cb4d5237",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3425414,
-    "sha256": "428fa85029539e987ab7d75179c4f774568a0673221444072a0a1939c8e1e56c",
+    "bytes": 3455488,
+    "sha256": "7769698ba924faa9e60d925d77af04fb0a2f0144930ceef8b8ea94295d3f505e",
     "manifest": {
-      "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "10.6.2",
-      "description": "Validate, organize and enrich reference metadata in Zotero.",
-      "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
-      "author": "groele",
-      "icons": {
-        "16": "content/icons/metaref-16.png",
-        "32": "content/icons/metaref-32.png",
-        "48": "content/icons/metaref-48.png",
-        "96": "content/icons/metaref-96.png",
-        "128": "content/icons/metaref-128.png",
-        "256": "content/icons/metaref-256.png",
-        "512": "content/icons/metaref-512.png"
-      },
-      "applications": {
-        "zotero": {
-          "id": "metaflow@groele",
-          "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
-          "strict_min_version": "10.0",
-          "strict_max_version": "11.*"
-        }
-      }
+      "version": "11.0.0",
+      "id": "metaflow@groele",
+      "strict_min_version": "10.0",
+      "strict_max_version": "11.*",
+      "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json"
     },
-    "offlineAssets": {
-      "ltwa.tsv": true,
-      "shortwords.txt": true
-    }
+    "productionXpiInstalledAndLoaded": true
   },
   "checks": {
     "unit": {
-      "passed": 456,
-      "files": 69
-    },
-    "settingsAudit": {
-      "defaultCount": 265,
-      "staticControlCount": 120,
-      "missingDefaults": [],
-      "duplicateStaticBindings": [],
-      "unresolvedVisibleBindings": []
+      "passed": 490,
+      "files": 75
     },
     "productionBuild": "passed",
     "typescript": "passed",
     "eslint": "passed",
     "autocorrect": "passed",
-    "zoteroE2E": "not run"
+    "whitespace": "passed",
+    "settingsAudit": {
+      "defaultPreferences": 286,
+      "staticBindings": 124,
+      "missingDefaults": [],
+      "duplicateStaticBindings": [],
+      "unresolvedVisibleBindings": []
+    },
+    "nativeSettings": [
+      {
+        "host": "Windows Zotero 10.0.6 / Gecko 140",
+        "bindings": 268,
+        "booleanControlsExercisedAndPersisted": 237,
+        "issues": []
+      },
+      {
+        "host": "Windows Zotero 11.0-dev.5+dac1ad489 / Gecko 153",
+        "bindings": 268,
+        "booleanControlsExercisedAndPersisted": 237,
+        "issues": []
+      }
+    ],
+    "finalPackageNativeE2E": {
+      "host": "Windows Zotero 10.0.6 / Gecko 140",
+      "passed": 152,
+      "failed": 0,
+      "includesProductionXpiInstall": true
+    },
+    "affectedModuleNativeCoveragePerHostInSeparateRuns": 66,
+    "latestTargetedRunPerHost": {
+      "passed": 17,
+      "failed": 0
+    }
   },
+  "buildNotes": [
+    "Build and TypeScript completed successfully. The toolchain emitted a non-blocking warning that zotero-types/entries/sandbox/tsconfig.json was unavailable."
+  ],
   "limits": [
-    "The XPI was inspected for manifest version and required offline assets, but was not installed into a live Zotero host in this release validation.",
-    "Three Zotero processes were active during validation; live-host tests were skipped to avoid interfering with user profiles.",
-    "The build emitted a non-blocking warning that zotero-types/entries/sandbox/tsconfig.json was unavailable; build and TypeScript checks completed successfully."
+    "The original-plugin coexistence matrix was not tested.",
+    "External metadata providers were exercised with controlled regression responses; live credentials, provider availability and all account permissions are not covered.",
+    "Zotero 11 coverage uses the named development build and module-focused runs; the final package full-suite run was on Zotero 10.0.6.",
+    "macOS/Linux and long-duration large-library stress tests were not performed.",
+    "Zotero item merge and preference persistence use separate host transactions; this release does not add a new cross-transaction undo feature."
   ]
 }
