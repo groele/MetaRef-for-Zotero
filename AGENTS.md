@@ -8,6 +8,10 @@ This file provides guidance to AI coding agents when working with code in this r
 
 Target: Zotero 10.0-11.x (validated on Windows Zotero 10.0.6 and Zotero 11 development builds); build output targets Firefox 140. Package manager: **pnpm** (12.3.4, pinned in package.json). Node v22+ required for development.
 
+## Repository source of truth
+
+The maintained MetaFlow source is this checkout: `.scaffold/publish/metaflow-10.0.1/`. The directory name is historical. The workspace-root checkout is a legacy `upstream/main` worktree with unrelated history and local changes; do not build, stage, reset, or publish from it. The only product release branch is `origin/main`; use short-lived pull-request branches for development. See [`docs/repository-mainline.md`](docs/repository-mainline.md) for the verified branch map and safe cleanup rules.
+
 Zotero 11 / Firefox 153 migration work is tracked in `docs/zotero11-compatibility.md`. The manifest and update metadata use `strict_max_version: 11.*` as requested. Zotero 11 validation is development-build coverage; rerun isolated tests after host changes. Internal `metaref` resources, `Zotero.MetaRef`, and `extensions.zotero.metaref` preferences are retained for settings continuity. Set `METAREF_TEST_PLATFORM=153` or `140` to assert the runtime platform during isolated E2E tests.
 
 ## Commands
