@@ -12,18 +12,28 @@ export function duplicateConcurrency(value: unknown): number {
 export function chooseMaster(records: DuplicateRecord[], strategy: MasterStrategy): DuplicateRecord {
   const date = (record: DuplicateRecord, field: string) => String((record.data as Record<string, unknown>)[field] || "");
   const score = (record: DuplicateRecord) => Object.entries(record.data).reduce((total, [field, value]) => total + (!["key", "version", "dateAdded", "dateModified", "itemType"].includes(field) && value ? Array.isArray(value) ? value.length : 1 : 0), 0);
-  return [...records].sort((a, b) => {
-    if (strategy === "detailed")
-      return score(b) - score(a) || a.id - b.id;
-    const field = strategy === "modified" ? "dateModified" : "dateAdded";
-    const order = date(a, field).localeCompare(date(b, field)) || a.id - b.id;
-    return strategy === "oldest" ? order : -order;
-  })[0];
+  let master = records[0];
+  let bestScore = strategy === "detailed" && master ? score(master) : 0;
+  const field = strategy === "modified" ? "dateModified" : "dateAdded";
+  for (let index = 1; index < records.length; index++) {
+    const candidate = records[index];
+    const candidateScore = strategy === "detailed" ? score(candidate) : 0;
+    const order = strategy === "detailed"
+      ? bestScore - candidateScore || candidate.id - master.id
+      : (date(candidate, field).localeCompare(date(master, field)) || candidate.id - master.id) * (strategy === "oldest" ? 1 : -1);
+    if (order < 0) {
+      master = candidate;
+      bestScore = candidateScore;
+    }
+  }
+  return master;
 }
 
 export function canMergePair(pair: DuplicatePair, differentTypes = false): boolean {
   if (pair.mergeable)
     return true;
+  if (!differentTypes)
+    return false;
   const left = normalizeDOI(pair.left.data.DOI);
   const right = normalizeDOI(pair.right.data.DOI);
   const a = normalizeArxiv(pair.left.data.url || "") || normalizeArxiv(pair.left.data.DOI || "");

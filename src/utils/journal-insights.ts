@@ -114,7 +114,7 @@ export function cachedJournalInsights(item: Zotero.Item): JournalInsights | unde
     return undefined;
   return calculate(item, loaded);
 }
-export async function getJournalInsights(item: Zotero.Item, options: { queryAPI?: boolean } = {}): Promise<JournalInsights> {
+export async function getJournalInsights(item: Zotero.Item, options: { queryAPI?: boolean; signal?: AbortSignal } = {}): Promise<JournalInsights> {
   const data = await loadJournalInsights();
   const local = calculateLocal(item, data);
   const title = String(item.getField("publicationTitle") || "").trim();
@@ -125,7 +125,7 @@ export async function getJournalInsights(item: Zotero.Item, options: { queryAPI?
     return policy === "api-first" || policy === "api-only" || (policy === "local-first" && (kind === "esi" ? !local.categories.length : !local.natureIndex));
   });
   const response = options.queryAPI && item.itemType === "journalArticle" && title && wantsAPI
-    ? await fetchEasyScholarRank(title)
+    ? await fetchEasyScholarRank(title, options.signal)
     : peekEasyScholarRank(title);
   return resolveJournalSources(local, response);
 }

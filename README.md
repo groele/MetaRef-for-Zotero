@@ -21,11 +21,13 @@
 
 > **11.1.0 release:** adds automatic identity-checked metadata filling, bulk duplicate merging, complete-command scheduling and feedback, and bounded local runtime records. See the [release notes](docs/releases/metaflow-v11.1.0.md) for behavior changes and verification boundaries.
 
+> The `11.1.1-beta.1` readiness candidate and remaining release gates are documented in the [audit ledger](docs/commercial-readiness-2026-10-18.md). Stable downloads remain 11.1.0.
+
 ## 📖 Overview
 
-**Zotero MetaFlow** is a high-performance, production-grade Zotero add-on for reference metadata governance and journal academic metrics management (part of the Zotero Flow Series).
+**Zotero MetaFlow** is a Zotero add-on for reference metadata governance and journal academic metrics management (part of the Zotero Flow Series).
 
-When importing items from academic databases, web pages, or DOI translators, metadata is often fraught with issues: messy title letter cases, inconsistent author name formats, missing journal abbreviations, redundant or null fields, and absence of journal tier ratings. Zotero MetaFlow provides **40 metadata rules and 18 tools**, **61 EasyScholar journal ranking and metric fields**, **official Nature Index 2026 & ESI indexed datasets**, and **intelligent online metadata enrichment**, keeping your scholarly library standardized, accurate, and professional.
+When importing items from academic databases, web pages, or DOI translators, metadata is often fraught with issues: messy title letter cases, inconsistent author name formats, missing journal abbreviations, redundant or null fields, and absence of journal tier ratings. Zotero MetaFlow provides **40 metadata rules and 18 tools**, **61 EasyScholar journal ranking and metric fields**, **local Nature Index 2026 and ESI journal-list snapshots**, and **intelligent online metadata enrichment**, keeping your scholarly library standardized, accurate, and professional.
 
 ---
 
@@ -51,8 +53,8 @@ When importing items from academic databases, web pages, or DOI translators, met
 
 - **Full EasyScholar API Integration**: Comprehensive support for **61 ranking and metric indicators**, including CAS Journal Tiers (中科院分区), CCF Recommendations, JCR Quartiles, SCI / SSCI, Excellence Action Plan (卓越行动计划), Peking University Core (北大核心), CSSCI, CSCD, and more.
 - **Master Authority & Visibility Isolation**: Settings switches strictly control remote API lookups, sidebar display, Extra field writing, and custom column registration.
-- **Official Nature Index 2026 Specification**: Built-in 2026 dataset (177 official statistical journals) with verified API parsing and live tracking.
-- **Essential Science Indicators (ESI) Databases**: Built-in global ESI journal databases for instant discipline and top-tier indexing validation.
+- **Nature Index journal membership**: Compare against the bundled 2026 snapshot of 177 journals. Membership does not prove that an individual article is counted; this is not a live tracking or official certification service.
+- **Essential Science Indicators (ESI) Databases**: Built-in global ESI journal databases for local journal-discipline recognition.
 - **Custom Item Tree Columns & Native Sorting**: Register journal metrics (e.g. CAS Tier, CCF Grade, Nature Index) as native columns in Zotero's main item view with sorting capabilities.
 - **Dedicated Journal Sidebar Pane (Journal Insights)**：Real-time panoramic view of journal metrics in the item sidebar, complete with metric badges and one-click completion actions.
 - **72-Hour Persistent Cache**: Query results persist across restarts with request deduplication to save API quota and accelerate browsing.
@@ -63,7 +65,7 @@ When importing items from academic databases, web pages, or DOI translators, met
 - **Flexible Update Policies**: Choose between "Blank-only" and "Overwrite" policies to safeguard user-curated records.
 - **Asynchronous Live-Item Safety**: Strict pre- and post-flight verification of item identity and mutation journals to prevent cross-contamination caused by network latency or item type migrations.
 
-### 5. 🛡️ Industrial-Grade Batch Processing & Data Safety
+### 5. 🛡️ Batch Processing & Data Safety
 
 - **Serial Batch Queue & Configurable Concurrency**: Batch process extensive libraries safely with concurrency throttled between 1 and 16 workers.
 - **Item Mutation Journal**: Fine-grained rollback of failing rules isolates errors, ensuring passing rules are cleanly applied.
@@ -126,7 +128,7 @@ cd Zotero-MetaFlow
 # 2. Install dependencies (pnpm 12+ recommended)
 pnpm install
 
-# 3. Run unit tests (67 test suites, 429 tests)
+# 3. Run unit tests
 pnpm test:unit
 
 # 4. Code quality & lint checks

@@ -214,7 +214,7 @@ async function processAddedItems(ids: number[]) {
     addon.data.lastAutomaticWorkflow = workflow;
     await runAutomaticWorkflow(workflow, {
       metadata: async () => getPref("metadata.autoUpdateOnAdded")
-        ? addon.runner.add({ items, rules: [{ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false }) }], silent: true })
+        ? runReviewCommand("tool-review-metadata", items, false, { scanPDF: false, searchTitle: true, repairCreators: getPref("metadata.repairCreators", true) === true, overwrite: false })
         : undefined,
       format: async () => {
         return addon.hooks.onLintInBatch("standard", items, { automatic: true });

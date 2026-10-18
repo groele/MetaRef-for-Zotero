@@ -1,7 +1,7 @@
 {
   "name": "zotero-metaflow",
   "type": "module",
-  "version": "11.1.0",
+  "version": "11.1.1-beta.1",
   "packageManager": "pnpm@12.3.4",
   "description": "Validate, organize and enrich reference metadata in Zotero.",
   "config": {

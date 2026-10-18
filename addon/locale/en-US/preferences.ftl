@@ -328,16 +328,14 @@ menu-placement =
 menu-placement-primary = Top-level context menu
 menu-placement-nested = MetaFlow submenu
 
-metadata-update-saved-description = Both core commands fill fields according to validation rules, without review or confirmation UI. Update respects blank/overwrite mode; Check fills blanks by default. Identity conflicts or insufficient evidence preserve the item and record the reason. Enabled arXiv publication lookup creates or reuses a related publication and preserves the preprint. The type-change option still applies to import enrichment and legacy direct tools.
+metadata-update-saved-description = Both core commands fill fields according to validation rules, without review or confirmation UI. Update respects blank/overwrite mode; Check fills blanks by default. Identity conflicts or insufficient evidence preserve the item and record the reason. Enabled arXiv publication lookup creates or reuses a related publication and preserves the preprint.
 metadata-repair-creators =
     .label = Repair authors from verified metadata, including missing, partial and incorrect lists
-metadata-repair-creators-description = Includes authors in automatic bibliographic filling. After identity verification, enabling this option repairs incomplete existing author lists. Disabling it preserves authors, including in related publications.
+metadata-repair-creators-description = Includes authors in automatic bibliographic filling. After identity verification, enabling this option repairs incomplete existing author lists. Disabling it preserves authors during metadata filling and in related publications. Explicit author verification during Check and local author formatting follow their own switches.
 
 menu-placement-none = None (hidden)
 batch-feedback-heading = Run feedback and reports
-batch-feedback-auto-report =
-    .label = Automatically open detailed reports after a run
-batch-feedback-description = Detailed reports stay closed by default. Results, warnings and field changes are kept for this session and can be opened on demand. Progress notifications use the separate setting above.
+batch-feedback-description = Completion uses a brief status toast; detailed reports never open automatically. Run summaries, field names and reason codes are stored locally. Titles, field contents and raw error text are not persisted. Open the full report for this session on demand.
 batch-feedback-view-report =
     .label = View last run report
 batch-feedback-empty = No run results in this session.
@@ -490,12 +488,12 @@ workflow-check-duplicates = Review duplicates interactively after checking (repl
 workflow-update-duplicates = Review duplicates interactively after updating (may be slow in a large library)
 workflow-search-heading = Fallback searches for online verification (off by default)
 workflow-search-description = These options apply to online verification in both core commands. Existing identifiers take priority. Only enabled fallback searches run when identifiers are missing. PDF content stays local and only existing caches are read. Standalone advanced review tools retain full searches.
-workflow-scan-pdf = Read DOI/arXiv candidates from PDF caches when identifiers are missing (manual choice)
+workflow-scan-pdf = Read DOI/arXiv candidates from PDF caches when identifiers are missing (automatic evidence checks)
 workflow-search-title = Search online by title when identifiers are missing (slower; identity checks remain)
 workflow-legacy-heading = Automatic enrichment and legacy advanced-rule options
 workflow-legacy-description = This long-DOI rule switch remains for legacy direct callers. Local checking never resolves ShortDOIs online. Core online verification resolves identifiers as needed independently of this compatibility switch.
 
-core-feedback-completed = Combined workflow ended. Changes and findings from { $stages } stages are retained in the full report.
+core-feedback-completed = Combined workflow ended with changes and findings from { $stages } stages; open the full report manually from Settings.
 core-feedback-cancelled = Combined workflow stopped. Results from { $stages } stages are retained; earlier saves were not reverted.
 
 review-panel-unavailable = Open the Zotero main window to use the review panel.
@@ -514,7 +512,7 @@ runtime-data-open = Open Local Runtime Records
 
 data-settings-heading = Data, Cache and Run Feedback
 data-settings-description = Zotero stores references and attachments and manages plugin settings. Reusable API responses and runtime summaries are stored separately in the profile directory. Clearing API caches preserves references, settings, saved rankings and runtime records.
-runtime-data-policy = Runtime summaries are retained for { $days } days, up to { $count } runs and { $size } MiB. Titles, field contents and keys are omitted. Each core command produces one record; detailed field changes remain in the current session report.
+runtime-data-policy = Local run records are kept for { $days } days, up to { $count } runs and { $size } MiB. They store summaries, field names, reason codes and local identifiers for up to 50 items; titles, field contents and raw error text are omitted. Truncated reports are marked.
 core-feedback-errors = The workflow encountered errors. Earlier saves and stage results are retained; open the details.
 core-feedback-empty = No stages ran. Enable the desired steps in the core command settings.
 core-task-running = { $command } · { $index }/{ $total }: { $stage }
@@ -528,9 +526,6 @@ core-task-journal = Journal information
 core-task-duplicates = Duplicate handling
 core-task-preparing = Preparing
 core-task-stop = Stop Further Execution
-core-task-details = View Results
-core-task-dismiss = Dismiss
-core-task-result = { $outcome } · Saved { $saved }/{ $total }
 core-task-finished = Completed
 core-task-attention = Needs Attention
 core-task-stopped = Stopped

@@ -13,7 +13,7 @@ import { recordRuntimeResult } from "../utils/runtime-data-storage";
 import { ruleSupportsItems } from "../utils/workflow-policy";
 import { isFieldValidForItemType } from "../utils/zotero";
 import { updateBatchFeedback } from "./batch-feedback";
-import { createReporter, ProgressUI } from "./reporter";
+import { ProgressUI } from "./reporter";
 import { Rules } from "./rules";
 
 const logger = createLogger("Runner");
@@ -108,6 +108,7 @@ export class LintRunner {
   private runningQueue: Promise<void> = Promise.resolve();
   private cancelled = false;
   private preparation?: AbortController;
+  private execution?: AbortController;
   private saved = 0;
   private failedItems = new Set<number | Zotero.Item>();
   private unsafeItems = new Set<Zotero.Item>();
@@ -125,6 +126,7 @@ export class LintRunner {
 
   public cancel(): void {
     this.cancelled = true;
+    this.execution?.abort(new Error("Batch cancelled"));
     this.preparation?.abort(new Error("Batch cancelled"));
   }
 
@@ -146,6 +148,7 @@ export class LintRunner {
     rules: Arrayable<Rule<any>>;
     silent?: boolean;
     history?: boolean;
+    signal?: AbortSignal;
   }): Promise<BatchResult | undefined> {
     const batch = { ...params, items: [...toArray(params.items)], rules: [...toArray(params.rules)] };
     let result: BatchResult | undefined;
@@ -161,18 +164,21 @@ export class LintRunner {
   }
 
   /** Native merge/create operations share the same queue and shutdown cancellation as rules. */
-  public async exclusive<T>(operation: (signal: AbortSignal) => Promise<T>): Promise<T | undefined> {
+  public async exclusive<T>(operation: (signal: AbortSignal) => Promise<T>, owner?: AbortSignal): Promise<T | undefined> {
     let result: T | undefined;
     const task = async () => {
-      if (!addon.data.alive)
+      if (!addon.data.alive || owner?.aborted)
         return;
       this.cancelled = false;
       const controller = new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController();
+      const abort = () => controller.abort(owner?.reason);
+      owner?.addEventListener("abort", abort, { once: true });
       this.preparation = controller;
       try {
         result = await operation(controller.signal);
       }
       finally {
+        owner?.removeEventListener("abort", abort);
         if (this.preparation === controller)
           this.preparation = undefined;
       }
@@ -188,11 +194,17 @@ export class LintRunner {
     rules: Arrayable<Rule<any>>;
     silent?: boolean;
     history?: boolean;
+    signal?: AbortSignal;
   }): Promise<void> {
     const { items: _items, rules: _rules, silent = false } = params;
     const items = [...new Map(toArray(_items).filter(item => item?.isRegularItem() && !item.deleted && item.isEditable()).map(item => [item.id || item, item])).values()];
 
     this.initStats();
+    this.execution = new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController();
+    const abort = () => this.cancel();
+    params.signal?.addEventListener("abort", abort, { once: true });
+    if (params.signal?.aborted)
+      abort();
     try {
       try {
         await this.ui.init(silent);
@@ -207,9 +219,9 @@ export class LintRunner {
       this.stats.phase = "idle";
       this.updateProgress(0, items.length);
 
-      if (!items.length || !rules.length)
-        return;
       this.stats.total = items.length;
+      if (!items.length || !rules.length || this.cancelled)
+        return;
       const optionsMap = await this.prepareRules(rules, items);
       const hasActiveRules = [...optionsMap.values()].some(opt => opt !== false);
 
@@ -244,6 +256,8 @@ export class LintRunner {
       await this.batchSave();
     }
     finally {
+      params.signal?.removeEventListener("abort", abort);
+      this.execution = undefined;
       this.finish(silent, items, params.history !== false);
     }
   }
@@ -342,6 +356,8 @@ export class LintRunner {
           return this.applyRule(item, rule, options);
         }
       }).catch((error) => {
+        if (this.cancelled)
+          return;
         let message: string = "";
         // Zotero.HTTP.request error, the message is too long, here we just show the status
         if (error && typeof error === "object" && "xmlhttp" in error && "message" in error)
@@ -499,7 +515,7 @@ export class LintRunner {
         finally {
           acceptingReports = false;
         }
-      }, rule.timeout ?? 60_000, () => new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController(), journal.capture);
+      }, rule.timeout ?? 60_000, () => new (Zotero.getMainWindow() as unknown as Window & typeof globalThis).AbortController(), journal.capture, this.execution?.signal);
     }
     catch (error) {
       await restore();
@@ -596,8 +612,6 @@ export class LintRunner {
       try {
         this.ui.showFinished(this.lastResult.passed, this.lastResult.failed, duration, this.cancelled, this.lastResult.skipped, this.preparationFailed, this.lastResult);
         updateBatchFeedback(this.lastResult);
-        if (!silent && getPref("lint.autoReport" as any, false) && (this.lastResult.records.length || this.lastResult.changes.length))
-          createReporter(this.lastResult.records, this.lastResult.changes).catch(error => logger.error("Failed to display batch report:", error));
       }
       catch (error) {
         logger.error("Failed to display batch results:", error);

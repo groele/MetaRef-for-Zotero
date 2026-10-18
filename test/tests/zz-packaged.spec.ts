@@ -33,11 +33,17 @@ describe("production XPI installation", function () {
       assert.equal(installed.id, config.addonID);
       assert.equal(installed.version, version);
       assert.equal(installed.name, config.addonName);
+      const feed = await IOUtils.readJSON(packagePath.replace(/\.xpi$/, "-update.json")) as any;
+      const update = feed.addons[config.addonID].updates.find((row: any) => row.version === version);
+      const digest = await Zotero.getMainWindow().crypto.subtle.digest("SHA-512", await IOUtils.read(packagePath));
+      assert.equal(update.update_hash, `sha512:${Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("")}`);
       assert.include(installed.iconURL, "metaref-", "the installed package uses the MetaRef icon");
       for (let attempt = 0; attempt < 100 && !(Zotero as any)[config.addonInstance]?.data.alive; attempt++)
         await Zotero.Promise.delay(50);
       const plugin = (Zotero as any)[config.addonInstance];
       assert.isTrue(plugin.data.alive);
+      const license = await Zotero.File.getResourceAsync(installed.getResourceURI("licenses/MetaFlow-AGPL-3.0.txt").spec);
+      assert.include(String(license), "GNU AFFERO GENERAL PUBLIC LICENSE");
       await plugin.hooks.onLintInBatch(["correct-title-chemical-formula", "require-journal-abbr", "tool-query-esi", "tool-query-nature-index"], [item, crossDisciplinary, unmatched]);
       await item.reload(["itemData"], true);
       await crossDisciplinary.reload(["itemData"], true);

@@ -46,7 +46,7 @@ export async function refreshDuplicateStats(libraryID = Zotero.Libraries.userLib
   const task = (async () => {
     const revision = duplicateSearchRevision();
     const items = (await Zotero.Items.getAll(libraryID, true, false)).filter(item => item.isRegularItem());
-    const pairs = await findDuplicates(items);
+    const pairs = await findDuplicates(items, undefined, true);
     if (!addon.data.alive || revision !== duplicateSearchRevision())
       return;
     const groups = duplicateGroups(pairs);

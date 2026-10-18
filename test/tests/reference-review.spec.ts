@@ -42,7 +42,7 @@ describe("reference verification, versions and duplicate decisions", function ()
     Search = Zotero.Translate.Search;
     request = Zotero.HTTP.request;
     alert = Zotero.alert;
-    for (const key of ["lint.onAdded", "lint.autoReport", "workflow.formatAfterUpdate", "metadata.updateJournalInfo"]) {
+    for (const key of ["lint.onAdded", "workflow.formatAfterUpdate", "metadata.updateJournalInfo"]) {
       prefs.set(key, Zotero.Prefs.get(`${config.prefsPrefix}.${key}`, true));
       Zotero.Prefs.set(`${config.prefsPrefix}.${key}`, false, true);
     }

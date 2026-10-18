@@ -71,28 +71,34 @@ describe("metadata safety regressions", function () {
     });
   }
 
-  it("exports the actual saved field changes from the results window", async function () {
+  it("keeps results closed after a run and exports saved field changes on request", async function () {
     const item = await create({ title: "Before export" });
     const picker = plugin().data.ztoolkit.FilePicker.prototype;
     const open = picker.open;
-    const autoReportKey = `${config.prefsPrefix}.lint.autoReport`;
-    const autoReport = Zotero.Prefs.get(autoReportKey, true);
-    Zotero.Prefs.set(autoReportKey, true, true);
+    const dialogs = new Set(plugin().data.dialogs.keys());
+    const entry = (Zotero.PreferencePanes as any).pluginPanes.find((pane: any) => pane.pluginID === config.addonID);
+    const settingsWindow = Zotero.Utilities.Internal.openPreferences(entry.id)! as Window & typeof globalThis;
     const path = PathUtils.join(PathUtils.tempDir, `metaflow-report-${Date.now()}.json`);
     picker.open = async () => path;
     try {
+      for (let attempt = 0; attempt < 100 && !settingsWindow.document.getElementById("metaref-last-batch-report"); attempt++)
+        await Zotero.Promise.delay(50);
+      await (settingsWindow as any).Zotero_Preferences.waitForFirstPaneLoad();
       await plugin().runner.add({ items: [item], rules: [{ id: "safety-export", scope: "item", apply({ item: target, report }: { item: Zotero.Item; report: (info: { level: string; message: string }) => void }) {
         target.setField("title", "After export");
         report({ level: "warning", message: "Review saved change" });
       } }] });
+      assert.equal(plugin().data.dialogs.size, dialogs.size, "a completed run does not open its detailed report");
+      const reportButton = settingsWindow.document.getElementById("metaref-last-batch-report")!;
+      reportButton.dispatchEvent(new settingsWindow.Event("command", { bubbles: true }));
       const findReport = () => [...plugin().data.dialogs.values()].find((window: any) => window.document.body?.textContent?.includes("Review saved change")) as Window | undefined;
       for (let attempt = 0; attempt < 100 && !findReport(); attempt++)
         await Zotero.Promise.delay(30);
       const report = findReport()!;
       assert.exists(report, "the actual results window opens");
-      const button = report.document.getElementById("metaref-report-export") as HTMLButtonElement;
-      assert.exists(button);
-      button.click();
+      const exportButton = report.document.getElementById("metaref-report-export") as HTMLButtonElement;
+      assert.exists(exportButton);
+      exportButton.click();
       for (let attempt = 0; attempt < 100 && !(await IOUtils.exists(path)); attempt++)
         await Zotero.Promise.delay(30);
       const exported = JSON.parse(await IOUtils.readUTF8(path));
@@ -100,8 +106,8 @@ describe("metadata safety regressions", function () {
       report.close();
     }
     finally {
-      Zotero.Prefs.set(autoReportKey, autoReport as boolean, true);
       picker.open = open;
+      settingsWindow.close();
       for (const report of plugin().data.dialogs.values())
         report.close();
       await IOUtils.remove(path, { ignoreAbsent: true });

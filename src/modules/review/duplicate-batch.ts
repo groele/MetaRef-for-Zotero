@@ -84,6 +84,9 @@ export async function bulkMergeDuplicates(pairs: DuplicatePair[], signal?: Abort
             break;
           const left = Zotero.Items.get(master.id) as Zotero.Item;
           const right = Zotero.Items.get(other.id) as Zotero.Item;
+          if (!left || !right)
+            throw new Error(getString("review-stale"));
+          assertReviewFresh(right, other.data);
           const pair = duplicatePairs(new Set([left.id]), [duplicateRecord(left), duplicateRecord(right)])[0];
           if (!pair || !canMergePair(pair, differentTypes) || isNonDuplicate(left, right)) {
             state.skipped++;
@@ -100,8 +103,11 @@ export async function bulkMergeDuplicates(pairs: DuplicatePair[], signal?: Abort
         }
         else {
           state.errors.push(String(error));
-          for (const record of group)
-            state.failedIDs.push(record.id);
+          const saved = new Set(state.savedIDs);
+          for (const record of group) {
+            if (!saved.has(record.id))
+              state.failedIDs.push(record.id);
+          }
         }
       }
       state.completed++;
@@ -137,7 +143,7 @@ export async function processImportedDuplicates(items: Zotero.Item[]) {
   return addon.runner.exclusive(async (signal) => {
     if (!getPref("lint.onAdded"))
       return;
-    const pairs = await findDuplicates(eligible, signal);
+    const pairs = await findDuplicates(eligible, signal, action !== "ask");
     if (action === "ask") {
       const touched = new Set<number>();
       for (const pair of pairs) {

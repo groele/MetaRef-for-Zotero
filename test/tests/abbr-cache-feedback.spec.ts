@@ -27,7 +27,6 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
 
   before(function () {
     pref("lint.onAdded", false);
-    pref("lint.autoReport", false);
     pref("rule.require-journal-abbr.sourceMode", "auto");
     pref("rule.require-journal-abbr.existingPolicy", "known");
     pref("rule.require-journal-abbr.matchMode", "exact");

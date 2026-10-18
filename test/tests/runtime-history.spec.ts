@@ -92,6 +92,42 @@ describe("local runtime data persistence", function () {
     finally { IOUtils.writeJSON = original; }
   });
 
+  it("serializes clearing after an in-flight write without reviving history in the backup", async function () {
+    const store = instance();
+    await store.append(entry("before-clear"));
+    const original = IOUtils.writeJSON;
+    let release!: () => void;
+    let entered!: () => void;
+    const started = new Promise<void>(resolve => entered = resolve);
+    const blocked = new Promise<void>(resolve => release = resolve);
+    let once = true;
+    IOUtils.writeJSON = (async (path: string, ...args: any[]) => {
+      if (path === file && once) {
+        once = false;
+        entered();
+        await blocked;
+      }
+      return (original as any)(path, ...args);
+    }) as typeof original;
+    try {
+      const writing = store.flush();
+      await started;
+      const clearing = store.clear();
+      await Zotero.Promise.delay(0);
+      release();
+      await Promise.all([writing, clearing]);
+      assert.isEmpty((await IOUtils.readJSON(file) as any).runs);
+      assert.isEmpty((await IOUtils.readJSON(`${file}.bak`) as any).runs);
+      await store.append(entry("after-clear"));
+      await store.flush();
+      assert.deepEqual((await instance().read()).runs.map(run => run.id), ["after-clear"]);
+    }
+    finally {
+      release();
+      IOUtils.writeJSON = original;
+    }
+  });
+
   it("preserves a newer schema and refuses destructive clearing", async function () {
     await IOUtils.writeJSON(file, { version: 2, future: "retain" });
     const store = instance();

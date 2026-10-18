@@ -35,7 +35,6 @@ describe("journal abbreviation integration and safe custom matching", function (
 
   before(function () {
     pref("lint.onAdded", false);
-    pref("lint.autoReport", false);
   });
 
   beforeEach(function () {

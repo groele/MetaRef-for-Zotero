@@ -35,7 +35,6 @@ export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "lint.onAdded": true,
   "lint.onGroup": false,
   "lint.notify": true,
-  "lint.autoReport": false,
   "lint.numConcurrent": 1,
   "lint.delayOnAdded": 500,
   "richtext.toolBar": true,

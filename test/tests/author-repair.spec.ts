@@ -20,7 +20,6 @@ describe("manual author repair in both MetaFlow actions", function () {
 
   before(function () {
     pref("lint.onAdded", false);
-    pref("lint.autoReport", false);
     pref("metadata.repairCreators", true);
     pref("workflow.updateMetadata", false);
     pref("workflow.remoteAuthorsOnCheck", true);

@@ -2,18 +2,27 @@ import type { BatchResult } from "./runner";
 import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { preferenceListeners } from "../utils/preference-listeners";
+import { getPref } from "../utils/prefs";
 import { RUNTIME_HISTORY_BYTES, RUNTIME_HISTORY_LIMIT, RUNTIME_HISTORY_TTL } from "../utils/runtime-data-policy";
 import { flushRuntimeData, readRuntimeData, runtimeDataPath } from "../utils/runtime-data-storage";
 import { createReporter } from "./reporter";
 
 const logger = createLogger("batch-feedback");
-const dismissed = new WeakSet<BatchResult>();
 
 function reportDetails(result: BatchResult) {
   return { records: result.records, changes: result.changes };
 }
 
 export function updateBatchFeedback(result?: BatchResult) {
+  try {
+    renderBatchFeedback(result);
+  }
+  catch (error) {
+    logger.error("Cannot refresh batch feedback", error);
+  }
+}
+
+function renderBatchFeedback(result?: BatchResult) {
   result ||= addon.runner?.lastResult;
   const active = addon.data.activeCoreWorkflow;
   const doc = addon.data.prefs?.window.document;
@@ -31,7 +40,7 @@ export function updateBatchFeedback(result?: BatchResult) {
     const details = result && reportDetails(result);
     button.disabled = Boolean(active) || !details || (!details.records.length && !details.changes.length);
   }
-  updateCoreFeedback(result);
+  updateCoreFeedback();
 }
 
 function coreProgressText() {
@@ -49,13 +58,32 @@ export function closeCoreFeedback() {
     win.document.getElementById("metaref-core-task")?.remove();
 }
 
-/** One quiet, inline surface for the complete command; no intermediate report windows. */
-function updateCoreFeedback(result?: BatchResult) {
+export function showCoreCompletionToast(result: BatchResult) {
+  if (!getPref("lint.notify"))
+    return;
+  const outcome = result.cancelled
+    ? getString("core-task-stopped")
+    : result.failed || result.preparationFailed
+      ? getString("core-task-attention")
+      : !addon.data.lastCoreWorkflow?.stages.length
+          ? getString("core-task-no-stages")
+          : getString("core-task-finished");
+  const summary = getString("batch-feedback-summary", { args: { total: result.total, saved: result.saved, failed: result.failed, warnings: result.warnings } });
+  try {
+    new ztoolkit.ProgressWindow(addon.data.config.addonName, { closeOnClick: true, closeTime: 4500 })
+      .createLine({ type: result.failed || result.preparationFailed ? "fail" : "default", text: `${outcome} · ${summary}`, progress: 100, idx: 0 })
+      .show();
+  }
+  catch (error) {
+    logger.error("Cannot show core workflow completion toast", error);
+  }
+}
+
+/** Keep the stop control inline while a complete command is running. */
+function updateCoreFeedback() {
   const state = addon.data.activeCoreWorkflow;
-  const completed = result && addon.data.lastCoreWorkflow?.lastResult === result;
-  if (!state && (!completed || dismissed.has(result!))) {
-    if (addon.data.lastCoreWorkflow)
-      closeCoreFeedback();
+  if (!state) {
+    closeCoreFeedback();
     return;
   }
   for (const win of Zotero.getMainWindows()) {
@@ -72,36 +100,18 @@ function updateCoreFeedback(result?: BatchResult) {
       });
       panel.append(ztoolkit.UI.createElement(doc, "span", { properties: { id: "metaref-core-task-status" }, attributes: { "role": "status", "aria-live": "polite" }, styles: { flex: "1 1 220px", overflowWrap: "anywhere" } }));
       panel.append(ztoolkit.UI.createElement(doc, "button", { properties: { id: "metaref-core-task-action" }, attributes: { type: "button" } }));
-      panel.append(ztoolkit.UI.createElement(doc, "button", { properties: { id: "metaref-core-task-dismiss", textContent: getString("core-task-dismiss"), onclick: () => {
-        const latest = addon.data.lastCoreWorkflow?.lastResult;
-        if (latest)
-          dismissed.add(latest);
-        closeCoreFeedback();
-      } }, attributes: { type: "button" } }));
       host.append(panel);
     }
     const status = panel.querySelector<HTMLSpanElement>("#metaref-core-task-status")!;
-    const outcome = state ? "" : getString(result!.cancelled ? "core-task-stopped" : result!.failed || result!.preparationFailed ? "core-task-attention" : !addon.data.lastCoreWorkflow?.stages.length ? "core-task-no-stages" : "core-task-finished");
-    status.textContent = `${addon.data.config.addonName} · ${state ? coreProgressText() : getString("core-task-result", { args: { outcome, saved: result!.saved, total: result!.total } })}`;
-    status.title = state ? coreProgressText() : coreResultText(result!);
+    status.textContent = `${addon.data.config.addonName} · ${coreProgressText()}`;
+    status.title = coreProgressText();
     const action = panel.querySelector<HTMLButtonElement>("#metaref-core-task-action")!;
-    action.textContent = getString(state ? "core-task-stop" : "core-task-details");
-    action.disabled = state ? state.cancelled : !result?.records.length && !result?.changes.length;
+    action.textContent = getString("core-task-stop");
+    action.disabled = state.cancelled;
     action.onclick = () => {
-      if (addon.data.activeCoreWorkflow) {
-        addon.data.activeCoreWorkflow.cancelled = true;
-        addon.runner.cancel();
-        updateBatchFeedback();
-      }
-      else if (result) {
-        action.disabled = true;
-        void createReporter(result.records, result.changes).catch(error => logger.error(error)).finally(() => {
-          if (action.isConnected)
-            action.disabled = false;
-        });
-      }
+      addon.data.activeCoreWorkflow?.cancel();
+      updateBatchFeedback();
     };
-    (panel.querySelector("#metaref-core-task-dismiss") as HTMLButtonElement).hidden = Boolean(state);
   }
 }
 

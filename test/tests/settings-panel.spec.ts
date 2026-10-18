@@ -35,6 +35,7 @@ describe("settings panel layout and validation in Zotero", function () {
     pane.dispatchEvent(new win.Event("load"));
     assert.equal(pane.querySelectorAll(".metaref-shortcut-action").length, actions);
     assert.isAbove(actions, 0);
+    assert.isNull(pane.querySelector(`[preference='${pref("rule.tool-update-metadata.option.allow-type-changed")}']`));
     assert.isNull(pane.querySelector(".metaref-settings-search, .metaref-settings-jump, .metaref-settings-disclosure, .metaref-settings-rule-actions"));
   });
 
@@ -272,7 +273,7 @@ describe("settings panel layout and validation in Zotero", function () {
     const legacyKey = "rule.tool-update-metadata.option.slient";
     const previous = new Map([modeKey, typeKey, legacyKey].map(key => [key, Zotero.Prefs.get(pref(key), true)]));
     const mode = find(modeKey) as any;
-    const allowType = find(typeKey) as HTMLInputElement;
+    assert.isNull(find(typeKey), "retired type conversion is not a core command setting");
     const plugin = (Zotero as any)[config.addonInstance];
     const dialogs = plugin.data.dialogs.size;
     const rule = Rules.getByID("tool-update-metadata")!;
@@ -285,9 +286,7 @@ describe("settings panel layout and validation in Zotero", function () {
         await Zotero.Promise.delay(50);
         assert.equal(Zotero.Prefs.get(pref(modeKey), true), value);
         for (const enabled of [false, true]) {
-          if (allowType.checked !== enabled)
-            allowType.click();
-          assert.equal(Zotero.Prefs.get(pref(typeKey), true), enabled);
+          Zotero.Prefs.set(pref(typeKey), enabled, true);
           const options = await rule.prepare!({ items: [], debug() {} } as any);
           assert.deepEqual(options, { mode: value, allowTypeChanged: enabled, repairCreators: Zotero.Prefs.get(pref("metadata.repairCreators"), true) === true });
           assert.equal(plugin.data.dialogs.size, dialogs, "legacy prompt preference cannot reopen the mode dialog");
@@ -298,7 +297,6 @@ describe("settings panel layout and validation in Zotero", function () {
       for (const [key, value] of previous)
         Zotero.Prefs.set(pref(key), value as string | boolean, true);
       mode.value = previous.get(modeKey);
-      allowType.checked = previous.get(typeKey) as boolean;
     }
   });
 
@@ -549,7 +547,7 @@ describe("settings panel layout and validation in Zotero", function () {
 
   it("retains warnings without an automatic report and opens details only on request", async function () {
     const plugin = (Zotero as any)[config.addonInstance];
-    const keys = ["lint.autoReport", "lint.notify", "lint.onAdded"];
+    const keys = ["lint.notify", "lint.onAdded"];
     const previous = new Map(keys.map(key => [key, Zotero.Prefs.get(pref(key), true)]));
     const item = new Zotero.Item("journalArticle");
     const dialogs = new Set(plugin.data.dialogs.keys());

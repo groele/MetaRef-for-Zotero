@@ -368,6 +368,53 @@ describe("integrated duplicate settings", function () {
     pref("duplicates.concurrency", 3);
   });
 
+  it("keeps compact candidate membership and skips disappeared items", async function () {
+    const items: Zotero.Item[] = [];
+    for (let index = 0; index < 12; index++)
+      items.push(await create("10.1234/compact-group"));
+    const pairs = await plugin().api.review.findDuplicates(items, undefined, true);
+    assert.lengthOf(pairs, 11);
+    assert.equal(new Set(pairs.flatMap((pair: any) => [pair.left.id, pair.right.id])).size, 12);
+    const original = Zotero.Items.get;
+    (Zotero.Items as any).get = function (id: number, ...args: any[]) {
+      return id === items[1].id ? undefined : (original as any).call(this, id, ...args);
+    };
+    try {
+      const remaining = await plugin().api.review.findDuplicates(items, undefined, true);
+      assert.isFalse(remaining.some((pair: any) => pair.left.id === items[1].id || pair.right.id === items[1].id));
+      assert.equal(new Set(remaining.flatMap((pair: any) => [pair.left.id, pair.right.id])).size, 11);
+    }
+    finally { Zotero.Items.get = original; }
+  });
+
+  it("rejects later donor edits made while an earlier native merge is pending", async function () {
+    const items = [await create("10.1234/late-donor"), await create("10.1234/late-donor"), await create("10.1234/late-donor")];
+    const pairs = await plugin().api.review.findDuplicates(items);
+    const original = Zotero.Items.merge;
+    let count = 0;
+    let later!: Zotero.Item;
+    Zotero.Items.merge = async function (...args: Parameters<typeof original>) {
+      const result = await original.apply(this, args);
+      if (++count === 1) {
+        later = items.find(item => item.id !== args[0].id && !item.deleted)!;
+        assert.isDefined(later, "edit the remaining donor, regardless of the configured master strategy");
+        later.setField("volume", "User edit during merge");
+        await later.saveTx();
+      }
+      return result;
+    };
+    try {
+      const result = await plugin().runner.exclusive((signal: AbortSignal) => plugin().api.review.bulkMergeDuplicates(pairs, signal));
+      assert.equal(result.merged, 1);
+      assert.lengthOf(result.errors, 1);
+      assert.deepEqual(result.failedIDs, [later.id]);
+      assert.isFalse(result.failedIDs.some((id: number) => result.savedIDs.includes(id)));
+      assert.isFalse(later.deleted);
+      assert.equal(later.getField("volume"), "User edit during merge");
+    }
+    finally { Zotero.Items.merge = original; }
+  });
+
   it("yields and accepts cancellation while enumerating a dense candidate bucket", async function () {
     const items: Zotero.Item[] = [];
     for (let index = 0; index < 24; index++)

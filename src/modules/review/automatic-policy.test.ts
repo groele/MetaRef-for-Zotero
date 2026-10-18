@@ -1,11 +1,18 @@
 import type { IdentifierCandidate, ReviewProposal } from "./policy";
 import { describe, expect, it } from "vitest";
-import { automaticIdentifier, automaticSelection } from "./automatic-policy";
+import { automaticIdentifier, automaticSelection, hasLocalCorroboration } from "./automatic-policy";
 
 const proposal = (extra: Partial<ReviewProposal> = {}): ReviewProposal => ({ itemID: 1, original: { itemType: "journalArticle", title: "Optical response of layered materials", DOI: "10.1234/test", date: "2026" }, candidate: { itemType: "journalArticle", title: "Optical response of layered materials", DOI: "10.1234/test", date: "2026", publicationTitle: "Journal" }, identifier: { kind: "DOI", value: "10.1234/test", source: "item" }, source: "Crossref", blocked: false, conflicts: [], changes: [{ field: "publicationTitle", before: "", after: "Journal" }, { field: "date", before: "2026", after: "2026-10" }], ...extra });
 const identifier = (value: string, kind: IdentifierCandidate["kind"] = "DOI", excerpt?: string): IdentifierCandidate => ({ kind, value, source: "fixture", excerpt });
 
 describe("automatic metadata decisions", () => {
+  it("rejects impossible corroboration locally before spending a network request", () => {
+    expect(hasLocalCorroboration({ title: "Generic title" })).toBe(false);
+    expect(hasLocalCorroboration({ date: "2026" })).toBe(false);
+    expect(hasLocalCorroboration({ title: " ", date: "2026" })).toBe(false);
+    expect(hasLocalCorroboration({ title: "Generic title", date: "2026-10" })).toBe(true);
+    expect(hasLocalCorroboration({ title: "Generic title", creators: [{ creatorType: "author", lastName: "Doe", firstName: "Jane" }] })).toBe(true);
+  });
   it("prefers an explicit identifier and never picks an ambiguous DOI by array order", () => {
     expect(automaticIdentifier([identifier("10.1234/b", "DOI", "References"), identifier("10.1234/a")])?.value).toBe("10.1234/a");
     expect(automaticIdentifier([identifier("10.1234/a"), identifier("10.1234/b")])).toBeUndefined();

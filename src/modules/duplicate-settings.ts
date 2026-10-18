@@ -92,7 +92,7 @@ export function setupDuplicateSettings(pane: Element) {
     if (!library || !library.editable)
       return;
     const items = (await Zotero.Items.getAll(libraryID, true, false)).filter(item => item.isRegularItem() && item.isEditable());
-    const pairs = await findDuplicates(items);
+    const pairs = await findDuplicates(items, undefined, true);
     const { dialog, openAndWaitClose } = useDialog(new ztoolkit.Dialog(1, 1));
     let accepted = false;
     dialog.addCell(0, 0, { tag: "p", properties: { textContent: getString("duplicates-bulk-confirm", { args: { groups: duplicateGroups(pairs).length } }) } });

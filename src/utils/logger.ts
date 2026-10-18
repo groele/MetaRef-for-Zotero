@@ -18,14 +18,20 @@ export function createLogger(prefix?: string): Logger {
 
     switch (level) {
       case "debug":
-        ztoolkit.log(...data);
+        Zotero.debug(data.join(" "));
         break;
       case "log":
       case "warn":
       case "error":{
-        const console = ztoolkit.getGlobal("window").console;
-        console[level](...data);
         Zotero.debug(data.join(" "));
+        try {
+          const win = ztoolkit.getGlobal("window");
+          if (!win.closed)
+            win.console[level](...data);
+        }
+        catch {
+          // The host log above remains available after the last window closes.
+        }
         break;
       }
     }

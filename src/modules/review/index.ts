@@ -2,14 +2,16 @@ import type { TransformedData } from "../rules/tool-update-metadata/services/bas
 import type { BatchResult } from "../runner";
 import type { MetadataDecision, ReviewProposal } from "./policy";
 
+import { mapBatch } from "../../utils/batch-map";
 import { getString } from "../../utils/locale";
 import { createLogger } from "../../utils/logger";
 import { getPref } from "../../utils/prefs";
+import { normalizedConcurrency } from "../../utils/rule-execution";
 import { recordRuntimeResult } from "../../utils/runtime-data-storage";
 import { updateBatchFeedback } from "../batch-feedback";
 import { defineRule } from "../rules/rule-base";
 import { applyReviewedMetadata, createRelatedVersion, selectionIssue } from "./apply";
-import { automaticIdentifier, automaticSelection } from "./automatic-policy";
+import { automaticIdentifier, automaticSelection, hasLocalCorroboration } from "./automatic-policy";
 import { chooseDuplicateBatch, runDuplicateBatch } from "./bulk-review";
 import { applyDuplicateDecision, findDuplicates, reviewDuplicate } from "./duplicates";
 import { discoverIdentifiers, inspectMetadata, inspectPreprint } from "./metadata";
@@ -19,11 +21,13 @@ export const REVIEW_COMMANDS = ["tool-review-metadata", "tool-review-preprint", 
 export type ReviewCommand = typeof REVIEW_COMMANDS[number];
 interface ReviewOptions {
   selections: MetadataDecision[];
+  selectionsByItem: Map<number, MetadataDecision>;
   failures: Map<number, string>;
   failureCodes: Map<number, string>;
 }
 
 interface ReviewFeatures {
+  signal?: AbortSignal;
   history?: boolean;
   scanPDF?: boolean;
   searchTitle?: boolean;
@@ -40,12 +44,11 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
     targetItemTypes: version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "book", "bookSection"],
     async prepare({ items, signal }) {
       const repairCreators = features.repairCreators ?? (getPref("metadata.repairCreators", true) === true);
-      const proposals: ReviewProposal[] = [];
-      const evidence = new Map<string, typeof proposals[number]>();
+      const evidence = new Map<string, Promise<ReviewProposal>>();
       const failures = new Map<number, string>();
       const failureCodes = new Map<number, string>();
       const supported = version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "book", "bookSection"];
-      for (const item of items.filter(item => supported.includes(item.itemType))) {
+      const inspected = await mapBatch(items.filter(item => supported.includes(item.itemType)), Math.min(4, normalizedConcurrency(getPref("lint.numConcurrent"))), async (item): Promise<ReviewProposal | undefined> => {
         signal?.throwIfAborted();
         const original = JSON.parse(JSON.stringify(item.toJSON())) as TransformedData;
         try {
@@ -59,25 +62,31 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
           const identifier = automaticIdentifier(candidates);
           if (!identifier)
             throw new Error(getString("review-auto-ambiguous"));
-          const key = `${identifier.kind}:${identifier.value}`;
-          const cached = evidence.get(key);
-          if (cached) {
-            proposals.push({ ...cached, itemID: item.id, original, conflicts: identityConflicts(original, cached.candidate, !!cached.preprintURL), changes: reviewChanges(original, cached.candidate, !!cached.preprintURL) });
+          if ((identifier.kind === "Title" || identifier.excerpt) && !hasLocalCorroboration(original)) {
+            failures.set(item.id, getString("review-auto-evidence"));
+            failureCodes.set(item.id, "metadata-auto-evidence");
+            return;
           }
-          else {
-            const proposal = await (version || (integrated && identifier.kind === "arXiv")
+          const preprint = version || (integrated && identifier.kind === "arXiv");
+          // Title translators receive the complete local item, not just its title.
+          const key = `${preprint}:${identifier.kind}:${identifier.value}:${identifier.kind === "Title" ? item.id : ""}`;
+          let request = evidence.get(key);
+          if (!request) {
+            request = preprint
               ? inspectPreprint(item, identifier, original, signal, integrated)
-              : inspectMetadata(item, identifier, original, signal));
-            evidence.set(key, proposal);
-            proposals.push(proposal);
+              : inspectMetadata(item, identifier, original, signal);
+            evidence.set(key, request);
           }
+          const proposal = await request;
+          return { ...proposal, itemID: item.id, original, identifier, conflicts: identityConflicts(original, proposal.candidate, preprint || !!proposal.preprintURL), changes: reviewChanges(original, proposal.candidate, !!proposal.preprintURL) };
         }
         catch (error) {
           signal?.throwIfAborted();
           failures.set(item.id, `${item.getDisplayTitle()} · ${String(error)}`);
           failureCodes.set(item.id, "metadata-lookup-failed");
         }
-      }
+      }, signal);
+      const proposals = inspected.filter((proposal): proposal is ReviewProposal => Boolean(proposal));
       for (const proposal of proposals) {
         proposal.excludedFields = !repairCreators ? ["creators"] : [];
         proposal.changes = proposal.changes.filter(change => features.creatorsOnly ? change.field === "creators" : repairCreators || change.field !== "creators");
@@ -94,7 +103,7 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
           failureCodes.set(proposal.itemID, `metadata-auto-${decision.reason!}`);
         }
       }
-      const options = { selections, failures, failureCodes };
+      const options = { selections, selectionsByItem: new Map(selections.map(selection => [selection.proposal.itemID, selection])), failures, failureCodes };
       prepared?.(options);
       return options;
     },
@@ -103,7 +112,7 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
         report({ level: "warning", code: options.failureCodes.get(item.id), message: options.failures.get(item.id)! });
         return;
       }
-      const selection = options.selections.find(selection => selection.proposal.itemID === item.id);
+      const selection = options.selectionsByItem.get(item.id);
       if (selection)
         applyReviewedMetadata(item, selection, report);
     },
@@ -147,7 +156,7 @@ export async function runReviewCommand(command: ReviewCommand, items: Zotero.Ite
       const touched = new Set<number>();
       const candidates = new Set(eligible.map(item => item.id));
       try {
-        let pairs = await findDuplicates(eligible, signal);
+        let pairs = await findDuplicates(eligible, signal, true);
         pairs.forEach(pair => [pair.left.id, pair.right.id].forEach(id => candidates.add(id)));
         result.total = pairs.length ? new Set(pairs.flatMap(pair => [pair.left.id, pair.right.id])).size : eligible.length;
         if (!pairs.length) {
@@ -241,13 +250,13 @@ export async function runReviewCommand(command: ReviewCommand, items: Zotero.Ite
         }
       }
       return result;
-    });
+    }, features.signal);
   }
   let approved: ReviewOptions | undefined;
   const version = command === "tool-review-preprint";
   const rule = reviewRule(version, options => approved = options, integrated, features);
-  const result = await addon.runner.add({ items: eligible, rules: [rule], silent: true, history: features.history });
-  if (result && !result.cancelled && approved && addon.data.alive) {
+  const result = await addon.runner.add({ items: eligible, rules: [rule], silent: true, history: features.history, signal: features.signal });
+  if (result && !result.cancelled && !features.signal?.aborted && approved && addon.data.alive) {
     const related = approved.selections.filter(selection => selection.action === "related" && !selectionIssue(selection));
     if (related.length) {
       const itemOutcomes = new Map(result.itemOutcomes?.map(outcome => [outcome.itemID, outcome]));
@@ -300,7 +309,7 @@ export async function runReviewCommand(command: ReviewCommand, items: Zotero.Ite
           }
         }
         publishResult(result, features.history);
-      });
+      }, features.signal);
     }
   }
   return result;

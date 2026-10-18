@@ -43,6 +43,83 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("rule-level rollback", () => {
+  it("cancels a queued owner's batch without cancelling the unrelated running batch", async () => {
+    const runner = new LintRunner();
+    let release!: () => void;
+    let started!: () => void;
+    const gate = new Promise<void>(resolve => release = resolve);
+    const entered = new Promise<void>(resolve => started = resolve);
+    const background = runner.add({ items: [createItem()], silent: true, rules: [{ id: "background", scope: "item", async apply({ item }: ApplyContext) {
+      started();
+      await gate;
+      item.setField("title", "Background saved");
+    } }] as any });
+    await entered;
+    const owner = new AbortController();
+    const apply = vi.fn();
+    const queued = runner.add({ items: [createItem()], signal: owner.signal, silent: true, rules: [{ id: "owned", scope: "item", apply }] } as any);
+    owner.abort(new Error("Owner cancelled"));
+    release();
+    expect(await background).toMatchObject({ cancelled: false, saved: 1 });
+    expect(await queued).toMatchObject({ cancelled: true, saved: 0, processed: 0 });
+    expect(apply).not.toHaveBeenCalled();
+  });
+
+  it("cancels an active rule promptly, restores its partial changes and blocks late writes", async () => {
+    const runner = new LintRunner();
+    const item = createItem();
+    const owner = new AbortController();
+    let release!: () => void;
+    let started!: () => void;
+    let late!: () => void;
+    const gate = new Promise<void>(resolve => release = resolve);
+    const entered = new Promise<void>(resolve => started = resolve);
+    const finished = new Promise<void>(resolve => late = resolve);
+    const pending = runner.add({ items: [item], signal: owner.signal, silent: true, rules: [{ id: "pending-apply", scope: "item", async apply({ item: guarded }: ApplyContext) {
+      guarded.setField("title", "Partial");
+      started();
+      await gate;
+      try {
+        guarded.setField("title", "Late value");
+      }
+      finally { late(); }
+    } }] } as any);
+    await entered;
+    owner.abort(new Error("Owner cancelled"));
+    const settled = await Promise.race([pending.then(() => true), new Promise<boolean>(resolve => setTimeout(resolve, 50, false))]);
+    release();
+    await pending;
+    await finished;
+    expect(settled).toBe(true);
+    expect(item.getField("title")).toBe("Original");
+    expect(runner.lastResult).toMatchObject({ cancelled: true, failed: 0, saved: 0 });
+  });
+
+  it("skips a cancelled queued native operation without aborting its predecessor", async () => {
+    const runner = new LintRunner();
+    let release!: () => void;
+    let started!: () => void;
+    const gate = new Promise<void>(resolve => release = resolve);
+    const entered = new Promise<void>(resolve => started = resolve);
+    let precedingSignal: AbortSignal | undefined;
+    const preceding = runner.exclusive(async (signal) => {
+      precedingSignal = signal;
+      started();
+      await gate;
+      return "done";
+    });
+    await entered;
+    const owner = new AbortController();
+    const operation = vi.fn();
+    const queued = (runner.exclusive as any)(operation, owner.signal);
+    owner.abort();
+    expect(precedingSignal!.aborted).toBe(false);
+    release();
+    expect(await preceding).toBe("done");
+    await queued;
+    expect(operation).not.toHaveBeenCalled();
+  });
+
   it("does not prepare irrelevant rules or load their datasets", async () => {
     const runner = new LintRunner();
     const prepare = vi.fn();
