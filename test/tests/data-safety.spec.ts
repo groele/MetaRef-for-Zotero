@@ -1,5 +1,6 @@
 import { assert } from "chai";
 import { config } from "../../package.json";
+import { createReporter } from "../../src/modules/reporter";
 
 describe("metadata safety regressions", function () {
   this.timeout(30_000);
@@ -71,13 +72,11 @@ describe("metadata safety regressions", function () {
     });
   }
 
-  it("exports the actual saved field changes from the results window", async function () {
+  it("keeps results closed after a run and exports saved field changes on request", async function () {
     const item = await create({ title: "Before export" });
     const picker = plugin().data.ztoolkit.FilePicker.prototype;
     const open = picker.open;
-    const autoReportKey = `${config.prefsPrefix}.lint.autoReport`;
-    const autoReport = Zotero.Prefs.get(autoReportKey, true);
-    Zotero.Prefs.set(autoReportKey, true, true);
+    const dialogs = new Set(plugin().data.dialogs.keys());
     const path = PathUtils.join(PathUtils.tempDir, `metaflow-report-${Date.now()}.json`);
     picker.open = async () => path;
     try {
@@ -85,6 +84,8 @@ describe("metadata safety regressions", function () {
         target.setField("title", "After export");
         report({ level: "warning", message: "Review saved change" });
       } }] });
+      assert.equal(plugin().data.dialogs.size, dialogs.size, "a completed run does not open its detailed report");
+      const reportPromise = createReporter(plugin().runner.lastResult.records, plugin().runner.lastResult.changes);
       const findReport = () => [...plugin().data.dialogs.values()].find((window: any) => window.document.body?.textContent?.includes("Review saved change")) as Window | undefined;
       for (let attempt = 0; attempt < 100 && !findReport(); attempt++)
         await Zotero.Promise.delay(30);
@@ -98,9 +99,9 @@ describe("metadata safety regressions", function () {
       const exported = JSON.parse(await IOUtils.readUTF8(path));
       assert.isTrue(exported.changes.some((change: any) => change.field === "title" && change.before === "Before export" && change.after === "After export" && change.saved));
       report.close();
+      await reportPromise;
     }
     finally {
-      Zotero.Prefs.set(autoReportKey, autoReport as boolean, true);
       picker.open = open;
       for (const report of plugin().data.dialogs.values())
         report.close();

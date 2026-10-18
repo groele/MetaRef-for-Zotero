@@ -36,7 +36,7 @@ describe("commercial metadata evidence and import consistency", function () {
     calls = 0;
     for (const rule of Rules.getStandard())
       pref(`rule.${rule.id}`, false);
-    for (const key of ["lint.onAdded", "lint.notify", "lint.autoReport", "workflow.formatAfterUpdate", "metadata.updateJournalInfo", "workflow.reviewDuplicatesOnUpdate", "metadata.repairCreators", "workflow.scanPDF", "workflow.searchTitle", "easyscholar.autoUpdateOnAdded"])
+    for (const key of ["lint.onAdded", "lint.notify", "workflow.formatAfterUpdate", "metadata.updateJournalInfo", "workflow.reviewDuplicatesOnUpdate", "metadata.repairCreators", "workflow.scanPDF", "workflow.searchTitle", "easyscholar.autoUpdateOnAdded"])
       pref(key, false);
     pref("workflow.updateBibliographic", true);
     pref("duplicates.defaultAction", "cancel");

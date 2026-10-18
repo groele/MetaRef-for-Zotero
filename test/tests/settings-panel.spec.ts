@@ -547,7 +547,7 @@ describe("settings panel layout and validation in Zotero", function () {
 
   it("retains warnings without an automatic report and opens details only on request", async function () {
     const plugin = (Zotero as any)[config.addonInstance];
-    const keys = ["lint.autoReport", "lint.notify", "lint.onAdded"];
+    const keys = ["lint.notify", "lint.onAdded"];
     const previous = new Map(keys.map(key => [key, Zotero.Prefs.get(pref(key), true)]));
     const item = new Zotero.Item("journalArticle");
     const dialogs = new Set(plugin.data.dialogs.keys());

@@ -46,7 +46,7 @@ describe("core command execution and optional costs", function () {
 
   beforeEach(function () {
     translations = requests = 0;
-    for (const key of ["lint.onAdded", "lint.autoReport", "workflow.updateMetadata", "workflow.remoteAuthorsOnCheck", "workflow.updateJournalRankings", "workflow.reviewDuplicatesOnCheck", "workflow.reviewDuplicatesOnUpdate", "workflow.scanPDF", "workflow.searchTitle", "metadata.updateJournalInfo"])
+    for (const key of ["lint.onAdded", "workflow.updateMetadata", "workflow.remoteAuthorsOnCheck", "workflow.updateJournalRankings", "workflow.reviewDuplicatesOnCheck", "workflow.reviewDuplicatesOnUpdate", "workflow.scanPDF", "workflow.searchTitle", "metadata.updateJournalInfo"])
       pref(key, false);
     pref("workflow.updateBibliographic", true);
     pref("workflow.formatAfterUpdate", true);
