@@ -1,6 +1,5 @@
 import { assert } from "chai";
 import { config } from "../../package.json";
-import { createReporter } from "../../src/modules/reporter";
 
 describe("metadata safety regressions", function () {
   this.timeout(30_000);
@@ -77,32 +76,38 @@ describe("metadata safety regressions", function () {
     const picker = plugin().data.ztoolkit.FilePicker.prototype;
     const open = picker.open;
     const dialogs = new Set(plugin().data.dialogs.keys());
+    const entry = (Zotero.PreferencePanes as any).pluginPanes.find((pane: any) => pane.pluginID === config.addonID);
+    const settingsWindow = Zotero.Utilities.Internal.openPreferences(entry.id)! as Window & typeof globalThis;
     const path = PathUtils.join(PathUtils.tempDir, `metaflow-report-${Date.now()}.json`);
     picker.open = async () => path;
     try {
+      for (let attempt = 0; attempt < 100 && !settingsWindow.document.getElementById("metaref-last-batch-report"); attempt++)
+        await Zotero.Promise.delay(50);
+      await (settingsWindow as any).Zotero_Preferences.waitForFirstPaneLoad();
       await plugin().runner.add({ items: [item], rules: [{ id: "safety-export", scope: "item", apply({ item: target, report }: { item: Zotero.Item; report: (info: { level: string; message: string }) => void }) {
         target.setField("title", "After export");
         report({ level: "warning", message: "Review saved change" });
       } }] });
       assert.equal(plugin().data.dialogs.size, dialogs.size, "a completed run does not open its detailed report");
-      const reportPromise = createReporter(plugin().runner.lastResult.records, plugin().runner.lastResult.changes);
+      const reportButton = settingsWindow.document.getElementById("metaref-last-batch-report")!;
+      reportButton.dispatchEvent(new settingsWindow.Event("command", { bubbles: true }));
       const findReport = () => [...plugin().data.dialogs.values()].find((window: any) => window.document.body?.textContent?.includes("Review saved change")) as Window | undefined;
       for (let attempt = 0; attempt < 100 && !findReport(); attempt++)
         await Zotero.Promise.delay(30);
       const report = findReport()!;
       assert.exists(report, "the actual results window opens");
-      const button = report.document.getElementById("metaref-report-export") as HTMLButtonElement;
-      assert.exists(button);
-      button.click();
+      const exportButton = report.document.getElementById("metaref-report-export") as HTMLButtonElement;
+      assert.exists(exportButton);
+      exportButton.click();
       for (let attempt = 0; attempt < 100 && !(await IOUtils.exists(path)); attempt++)
         await Zotero.Promise.delay(30);
       const exported = JSON.parse(await IOUtils.readUTF8(path));
       assert.isTrue(exported.changes.some((change: any) => change.field === "title" && change.before === "Before export" && change.after === "After export" && change.saved));
       report.close();
-      await reportPromise;
     }
     finally {
       picker.open = open;
+      settingsWindow.close();
       for (const report of plugin().data.dialogs.values())
         report.close();
       await IOUtils.remove(path, { ignoreAbsent: true });
