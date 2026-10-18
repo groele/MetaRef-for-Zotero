@@ -475,7 +475,7 @@ maintenance-find-required = 查找文字不能为空，未修改任何条目。
 maintenance-clear-extra-confirm = 将清空所选 { $count } 个条目的全部 Extra，包括手写备注和其他插件信息。是否继续？
 metadata-auto-update-on-added = 新增条目时自动补充文章元数据
     .label = 新增条目时自动补充文章元数据
-metadata-auto-update-description = 默认关闭。依赖新增条目自动检查；启用后使用文章标识符或中文题目联网查询，只补空字段，不改变条目类型。
+metadata-auto-update-description = 默认关闭。依赖新增条目自动检查；启用后按标识符联网补空，缺少标识符时仅在已有年份或作者可核验时按标题检索。遵守作者开关，不扫描 PDF，不改变条目类型。
 
 rule-tool-update-easyscholar-supplemental-failed = 部分补充来源查询失败：{ $error }
 

@@ -5,6 +5,7 @@ export async function executeRule<T extends object>(
   timeout = 60_000,
   createController: () => AbortController = () => new AbortController(),
   onMutation: (mutate: () => unknown) => unknown = mutate => mutate(),
+  owner?: AbortSignal,
 ): Promise<void> {
   const controller = createController();
   const guarded = new Proxy(item, {
@@ -36,6 +37,16 @@ export async function executeRule<T extends object>(
     },
   });
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let abort!: () => void;
+  const cancelled = new Promise<never>((_, reject) => {
+    abort = () => {
+      controller.abort(owner?.reason);
+      reject(owner?.reason);
+    };
+    owner?.addEventListener("abort", abort, { once: true });
+    if (owner?.aborted)
+      abort();
+  });
   const deadline = new Promise<never>((_, reject) => {
     timer = setTimeout(() => {
       const error = new Error(`Rule timed out after ${timeout}ms`);
@@ -44,7 +55,10 @@ export async function executeRule<T extends object>(
     }, timeout);
   });
   try {
-    await Promise.race([Promise.resolve().then(() => apply(guarded, controller.signal)), deadline]);
+    await Promise.race([Promise.resolve().then(() => {
+      controller.signal.throwIfAborted();
+      return apply(guarded, controller.signal);
+    }), deadline, cancelled]);
   }
   catch (error) {
     controller.abort(error);
@@ -52,6 +66,7 @@ export async function executeRule<T extends object>(
   }
   finally {
     clearTimeout(timer);
+    owner?.removeEventListener("abort", abort);
     if (!controller.signal.aborted)
       controller.abort(new Error("Rule execution has finished"));
   }

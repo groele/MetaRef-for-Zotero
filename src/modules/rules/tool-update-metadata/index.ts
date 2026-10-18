@@ -240,6 +240,8 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     }
 
     function applyItemCreators(data: TransformedData) {
+      if (options.repairCreators === false)
+        return;
       if (!data.creators?.length) {
         debug("Service doesn't return creators");
         return;

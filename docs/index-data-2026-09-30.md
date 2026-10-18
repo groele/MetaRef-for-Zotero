@@ -12,11 +12,11 @@
 
 - Source: the official [Nature Index FAQ](https://www.nature.com/nature-index/faq), June 2026 release, snapshot dated 2026-09-30: 177 journals and one conference proceeding.
 - Matching uses exact normalized titles, exact unambiguous known abbreviations, and ISSN/eISSN. It excludes the conference from journal matching and avoids fuzzy partial matches.
-- The tool adds a `Nature Index` Zotero tag and the item list can show a Nature Index marker column. It preserves unrelated tags and is idempotent.
+- The current tool displays Nature Index membership in the item column and insight pane. It does not add tags or modify bibliographic metadata.
 - The 2026 method assigns subject areas to articles. A journal match is only venue membership; it does not establish that every item from a journal is included or that the journal has one fixed subject.
 - The website blocks some direct scripted refresh requests. The generator preserves its last verified title snapshot in that case and does not advance its snapshot date.
 - Nature Index's brief guide describes a CC BY-NC-SA 4.0 license for its most recent 12 months of data. The project only includes the publication identifiers needed for recognition and directs users to the publisher's terms for the license applying to this title-list extract.
 
 ## Runtime and validation
 
-Both datasets are packaged as local read-only reference assets, loaded lazily, and cached for a batch. ESI and Nature Index use independent lookup maps. The Nature Index marking action only runs when selected by the user; it does not alter bibliographic fields or run automatically.
+Both datasets are packaged as local read-only reference assets, loaded lazily, and cached across batches until explicit data reload. ESI and Nature Index use independent lookup maps. The current Nature Index insight query does not alter bibliographic fields or tags.

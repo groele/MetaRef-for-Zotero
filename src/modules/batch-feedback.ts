@@ -14,6 +14,15 @@ function reportDetails(result: BatchResult) {
 }
 
 export function updateBatchFeedback(result?: BatchResult) {
+  try {
+    renderBatchFeedback(result);
+  }
+  catch (error) {
+    logger.error("Cannot refresh batch feedback", error);
+  }
+}
+
+function renderBatchFeedback(result?: BatchResult) {
   result ||= addon.runner?.lastResult;
   const active = addon.data.activeCoreWorkflow;
   const doc = addon.data.prefs?.window.document;
@@ -89,8 +98,7 @@ function updateCoreFeedback(result?: BatchResult) {
     action.disabled = state ? state.cancelled : !result?.records.length && !result?.changes.length;
     action.onclick = () => {
       if (addon.data.activeCoreWorkflow) {
-        addon.data.activeCoreWorkflow.cancelled = true;
-        addon.runner.cancel();
+        addon.data.activeCoreWorkflow.cancel();
         updateBatchFeedback();
       }
       else if (result) {

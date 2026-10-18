@@ -99,6 +99,63 @@ describe("core command execution and optional costs", function () {
     assert.equal(translations + requests, 0);
   });
 
+  it("stops a core task waiting for the runner without cancelling or modifying another task", async function () {
+    const other = await create("Background task", "10.1234/background-task");
+    const target = await create();
+    let started!: () => void;
+    let release!: () => void;
+    const entered = new Promise<void>(resolve => started = resolve);
+    const gate = new Promise<void>(resolve => release = resolve);
+    const background = plugin().runner.add({ items: [other], silent: true, rules: [{ id: "require-language", scope: "item", async apply({ item }: any) {
+      started();
+      await gate;
+      item.setField("language", "en");
+    } }] });
+    await entered;
+    const pending = plugin().hooks.onLintInBatch("standard", [target], { core: true });
+    try {
+      for (let attempt = 0; attempt < 100 && !plugin().data.activeCoreWorkflow; attempt++)
+        await Zotero.Promise.delay(10);
+      const stop = Zotero.getMainWindow().document.querySelector<HTMLButtonElement>("#metaref-core-task-action")!;
+      assert.isNotNull(stop);
+      stop.click();
+    }
+    finally { release(); }
+    assert.isFalse((await background).cancelled);
+    assert.equal(other.getField("language"), "en");
+    const result = await pending;
+    assert.isTrue(result.cancelled);
+    assert.equal(result.saved, 0);
+    assert.equal(result.failed, 0);
+    assert.equal(target.getField("title"), "Core workflow fixture.");
+  });
+
+  it("retains saved journal outcomes when presentation refresh fails", async function () {
+    const item = await create();
+    item.setField("publicationTitle", "Commercial feedback failure fixture");
+    await item.saveTx();
+    pref("workflow.updateBibliographic", false);
+    pref("workflow.formatAfterUpdate", false);
+    pref("metadata.updateJournalInfo", true);
+    pref("easyscholar.secretKey", "feedback-failure-test-key");
+    pref("easyscholar.writeToExtra", true);
+    for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
+      pref(`easyscholar.fields.${field.key}`, field.key === "sci");
+    const original = Zotero.ItemTreeManager.refreshColumns;
+    Zotero.ItemTreeManager.refreshColumns = () => {
+      throw new Error("Injected presentation failure");
+    };
+    try {
+      const result = await plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
+      assert.equal(result.saved, 1, "a presentation error cannot erase committed outcomes");
+      assert.equal(result.preparationFailed, 0);
+      assert.isTrue(result.records.some((record: any) => record.code === "journal-refresh-failed" && record.level === "warning"));
+      assert.include(item.getField("extra"), "SCI: 是");
+      assert.deepEqual(plugin().data.lastCoreWorkflow.stages.map((entry: any) => entry.stage), ["journal"]);
+    }
+    finally { Zotero.ItemTreeManager.refreshColumns = original; }
+  });
+
   it("keeps one complete result and runtime record without double-counting saves", async function () {
     const item = await create();
     const runtime = plugin().api.runtimeData;

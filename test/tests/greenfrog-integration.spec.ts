@@ -234,7 +234,7 @@ describe("green Frog integration in Zotero", function () {
   });
 
   it("fills missing metadata automatically without a settings dialog", async function () {
-    const previous = new Map(["lint.onAdded", "metadata.autoUpdateOnAdded", "easyscholar.autoUpdateOnAdded", "rule.require-journal-abbr.infer", "rule.correct-doi-long"].map(key => [key, Zotero.Prefs.get(pref(key), true)]));
+    const previous = new Map(["lint.onAdded", "metadata.autoUpdateOnAdded", "metadata.repairCreators", "easyscholar.autoUpdateOnAdded", "rule.require-journal-abbr.infer", "rule.correct-doi-long"].map(key => [key, Zotero.Prefs.get(pref(key), true)]));
     const OriginalSearch = Zotero.Translate.Search;
     const item = new Zotero.Item("journalArticle");
     item.setField("title", "Automatic metadata test");
@@ -251,17 +251,19 @@ describe("green Frog integration in Zotero", function () {
     try {
       Zotero.Prefs.set(pref("lint.onAdded"), true, true);
       Zotero.Prefs.set(pref("metadata.autoUpdateOnAdded"), true, true);
+      Zotero.Prefs.set(pref("metadata.repairCreators"), true, true);
       Zotero.Prefs.set(pref("easyscholar.autoUpdateOnAdded"), false, true);
       Zotero.Prefs.set(pref("rule.require-journal-abbr.infer"), false, true);
       Zotero.Prefs.set(pref("rule.correct-doi-long"), false, true);
       await plugin().hooks.onNotify("add", "item", [item.id], {});
       assert.equal(item.getField("date"), "2025");
       assert.equal(item.getField("publicationTitle"), "Automatic QA Journal");
+      assert.lengthOf(item.getCreators(), 1);
       assert.isFalse(item.hasChanged());
       const workflow = plugin().api.getLastAutomaticWorkflow();
       assert.equal(workflow.undoScope, "stage");
       assert.deepEqual(workflow.stages.map((stage: any) => stage.phase), ["metadata", "format", "journal"]);
-      assert.deepEqual(workflow.stages.map((stage: any) => stage.status), ["complete", "complete", "skipped"]);
+      assert.deepEqual(workflow.stages.map((stage: any) => stage.status), ["complete", "complete", "skipped"], JSON.stringify(plugin().runner.lastResult.records.map((row: any) => ({ rule: row.ruleID, code: row.code, message: row.message }))));
     }
     finally {
       (Zotero.Translate as any).Search = OriginalSearch;

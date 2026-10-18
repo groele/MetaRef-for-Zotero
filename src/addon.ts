@@ -23,7 +23,7 @@ class Addon {
     dialogs: Map<string, Window>;
     lastAutomaticWorkflow?: AutomaticWorkflow;
     lastCoreWorkflow?: { lastResult: BatchResult; stages: { stage: CoreStage; result: BatchResult }[] };
-    activeCoreWorkflow?: { command: CoreCommand; stage?: CoreStage; index: number; total: number; cancelled: boolean };
+    activeCoreWorkflow?: { command: CoreCommand; stage?: CoreStage; index: number; total: number; cancelled: boolean; cancel: () => void };
   };
 
   public runner: LintRunner;

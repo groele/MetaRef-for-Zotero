@@ -24,7 +24,7 @@ export function duplicateRecord(item: Zotero.Item): DuplicateRecord {
   return { id: item.id, libraryID: item.libraryID, data: JSON.parse(JSON.stringify(item.toJSON())) as TransformedData, preprint: isPreprint(item, extractIdentifiers(item)) };
 }
 
-export async function findDuplicates(items: Zotero.Item[], signal?: AbortSignal): Promise<DuplicatePair[]> {
+export async function findDuplicates(items: Zotero.Item[], signal?: AbortSignal, compact = false): Promise<DuplicatePair[]> {
   const records: DuplicateRecord[] = [];
   for (const libraryID of new Set(items.map(item => item.libraryID))) {
     signal?.throwIfAborted();
@@ -48,21 +48,37 @@ export async function findDuplicates(items: Zotero.Item[], signal?: AbortSignal)
   }
   const snapshots = new Map<number, DuplicateRecord>();
   const snapshot = (id: number) => {
+    const item = Zotero.Items.get(id);
+    if (!item || item.deleted || !item.isRegularItem())
+      return;
     if (!snapshots.has(id))
-      snapshots.set(id, duplicateRecord(Zotero.Items.get(id) as Zotero.Item));
-    return snapshots.get(id)!;
+      snapshots.set(id, duplicateRecord(item));
+    return snapshots.get(id);
   };
   signal?.throwIfAborted();
   const pairs: DuplicatePair[] = [];
-  for (const event of duplicateMatchEvents(new Set(items.map(item => item.id)), records)) {
+  const accept = (pair: DuplicatePair) => {
+    const left = Zotero.Items.get(pair.left.id);
+    const right = Zotero.Items.get(pair.right.id);
+    return !!left && !!right && !left.deleted && !right.deleted && !isNonDuplicate(left, right);
+  };
+  const differentTypes = getPref("duplicates.mergeDifferentTypes" as any, false) === true;
+  for (const event of duplicateMatchEvents(new Set(items.map(item => item.id)), records, { compact, accept, merge: pair => canMergePair(pair, differentTypes) })) {
     if (event.kind === "checkpoint") {
       await Zotero.Promise.delay(0);
       signal?.throwIfAborted();
       continue;
     }
     const pair = event.pair;
-    if (!isNonDuplicate(Zotero.Items.get(pair.left.id) as Zotero.Item, Zotero.Items.get(pair.right.id) as Zotero.Item))
-      pairs.push({ ...pair, left: snapshot(pair.left.id), right: snapshot(pair.right.id) });
+    if (!accept(pair))
+      continue;
+    const left = snapshot(pair.left.id);
+    const right = snapshot(pair.right.id);
+    if (left && right) {
+      const current = duplicatePairs(new Set([left.id]), [left, right])[0];
+      if (current)
+        pairs.push(current);
+    }
   }
   signal?.throwIfAborted();
   return pairs;

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { env } from "node:process";
 import { defineConfig } from "zotero-plugin-scaffold";
@@ -58,11 +58,13 @@ export default defineConfig({
       },
     ],
     makeUpdateJson: {
-      hash: false,
+      hash: true,
       updates: [],
     },
     hooks: {
       "build:bundle": async () => {
+        fse.ensureDirSync(".scaffold/build/addon/licenses");
+        copyFileSync("LICENSE", ".scaffold/build/addon/licenses/MetaFlow-AGPL-3.0.txt");
         // @ts-expect-error resolve esbuild "ReferenceError: Zotero is not defined" error
         globalThis.Zotero = {
           Prefs: {

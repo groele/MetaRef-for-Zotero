@@ -251,7 +251,7 @@ describe("data processing resilience in Zotero", function () {
     }
   });
 
-  it("stops before the next rule and item, saves completed work, then accepts another batch", async function () {
+  it("stops pending writes, retains completed rules, then accepts another batch", async function () {
     const first = await create("cancel first");
     const second = await create("cancel second");
     let started!: () => void;
@@ -263,6 +263,9 @@ describe("data processing resilience in Zotero", function () {
       release = resolve;
     });
     const pending = plugin().runner.add({ items: [first, second], silent: true, rules: [
+      { id: "test-cancel-completed", scope: "item", apply({ item }: { item: Zotero.Item }) {
+        item.setField("volume", "42");
+      } },
       { id: "test-cancel-gate", scope: "item", async apply({ item }: { item: Zotero.Item }) {
         started();
         await gate;
@@ -274,7 +277,8 @@ describe("data processing resilience in Zotero", function () {
     plugin().runner.cancel();
     release();
     await pending;
-    assert.equal(first.getField("title"), "completed before stop");
+    assert.equal(first.getField("title"), "cancel first");
+    assert.equal(first.getField("volume"), "42", "a completed rule is retained while the cancelled rule is rolled back");
     assert.equal(second.getField("title"), "cancel second");
     assert.equal(plugin().runner.lastResult.processed, 1);
     assert.isTrue(plugin().runner.lastResult.cancelled);

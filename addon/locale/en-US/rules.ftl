@@ -474,7 +474,7 @@ maintenance-find-required = Find text must not be empty. No items were changed.
 maintenance-clear-extra-confirm = Clear all Extra content in { $count } selected items, including manual notes and other plugins' fields?
 metadata-auto-update-on-added = Fill missing article metadata when items are added
     .label = Fill missing article metadata when items are added
-metadata-auto-update-description = Off by default. Requires automatic checking of added items. Queries article identifiers or Chinese titles, fills empty fields, and keeps item types.
+metadata-auto-update-description = Off by default. Requires automatic checking of added items. Fills blanks using identifiers; title searches require an existing year or author for corroboration. Respects the author switch, does not scan PDFs, and preserves item types.
 
 rule-tool-update-easyscholar-supplemental-failed = Some supplemental sources failed: { $error }
 

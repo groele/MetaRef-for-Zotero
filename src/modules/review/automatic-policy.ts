@@ -1,7 +1,12 @@
+import type { TransformedData } from "../rules/tool-update-metadata/services/base-service";
 import type { IdentifierCandidate, MetadataDecision, ReviewProposal } from "./policy";
 
 import { normalizeDOI, titlesAgree } from "../rules/tool-update-metadata/policy";
 import { firstCreator, isbnEquivalent, normalizeArxiv } from "./policy";
+
+export function hasLocalCorroboration(original: TransformedData): boolean {
+  return Boolean(original.title?.trim() && (original.date?.match(/\b\d{4}\b/) || firstCreator(original)));
+}
 
 /** PDF references and multiple editions are not resolved by candidate order. */
 export function automaticIdentifier(candidates: IdentifierCandidate[]): IdentifierCandidate | undefined {

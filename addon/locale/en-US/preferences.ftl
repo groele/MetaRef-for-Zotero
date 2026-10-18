@@ -328,10 +328,10 @@ menu-placement =
 menu-placement-primary = Top-level context menu
 menu-placement-nested = MetaFlow submenu
 
-metadata-update-saved-description = Both core commands fill fields according to validation rules, without review or confirmation UI. Update respects blank/overwrite mode; Check fills blanks by default. Identity conflicts or insufficient evidence preserve the item and record the reason. Enabled arXiv publication lookup creates or reuses a related publication and preserves the preprint. The type-change option still applies to import enrichment and legacy direct tools.
+metadata-update-saved-description = Both core commands fill fields according to validation rules, without review or confirmation UI. Update respects blank/overwrite mode; Check fills blanks by default. Identity conflicts or insufficient evidence preserve the item and record the reason. Enabled arXiv publication lookup creates or reuses a related publication and preserves the preprint.
 metadata-repair-creators =
     .label = Repair authors from verified metadata, including missing, partial and incorrect lists
-metadata-repair-creators-description = Includes authors in automatic bibliographic filling. After identity verification, enabling this option repairs incomplete existing author lists. Disabling it preserves authors, including in related publications.
+metadata-repair-creators-description = Includes authors in automatic bibliographic filling. After identity verification, enabling this option repairs incomplete existing author lists. Disabling it preserves authors during metadata filling and in related publications. Explicit author verification during Check and local author formatting follow their own switches.
 
 menu-placement-none = None (hidden)
 batch-feedback-heading = Run feedback and reports
@@ -490,7 +490,7 @@ workflow-check-duplicates = Review duplicates interactively after checking (repl
 workflow-update-duplicates = Review duplicates interactively after updating (may be slow in a large library)
 workflow-search-heading = Fallback searches for online verification (off by default)
 workflow-search-description = These options apply to online verification in both core commands. Existing identifiers take priority. Only enabled fallback searches run when identifiers are missing. PDF content stays local and only existing caches are read. Standalone advanced review tools retain full searches.
-workflow-scan-pdf = Read DOI/arXiv candidates from PDF caches when identifiers are missing (manual choice)
+workflow-scan-pdf = Read DOI/arXiv candidates from PDF caches when identifiers are missing (automatic evidence checks)
 workflow-search-title = Search online by title when identifiers are missing (slower; identity checks remain)
 workflow-legacy-heading = Automatic enrichment and legacy advanced-rule options
 workflow-legacy-description = This long-DOI rule switch remains for legacy direct callers. Local checking never resolves ShortDOIs online. Core online verification resolves identifiers as needed independently of this compatibility switch.

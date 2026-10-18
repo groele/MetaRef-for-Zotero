@@ -327,10 +327,10 @@ menu-placement =
 menu-placement-primary = 右键一级菜单
 menu-placement-nested = MetaFlow 子菜单
 
-metadata-update-saved-description = 两个核心命令均按判据直接填充，不显示审阅或确认界面。“更新元数据”遵循补空／覆盖模式，“检查并修复”默认仅补空字段。身份冲突或证据不足时保留原值并记录原因；启用 arXiv 正式版查询后，自动建立或复用关联正式版并保留预印本。类型变更开关仍用于自动导入与旧版直接工具。
+metadata-update-saved-description = 两个核心命令均按判据直接填充，不显示审阅或确认界面。“更新元数据”遵循补空／覆盖模式，“检查并修复”默认仅补空字段。身份冲突或证据不足时保留原值并记录原因；启用 arXiv 正式版查询后，自动建立或复用关联正式版并保留预印本。
 metadata-repair-creators =
     .label = 按核验后的文献来源修复作者名单（含缺失、删除部分和已有错误）
-metadata-repair-creators-description = 控制书目信息自动填充是否包含作者。身份核验通过且开关开启时，会补全已有但不完整的作者名单；关闭时不改作者，关联正式版也保留原有作者。
+metadata-repair-creators-description = 控制书目信息自动填充是否包含作者。身份核验通过且开关开启时，会补全已有但不完整的作者名单；关闭时元数据补全不改作者，关联正式版也保留原有作者；单独启用的“检查时联网核验作者”和本地作者格式规则按各自开关执行。
 
 menu-placement-none = 无（隐藏）
 batch-feedback-heading = 运行反馈与报告
@@ -489,7 +489,7 @@ workflow-check-duplicates = 检查完成后交互核对重复候选（代替重�
 workflow-update-duplicates = 更新完成后交互核对重复候选（大文库可能耗时）
 workflow-search-heading = 联网核验的补充检索（低频，默认关闭）
 workflow-search-description = 以下设置同时适用于两个核心命令中的联网核验。先使用条目已有标识符；缺少时才启用已勾选的候选扫描或标题检索。PDF 只读取已有缓存，不上传文件。独立高级核验工具仍保留完整检索能力。
-workflow-scan-pdf = 缺少标识符时读取 PDF 缓存中的 DOI/arXiv 候选（需要人工选择）
+workflow-scan-pdf = 缺少标识符时读取 PDF 缓存中的 DOI/arXiv 候选（自动核验证据）
 workflow-search-title = 缺少标识符时按标题联网检索（较慢，仍校验身份）
 workflow-legacy-heading = 自动补全与旧版高级规则兼容选项
 workflow-legacy-description = 此 DOI 长型规则开关保留给旧版直接调用；本地检查不联网解析 ShortDOI。两个核心命令的联网核验会按实际标识符解析，不由此兼容开关控制。
