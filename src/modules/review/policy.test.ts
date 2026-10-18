@@ -1,6 +1,7 @@
-import type { DuplicateRecord } from "./policy";
+import type { DuplicateRecord } from "./duplicate-matching";
 import { describe, expect, it } from "vitest";
-import { duplicatePairs, identifiersFromText, identityConflicts, isbnEquivalent, normalizeArxiv, normalizeISBN, reviewChanges } from "./policy";
+import { duplicatePairs } from "./duplicate-matching";
+import { identifiersFromText, identityConflicts, isbnEquivalent, normalizeArxiv, normalizeISBN, reviewChanges } from "./policy";
 
 function record(id: number, overrides: Partial<DuplicateRecord["data"]> = {}, libraryID = 1, preprint = false): DuplicateRecord {
   return {

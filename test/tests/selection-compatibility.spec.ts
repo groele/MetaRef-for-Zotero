@@ -38,8 +38,11 @@ describe("plural selection APIs and duplicate settings scope", function () {
   });
 
   after(async function () {
-    for (const id of created.reverse())
-      await (await Zotero.Items.getAsync(id)).eraseTx();
+    for (const id of created.reverse()) {
+      const item = await Zotero.Items.getAsync(id);
+      if (item)
+        await item.eraseTx();
+    }
     Zotero.Prefs.set(`${config.prefsPrefix}.lint.onAdded`, auto, true);
     win.close();
   });

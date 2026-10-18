@@ -1,72 +1,64 @@
 {
-  "version": "11.0.0",
-  "verifiedAt": "2026-10-18T10:20:00+08:00",
-  "sourceBaselineCommit": "4b7fedbbfd1ca1ab6913dea5af64aa17cb4d5237",
+  "version": "11.1.0",
+  "verifiedAt": "2026-10-18T18:08:08.230218+08:00",
+  "sourceBaselineCommit": "0e534805ad717b75b341f076ff906ecb682b0f40",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3455488,
-    "sha256": "7769698ba924faa9e60d925d77af04fb0a2f0144930ceef8b8ea94295d3f505e",
+    "bytes": 3465934,
+    "sha256": "509761fae8f5770a1af56b20da85faa02ae6debf0428e06a1f38483969d4e7dc",
     "manifest": {
       "name": "Zotero MetaFlow",
-      "version": "11.0.0",
+      "version": "11.1.0",
       "id": "metaflow@groele",
+      "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
       "strict_min_version": "10.0",
-      "strict_max_version": "11.*",
-      "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json"
+      "strict_max_version": "11.*"
     },
     "productionXpiInstalledAndLoaded": true
   },
   "checks": {
     "unit": {
-      "passed": 490,
-      "files": 75
+      "passed": 519,
+      "files": 80
     },
     "productionBuild": "passed",
     "typescript": "passed",
+    "testTypescript": "passed",
     "eslint": "passed",
     "autocorrect": "passed",
     "whitespace": "passed",
-    "settingsAudit": {
-      "defaultPreferences": 286,
-      "staticBindings": 124,
-      "missingDefaults": [],
-      "duplicateStaticBindings": [],
-      "unresolvedVisibleBindings": []
-    },
-    "nativeSettings": [
+    "nativeFinal": [
       {
         "host": "Windows Zotero 10.0.6 / Gecko 140",
-        "bindings": 268,
-        "booleanControlsExercisedAndPersisted": 237,
-        "issues": []
+        "locale": "zh-CN",
+        "passed": 61,
+        "scope": "affected metadata, core commands, runtime storage, caches, startup and production XPI installation"
       },
       {
         "host": "Windows Zotero 11.0-dev.5+dac1ad489 / Gecko 153",
-        "bindings": 268,
-        "booleanControlsExercisedAndPersisted": 237,
-        "issues": []
+        "locale": "en-US",
+        "passed": 61,
+        "scope": "same final production XPI and affected suite"
       }
     ],
-    "finalPackageNativeE2E": {
-      "host": "Windows Zotero 10.0.6 / Gecko 140",
-      "passed": 152,
-      "failed": 0,
-      "includesProductionXpiInstall": true
-    },
-    "affectedModuleNativeCoveragePerHostInSeparateRuns": 66,
-    "latestTargetedRunPerHost": {
-      "passed": 17,
-      "failed": 0
+    "reusedBroaderEvidence": {
+      "candidateVersion": "11.0.1-beta.3",
+      "host": "Windows Zotero 11.0-dev.5+dac1ad489 / Gecko 153",
+      "passed": 103,
+      "scope": "unchanged settings bindings, menu, bulk duplicate decisions and related modules",
+      "note": "Not an additional final-package full-suite count."
     }
   },
-  "buildNotes": [
-    "Build and TypeScript completed successfully. The toolchain emitted a non-blocking warning that zotero-types/entries/sandbox/tsconfig.json was unavailable."
-  ],
+  "dataPolicy": {
+    "runtimeHistoryDays": 30,
+    "runtimeHistoryRuns": 200,
+    "runtimeHistoryBytes": 2097152,
+    "oneHistoryRecordPerCoreCommand": true
+  },
   "limits": [
-    "The original-plugin coexistence matrix was not tested.",
-    "External metadata providers were exercised with controlled regression responses; live credentials, provider availability and all account permissions are not covered.",
-    "Zotero 11 coverage uses the named development build and module-focused runs; the final package full-suite run was on Zotero 10.0.6.",
-    "macOS/Linux and long-duration large-library stress tests were not performed.",
-    "Zotero item merge and preference persistence use separate host transactions; this release does not add a new cross-transaction undo feature."
-  ]
+    "Online providers use controlled responses.",
+    "Zotero 11 coverage is development-build validation.",
+    "No full third-party co-install matrix, macOS/Linux or long-duration large-library validation."
+  ],
+  "knownBuildWarning": "Historical ancestor tsconfig path warning in this local layout; current checkout production and test TypeScript checks pass."
 }

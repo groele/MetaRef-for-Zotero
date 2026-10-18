@@ -48,28 +48,7 @@
       preference="lint.notify"
       native="true"
     />
-    <groupbox>
-      <label><html:h3 data-l10n-id="batch-feedback-heading" /></label>
-      <checkbox
-        data-l10n-id="batch-feedback-auto-report"
-        preference="lint.autoReport"
-        native="true"
-      />
-      <description
-        data-l10n-id="batch-feedback-description"
-        class="metaref-pref-description"
-      />
-      <html:div
-        id="metaref-last-batch-status"
-        role="status"
-        aria-live="polite"
-      />
-      <button
-        id="metaref-last-batch-report"
-        data-l10n-id="batch-feedback-view-report"
-        native="true"
-      />
-    </groupbox>
+
     <!-- lint.numConcurrent -->
     <hbox align="center">
       <label
@@ -108,13 +87,96 @@
     />
   </groupbox>
 
-  <!-- 是否启用富文本工具 -->
+  <!-- 右键菜单与核心功能 -->
   <groupbox id="metaref-core-workflows">
     <label><html:h2 data-l10n-id="core-workflows-heading" /></label>
     <description
       data-l10n-id="core-workflows-description"
       class="metaref-pref-description"
     />
+    <checkbox
+      data-l10n-id="workflow-compact-menu"
+      preference="menu.compact"
+      native="true"
+    />
+    <description
+      data-l10n-id="workflow-compact-description"
+      class="metaref-pref-description"
+    />
+
+    <html:details
+      id="metaref-additional-menu-options"
+      class="metaref-setting-card"
+    >
+      <html:summary data-l10n-id="menu-additional-heading" />
+      <description
+        data-l10n-id="section-menu-description"
+        class="metaref-pref-description"
+      />
+      <vbox id="__addonRef__-menu-settings" />
+    </html:details>
+    <!-- 字段右键菜单 -->
+    <groupbox>
+      <label><html:h3 data-l10n-id="section-menu-field" /></label>
+      <checkbox
+        data-l10n-id="menu-field-correct-title-punctuation"
+        preference="menu.correct-title-punctuation"
+        native="true"
+      />
+      <checkbox
+        data-l10n-id="menu-field-correct-extra-order"
+        preference="menu.correct-extra-order"
+        native="true"
+      />
+    </groupbox>
+  </groupbox>
+
+  <groupbox id="metaref-data-settings">
+    <label><html:h2 data-l10n-id="data-settings-heading" /></label>
+    <description
+      data-l10n-id="data-settings-description"
+      class="metaref-pref-description"
+    />
+    <html:p id="metaref-runtime-data-policy" class="metaref-pref-description" />
+    <groupbox>
+      <label><html:h3 data-l10n-id="batch-feedback-heading" /></label>
+      <checkbox
+        data-l10n-id="batch-feedback-auto-report"
+        preference="lint.autoReport"
+        native="true"
+      />
+      <description
+        data-l10n-id="batch-feedback-description"
+        class="metaref-pref-description"
+      />
+      <html:div
+        id="metaref-last-batch-status"
+        role="status"
+        aria-live="polite"
+      />
+      <button
+        id="metaref-last-batch-report"
+        data-l10n-id="batch-feedback-view-report"
+        native="true"
+      />
+    </groupbox>
+    <groupbox>
+      <label><html:h3 data-l10n-id="api-cache-heading" /></label>
+      <description
+        data-l10n-id="api-cache-description"
+        class="metaref-pref-description"
+      />
+      <button
+        id="metaref-clear-api-cache"
+        data-l10n-id="api-cache-clear"
+        native="true"
+      />
+      <html:div
+        id="metaref-api-cache-status"
+        role="status"
+        aria-live="polite"
+      />
+    </groupbox>
   </groupbox>
 
   <groupbox id="metaref-tool-center">
@@ -294,50 +356,6 @@
       class="metaref-shortcut-status metaref-pref-description"
       aria-live="polite"
     />
-  </groupbox>
-
-  <!-- 右键菜单设置 -->
-  <groupbox>
-    <label><html:h2 data-l10n-id="section-menu" /></label>
-    <checkbox
-      data-l10n-id="workflow-compact-menu"
-      preference="menu.compact"
-      native="true"
-    />
-    <description
-      data-l10n-id="workflow-compact-description"
-      class="metaref-pref-description"
-    />
-
-    <description
-      data-l10n-id="section-menu-description"
-      class="metaref-pref-description"
-    />
-    <description
-      data-l10n-id="menu-standard-description"
-      class="metaref-pref-description"
-    />
-    <description
-      data-l10n-id="menu-update-metadata-description"
-      class="metaref-pref-description"
-    />
-
-    <vbox id="__addonRef__-menu-settings" />
-
-    <!-- 字段右键菜单 -->
-    <groupbox>
-      <label><html:h3 data-l10n-id="section-menu-field" /></label>
-      <checkbox
-        data-l10n-id="menu-field-correct-title-punctuation"
-        preference="menu.correct-title-punctuation"
-        native="true"
-      />
-      <checkbox
-        data-l10n-id="menu-field-correct-extra-order"
-        preference="menu.correct-extra-order"
-        native="true"
-      />
-    </groupbox>
   </groupbox>
 
   <!-- 详细设置 -->
@@ -1464,24 +1482,6 @@
       <description
         data-l10n-id="rule-tool-update-metadata-dialog-note-type-change"
         class="metaref-pref-description"
-      />
-    </groupbox>
-
-    <groupbox>
-      <label><html:h3 data-l10n-id="api-cache-heading" /></label>
-      <description
-        data-l10n-id="api-cache-description"
-        class="metaref-pref-description"
-      />
-      <button
-        id="metaref-clear-api-cache"
-        data-l10n-id="api-cache-clear"
-        native="true"
-      />
-      <html:div
-        id="metaref-api-cache-status"
-        role="status"
-        aria-live="polite"
       />
     </groupbox>
 

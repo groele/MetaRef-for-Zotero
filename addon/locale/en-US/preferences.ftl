@@ -178,10 +178,9 @@ wip =
 
 
 ## Menu settings
-section-menu = Context Menu Settings
 section-menu-description = Choose which actions appear in context menus. Unchecking an action only hides its menu entry; it does not disable automatic rules or remove the feature.
-menu-standard-description = Check and repair metadata runs the enabled checking and formatting rules. Its workflow card can also include blank-field retrieval and journal rankings, using the same tools.
-menu-update-metadata-description = Update metadata retrieves article information from available services using the selected blank-field or replacement policy. It does not automatically run formatting rules. The combined workflow can include retrieval before formatting.
+menu-additional-heading = Additional item context menu options
+menu-core-visible = Show this command in the item context menu
 section-menu-field = Field Context Menus
 menu-standard =
     .label = Zotero MetaFlow: Check and Fix Metadata
@@ -316,7 +315,7 @@ settings-group-count = { $selected } / { $total } selected
 
 workflow-heading = Check and Repair: execution stages
 workflow-description = Formatting modules share their switches with detailed rules; a mixed state indicates partial selection. Optional verification runs first, then local formatting, journal metrics and duplicate review. Full metadata verification includes authors, so it does not query authors twice. Destructive maintenance is excluded.
-workflow-metadata = Verify bibliographic metadata first (field review, includes authors)
+workflow-metadata = Verify and automatically fill bibliographic metadata first (includes authors)
 workflow-rankings = Update journal quartiles and rankings last
 workflow-title = All title and short-title checks and formatters
 workflow-creators = All creator checks and formatters
@@ -329,10 +328,10 @@ menu-placement =
 menu-placement-primary = Top-level context menu
 menu-placement-nested = MetaFlow submenu
 
-metadata-update-saved-description = Both core commands show field review. Update preselects fields according to blank/overwrite mode; Check preselects empty fields. The type-change switch applies to automatic enrichment and legacy direct tools. arXiv version changes always require explicit review.
+metadata-update-saved-description = Both core commands fill fields according to validation rules, without review or confirmation UI. Update respects blank/overwrite mode; Check fills blanks by default. Identity conflicts or insufficient evidence preserve the item and record the reason. Enabled arXiv publication lookup creates or reuses a related publication and preserves the preprint. The type-change option still applies to import enrichment and legacy direct tools.
 metadata-repair-creators =
     .label = Repair authors from verified metadata, including missing, partial and incorrect lists
-metadata-repair-creators-description = Controls whether full bibliographic review includes author differences. Core workflows adopt only selected fields. The explicit author-only check option runs when enabled independently. Automatic imports and legacy direct tools retain their original merge policy.
+metadata-repair-creators-description = Includes authors in automatic bibliographic filling. After identity verification, enabling this option repairs incomplete existing author lists. Disabling it preserves authors, including in related publications.
 
 menu-placement-none = None (hidden)
 batch-feedback-heading = Run feedback and reports
@@ -409,15 +408,15 @@ metadata-update-journal-info =
 metadata-update-journal-info-description = An independent Update stage: runs even when bibliographic metadata is unchanged or its review is disabled. Respects blank/overwrite preferences, selected fields and source priorities, and reuses valid cached responses.
 
 menu-group-review = Verification, Versions and Duplicates
-workflow-execution-overview = Imports use independent background switches and default to local checking while retaining all items. Configure both manual commands under Core commands and optional expensive steps.
-workflow-compact-menu = Show only Check and Fix Metadata and Update Metadata in the context menu
+workflow-execution-overview = Imports use independent background switches and default to local checking while retaining all items. Configure manual command visibility, execution steps and optional searches under Context menus and core commands.
+workflow-compact-menu = Zotero MetaFlow: show only Check and Fix Metadata and Update Metadata
     .label = Show only Check and Fix Metadata and Update Metadata in the context menu
-workflow-compact-description = Enabled by default. Occasional tools remain available below, in the title toolbar and through shortcuts. Disable to restore configured menu placements.
+workflow-compact-description = Enabled by default to show only the two core commands. Configure visibility and execution steps within each command below. Disable this option to customize additional menus and placements. Occasional tools also remain available through On-demand tools and shortcuts.
 workflow-remote-authors-check = Also verify authors online when checking and fixing
     .label = Also verify authors online when checking and fixing
 workflow-remote-authors-description = Off by default to keep local checks fast. This option affects manual checks only, never import checks. Author verification is also available in Update Metadata.
 workflow-tool-center = On-demand Tools
-workflow-tool-description = Select references in the main window, then run a tool. Format conversions, replacements, Extra cleanup, version operations and merging retain their options or review steps. Hidden tools never run automatically just because they are hidden.
+workflow-tool-description = Select references in the main window, then run a tool. Metadata is filled according to identity and source validation; merging still requires selecting duplicate groups. Format conversions, replacements and Extra cleanup follow their settings. Hidden tools do not run automatically.
 workflow-tool-choice =
     .aria-label = Select an on-demand tool
 workflow-run-tool = Run on Main Window Selection
@@ -480,12 +479,12 @@ duplicates-stats-refreshed = Statistics refreshed. Item changes clear old counts
 duplicates-already-running = A bulk merge is already running.
 duplicates-select-one-library = Select one library before running this duplicate operation. Multiple selected libraries are not resolved automatically.
 
-core-workflows-heading = Core commands and optional expensive steps
-core-workflows-description = Choose the stages for each core context-menu command. Network requests, fallback searches and interactive reviews are opt-in. Author lookup and duplicate scanning run at most once per workflow. Import uses its separate switches in General.
+core-workflows-heading = Context menus and core commands
+core-workflows-description = Configure command visibility, execution steps and optional searches in one place. Hiding an entry affects the menu only; automatic imports use their independent switches in General. Author lookup and duplicate scanning run at most once per workflow.
 workflow-update-heading = Update Metadata: execution stages
 workflow-update-description = Run enabled bibliographic review, formatting, journal metrics and duplicate review in order. Journal metrics can run with bibliographic review disabled. Cancellation stops later stages; earlier saves remain.
-workflow-update-bibliographic = Verify bibliographic metadata online and review fields
-workflow-update-versions = Look up the publication linked by arXiv (extra network; type changes still require review)
+workflow-update-bibliographic = Verify bibliographic metadata online and fill automatically
+workflow-update-versions = Look up and relate the arXiv publication (extra network; preserve the preprint)
 workflow-update-format = Apply enabled local format rules afterward (no duplicate scan or extra enrichment)
 workflow-check-duplicates = Review duplicates interactively after checking (replaces the duplicate warning scan)
 workflow-update-duplicates = Review duplicates interactively after updating (may be slow in a large library)
@@ -498,3 +497,41 @@ workflow-legacy-description = This long-DOI rule switch remains for legacy direc
 
 core-feedback-completed = Combined workflow ended. Changes and findings from { $stages } stages are retained in the full report.
 core-feedback-cancelled = Combined workflow stopped. Results from { $stages } stages are retained; earlier saves were not reverted.
+
+review-panel-unavailable = Open the Zotero main window to use the review panel.
+
+review-batch-note = Merge selected duplicate groups in one batch ({ $groups } groups). The configured master is retained with attachments, notes, tags and collections. Publication versions are excluded. Check the groups before applying.
+review-batch-select-all = Select / clear all
+review-batch-group = { $count } items → retain { $id } · { $title }
+review-batch-individual = Review individually
+
+review-auto-ambiguous = Multiple different identifier candidates; preserved the item without requesting confirmation.
+review-auto-blocked = Source identifier validation failed; preserved the item.
+review-auto-conflict = Conflicting item identity; preserved the item without requesting confirmation.
+review-auto-evidence = Title or PDF evidence lacks independent year or author agreement; preserved the item.
+
+runtime-data-open = Open Local Runtime Records
+
+data-settings-heading = Data, Cache and Run Feedback
+data-settings-description = Zotero stores references and attachments and manages plugin settings. Reusable API responses and runtime summaries are stored separately in the profile directory. Clearing API caches preserves references, settings, saved rankings and runtime records.
+runtime-data-policy = Runtime summaries are retained for { $days } days, up to { $count } runs and { $size } MiB. Titles, field contents and keys are omitted. Each core command produces one record; detailed field changes remain in the current session report.
+core-feedback-errors = The workflow encountered errors. Earlier saves and stage results are retained; open the details.
+core-feedback-empty = No stages ran. Enable the desired steps in the core command settings.
+core-task-running = { $command } · { $index }/{ $total }: { $stage }
+core-task-stopping = Stopping. Saved changes are retained and later stages will be skipped.
+core-task-check = Check and Repair Metadata
+core-task-update = Update Metadata
+core-task-metadata = Verification and completion
+core-task-authors = Author verification
+core-task-format = Local checks and formatting
+core-task-journal = Journal information
+core-task-duplicates = Duplicate handling
+core-task-preparing = Preparing
+core-task-stop = Stop Further Execution
+core-task-details = View Results
+core-task-dismiss = Dismiss
+core-task-result = { $outcome } · Saved { $saved }/{ $total }
+core-task-finished = Completed
+core-task-attention = Needs Attention
+core-task-stopped = Stopped
+core-task-no-stages = No Steps Enabled

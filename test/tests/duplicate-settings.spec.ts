@@ -70,6 +70,8 @@ describe("integrated duplicate settings", function () {
       concurrency.value = "2";
       concurrency.dispatchEvent(new win.Event("change", { bubbles: true }));
       assert.equal(Zotero.Prefs.get(`${config.prefsPrefix}.duplicates.concurrency`, true), 2);
+      assert.isFalse(concurrency.hasAttribute("aria-invalid"));
+      assert.isEmpty(host.querySelector("#metaref-duplicates-status")!.textContent);
       for (const id of ["review", "bulk", "pause", "cancel", "refresh", "export", "import"])
         assert.isNotEmpty(host.querySelector(`#metaref-duplicates-${id}`)!.textContent?.trim());
     }
@@ -107,7 +109,10 @@ describe("integrated duplicate settings", function () {
     const pane = Zotero.getActiveZoteroPane()!;
     await pane.setVirtual(a.libraryID, "duplicates", true, true);
     await plugin().api.review.refreshDuplicateStats(a.libraryID);
-    const row = Array.from({ length: pane.collectionsView.rowCount }, (_, index) => pane.collectionsView.getRow(index)).find(row => row.isDuplicates());
+    const tree = pane.collectionsView;
+    if (!tree)
+      throw new Error("The fixture collection tree is unavailable");
+    const row = Array.from({ length: tree.rowCount }, (_, index) => tree.getRow(index)).find(row => row.isDuplicates());
     assert.isDefined(row);
     assert.match(row!.getName(), /1\/2$/);
     plugin().api.review.markNonDuplicate(a, b);
@@ -277,6 +282,122 @@ describe("integrated duplicate settings", function () {
     pref("duplicates.defaultAction", "cancel");
   });
 
+  it("rejects a relationship proposal edited while waiting to enter its transaction", async function () {
+    const left = await create("10.1234/relation-entry-race");
+    const right = await create("10.1234/relation-entry-race");
+    const pair = (await plugin().api.review.findDuplicates([left, right]))[0];
+    const original = Zotero.DB.executeTransaction;
+    (Zotero.DB as any).executeTransaction = async (...args: unknown[]) => {
+      left.setField("extra", "Unsaved edit while waiting for the relationship transaction");
+      return (original as any).apply(Zotero.DB, args);
+    };
+    try {
+      let failure: unknown;
+      try {
+        await plugin().api.review.applyDuplicateDecision({ pair, action: "relate", masterID: left.id, donors: new Map() });
+      }
+      catch (error) { failure = error; }
+      assert.isDefined(failure);
+      assert.isEmpty(left.relatedItems);
+      assert.isEmpty(right.relatedItems);
+      assert.equal(left.getField("extra"), "Unsaved edit while waiting for the relationship transaction");
+      assert.isTrue(left.hasChanged());
+    }
+    finally { Zotero.DB.executeTransaction = original; }
+  });
+
+  it("rolls back failed relationships without discarding unrelated unsaved edits", async function () {
+    const left = await create("10.1234/relation-save-failure");
+    const right = await create("10.1234/relation-save-failure");
+    const pair = (await plugin().api.review.findDuplicates([left, right]))[0];
+    const original = right.save;
+    right.save = (async () => {
+      left.setField("extra", "Manual edit during the relationship write");
+      throw new Error("fixture relationship save failure");
+    }) as typeof original;
+    try {
+      let failure: unknown;
+      try {
+        await plugin().api.review.applyDuplicateDecision({ pair, action: "relate", masterID: left.id, donors: new Map() });
+      }
+      catch (error) { failure = error; }
+      assert.include(String(failure), "fixture relationship save failure");
+      assert.isEmpty(left.relatedItems);
+      assert.isEmpty(right.relatedItems);
+      assert.equal(left.getField("extra"), "Manual edit during the relationship write");
+      assert.isTrue(left.hasChanged());
+    }
+    finally { right.save = original; }
+  });
+
+  it("does not persist a non-duplicate decision after cancellation", async function () {
+    const left = await create("10.1234/cancel-exclusion");
+    const right = await create("10.1234/cancel-exclusion");
+    const pair = (await plugin().api.review.findDuplicates([left, right]))[0];
+    const controller = new AbortController();
+    controller.abort();
+    let failure: unknown;
+    try {
+      await plugin().api.review.applyDuplicateDecision({ pair, action: "notDuplicate", masterID: left.id, donors: new Map() }, controller.signal);
+    }
+    catch (error) { failure = error; }
+    assert.equal((failure as Error)?.name, "AbortError");
+    assert.lengthOf(await plugin().api.review.findDuplicates([left, right]), 1);
+  });
+
+  it("finishes concurrent merges even when the progress observer throws", async function () {
+    pref("duplicates.concurrency", 2);
+    const items: Zotero.Item[] = [];
+    for (let group = 0; group < 3; group++) {
+      items.push(await create(`10.1234/observer-failure-${group}`));
+      items.push(await create(`10.1234/observer-failure-${group}`));
+    }
+    const pairs = await plugin().api.review.findDuplicates(items);
+    let callbacks = 0;
+    const result = await plugin().runner.exclusive((signal: AbortSignal) => plugin().api.review.bulkMergeDuplicates(pairs, signal, undefined, (state: { completed: number }) => {
+      callbacks++;
+      if (state.completed)
+        throw new Error("fixture progress observer failure");
+    }));
+    assert.equal(result.completed, 3);
+    assert.equal(result.merged, 3);
+    assert.isFalse(result.running);
+    assert.deepEqual(result.errors, []);
+    assert.equal(callbacks, 2, "detach a broken observer after logging its first error");
+    assert.lengthOf(items.filter(item => item.deleted), 3);
+    pref("duplicates.concurrency", 3);
+  });
+
+  it("yields and accepts cancellation while enumerating a dense candidate bucket", async function () {
+    const items: Zotero.Item[] = [];
+    for (let index = 0; index < 24; index++)
+      items.push(await create("10.1234/candidate-cancel"));
+    const originalAll = Zotero.Items.getAll;
+    const originalDelay = Zotero.Promise.delay;
+    const controller = new AbortController();
+    let yields = 0;
+    (Zotero.Items as any).getAll = async () => items;
+    (Zotero.Promise as any).delay = async (ms: number) => {
+      if (ms === 0 && ++yields === 2)
+        controller.abort();
+      return originalDelay(ms);
+    };
+    try {
+      let failure: unknown;
+      try {
+        await plugin().api.review.findDuplicates(items, controller.signal);
+      }
+      catch (error) { failure = error; }
+      assert.equal((failure as Error)?.name, "AbortError");
+      assert.equal(yields, 2, "yield once during collection and again while matching candidates");
+      assert.isTrue(items.every(item => !item.deleted && !item.hasChanged()));
+    }
+    finally {
+      Zotero.Items.getAll = originalAll;
+      (Zotero.Promise as any).delay = originalDelay;
+    }
+  });
+
   it("pauses between duplicate groups, resumes and stops before starting the next group", async function () {
     const beforeConcurrency = Zotero.Prefs.get(`${config.prefsPrefix}.duplicates.concurrency`, true) as number;
     pref("duplicates.concurrency", 1);
@@ -302,6 +423,7 @@ describe("integrated duplicate settings", function () {
     };
     try {
       bulk.dispatchEvent(new win.Event("command", { bubbles: true }));
+      bulk.dispatchEvent(new win.Event("command", { bubbles: true }));
       assert.isTrue(bulk.disabled, "the initialized bulk button must enter its running state");
       let confirm: Window | undefined;
       for (let attempt = 0; attempt < 200 && !confirm; attempt++) {
@@ -310,6 +432,7 @@ describe("integrated duplicate settings", function () {
           await Zotero.Promise.delay(25);
       }
       assert.isDefined(confirm, JSON.stringify({ status: win.document.getElementById("metaref-duplicates-status")?.textContent, selectedLibraries: selectedLibraryIDs(Zotero.getActiveZoteroPane()), connected: bulk.isConnected, disabled: bulk.disabled, dialogs: [...plugin().data.dialogs.values()].map((dialog: any) => ({ closed: dialog.closed, url: dialog.location.href })) }));
+      assert.lengthOf([...plugin().data.dialogs.values()].filter((dialog: Window) => !dialog.closed && dialog.document.getElementById("metaref-duplicate-bulk-apply")), 1);
       (confirm!.document.getElementById("metaref-duplicate-bulk-apply") as HTMLButtonElement).click();
       for (let attempt = 0; attempt < 200; attempt++) {
         if (merged >= 1)

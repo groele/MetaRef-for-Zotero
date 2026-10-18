@@ -1,4 +1,4 @@
-import type { DuplicateRecord } from "./policy";
+import type { DuplicateRecord } from "./duplicate-matching";
 import { expect, it } from "vitest";
 import { canMergePair, chooseMaster, duplicateConcurrency, duplicateGroups } from "./duplicate-policy";
 
@@ -33,4 +33,13 @@ it("permits cross-type merging only with explicit configuration and the same DOI
   right.data.DOI = left.data.DOI;
   right.preprint = true;
   expect(canMergePair(pair, true)).toBe(false);
+});
+
+it("traverses a high-fanout duplicate group without spreading its neighbors into function arguments", () => {
+  const master = record(1, "2020");
+  const pairs = Array.from({ length: 130_000 }, (_, index) => ({ left: master, right: record(index + 2, "2020"), reason: "doi" as const, mergeable: true }));
+  const groups = duplicateGroups(pairs);
+  expect(groups).toHaveLength(1);
+  expect(groups[0]).toHaveLength(130_001);
+  expect(new Set(groups[0].map(item => item.id)).size).toBe(130_001);
 });

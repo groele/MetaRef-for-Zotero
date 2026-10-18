@@ -1,13 +1,16 @@
 import type { CoreCommand, CoreStage } from "../utils/core-workflow";
 import type { BatchResult } from "./runner";
-import { coreWorkflowPlan, executeCorePlan } from "../utils/core-workflow";
+import { coreWorkflowPlan } from "../utils/core-workflow";
 import { getJournalInsights } from "../utils/journal-insights";
 import { hasEnabledJournalMetrics } from "../utils/journal-permissions";
 import { getString } from "../utils/locale";
 import { getPref } from "../utils/prefs";
+import { recordRuntimeResult } from "../utils/runtime-data-storage";
 import { REMOTE_STANDARD_RULES } from "../utils/workflow-policy";
+import { combineWorkflowResults, CoreWorkflowQueue } from "../utils/workflow-result";
 import { updateBatchFeedback } from "./batch-feedback";
 import { refreshJournalPane, setJournalUpdateResult } from "./journal-pane";
+import { createReporter } from "./reporter";
 import { runReviewCommand } from "./review";
 import { Rules } from "./rules";
 import { ToolUpdateEasyScholar } from "./rules/tool-update-easyscholar";
@@ -28,20 +31,17 @@ export function localDOICheck() {
   };
 }
 
-const pending = new Map<string, Promise<BatchResult | undefined>>();
+const queue = new CoreWorkflowQueue<BatchResult | undefined>();
 
 export function runCoreWorkflow(command: CoreCommand, items: Zotero.Item[]) {
-  const key = `${command}:${items.map(item => item.id).sort((a, b) => a - b).join(",")}`;
-  const existing = pending.get(key);
-  if (existing)
-    return existing;
-  const task = executeWorkflow(command, items).finally(() => pending.delete(key));
-  pending.set(key, task);
-  return task;
+  const selected = [...new Map(items.filter(item => item?.id && item.isRegularItem() && !item.deleted && item.isEditable()).map(item => [item.id, item])).values()];
+  const key = `${command}:${selected.map(item => item.id).sort((a, b) => a - b).join(",")}`;
+  return queue.add(key, () => executeWorkflow(command, selected));
 }
 
 async function executeWorkflow(command: CoreCommand, items: Zotero.Item[]) {
-  if (!items.length)
+  items = items.filter(item => !item.deleted && item.isEditable());
+  if (!items.length || !addon.data.alive)
     return;
   const pref = (key: string, fallback: boolean) => getPref(key as any, fallback) === true;
   const options = {
@@ -55,53 +55,105 @@ async function executeWorkflow(command: CoreCommand, items: Zotero.Item[]) {
     updateDuplicates: pref("workflow.reviewDuplicatesOnUpdate", false),
   };
   const stages: { stage: CoreStage; result: BatchResult }[] = [];
+  const plan = coreWorkflowPlan(command, options);
+  const state = { command, stage: undefined as CoreStage | undefined, index: 0, total: plan.length, cancelled: false };
+  const started = Date.now();
+  const overwrite = command === "update" && getPref("rule.tool-update-metadata.option.mode") === "all";
+  const reviewOptions = {
+    scanPDF: pref("workflow.scanPDF", false),
+    searchTitle: pref("workflow.searchTitle", false),
+    repairCreators: (command === "check" && options.checkAuthors) || pref("metadata.repairCreators", true),
+    overwrite,
+    history: false,
+  };
+  const updateVersions = command === "update" && pref("workflow.updateVersions", false);
+  const skipDuplicates = command === "update" || options.checkDuplicates;
+  const localRules = Rules.getEnabledStandard().filter(rule => !REMOTE_STANDARD_RULES.has(rule.id) && !(skipDuplicates && rule.id === "no-item-duplication"));
+  if (pref("rule.require-doi", true))
+    localRules.push(localDOICheck());
   const run = async (stage: CoreStage) => {
     const current = items.filter(item => !item.deleted && item.isEditable());
     if (!current.length)
       return;
     if (stage === "metadata" || stage === "authors") {
-      return runReviewCommand("tool-review-metadata", current, command === "update" && stage === "metadata" && pref("workflow.updateVersions", false), {
-        scanPDF: pref("workflow.scanPDF", false),
-        searchTitle: pref("workflow.searchTitle", false),
+      return runReviewCommand("tool-review-metadata", current, stage === "metadata" && updateVersions, {
+        ...reviewOptions,
         creatorsOnly: stage === "authors",
-        repairCreators: stage === "authors" || (command === "check" && options.checkAuthors) || pref("metadata.repairCreators", true),
-        overwrite: command === "update" && getPref("rule.tool-update-metadata.option.mode") === "all",
+        repairCreators: stage === "authors" || reviewOptions.repairCreators,
       });
     }
     if (stage === "format") {
-      const skipDuplicates = command === "update" || options.checkDuplicates;
-      const rules = Rules.getEnabledStandard().filter(rule => !REMOTE_STANDARD_RULES.has(rule.id) && !(skipDuplicates && rule.id === "no-item-duplication"));
-      if (pref("rule.require-doi", true))
-        rules.push(localDOICheck());
-      if (rules.length)
-        return addon.runner.add({ items: current, rules, silent: command === "update" });
+      if (localRules.length)
+        return addon.runner.add({ items: current, rules: localRules, silent: true, history: false });
     }
     if (stage === "journal" && hasEnabledJournalMetrics()) {
       const journals = current.filter(item => ["journalArticle", "conferencePaper"].includes(item.itemType));
       if (!journals.length)
         return;
-      const mode = command === "update" && getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" : "blank";
-      const result = await addon.runner.add({ items: journals, rules: [{ ...ToolUpdateEasyScholar, prepare: () => ({ mode }) }], silent: true });
-      if (addon.data.alive && !result?.cancelled) {
-        await Promise.all(journals.filter(item => !item.deleted && item.itemType === "journalArticle").map(item => getJournalInsights(item, { queryAPI: true })));
-        Zotero.ItemTreeManager.refreshColumns();
-        setJournalUpdateResult(journals.map(item => item.id), result);
-        await refreshJournalPane(journals.map(item => item.id));
+      const mode = overwrite ? "all" : "blank";
+      const result = await addon.runner.add({ items: journals, rules: [{ ...ToolUpdateEasyScholar, prepare: () => ({ mode }) }], silent: true, history: false });
+      if (addon.data.alive && !state.cancelled && !result?.cancelled) {
+        const unique = [...new Map(journals.filter(item => !item.deleted && item.itemType === "journalArticle").map(item => [JSON.stringify(["publicationTitle", "ISSN", "journalAbbreviation"].map(field => item.getField(field as any))), item])).values()];
+        let next = 0;
+        const warm = async () => {
+          while (addon.data.alive && !state.cancelled && next < unique.length)
+            await getJournalInsights(unique[next++], { queryAPI: true });
+        };
+        const warming = await Promise.allSettled(Array.from({ length: Math.min(4, unique.length) }, warm));
+        for (const outcome of warming) {
+          if (outcome.status === "rejected" && result) {
+            result.records.push({ itemID: 0, title: "", ruleID: "tool-update-easyscholar", code: "journal-refresh-failed", level: "warning", message: String(outcome.reason) });
+            result.warnings++;
+          }
+        }
+        if (addon.data.alive && !state.cancelled) {
+          Zotero.ItemTreeManager.refreshColumns();
+          setJournalUpdateResult(journals.map(item => item.id), result);
+          await refreshJournalPane(journals.map(item => item.id));
+        }
       }
       return result;
     }
     if (stage === "duplicates")
-      return runReviewCommand("tool-review-duplicates", current);
+      return runReviewCommand("tool-review-duplicates", current, false, { history: false });
   };
-  const latest = await executeCorePlan(coreWorkflowPlan(command, options), async (stage) => {
-    const result = await run(stage);
-    if (result)
-      stages.push({ stage, result });
-    return result;
-  }, () => addon.data.alive);
-  if (latest && addon.data.alive) {
-    addon.data.lastCoreWorkflow = { lastResult: latest, stages };
-    updateBatchFeedback(addon.runner.lastResult);
+  addon.data.activeCoreWorkflow = state;
+  updateBatchFeedback();
+  let failure: unknown;
+  try {
+    for (const [index, stage] of plan.entries()) {
+      if (!addon.data.alive || state.cancelled)
+        break;
+      state.stage = stage;
+      state.index = index + 1;
+      updateBatchFeedback();
+      const result = await run(stage);
+      if (result)
+        stages.push({ stage, result });
+      if (result?.cancelled) {
+        state.cancelled = true;
+        break;
+      }
+    }
   }
-  return latest;
+  catch (error) {
+    failure = error;
+  }
+  finally {
+    addon.data.activeCoreWorkflow = undefined;
+  }
+  const result = combineWorkflowResults(items.map(item => item.id), stages.map(stage => stage.result), Date.now() - started, state.cancelled);
+  if (failure) {
+    result.preparationFailed++;
+    result.records.push({ itemID: 0, title: "", ruleID: "tool-update-metadata", code: "workflow-stage-failed", level: "error", message: String(failure) });
+  }
+  recordRuntimeResult(result, `core-${command}`);
+  if (addon.data.alive) {
+    addon.runner.lastResult = result;
+    addon.data.lastCoreWorkflow = { lastResult: result, stages };
+    updateBatchFeedback(result);
+    if (getPref("lint.autoReport" as any, false) && (result.records.length || result.changes.length))
+      void createReporter(result.records, result.changes).catch(error => Zotero.debug(error));
+  }
+  return result;
 }

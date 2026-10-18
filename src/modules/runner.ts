@@ -9,6 +9,7 @@ import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
 import { executeRule, normalizedConcurrency, waitForOperation } from "../utils/rule-execution";
+import { recordRuntimeResult } from "../utils/runtime-data-storage";
 import { ruleSupportsItems } from "../utils/workflow-policy";
 import { isFieldValidForItemType } from "../utils/zotero";
 import { updateBatchFeedback } from "./batch-feedback";
@@ -28,6 +29,7 @@ interface RunnerStats {
 }
 
 export interface BatchResult {
+  itemOutcomes?: { itemID: number; processed: boolean; saved: boolean; failed: boolean; changed: boolean; applicable: boolean }[];
   durationMs?: number;
   total: number;
   processed: number;
@@ -113,6 +115,7 @@ export class LintRunner {
   private changes: FieldChange[] = [];
   private savedValues = new Map<number, Record<string, unknown>>();
   private applicableIDs = new Set<number>();
+  private processedIDs = new Set<number>();
   private lastProgressTime = 0;
   private lastProgressPhase?: RunnerStats["phase"];
   public lastResult?: BatchResult;
@@ -142,6 +145,7 @@ export class LintRunner {
     items: Arrayable<Zotero.Item>;
     rules: Arrayable<Rule<any>>;
     silent?: boolean;
+    history?: boolean;
   }): Promise<BatchResult | undefined> {
     const batch = { ...params, items: [...toArray(params.items)], rules: [...toArray(params.rules)] };
     let result: BatchResult | undefined;
@@ -183,8 +187,10 @@ export class LintRunner {
     items: Arrayable<Zotero.Item>;
     rules: Arrayable<Rule<any>>;
     silent?: boolean;
+    history?: boolean;
   }): Promise<void> {
     const { items: _items, rules: _rules, silent = false } = params;
+    const items = [...new Map(toArray(_items).filter(item => item?.isRegularItem() && !item.deleted && item.isEditable()).map(item => [item.id || item, item])).values()];
 
     this.initStats();
     try {
@@ -196,7 +202,6 @@ export class LintRunner {
         this.ui.close();
       }
 
-      const items = [...new Map(toArray(_items).filter(item => item?.isRegularItem() && !item.deleted && item.isEditable()).map(item => [item.id || item, item])).values()];
       const rules = [...new Map(toArray(_rules).map(rule => [rule.id, rule])).values()];
 
       this.stats.phase = "idle";
@@ -208,8 +213,10 @@ export class LintRunner {
       const optionsMap = await this.prepareRules(rules, items);
       const hasActiveRules = [...optionsMap.values()].some(opt => opt !== false);
 
-      if (!hasActiveRules && !this.cancelled && rules.every(rule => !ruleSupportsItems(rule, items)))
+      if (!hasActiveRules && !this.cancelled && rules.every(rule => !ruleSupportsItems(rule, items))) {
         this.stats.current = items.length;
+        items.forEach(item => this.processedIDs.add(item.id));
+      }
 
       if (items.length === 0 || !hasActiveRules) {
         return;
@@ -229,6 +236,7 @@ export class LintRunner {
             this.failedItems.add(item.id || item);
             logger.error(error);
           }
+          this.processedIDs.add(item.id);
           this.updateStats(this.failedItems.has(item.id || item) ? "error" : "pass");
         }
       };
@@ -236,7 +244,7 @@ export class LintRunner {
       await this.batchSave();
     }
     finally {
-      this.finish(silent);
+      this.finish(silent, items, params.history !== false);
     }
   }
 
@@ -544,18 +552,21 @@ export class LintRunner {
     this.changes = [];
     this.savedValues.clear();
     this.applicableIDs.clear();
+    this.processedIDs.clear();
     if (!this.stats.startTime)
       this.stats.startTime = Date.now();
     logger.debug(`Add tasks at ${new Date().toLocaleTimeString()}`);
   }
 
-  private finish(silent: boolean) {
+  private finish(silent: boolean, items: Zotero.Item[], history: boolean) {
     if (this.stats.startTime === this.emptyStats().startTime)
       return;
 
     const duration = (Date.now() - this.stats.startTime) / 1000;
-    const changed = new Set(this.changes.map(change => change.itemID)).size;
+    const changedIDs = new Set(this.changes.map(change => change.itemID));
+    const changed = changedIDs.size;
     this.lastResult = {
+      itemOutcomes: items.map(item => ({ itemID: item.id, processed: this.processedIDs.has(item.id), saved: this.savedValues.has(item.id), failed: this.failedItems.has(item.id || item), changed: changedIDs.has(item.id), applicable: this.applicableIDs.has(item.id) })),
       durationMs: Math.round(duration * 1000),
       total: this.stats.total,
       processed: this.stats.current,
@@ -572,6 +583,8 @@ export class LintRunner {
       notApplicable: this.stats.current - this.applicableIDs.size,
       warnings: this.stats.records.filter(record => record.level === "warning").length,
     };
+    if (history)
+      recordRuntimeResult(this.lastResult);
     // Release batch state before opening UI, which may fail when a window closes.
     this.modifiedItems.clear();
     this.savedValues.clear();

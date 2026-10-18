@@ -11,6 +11,9 @@ const MEMBERSHIP_FIELDS = new Set<EasyScholarField>(["sci", "ssci", "ei", "utd24
 let ready: Promise<void> | undefined;
 let writes = Promise.resolve();
 let timer: ReturnType<typeof setTimeout> | undefined;
+let revision = 0;
+let dirty = false;
+let queuedRevision = -1;
 
 function filePath() {
   return typeof IOUtils !== "undefined" && (Zotero as any).Profile?.dir
@@ -108,6 +111,8 @@ export async function saveJournalRankingIndex(item: Zotero.Item, values: Partial
   }
   if (!changed)
     return;
+  dirty = true;
+  revision++;
   const snapshot = { updatedAt: Date.now(), values: Object.fromEntries(next) as Entry["values"] };
   for (const key of itemKeys) {
     entries.delete(key);
@@ -126,9 +131,19 @@ export async function flushJournalRankingIndex() {
   const path = filePath();
   if (!path)
     return;
+  if (!dirty || queuedRevision === revision)
+    return writes;
+  const token = revision;
+  queuedRevision = token;
   const data: Store = { version: 1, entries: Object.fromEntries(entries) };
   const write = writes.catch(() => {}).then(async () => {
     await IOUtils.writeJSON(path, data, { tmpPath: `${path}.tmp` });
+    if (revision === token)
+      dirty = false;
+  }).catch((error) => {
+    if (queuedRevision === token)
+      queuedRevision = -1;
+    throw error;
   });
   writes = write;
   await write;
@@ -141,4 +156,7 @@ export function resetJournalRankingIndex() {
   }
   entries.clear();
   ready = undefined;
+  dirty = false;
+  queuedRevision = -1;
+  revision++;
 }

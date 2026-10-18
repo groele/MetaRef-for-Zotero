@@ -1,12 +1,13 @@
+import type { DuplicatePair } from "./duplicate-matching";
 import type { DefaultDuplicateAction, MasterStrategy } from "./duplicate-policy";
-import type { DuplicatePair, DuplicateRecord } from "./policy";
 import { getString } from "../../utils/locale";
 import { getPref } from "../../utils/prefs";
+import { recordRuntimeResult } from "../../utils/runtime-data-storage";
 import { assertReviewFresh } from "./apply";
+import { duplicatePairs } from "./duplicate-matching";
 import { canMergePair, chooseMaster, duplicateConcurrency, duplicateGroups } from "./duplicate-policy";
 import { applyDuplicateDecision, duplicateRecord, findDuplicates, reviewDuplicate } from "./duplicates";
 import { isNonDuplicate } from "./non-duplicates";
-import { duplicatePairs } from "./policy";
 
 export interface DuplicateBatch {
   running: boolean;
@@ -17,6 +18,9 @@ export interface DuplicateBatch {
   merged: number;
   skipped: number;
   errors: string[];
+  processedIDs: number[];
+  savedIDs: number[];
+  failedIDs: number[];
 }
 let active: DuplicateBatch | undefined;
 export function getDuplicateBatch() {
@@ -31,13 +35,24 @@ export function cancelDuplicateBatch() {
     active.cancelled = true;
 }
 
-export async function bulkMergeDuplicates(pairs: DuplicatePair[], signal?: AbortSignal, imported?: { ids: Set<number>; action: DefaultDuplicateAction }, update?: (state: DuplicateBatch) => void): Promise<DuplicateBatch> {
+export async function bulkMergeDuplicates(pairs: DuplicatePair[], signal?: AbortSignal, imported?: { ids: Set<number>; action: DefaultDuplicateAction }, update?: (state: DuplicateBatch) => void, record = true): Promise<DuplicateBatch> {
   if (active?.running)
     throw new Error(getString("duplicates-already-running"));
+  const started = Date.now();
   const differentTypes = getPref("duplicates.mergeDifferentTypes" as any, false) === true;
   const groups = duplicateGroups(pairs.filter(pair => canMergePair(pair, differentTypes) && (!imported || pair.reason === "doi")));
-  const state: DuplicateBatch = { running: true, paused: false, cancelled: false, total: groups.length, completed: 0, merged: 0, skipped: 0, errors: [] };
+  const state: DuplicateBatch = { running: true, paused: false, cancelled: false, total: groups.length, completed: 0, merged: 0, skipped: 0, errors: [], processedIDs: [], savedIDs: [], failedIDs: [] };
   active = state;
+  let observer = update;
+  const notify = () => {
+    try {
+      observer?.(state);
+    }
+    catch (error) {
+      observer = undefined;
+      Zotero.debug(`[MetaFlow duplicate-batch] ${String(error)}`);
+    }
+  };
   let next = 0;
   const worker = async () => {
     while (!state.cancelled && !signal?.aborted) {
@@ -48,6 +63,8 @@ export async function bulkMergeDuplicates(pairs: DuplicatePair[], signal?: Abort
       const group = groups[next++];
       if (!group)
         break;
+      for (const record of group)
+        state.processedIDs.push(record.id);
       try {
         for (const record of group) {
           const item = Zotero.Items.get(record.id);
@@ -74,17 +91,25 @@ export async function bulkMergeDuplicates(pairs: DuplicatePair[], signal?: Abort
           }
           await applyDuplicateDecision({ pair, action: "merge", masterID: master.id, donors: new Map() }, signal);
           state.merged++;
+          state.savedIDs.push(master.id, other.id);
         }
       }
       catch (error) {
-        state.errors.push(String(error));
+        if (signal?.aborted) {
+          state.cancelled = true;
+        }
+        else {
+          state.errors.push(String(error));
+          for (const record of group)
+            state.failedIDs.push(record.id);
+        }
       }
       state.completed++;
-      update?.(state);
+      notify();
     }
   };
   try {
-    update?.(state);
+    notify();
     await Promise.all(Array.from({ length: Math.min(groups.length, duplicateConcurrency(getPref("duplicates.concurrency" as any, 3))) }, worker));
     return state;
   }
@@ -92,7 +117,13 @@ export async function bulkMergeDuplicates(pairs: DuplicatePair[], signal?: Abort
     state.cancelled ||= signal?.aborted || false;
     state.running = false;
     state.paused = false;
-    update?.(state);
+    notify();
+    if (record) {
+      const processed = new Set(state.processedIDs);
+      const saved = new Set(state.savedIDs);
+      const failed = new Set(state.failedIDs);
+      recordRuntimeResult({ total: new Set(pairs.flatMap(pair => [pair.left.id, pair.right.id])).size, processed: processed.size, passed: processed.size - failed.size, failed: failed.size, saved: saved.size, cancelled: state.cancelled, skipped: state.skipped, preparationFailed: 0, records: [...processed].map(itemID => ({ itemID, title: "", ruleID: "tool-review-duplicates", code: failed.has(itemID) ? "duplicate-merge-failed" : saved.has(itemID) ? "duplicate-merged" : "duplicate-skipped", level: failed.has(itemID) ? "error" : "info", message: "" })), changes: [...saved].map(itemID => ({ itemID, ruleID: "tool-review-duplicates", field: "merge", before: null, after: null, saved: true })), changed: saved.size, unchanged: processed.size - saved.size, notApplicable: 0, warnings: 0, durationMs: Date.now() - started }, "duplicate-merge");
+    }
   }
 }
 
@@ -124,8 +155,4 @@ export async function processImportedDuplicates(items: Zotero.Item[]) {
     }
     return bulkMergeDuplicates(pairs, signal, { ids: new Set(eligible.map(item => item.id)), action });
   });
-}
-
-export function retainedMaster(records: DuplicateRecord[]): number {
-  return chooseMaster(records, getPref("duplicates.masterStrategy" as any, "oldest") as MasterStrategy).id;
 }

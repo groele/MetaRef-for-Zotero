@@ -22,6 +22,11 @@ export function setupWorkflowSettings(pane: Element) {
   const doc = pane.ownerDocument!;
   const listen = preferenceListeners(pane);
   const host = pane.querySelector("#metaref-core-workflows")!;
+  const additional = host.querySelector("#metaref-additional-menu-options");
+  const moveMenuControl = (id: string, target: Element) => {
+    const row = pane.querySelector(`[data-core-menu-command='${id}']`)!;
+    target.insertBefore(row, target.children[2] || null);
+  };
   const card = doc.createElementNS("http://www.w3.org/1999/xhtml", "details") as HTMLDetailsElement;
   card.className = "metaref-setting-card";
   card.id = "metaref-workflow-settings";
@@ -75,11 +80,14 @@ export function setupWorkflowSettings(pane: Element) {
     const note = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
     doc.l10n!.setAttributes(note, description);
     section.append(title, note);
-    host.append(section);
+    host.insertBefore(section, additional);
     return section;
   };
-  host.append(card);
+  host.insertBefore(card, additional);
+  moveMenuControl("standard", card);
   const update = makeCard("metaref-update-workflow-settings", "metaref-workflow-update-heading", "metaref-workflow-update-description");
+  moveMenuControl("tool-update-metadata", update);
+  pane.querySelector("#metaref-primary-menu-controls")?.remove();
   const bibliographic = choice("update-bibliographic", "workflow.updateBibliographic", true, update);
   const versions = choice("update-versions", "workflow.updateVersions", false, update);
   choice("update-format", "workflow.formatAfterUpdate", true, update);

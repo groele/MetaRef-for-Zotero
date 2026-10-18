@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   load: vi.fn(),
   locale: vi.fn(),
 }));
+vi.mock("./utils/persistence-shutdown", () => ({ registerPersistenceShutdown: vi.fn(() => vi.fn()) }));
 vi.mock("./modules/item-tree", () => ({ registerExtraColumns: mocks.register, unregisterExtraColumns: mocks.unregister }));
 vi.mock("./modules/journal-pane", () => ({ registerJournalPane: mocks.register, unregisterJournalPane: mocks.unregister, refreshJournalPane: vi.fn(), setJournalUpdateResult: vi.fn() }));
 vi.mock("./modules/menu", () => ({ registerMenu: mocks.register, unregisterMenu: mocks.unregister }));

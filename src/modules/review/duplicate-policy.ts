@@ -1,4 +1,4 @@
-import type { DuplicatePair, DuplicateRecord } from "./policy";
+import type { DuplicatePair, DuplicateRecord } from "./duplicate-matching";
 import { normalizeDOI } from "../rules/tool-update-metadata/policy";
 import { normalizeArxiv } from "./policy";
 
@@ -33,32 +33,41 @@ export function canMergePair(pair: DuplicatePair, differentTypes = false): boole
 
 export function duplicateGroups(pairs: DuplicatePair[]): DuplicateRecord[][] {
   const records = new Map<number, DuplicateRecord>();
-  const edges = new Map<number, Set<number>>();
+  const parents = new Map<number, number>();
+  const sizes = new Map<number, number>();
+  const root = (id: number): number => {
+    let current = id;
+    while (parents.get(current) !== current) {
+      const parent = parents.get(current)!;
+      parents.set(current, parents.get(parent)!);
+      current = parents.get(current)!;
+    }
+    return current;
+  };
   for (const pair of pairs) {
-    records.set(pair.left.id, pair.left);
-    records.set(pair.right.id, pair.right);
-    for (const [a, b] of [[pair.left.id, pair.right.id], [pair.right.id, pair.left.id]]) {
-      if (!edges.has(a))
-        edges.set(a, new Set());
-      edges.get(a)!.add(b);
+    for (const record of [pair.left, pair.right]) {
+      records.set(record.id, record);
+      if (!parents.has(record.id)) {
+        parents.set(record.id, record.id);
+        sizes.set(record.id, 1);
+      }
+    }
+    let a = root(pair.left.id);
+    let b = root(pair.right.id);
+    if (a !== b) {
+      if (sizes.get(a)! < sizes.get(b)!)
+        [a, b] = [b, a];
+      parents.set(b, a);
+      sizes.set(a, sizes.get(a)! + sizes.get(b)!);
+      sizes.delete(b);
     }
   }
-  const visited = new Set<number>();
-  const groups: DuplicateRecord[][] = [];
-  for (const id of records.keys()) {
-    if (visited.has(id))
-      continue;
-    const queue = [id];
-    const group: DuplicateRecord[] = [];
-    for (let index = 0; index < queue.length; index++) {
-      const current = queue[index];
-      if (visited.has(current))
-        continue;
-      visited.add(current);
-      group.push(records.get(current)!);
-      queue.push(...edges.get(current) || []);
-    }
-    groups.push(group);
+  const groups = new Map<number, DuplicateRecord[]>();
+  for (const record of records.values()) {
+    const id = root(record.id);
+    if (!groups.has(id))
+      groups.set(id, []);
+    groups.get(id)!.push(record);
   }
-  return groups;
+  return [...groups.values()];
 }

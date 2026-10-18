@@ -7,6 +7,7 @@ import { discoverIdentifiers, inspectMetadata, inspectPreprint, parseArxiv } fro
 import { clearNonDuplicates, exportNonDuplicates, importNonDuplicates, markNonDuplicate } from "./modules/review/non-duplicates";
 import { exportJournalDatabase, validateJournalDatabase } from "./utils/journal-database-file";
 import { getJournalInsights } from "./utils/journal-insights";
+import { clearRuntimeData, flushRuntimeData, readRuntimeData, runtimeDataPath } from "./utils/runtime-data-storage";
 import { getTextLanguage } from "./utils/str";
 
 const utils = { getTextLanguage };
@@ -15,4 +16,4 @@ function getLastAutomaticWorkflow() {
   return addon.data.lastAutomaticWorkflow ? JSON.parse(JSON.stringify(addon.data.lastAutomaticWorkflow)) : undefined;
 }
 
-export default { utils, getJournalInsights, exportJournalDatabase, validateJournalDatabase, refreshJournalInsights, getLastAutomaticWorkflow, review: { discoverIdentifiers, inspectMetadata, inspectPreprint, parseArxiv, applyReviewedMetadata, createRelatedVersion, findDuplicates, applyDuplicateDecision, bulkMergeDuplicates, markNonDuplicate, exportNonDuplicates, importNonDuplicates, clearNonDuplicates, refreshDuplicateStats } };
+export default { runtimeData: { path: runtimeDataPath, read: readRuntimeData, clear: clearRuntimeData, flush: flushRuntimeData }, utils, getJournalInsights, exportJournalDatabase, validateJournalDatabase, refreshJournalInsights, getLastAutomaticWorkflow, review: { discoverIdentifiers, inspectMetadata, inspectPreprint, parseArxiv, applyReviewedMetadata, createRelatedVersion, findDuplicates, applyDuplicateDecision, bulkMergeDuplicates, markNonDuplicate, exportNonDuplicates, importNonDuplicates, clearNonDuplicates, refreshDuplicateStats } };

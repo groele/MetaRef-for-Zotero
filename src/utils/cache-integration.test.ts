@@ -25,6 +25,7 @@ beforeEach(() => {
   vi.stubGlobal("PathUtils", { join: (...parts: string[]) => parts.join("/") });
   vi.stubGlobal("IOUtils", {
     exists: async (path: string) => files.has(path),
+    stat: async (path: string) => ({ size: JSON.stringify(files.get(path) || {}).length }),
     readJSON: async (path: string) => structuredClone(files.get(path)),
     writeJSON: async (path: string, value: unknown) => { files.set(path, structuredClone(value)); },
   });

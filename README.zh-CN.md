@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-11.0.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-11.1.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,7 +19,7 @@
 
 ---
 
-> **11.0.0 大版本更新：**将文献元数据核验、预印本版本管理和重复条目审查整合到两个核心工作流，并统一设置入口、强化批处理恢复。功能范围与验证边界见[系统性逐项验收报告](docs/systematic-acceptance-2026-10-18.md)。
+> **11.1.0 更新：**新增按判据自动填充元数据、多个重复组批量合并、完整命令调度与轻量反馈，以及独立的本地运行记录。功能变化及验证边界见[发布说明](docs/releases/metaflow-v11.1.0.md)，整体配置与数据位置见[功能与数据布局](docs/global-workflow-and-data-layout.md)。
 
 ## 📖 项目简介
 
@@ -35,7 +35,7 @@
 
 - **标题格式规整**：支持将全大写或杂乱标题一键转换为规范的句首字母大写（Sentence case）或标题大写（Title Case），内置智能词典自动保护化学式（如 $\text{CO}_2$、$\text{H}_2\text{O}$）、基因命名、mRNA 及专有名词。
 - **作者与创作者修复**：智能识别姓名前后颠倒、拼音转换与声调标注，剔除无效作者并修复作者角色。
-- **DOI 标准化与 ShortDOI**：自动剔除 `https://doi.org/` 等多余 URL 前缀，验证 DOI 有效性，并支持通过 Crossref API 自动获取并替换为简洁的 ShortDOI。
+- **DOI 标准化与 ShortDOI**：自动剔除多余 URL 前缀，验证 DOI 格式，并将 ShortDOI 解析为完整 DOI，同时在 Extra 中保留短标识符。
 - **页码范围优化**：规范连接符为标准 en-dash（`-`），智能剔除多余的补零（例如将 `001-008` 或 `101--108` 修正为规范的 `101-108`）。
 - **出版日期标准化**：统一规范为标准的 ISO 8601（`YYYY-MM-DD`）格式。
 - **字段冗余与错用清理**：安全清理 `null`、`undefined` 等脏数据，去除标题多余的末尾英文句点，纠正非法字段错用（如论文条目误标为网页）。
@@ -81,7 +81,7 @@
 
 | 项目                   | 说明                                                                                  |
 | :--------------------- | :------------------------------------------------------------------------------------ |
-| **插件版本**           | `11.0.0`                                                                              |
+| **插件版本**           | `11.1.0`                                                                              |
 | **插件 ID**            | `metaflow@groele`                                                                     |
 | **支持的 Zotero 版本** | `Zotero 10.0 – 11.*`（严格测试覆盖 Windows Zotero 10.0.6 与 Zotero 11 dev Gecko 153） |
 | **操作系统**           | Windows / macOS / Linux                                                               |
@@ -96,7 +96,7 @@
 3. **安装插件**：点击右上角齿轮图标，选择 **Install Add-on From File...（从文件安装插件）**，选中下载的 `.xpi` 文件。
 4. **重启生效**：根据 Zotero 提示完成安装并重启软件。
 
-> 💡 **自动更新**：MetaFlow 包含内置自动更新支持，未来版本将通过 [update.json](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/update.json) 自动接收推送更新。
+> 💡 **自动更新**：MetaFlow 通过 [update.json](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json) 接收插件更新。
 
 ---
 
@@ -110,7 +110,7 @@
    - 如需使用 EasyScholar 获取中科院分区或 CCF 等级，在设置中填入您的 EasyScholar Secret Key。
    - 勾选您关注的指标（如中科院大类分区、JCR、Nature Index 等），并可选择是否在条目列表中显示对应列。
 4. **执行整理**：
-   - 选中一条或多条文献，点击鼠标右键，在右键上下文菜单中选择 **Zotero MetaFlow** → 执行对应的整理操作或批量运行。
+   - 选中一条或多条文献，右键执行 **Zotero MetaFlow：检查并修复元数据** 或 **Zotero MetaFlow：更新元数据**。在核心功能设置中选择可选步骤；低频专项工具保留在设置页。
 
 ---
 

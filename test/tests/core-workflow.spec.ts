@@ -27,9 +27,10 @@ describe("core command execution and optional costs", function () {
     created.push(item.id);
     return item;
   };
-  const dialog = async (selector = "#metaref-metadata-review") => {
+  const dialog = async (selector: string) => {
     for (let attempt = 0; attempt < 200; attempt++) {
-      const win = [...plugin().data.dialogs.values()].find((win: any) => !win.closed && win.document.querySelector(selector)) as Window | undefined;
+      const main = Zotero.getMainWindow();
+      const win = main.document.querySelector(selector) ? main : undefined;
       if (win)
         return win;
       await Zotero.Promise.delay(25);
@@ -59,7 +60,9 @@ describe("core command execution and optional costs", function () {
         return [structuredClone(response)];
       } };
     };
-    (Zotero.HTTP as any).request = async (_method: string, url: string) => {
+    (Zotero.HTTP as any).request = async (_method: string, url: string, ...args: unknown[]) => {
+      if (url.startsWith("http://localhost:"))
+        return (request as any)(_method, url, ...args);
       requests++;
       assert.include(url, "easyscholar.cc", "fallback searches do not silently contact another service");
       return { status: 200, responseText: JSON.stringify({ code: 200, data: { officialRank: { all: { sci: "Q1" } } } }) };
@@ -71,6 +74,7 @@ describe("core command execution and optional costs", function () {
     (Zotero.Translate as any).Search = Search;
     Zotero.HTTP.request = request;
     Zotero.alert = alert;
+    (Zotero.getMainWindow().document.getElementById("metaref-review-cancel") as HTMLButtonElement | null)?.click();
     for (const win of plugin().data.dialogs.values())
       win.close();
     await plugin().runner.add({ items: [], rules: [], silent: true });
@@ -95,15 +99,98 @@ describe("core command execution and optional costs", function () {
     assert.equal(translations + requests, 0);
   });
 
+  it("keeps one complete result and runtime record without double-counting saves", async function () {
+    const item = await create();
+    const runtime = plugin().api.runtimeData;
+    await runtime.flush();
+    const before = new Set((await runtime.read()).runs.map((run: any) => run.id));
+    const result = await plugin().hooks.onLintInBatch("tool-update-metadata", [item, item], { review: true });
+    assert.equal(result.total, 1);
+    assert.equal(result.saved, 1, "metadata and formatting save the same reference only once in the summary");
+    assert.isTrue(result.changes.some((change: any) => change.field === "date"));
+    assert.isTrue(result.changes.some((change: any) => change.field === "title"));
+    assert.strictEqual(plugin().runner.lastResult, result);
+    assert.strictEqual(plugin().data.lastCoreWorkflow.lastResult, result);
+    await runtime.flush();
+    const added = (await runtime.read()).runs.filter((run: any) => !before.has(run.id));
+    assert.lengthOf(added, 1, "stage saves do not create redundant history entries");
+    assert.equal(added[0].kind, "core-update");
+    const doc = Zotero.getMainWindow().document;
+    assert.lengthOf(doc.querySelectorAll("#metaref-core-task"), 1);
+    assert.isFalse(doc.querySelector<HTMLButtonElement>("#metaref-core-task-action")!.disabled);
+    const win = Zotero.getMainWindow() as unknown as Window & typeof globalThis;
+    const rect = doc.getElementById("metaref-core-task")!.getBoundingClientRect();
+    const canvas = doc.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
+    canvas.width = Math.ceil(rect.width);
+    canvas.height = Math.ceil(rect.height);
+    (canvas.getContext("2d") as any).drawWindow(win, rect.left, rect.top, canvas.width, canvas.height, "rgb(245,245,245)");
+    await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-core-workflow-result.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
+    doc.querySelector<HTMLButtonElement>("#metaref-core-task-dismiss")!.click();
+    assert.isNull(doc.getElementById("metaref-core-task"));
+  });
+
+  it("shows inline progress and stops later stages without a metadata confirmation window", async function () {
+    const item = await create();
+    const doc = Zotero.getMainWindow().document;
+    (Zotero.Translate as any).Search = function () {
+      return { setIdentifier() {}, getTranslators: async () => ["controlled"], setTranslator() {}, translate: async () => {
+        assert.equal(plugin().data.activeCoreWorkflow.stage, "metadata");
+        const stop = doc.querySelector<HTMLButtonElement>("#metaref-core-task-action")!;
+        assert.isNotNull(stop);
+        assert.equal(doc.querySelector("#metaref-core-task-status")!.getAttribute("aria-live"), "polite");
+        assert.isNull(doc.getElementById("metaref-metadata-review"));
+        stop.click();
+        assert.isTrue(stop.disabled);
+        return [structuredClone(response)];
+      } };
+    };
+    const result = await plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
+    assert.isTrue(result.cancelled);
+    assert.isUndefined(plugin().data.activeCoreWorkflow);
+    assert.equal(item.getField("title"), "Core workflow fixture.");
+    assert.deepEqual(plugin().data.lastCoreWorkflow.stages.map((entry: any) => entry.stage), ["metadata"]);
+  });
+
+  it("does not return a stale result when all update stages are disabled", async function () {
+    const item = await create();
+    await plugin().hooks.onLintInBatch("standard", [item], { core: true });
+    pref("workflow.updateBibliographic", false);
+    pref("workflow.formatAfterUpdate", false);
+    const result = await plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
+    assert.equal(result.processed, 0);
+    assert.isEmpty(result.records);
+    assert.isEmpty(plugin().data.lastCoreWorkflow.stages);
+    assert.isTrue(Zotero.getMainWindow().document.querySelector<HTMLButtonElement>("#metaref-core-task-action")!.disabled);
+  });
+
+  it("queues different core commands as complete workflows without interleaving their stages", async function () {
+    const item = await create();
+    const runner = plugin().runner;
+    const original = runner.add;
+    const order: string[] = [];
+    runner.add = function (options: any) {
+      order.push(plugin().data.activeCoreWorkflow.command);
+      return original.call(this, options);
+    };
+    try {
+      const update = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
+      const check = plugin().hooks.onLintInBatch("standard", [item], { core: true });
+      const results = await Promise.all([update, check]);
+      assert.deepEqual(order, ["update", "update", "check"]);
+      assert.isTrue(results[0].changes.some((change: any) => change.field === "date"));
+      assert.isFalse(results[1].changes.some((change: any) => change.field === "date"));
+      assert.isUndefined(plugin().data.activeCoreWorkflow);
+    }
+    finally { runner.add = original; }
+  });
+
   it("combines full metadata and author verification once and coalesces repeated clicks", async function () {
     const item = await create();
     pref("workflow.updateMetadata", true);
     pref("workflow.remoteAuthorsOnCheck", true);
     const first = plugin().hooks.onLintInBatch("standard", [item], { core: true });
     const second = plugin().hooks.onLintInBatch("standard", [item], { core: true });
-    const win = await dialog();
-    assert.equal(item.getField("title"), "Core workflow fixture.", "formatting waits until review finishes");
-    (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
+    await Promise.all([first, second]);
     await Promise.all([first, second]);
     assert.equal(translations, 1);
     assert.equal(item.getField("title"), "Core workflow fixture");
@@ -114,13 +201,16 @@ describe("core command execution and optional costs", function () {
     assert.isTrue(workflow.stages[0].result.changes.some((change: any) => change.field === "date"), "later formatting retains earlier metadata evidence");
   });
 
-  it("stops formatting and journal stages when the core metadata review is cancelled", async function () {
+  it("stops following stages when automatic metadata lookup is cancelled", async function () {
     const item = await create();
     pref("metadata.updateJournalInfo", true);
-    const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-    const win = await dialog();
-    (win.document.getElementById("metaref-review-cancel") as HTMLButtonElement).click();
-    const result = await pending;
+    (Zotero.Translate as any).Search = function () {
+      return { setIdentifier() {}, getTranslators: async () => ["controlled"], setTranslator() {}, translate: async () => {
+        plugin().runner.cancel();
+        return [structuredClone(response)];
+      } };
+    };
+    const result = await plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
     assert.isTrue(result.cancelled);
     assert.equal(item.getField("title"), "Core workflow fixture.");
     assert.equal(requests, 0);
@@ -138,9 +228,6 @@ describe("core command execution and optional costs", function () {
     };
     try {
       const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-      const win = await dialog();
-      assert.equal(item.getField("title"), "Core workflow fixture.");
-      (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
       await pending;
       assert.equal(item.getField("title"), "Core workflow fixture");
       assert.equal(item.getField("date"), "2026");
@@ -174,9 +261,6 @@ describe("core command execution and optional costs", function () {
     assert.equal(item.getField("title"), "Core workflow fixture.");
     pref("workflow.updateBibliographic", true);
     const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-    const win = await dialog();
-    assert.lengthOf(win.document.querySelectorAll(".metaref-review-field"), 0, "bibliographic values are already current");
-    (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
     const result = await pending;
     assert.isTrue(result.records.some((record: any) => record.code === "journal-summary"), "unchanged bibliography does not suppress the metrics stage");
     assert.equal(requests, 1, "the second metrics lookup reuses its cached response");
@@ -191,35 +275,25 @@ describe("core command execution and optional costs", function () {
     translations = requests = 0;
     pref("workflow.formatAfterUpdate", false);
     const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-    const win = await dialog();
-    assert.lengthOf(win.document.querySelectorAll(".metaref-review-proposal"), 0);
-    (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
     await pending;
     assert.equal(translations + requests, 0);
     assert.equal(item.getField("DOI"), "");
   });
 
-  it("enables PDF candidates only when selected and still asks before adopting their DOI", async function () {
+  it("automatically fills from a PDF only when enabled and independently corroborated", async function () {
     const item = await create("Core workflow fixture.", "");
+    item.setField("date", "2026");
+    await item.saveTx();
     const fixture = Zotero.Prefs.get("metaref.test.fixturePath", true) as string;
     const attachment = await Zotero.Attachments.importFromFile({ file: PathUtils.join(fixture, "pages-three.pdf"), parentItemID: item.id });
     await IOUtils.writeUTF8(Zotero.Fulltext.getItemCacheFile(attachment).path, "DOI: 10.1234/core-workflow");
     pref("workflow.scanPDF", true);
     pref("workflow.formatAfterUpdate", false);
     translations = 0;
-    const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-    const identifier = await dialog("#metaref-review-identifier");
-    assert.equal(item.getField("DOI"), "");
-    const select = identifier.document.getElementById("metaref-review-identifier") as HTMLSelectElement;
-    select.value = "0";
-    select.dispatchEvent(new (identifier as any).Event("change", { bubbles: true }));
-    (identifier.document.getElementById("metaref-review-inspect") as HTMLButtonElement).click();
-    const review = await dialog();
-    assert.equal(item.getField("DOI"), "");
-    (review.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
-    await pending;
+    await plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
     assert.equal(translations, 1);
     assert.equal(item.getField("DOI"), "10.1234/core-workflow");
+    assert.isNull(Zotero.getMainWindow().document.getElementById("metaref-review-panel"));
   });
 
   it("only snapshots matching duplicate candidates, retaining full freshness checks", async function () {
@@ -241,14 +315,13 @@ describe("core command execution and optional costs", function () {
 
   it("allows a title lookup only after its fallback option is enabled", async function () {
     const item = await create("Core workflow fixture.", "");
+    item.setField("date", "2026");
+    await item.saveTx();
     pref("workflow.searchTitle", true);
     pref("workflow.formatAfterUpdate", false);
     const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-    const win = await dialog();
-    assert.equal(translations, 1);
-    assert.lengthOf(win.document.querySelectorAll(".metaref-review-proposal"), 1);
-    (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
     await pending;
+    assert.equal(translations, 1);
     assert.equal(item.getField("DOI"), "10.1234/core-workflow");
   });
 
@@ -263,79 +336,77 @@ describe("core command execution and optional costs", function () {
     for (const enabled of [false, true]) {
       pref("workflow.updateVersions", enabled);
       const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-      const win = await dialog();
-      assert.equal(translations, enabled ? 1 : 0);
-      assert.lengthOf(win.document.querySelectorAll("option[value='related']"), enabled ? 1 : 0);
-      (win.document.getElementById("metaref-review-cancel") as HTMLButtonElement).click();
       await pending;
+      assert.equal(translations, enabled ? 1 : 0);
     }
     assert.equal(item.itemType, "preprint");
+    for (const key of item.relatedItems) {
+      const published = Zotero.Items.getByLibraryAndKey(item.libraryID, key);
+      if (published)
+        created.push(published.id);
+    }
   });
 
   const prepareVersion = async (format = false) => {
     const item = new Zotero.Item("preprint");
     item.setField("title", "Core workflow fixture.");
     item.setField("url", "https://arxiv.org/abs/2610.65432v1");
-    item.setCreators([{ creatorType: "author", firstName: "Local", lastName: "Author" }]);
+    item.setCreators([{ creatorType: "author", firstName: "Local", lastName: "Doe" }]);
     await item.saveTx();
     created.push(item.id);
     pref("workflow.updateVersions", true);
     pref("workflow.formatAfterUpdate", format);
     pref("metadata.repairCreators", false);
     (Zotero.HTTP as any).request = async () => ({ status: 200, response: "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:arxiv=\"http://arxiv.org/schemas/atom\"><entry><id>https://arxiv.org/abs/2610.65432v1</id><title>Core workflow fixture.</title><published>2026-10-01</published><arxiv:doi>10.1234/core-workflow</arxiv:doi></entry></feed>" });
-    const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
-    const win = await dialog();
-    const action = win.document.querySelector<HTMLSelectElement>(".metaref-review-action")!;
-    action.value = "related";
-    action.dispatchEvent(new (win as any).Event("change", { bubbles: true }));
-    const acknowledge = win.document.querySelector<HTMLInputElement>(".metaref-review-acknowledge");
-    if (acknowledge)
-      acknowledge.click();
-    return { item, pending, win };
+    return { item, run: () => plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true }) };
   };
 
-  it("honors the author switch when creating a related publication and records the saved relationship", async function () {
-    const { item, pending, win } = await prepareVersion();
-    assert.isNull(win.document.querySelector(".metaref-review-field[value='creators']"));
-    (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
-    const result = await pending;
+  it("automatically links a publication while respecting the disabled author switch", async function () {
+    const { item, run } = await prepareVersion();
+    const result = await run();
     assert.equal(result.failed, 0);
     assert.equal(result.saved, 1);
     assert.equal(result.changed, 1);
     assert.equal(item.itemType, "preprint");
     assert.lengthOf(item.relatedItems, 1);
     const published = Zotero.Items.getByLibraryAndKey(item.libraryID, item.relatedItems[0])!;
+    if (!published)
+      throw new Error("The fixture publication was not created");
     created.push(published.id);
-    assert.equal(published.getCreators()[0].lastName, "Author");
+    assert.equal(published.getCreators()[0].firstName, "Local");
     assert.isTrue(result.records.some((record: any) => record.code === "version-related"));
     assert.isTrue(result.changes.some((change: any) => change.field === "relations" && change.saved));
-    assert.strictEqual(plugin().data.lastCoreWorkflow.stages[0].result, result);
+    assert.isNull(Zotero.getMainWindow().document.getElementById("metaref-review-panel"));
   });
 
-  it("reports a rejected related-version write and preserves edits made while the review was open", async function () {
-    const { item, pending, win } = await prepareVersion();
-    item.setField("extra", "An edit made in another window");
-    await item.saveTx();
-    (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
-    const result = await pending;
-    assert.equal(result.failed, 1);
-    assert.equal(result.passed, 0);
-    assert.equal(result.saved, 0);
-    assert.isEmpty(item.relatedItems);
-    assert.equal(item.getField("extra"), "An edit made in another window");
-    assert.isTrue(result.records.some((record: any) => record.code === "version-related-failed" && record.level === "error"));
-  });
-
-  it("propagates cancellation during a related-publication lookup and stops following formatting", async function () {
-    const { item, pending, win } = await prepareVersion(true);
+  it("rejects a related-version response after an intervening manual edit", async function () {
+    const { item, run } = await prepareVersion();
     const original = Zotero.Search.prototype.search;
-    Zotero.Search.prototype.search = async function (...args: Parameters<typeof original>) {
+    Zotero.Search.prototype.search = (async function (this: Zotero.Search, ...args: Parameters<typeof original>) {
+      item.setField("extra", "An edit made during lookup");
+      await item.saveTx();
+      return original.apply(this, args);
+    }) as typeof original;
+    try {
+      const result = await run();
+      assert.equal(result.failed, 1);
+      assert.equal(result.saved, 0);
+      assert.isEmpty(item.relatedItems);
+      assert.equal(item.getField("extra"), "An edit made during lookup");
+      assert.isTrue(result.records.some((record: any) => record.code === "version-related-failed"));
+    }
+    finally { Zotero.Search.prototype.search = original; }
+  });
+
+  it("propagates cancellation during related-publication lookup before formatting", async function () {
+    const { item, run } = await prepareVersion(true);
+    const original = Zotero.Search.prototype.search;
+    Zotero.Search.prototype.search = (async function (this: Zotero.Search, ...args: Parameters<typeof original>) {
       plugin().runner.cancel();
       return original.apply(this, args);
-    };
+    }) as typeof original;
     try {
-      (win.document.getElementById("metaref-review-apply") as HTMLButtonElement).click();
-      const result = await pending;
+      const result = await run();
       assert.isTrue(result.cancelled);
       assert.isEmpty(item.relatedItems);
       assert.equal(item.getField("title"), "Core workflow fixture.");
