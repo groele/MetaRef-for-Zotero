@@ -13,7 +13,7 @@ import { recordRuntimeResult } from "../utils/runtime-data-storage";
 import { ruleSupportsItems } from "../utils/workflow-policy";
 import { isFieldValidForItemType } from "../utils/zotero";
 import { updateBatchFeedback } from "./batch-feedback";
-import { createReporter, ProgressUI } from "./reporter";
+import { ProgressUI } from "./reporter";
 import { Rules } from "./rules";
 
 const logger = createLogger("Runner");
@@ -612,8 +612,6 @@ export class LintRunner {
       try {
         this.ui.showFinished(this.lastResult.passed, this.lastResult.failed, duration, this.cancelled, this.lastResult.skipped, this.preparationFailed, this.lastResult);
         updateBatchFeedback(this.lastResult);
-        if (!silent && getPref("lint.autoReport" as any, false) && (this.lastResult.records.length || this.lastResult.changes.length))
-          createReporter(this.lastResult.records, this.lastResult.changes).catch(error => logger.error("Failed to display batch report:", error));
       }
       catch (error) {
         logger.error("Failed to display batch results:", error);

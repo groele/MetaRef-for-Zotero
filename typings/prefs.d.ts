@@ -261,7 +261,6 @@ declare namespace _ZoteroTypes {
       "integration.greenfrogMigrated": boolean;
       "workflow.updateMetadata": boolean;
       "workflow.updateJournalRankings": boolean;
-      "lint.autoReport": boolean;
       "insights.esiSourcePriority": string;
       "insights.natureSourcePriority": string;
       "insights.natureDatasetUUID": string;

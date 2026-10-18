@@ -334,9 +334,7 @@ metadata-repair-creators-description = 控制书目信息自动填充是否包�
 
 menu-placement-none = 无（隐藏）
 batch-feedback-heading = 运行反馈与报告
-batch-feedback-auto-report =
-    .label = 运行后自动打开详细报告
-batch-feedback-description = 默认不弹出详细报告。检查结果、警告及字段变更保留在本次会话中，需要时可主动查看；上方进度通知由其独立开关控制。
+batch-feedback-description = 完成后只显示短暂状态提示，不自动打开详细报告。运行摘要、字段名和原因码写入本地记录；题名、字段原文和错误文本不会持久化。需要查看本次会话的完整报告时，可手动打开。
 batch-feedback-view-report =
     .label = 查看上次运行报告
 batch-feedback-empty = 当前会话尚无运行结果。
@@ -494,7 +492,7 @@ workflow-search-title = 缺少标识符时按标题联网检索（较慢，仍�
 workflow-legacy-heading = 自动补全与旧版高级规则兼容选项
 workflow-legacy-description = 此 DOI 长型规则开关保留给旧版直接调用；本地检查不联网解析 ShortDOI。两个核心命令的联网核验会按实际标识符解析，不由此兼容开关控制。
 
-core-feedback-completed = 本次组合流程已结束，已保留 { $stages } 个阶段的修改与提示；点击查看完整报告。
+core-feedback-completed = 本次组合流程已结束，已保留 { $stages } 个阶段的修改与提示；完整报告可在设置页手动查看。
 core-feedback-cancelled = 本次组合流程已停止，已保留 { $stages } 个阶段的结果；前序保存未自动回滚。
 
 review-panel-unavailable = 无法打开主界面审阅面板，请先打开 Zotero 主窗口。
@@ -513,7 +511,7 @@ runtime-data-open = 打开本地运行记录
 
 data-settings-heading = 数据、缓存与运行反馈
 data-settings-description = 文献与附件保存在 Zotero 文献库；插件设置由 Zotero 管理；可复用的联网响应和运行摘要独立保存在配置目录。清理接口缓存不会删除文献、设置、已保存评级或运行记录。
-runtime-data-policy = 运行摘要保留 { $days } 天，最多 { $count } 次、{ $size } MiB；不记录题名、字段原文和密钥。每个核心命令只记一次，详细字段变更保留在当前会话的报告中。
+runtime-data-policy = 本地运行记录保留 { $days } 天，最多 { $count } 次、{ $size } MiB；保存摘要、字段名、原因码及最多 50 条目的本地标识，不保存题名、字段原文或错误文本。超出上限的报告会标记为已截断。
 core-feedback-errors = 本次组合流程遇到错误，已保留前序保存和各阶段结果；请查看详情。
 core-feedback-empty = 本次命令未执行任何阶段，请在核心功能设置中启用所需步骤。
 core-task-running = { $command } · { $index }/{ $total }：{ $stage }
@@ -527,9 +525,6 @@ core-task-journal = 期刊信息
 core-task-duplicates = 重复文献处理
 core-task-preparing = 准备任务
 core-task-stop = 停止后续执行
-core-task-details = 查看结果
-core-task-dismiss = 收起
-core-task-result = { $outcome } · 已保存 { $saved }/{ $total }
 core-task-finished = 已完成
 core-task-attention = 有待处理问题
 core-task-stopped = 已停止

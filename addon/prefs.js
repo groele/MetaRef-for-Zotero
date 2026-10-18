@@ -285,8 +285,6 @@ pref("integration.greenfrogMigrated", false);
 pref("workflow.updateMetadata", false);
 pref("workflow.updateJournalRankings", false);
 
-pref("lint.autoReport", false);
-
 pref("insights.esiSourcePriority", "local-only");
 pref("insights.natureSourcePriority", "local-only");
 pref("insights.natureDatasetUUID", "");

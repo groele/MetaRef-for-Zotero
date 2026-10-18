@@ -9,9 +9,8 @@ import { getPref } from "../utils/prefs";
 import { recordRuntimeResult } from "../utils/runtime-data-storage";
 import { REMOTE_STANDARD_RULES } from "../utils/workflow-policy";
 import { combineWorkflowResults, CoreWorkflowQueue } from "../utils/workflow-result";
-import { updateBatchFeedback } from "./batch-feedback";
+import { showCoreCompletionToast, updateBatchFeedback } from "./batch-feedback";
 import { refreshJournalPane, setJournalUpdateResult } from "./journal-pane";
-import { createReporter } from "./reporter";
 import { runReviewCommand } from "./review";
 import { Rules } from "./rules";
 import { ToolUpdateEasyScholar } from "./rules/tool-update-easyscholar";
@@ -167,8 +166,7 @@ async function executeWorkflow(command: CoreCommand, items: Zotero.Item[]) {
     addon.runner.lastResult = result;
     addon.data.lastCoreWorkflow = { lastResult: result, stages };
     updateBatchFeedback(result);
-    if (getPref("lint.autoReport" as any, false) && (result.records.length || result.changes.length))
-      void createReporter(result.records, result.changes).catch(error => Zotero.debug(error));
+    showCoreCompletionToast(result);
   }
   return result;
 }
