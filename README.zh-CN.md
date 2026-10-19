@@ -79,6 +79,46 @@
 
 ---
 
+## 🔗 多插件能力整合与科研工作流
+
+MetaFlow 将多个 Zotero 开源插件所启发的功能整合到**统一的命令、设置和核对流程**中。这些功能经过 MetaFlow 自身的适配和实现，并不代表完整复刻各上游插件的全部功能。
+
+| 整合能力 | MetaFlow 目前提供的功能 | 相关开源项目 |
+| --- | --- | --- |
+| **重复文献核对与合并** | 重复候选检测、逐条核对、主条目选择、批量合并、重复数量统计、误报排除及非重复记录导入导出 | [Zoplicate](https://github.com/ChenglongMa/zoplicate) |
+| **元数据身份核验** | DOI、ISBN、PMID/PMCID、arXiv 标识符校验；可选标题检索；来源对比与字段选择性采纳 | [ZotMeta](https://github.com/RoadToDream/ZotMeta) |
+| **DOI 与 ShortDOI 管理** | DOI 规范化、ShortDOI 解析、标识符验证，以及按需生成 ShortDOI | [DOI Manager](https://github.com/bwiernik/zotero-shortdoi) |
+| **预印本与正式版管理** | 核验 arXiv 明确关联的正式发表 DOI，选择原位更新或创建并关联正式版记录 | [arXiv Workflow](https://github.com/AllanChain/zotero-arxiv-workflow) |
+| **期刊缩写整理** | 期刊全称/缩写映射、离线 ISO 4 推断、期刊与会议名称规范化 | [Zotero Journal Abbreviation](https://github.com/zoushucai/zotero-journalabbr) |
+| **期刊评价与学术指标** | EasyScholar 指标、分区查询、文献列表自定义列、Extra 选择性输出及期刊侧栏 | [Update IFs / EasyScholar](https://github.com/redleafnew/zotero-updateifsE) |
+
+### 重复文献核对与安全合并
+
+- **导入处理策略：**可选择保留新导入条目、保留已有条目、全部保留或始终询问。默认全部保留；自动合并另受标识符与版本一致性限制。
+- **主条目选择：**支持最早添加、最新添加、最近修改、信息最完整等策略。主条目决定最终保留哪个 Zotero 条目身份。**V11.2.1 的现有文档未将“按标签优先级选择主条目”列为已实现选项。**
+- **人工与批量核对：**比较候选条目的元数据，选择保留项和需要采纳的字段；将重复条目组织为互不重叠的组，按受控并发处理（1–8 组，默认 3）。
+- **误报排除：**可将指定条目标记为非重复，并导入、导出此类判定记录，供人工迁移。
+- **原生合并：**附件、笔记、标签和 Word 引用重定向依赖 Zotero 原生合并机制，并非简单删除其中一个条目后重新创建。
+- **安全边界：**相同 DOI 不意味着任何版本都允许自动合并；出现标识符冲突或明确版本差异时，需要人工核对。暂停或停止操作会允许已经开始的合并完成提交。
+
+### 标识符核验、元数据补全与版本管理
+
+- **优先核对身份：**检查 DOI、ISBN、PMID/PMCID、arXiv 等标识符，若存在冲突，不直接采纳来源结果。
+- **逐字段选择：**先展示候选字段、来源及差异，默认优先补齐空字段；覆盖已有信息需要明确选择。
+- **可选补充检索：**缺乏标识符时，可按设置读取有限的已有 PDF 文本缓存或执行标题检索，候选仍需通过身份判定。
+- **arXiv 正式版关联：**仅依据明确可核验的关联标识处理正式版，可选择更新原条目或创建关联条目；不自动替换 PDF。
+
+### 两个核心命令
+
+1. **检查并修复元数据：**默认运行已启用的本地完整性检查及格式整理规则，可分别开启身份核验、期刊指标和交互式去重。
+2. **更新元数据：**联网核验书目信息并展示逐字段采纳结果，可按设置叠加本地规则、期刊指标及重复核对。
+
+作者格式工具、标题替换、ShortDOI 生成、Extra 清理等需要参数或明确确认的功能仍保留在设置页对应工具区域，不会在每次检查时被隐式执行。
+
+**延伸阅读：**[整合工作流](docs/integrated-workflows-2026-10-17.md) · [核心工作流审计](docs/core-workflow-audit-2026-10-18.md) · [期刊指标整合](docs/greenfrog-integration-2026-10-16.md)。
+
+---
+
 ## 🖥️ 运行环境与兼容性
 
 | 项目                   | 说明                                                                                  |
@@ -152,6 +192,8 @@ Zotero MetaFlow 的诞生与演化深度依托开源社区的智慧与成果。�
   特别感谢 zoushucai 老师的开源项目 `zotero-journalabbr`！该项目在 Zotero 期刊缩写规范化、期刊名称词表映射与学术数据整理方面的探索与设计，为本项目的期刊缩写模块和规则实现提供了宝贵的借鉴与启发。
 - **[redleafnew/zotero-updateifsE](https://github.com/redleafnew/zotero-updateifsE)**：
   特别感谢 redleafnew 老师开发的 `zotero-updateifsE`！该项目在利用 EasyScholar API 获取中科院分区、影响因子、期刊评级与学术指标回写 Zotero Extra 字段等方面的开创性实践，为本项目 EasyScholar 61 项指标对接、权限主控及指标展示体系的设计提供了极其重要的参考与灵感。
+
+- **[ChenglongMa/zoplicate](https://github.com/ChenglongMa/zoplicate)**、**[RoadToDream/ZotMeta](https://github.com/RoadToDream/ZotMeta)**、**[bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi)** 和 **[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)**：为重复文献管理、身份核验、DOI 及预印本工作流提供重要参考。MetaFlow 在自己的架构中整合相关能力，不代表与上游功能完全等价或存在官方隶属关系。
 
 ### 插件工程框架与工具链
 
