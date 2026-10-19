@@ -1,3 +1,5 @@
+> 历史审查记录：本页中的版本、分支和工作目录是当时快照；当前维护入口以[主线说明](repository-mainline.md)为准。
+
 # 综合审查报告逐项复核与修复记录
 
 核验日期：2026-10-17。被核验原件为用户提供的《zotero-metaflow-comprehensive-audit-2026.md》，原件予以保留。

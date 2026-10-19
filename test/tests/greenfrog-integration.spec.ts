@@ -334,7 +334,7 @@ describe("green Frog integration in Zotero", function () {
       Zotero.Prefs.set(pref("easyscholar.writeToExtra"), true, true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (!["www.easyscholar.cc", "phq.njau.edu.cn"].includes(new URL(url).hostname))
-          return request(method, url, options);
+          return request.call(Zotero.HTTP, method, url, options);
         requests++;
         if (url.includes("njau.edu.cn"))
           return new Promise(() => {});

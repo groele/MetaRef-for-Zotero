@@ -60,9 +60,9 @@ describe("core command execution and optional costs", function () {
         return [structuredClone(response)];
       } };
     };
-    (Zotero.HTTP as any).request = async (_method: string, url: string, ...args: unknown[]) => {
+    (Zotero.HTTP as any).request = async (_method: string, url: string, options: any) => {
       if (url.startsWith("http://localhost:"))
-        return (request as any)(_method, url, ...args);
+        return request.call(Zotero.HTTP, _method, url, options);
       requests++;
       assert.include(url, "easyscholar.cc", "fallback searches do not silently contact another service");
       return { status: 200, responseText: JSON.stringify({ code: 200, data: { officialRank: { all: { sci: "Q1" } } } }) };
@@ -158,6 +158,7 @@ describe("core command execution and optional costs", function () {
 
   it("keeps one complete result and runtime record without double-counting saves", async function () {
     const item = await create();
+    const dialogs = plugin().data.dialogs.size;
     const runtime = plugin().api.runtimeData;
     await runtime.flush();
     const before = new Set((await runtime.read()).runs.map((run: any) => run.id));
@@ -173,17 +174,8 @@ describe("core command execution and optional costs", function () {
     assert.lengthOf(added, 1, "stage saves do not create redundant history entries");
     assert.equal(added[0].kind, "core-update");
     const doc = Zotero.getMainWindow().document;
-    assert.lengthOf(doc.querySelectorAll("#metaref-core-task"), 1);
-    assert.isFalse(doc.querySelector<HTMLButtonElement>("#metaref-core-task-action")!.disabled);
-    const win = Zotero.getMainWindow() as unknown as Window & typeof globalThis;
-    const rect = doc.getElementById("metaref-core-task")!.getBoundingClientRect();
-    const canvas = doc.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
-    canvas.width = Math.ceil(rect.width);
-    canvas.height = Math.ceil(rect.height);
-    (canvas.getContext("2d") as any).drawWindow(win, rect.left, rect.top, canvas.width, canvas.height, "rgb(245,245,245)");
-    await IOUtils.write(PathUtils.join(PathUtils.tempDir, "metaref-core-workflow-result.png"), Uint8Array.from(win.atob(canvas.toDataURL("image/png").split(",")[1]), char => char.charCodeAt(0)));
-    doc.querySelector<HTMLButtonElement>("#metaref-core-task-dismiss")!.click();
-    assert.isNull(doc.getElementById("metaref-core-task"));
+    assert.isNull(doc.getElementById("metaref-core-task"), "completed tasks remove their inline controls");
+    assert.equal(plugin().data.dialogs.size, dialogs, "completion does not open a detailed report");
   });
 
   it("shows inline progress and stops later stages without a metadata confirmation window", async function () {
@@ -217,7 +209,8 @@ describe("core command execution and optional costs", function () {
     assert.equal(result.processed, 0);
     assert.isEmpty(result.records);
     assert.isEmpty(plugin().data.lastCoreWorkflow.stages);
-    assert.isTrue(Zotero.getMainWindow().document.querySelector<HTMLButtonElement>("#metaref-core-task-action")!.disabled);
+    assert.strictEqual(plugin().runner.lastResult, result);
+    assert.isNull(Zotero.getMainWindow().document.getElementById("metaref-core-task"));
   });
 
   it("queues different core commands as complete workflows without interleaving their stages", async function () {

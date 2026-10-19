@@ -1,28 +1,32 @@
 # Repository mainline and checkout rules
 
-Last verified: 2026-10-18
+Last verified: 2026-10-19
 
 ## One product release line
 
-`groele/Zotero-MetaFlow` has one release branch: `main` (`origin/main`). At this check it points to `3c744e6` and the stable release is `V11.1.0`. Version tags and merged commits are the historical record; old version branches are not separate maintained product lines.
+`groele/Zotero-MetaFlow` keeps only `main` (`origin/main`) on GitHub after integration and cleanup. Version tags and merged commits retain release history. The source version on `main` is `11.1.1-beta.1`; the latest published stable release and stable update feed remain `V11.1.0`. A source merge is not a new release.
 
-Development for the next candidate happens on a short-lived feature branch and returns to `main` through a pull request. The current candidate is `codex/metaflow-commercial-readiness` at `8331213`, with draft PR [#5](https://github.com/groele/Zotero-MetaFlow/pull/5). It is not the stable line until merged and released. Do not publish its beta XPI or update metadata through the stable feed.
+PR [#5](https://github.com/groele/Zotero-MetaFlow/pull/5) was merged into `main` at `0eb6a68`, and its feature branch was deleted. Do not publish the beta XPI or its update metadata through the stable feed.
 
-An unrelated open draft PR (`copilot/fix-failing-github-actions-job`, PR #2) is a test-only change. It is not a MetaFlow release line. Keep it separate until its owner or reviewer resolves it.
+PR [#2](https://github.com/groele/Zotero-MetaFlow/pull/2) proposed explicit EasyScholar Extra-output preferences in three tests. The author and partial-provider tests already include those fixes on `main`. The journal-pane test now explicitly disables Extra output and verifies that rankings remain in the independent index without modifying the manual note. This preserves the useful test-isolation change while matching the current behavior. The superseded PR was closed and its source branch removed after validation.
+
+Keep development branches temporary: validate their changes, integrate useful work into `main`, then delete them. GitHub automatically deletes merged pull-request branches. At the end of maintenance, verify the complete branch list through the GitHub API rather than relying on the recent-branches dropdown.
 
 ## Authoritative local source
 
-The maintained checkout is `.scaffold/publish/metaflow-10.0.1/`. The directory name is historical; its Git branch and commit, package version, and release metadata determine its actual state. Before any code edit, release, or build:
+The maintained checkout is the repository root. Local `main` tracks `origin/main`. Before any code edit, release, or build:
 
-1. Change directory to this maintained checkout.
+1. Change directory to the repository root.
 2. Check `git status --short --branch`, `git remote -v`, and `git log -1 --oneline --decorate`.
 3. Build and test only from this checkout.
-4. Start feature work from the current `origin/main` or the explicitly selected candidate branch, and use a pull request to return it to `main`.
+4. Fetch the latest `origin/main` before starting work. If a temporary branch is used, integrate and remove it when the work is complete.
 
-The parent checkout at the workspace root is a legacy worktree on local `main` (`748d041`), based on `upstream/main`, not the MetaFlow release branch. It has no merge base with the maintained release history and currently contains 157 modified, deleted, or untracked paths. Preserve those files as local work; do not build, stage, reset, clean, merge, or publish from that checkout. The nested maintained checkout is a separate Git worktree and is the only source of truth for MetaFlow changes.
+The historical root checkout was based on unrelated `upstream/main` history at `748d041`, with uncommitted local work. It was compared with the maintained source before retirement. All 49 legacy rule IDs and all legacy preference keys were retained; five useful HTTP regression tests were recovered. The old files and Git history were archived outside the project, and the maintained source was promoted from the nested publishing worktree to an independent root checkout. See the [comparison record](workspace-consolidation-2026-10-19.md).
+
+`.scaffold/` is ignored generated output only. Do not maintain another source checkout there or rebuild an archived workspace. With a clean working tree, refresh the source using `git fetch --prune origin` and `git pull --ff-only`. Pushes to GitHub `main` must remain fast-forwards from the current remote commit.
 
 ## History and branch cleanup
 
-Keep release tags such as `V11.1.0` and merged commits. They are the historical record, not competing lines. Delete local version branches only after confirming they are merged into `origin/main`; delete a remote branch only after confirming its pull request is merged and the tag or merge commit retains the history. Do not rewrite or join the legacy `upstream/main` history into MetaFlow. Do not remove the open PR #2 branch as part of routine version-branch cleanup.
+Keep release tags such as `V11.1.0` and merged commits. Before deleting a branch, inspect its unique changes and associated PR. For squash merges, compare the resulting tree or patches rather than relying only on ancestry. Integrate useful changes first; close obsolete PRs only after confirming their fixes are already present or superseded. Do not rewrite or join the archived `upstream/main` history into MetaFlow.
 
 The surrounding workspace contains verification artifacts and older audit snapshots. They are evidence, not source trees and not build inputs. Never install or distribute an artifact solely because its filename looks newer; verify its commit, version, environment marker, and recorded hashes.

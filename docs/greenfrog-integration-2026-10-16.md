@@ -1,3 +1,5 @@
+> 历史审查记录：本页中的版本、分支和工作目录是当时快照；当前维护入口以[主线说明](repository-mainline.md)为准。
+
 # 绿青蛙功能整合与验收记录（2026-10-16）
 
 本次在 MetaFlow 10.1.0 的同一套规则、批处理、设置和菜单体系中补齐功能。源码工作目录为 `.scaffold/publish/metaflow-10.0.1`；仓库根目录的旧工作副本未被覆盖。本记录说明本轮实现后的状态；此前 `artifacts/greenfrog-integration-audit-2026-10-16/README.md` 是修复前审计证据，保留原样。

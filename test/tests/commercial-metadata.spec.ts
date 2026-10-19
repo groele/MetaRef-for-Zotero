@@ -30,7 +30,7 @@ describe("commercial metadata evidence and import consistency", function () {
     request = Zotero.HTTP.request;
     Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
       if (new URL(url).hostname === "localhost")
-        return request(method, url, options);
+        return request.call(Zotero.HTTP, method, url, options);
       throw new Error("Unexpected external request in controlled metadata tests");
     }) as any;
     calls = 0;

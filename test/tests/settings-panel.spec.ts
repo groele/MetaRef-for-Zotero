@@ -99,7 +99,7 @@ describe("settings panel layout and validation in Zotero", function () {
         const response = JSON.stringify({ paperId: "settings-audit-paper", title: "Settings audit" });
         return { status: 200, response, responseText: response };
       }
-      return request(method, url, options);
+      return request.call(Zotero.HTTP, method, url, options);
     }) as any;
     try {
       for (const [index, value] of ["  settings-audit-es-key  ", "  settings-audit-semantic-key  "].entries()) {
@@ -436,7 +436,7 @@ describe("settings panel layout and validation in Zotero", function () {
       input.value = "connection-fixture-key";
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (new URL(url).hostname !== "www.easyscholar.cc")
-          return request(method, url, options);
+          return request.call(Zotero.HTTP, method, url, options);
         requests++;
         assert.equal(new URL(url).searchParams.get("publicationName"), "Nature");
         await Zotero.Promise.delay(50);

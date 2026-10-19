@@ -99,7 +99,7 @@ describe("manual author repair in both MetaFlow actions", function () {
     pref("easyscholar.fields.impactFactor", true);
     Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
       if (new URL(url).hostname !== "www.easyscholar.cc")
-        return request(method, url, options);
+        return request.call(Zotero.HTTP, method, url, options);
       requests++;
       return { status: 200, responseText: JSON.stringify({ code: 200, data: { officialRank: { all: { sci: "Q1", sciif: "8.4" } } } }) };
     }) as any;

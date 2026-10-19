@@ -1,3 +1,5 @@
+> 历史审查记录：本页中的版本、分支和工作目录是当时快照；当前维护入口以[主线说明](repository-mainline.md)为准。
+
 # Zotero MetaFlow 功能与可靠性逐项验收
 
 本轮候选版本：10.7.0-beta.4。源码维护目录为 `.scaffold/publish/metaflow-10.0.1`。本报告补充本轮发现、修复和验收证据；既有功能分工见 `core-workflow-audit-2026-10-18.md`，上一轮去重记录继承说明见 `integration-hardening-2026-10-18.md`。

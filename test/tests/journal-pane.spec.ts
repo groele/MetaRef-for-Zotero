@@ -117,7 +117,7 @@ describe("independent journal insights in Zotero", function () {
     const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
     await section._handleRefresh();
     const body = section.querySelector("[data-type='body']") as HTMLElement;
-    const settings = ["easyscholar.secretKey", "easyscholar.clearExtraBeforeUpdate", "easyscholar.updateAbbreviation", "easyscholar.fields.jcr", "easyscholar.fields.impactFactor"];
+    const settings = ["easyscholar.secretKey", "easyscholar.clearExtraBeforeUpdate", "easyscholar.updateAbbreviation", "easyscholar.writeToExtra", "easyscholar.fields.jcr", "easyscholar.fields.impactFactor"];
     const previous = new Map(settings.map(key => [key, Zotero.Prefs.get(`${prefix}.${key}`, true)]));
     const request = Zotero.HTTP.request;
     let requests = 0;
@@ -126,11 +126,12 @@ describe("independent journal insights in Zotero", function () {
       Zotero.Prefs.set(`${prefix}.easyscholar.secretKey`, "pane-isolated-key", true);
       Zotero.Prefs.set(`${prefix}.easyscholar.clearExtraBeforeUpdate`, false, true);
       Zotero.Prefs.set(`${prefix}.easyscholar.updateAbbreviation`, false, true);
+      Zotero.Prefs.set(`${prefix}.easyscholar.writeToExtra`, false, true);
       Zotero.Prefs.set(`${prefix}.easyscholar.fields.jcr`, true, true);
       Zotero.Prefs.set(`${prefix}.easyscholar.fields.impactFactor`, true, true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (new URL(url).hostname !== "www.easyscholar.cc")
-          return request(method, url, options);
+          return request.call(Zotero.HTTP, method, url, options);
         requests++;
         if (fail)
           return { status: 200, responseText: JSON.stringify({ code: 403, msg: "Controlled failure" }) };
@@ -151,7 +152,7 @@ describe("independent journal insights in Zotero", function () {
       assert.equal(plugin().data.dialogs.size, dialogCount, "journal updates do not open a report dialog");
       assert.equal(body.querySelector("[data-journal-ranking='jcr']")?.textContent, "Q1");
       assert.equal(body.querySelector("[data-journal-ranking='impactFactor']")?.textContent, "8.4");
-      assert.include(item.getField("extra"), "Manual note");
+      assert.equal(item.getField("extra"), "Manual note", "rankings are stored in the index when Extra output is disabled");
       assert.equal(requests, 1);
       assert.isNotEmpty(body.querySelector("[data-journal-update-status]")?.textContent || "");
       section.scrollIntoView({ block: "start" });
@@ -267,7 +268,7 @@ describe("independent journal insights in Zotero", function () {
       Zotero.Prefs.set(`${prefix}.easyscholar.clearExtraBeforeUpdate`, false, true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (new URL(url).hostname !== "www.easyscholar.cc")
-          return request(method, url, options);
+          return request.call(Zotero.HTTP, method, url, options);
         requests++;
         return { responseText: JSON.stringify({ code: 200, data: { officialRank: { all: mode === "empty" ? {} : { sciif: "4.5" } } } }) };
       }) as any;
@@ -314,7 +315,7 @@ describe("independent journal insights in Zotero", function () {
       Zotero.Prefs.set(`${prefix}.easyscholar.secretKey`, "automatic-status-fixture-key", true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (new URL(url).hostname !== "www.easyscholar.cc")
-          return request(method, url, options);
+          return request.call(Zotero.HTTP, method, url, options);
         return { responseText: JSON.stringify({ code: 403, msg: "Automatic fixture failure" }) };
       }) as any;
       await plugin().hooks.onNotify("add", "item", [item.id], {});
@@ -340,7 +341,7 @@ describe("independent journal insights in Zotero", function () {
       Zotero.Prefs.set(`${prefix}.easyscholar.secretKey`, "nature-2026-isolated-fixture", true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (new URL(url).hostname !== "www.easyscholar.cc")
-          return request(method, url, options);
+          return request.call(Zotero.HTTP, method, url, options);
         requests++;
         return { responseText: JSON.stringify({ code: 200, data: { customRank: { rankInfo: [{ uuid: "1615199999904223232", abbName: "自然指数", oneRankText: " " }], rank: ["1615199999904223232&&&1"] }, officialRank: { all: {} } } }) };
       }) as any;
@@ -379,7 +380,7 @@ describe("independent journal insights in Zotero", function () {
       Zotero.Prefs.set(`${prefix}.easyscholar.secretKey`, "priority-isolated-key", true);
       Zotero.HTTP.request = (async (method: string, url: string, options: any) => {
         if (new URL(url).hostname !== "www.easyscholar.cc")
-          return request(method, url, options);
+          return request.call(Zotero.HTTP, method, url, options);
         requests++;
         return { responseText: JSON.stringify({ code: 200, data: { officialRank: { all: { esi: "CHEMISTRY" } }, customRank: { rankInfo: [{ uuid: "nature-priority-fixture", name: "145 种自然指数统计期刊", oneRankText: "是", twoRankText: "否" }], rank: ["nature-priority-fixture0002"] } } }) };
       }) as any;
