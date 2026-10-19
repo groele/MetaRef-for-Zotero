@@ -28,7 +28,7 @@ function setupInputLabels(pane: Element) {
 
 function setupConcurrency(pane: Element) {
   const listen = preferenceListeners(pane);
-  const input = pane.querySelector<HTMLInputElement>("input[type='number']")!;
+  const input = pane.querySelector<HTMLInputElement>(`input[preference='${addon.data.config.prefsPrefix}.lint.numConcurrent']`)!;
   const doc = pane.ownerDocument!;
   const status = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
   status.id = "metaref-concurrency-status";

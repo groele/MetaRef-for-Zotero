@@ -388,14 +388,16 @@ function setupDependencies(pane: Element) {
     parents: parents.filter(parent => parent.control !== control && key(control).startsWith(parent.prefix)),
   }));
   const auto = controls.find(control => key(control) === "lint.onAdded");
-  const group = controls.find(control => key(control) === "lint.onGroup");
+  const importSteps = controls.filter(control => ["lint.onGroup", "metadata.autoUpdateOnAdded", "easyscholar.autoUpdateOnAdded"].includes(key(control)));
   const update = () => {
     for (const { control, parents } of dependencies) {
       if (parents.length)
         control.disabled = parents.some(parent => !parent.control.checked);
     }
-    if (auto && group)
-      group.disabled = !auto.checked;
+    if (auto) {
+      for (const step of importSteps)
+        step.disabled = !auto.checked;
+    }
     for (const button of pane.querySelectorAll<HTMLButtonElement>("hbox button")) {
       if (button.closest("[data-busy='true']")) {
         button.disabled = true;
@@ -531,6 +533,9 @@ function setupAbbreviationSettings(pane: Element) {
   const rules = pane.querySelector("[data-l10n-id$='section-rules']")?.closest("groupbox");
   if (group && rules)
     pane.insertBefore(group, rules);
+  const metrics = pane.querySelector("#metaref-easyscholar-settings");
+  if (metrics && rules)
+    pane.insertBefore(metrics, rules);
   for (const select of pane.querySelectorAll<HTMLSelectElement>("select[data-abbr-option]")) {
     const key = `rule.require-journal-abbr.${select.dataset.abbrOption}`;
     select.value = String(getPref(key as any, select.options[0].value));

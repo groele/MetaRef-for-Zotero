@@ -1,5 +1,5 @@
 ## General settings
-section-general = General Settings
+section-general = Automatic import and background processing
 easyscholar-key-label = EasyScholar API key
 easyscholar-key-description = Enter the key from EasyScholar User Information → Open API. It is stored locally. Manual lookups, connection tests and explicitly enabled automatic lookups send HTTPS requests to EasyScholar.
 easyscholar-key-link = API documentation
@@ -199,7 +199,7 @@ section-creators = Creators
 section-language = Language
 section-article = Journal Articles & Publication
 section-article-abbreviation = Journal Titles & Abbreviations
-section-article-esi = Journal insights & custom databases
+section-article-esi = Journal rankings, indexes and data sources
 section-article-pagination = Volume, Issue & Pages
 section-conference = Conference Papers
 section-thesis = Theses
@@ -537,3 +537,5 @@ metadata-source-local =
 metadata-source-cloud =
   .label = Prefer cloud data (update existing fields after verification)
 review-cloud-priority = Verified matching DOI; applied cloud priority to source fields. Differing fields: { $fields }.
+
+feedback-performance-heading = Notifications and execution performance

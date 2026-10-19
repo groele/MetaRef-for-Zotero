@@ -61,6 +61,34 @@ describe("settings panel layout and validation in Zotero", function () {
     }
   });
 
+  it("keeps import dependencies and section ownership clear without duplicating controls", function () {
+    const auto = find("lint.onAdded") as HTMLInputElement;
+    const before = auto.checked;
+    const steps = ["lint.onGroup", "metadata.autoUpdateOnAdded", "easyscholar.autoUpdateOnAdded"].map(key => find(key) as HTMLInputElement);
+    const values = steps.map(step => step.checked);
+    const general = auto.closest(".metaref-section-card")!;
+    const data = pane.querySelector("#metaref-data-settings")!;
+    assert.isTrue(data.contains(find("lint.notify")));
+    assert.isTrue(data.contains(find("lint.numConcurrent")));
+    assert.isTrue(steps.every(step => general.contains(step)));
+    assert.isNotNull(pane.querySelector(":scope > .metaref-section-card > #metaref-easyscholar-settings"));
+    const headings = [...pane.querySelectorAll(":scope > .metaref-section-card > summary [data-l10n-id]")].map(heading => heading.getAttribute("data-l10n-id"));
+    assert.isBelow(headings.indexOf("metaref-section-updateMetadata"), headings.indexOf("metaref-section-rules"));
+    try {
+      if (auto.checked)
+        auto.click();
+      assert.isTrue(steps.every(step => step.disabled));
+      assert.deepEqual(steps.map(step => step.checked), values, "disabling import preserves configured steps");
+      auto.click();
+      assert.isTrue(steps.every(step => !step.disabled));
+      assert.deepEqual(steps.map(step => step.checked), values);
+    }
+    finally {
+      if (auto.checked !== before)
+        auto.click();
+    }
+  });
+
   it("persists every available checkbox binding and connects standard rule switches to the runner", function () {
     const controls = [...pane.querySelectorAll<HTMLInputElement>("input[type='checkbox'][preference]")];
     const saved = new Map(controls.map(control => [control.getAttribute("preference")!, { value: Zotero.Prefs.get(control.getAttribute("preference")!, true), checked: control.checked }]));
@@ -68,7 +96,9 @@ describe("settings panel layout and validation in Zotero", function () {
     try {
       for (const control of controls.filter(control => !control.getAttribute("preference")!.includes(".easyscholar."))) {
         const key = control.getAttribute("preference")!;
-        const parents = controls.filter(parent => key.startsWith(`${parent.getAttribute("preference")}.`)).sort((a, b) => a.getAttribute("preference")!.length - b.getAttribute("preference")!.length);
+        const importStep = ["lint.onGroup", "metadata.autoUpdateOnAdded", "easyscholar.autoUpdateOnAdded"].some(step => key === pref(step));
+        const parents = controls.filter(parent => key.startsWith(`${parent.getAttribute("preference")}.`)
+          || (importStep && parent.getAttribute("preference") === pref("lint.onAdded"))).sort((a, b) => a.getAttribute("preference")!.length - b.getAttribute("preference")!.length);
         for (const parent of parents) {
           if (!parent.checked)
             parent.click();

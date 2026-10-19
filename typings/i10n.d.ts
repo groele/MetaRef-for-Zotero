@@ -218,6 +218,7 @@ export type FluentMessageId =
   | 'easyscholar-write-to-extra'
   | 'enable-richtext-hotkey'
   | 'enable-richtext-toolbar'
+  | 'feedback-performance-heading'
   | 'field-abbr'
   | 'field-esi'
   | 'field-esi-match'

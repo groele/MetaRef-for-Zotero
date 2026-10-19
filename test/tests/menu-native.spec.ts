@@ -46,6 +46,8 @@ describe("native flat menu commands", function () {
   });
 
   const menu = async () => {
+    // Isolate menu focus from timed native notices left by earlier commands.
+    Zotero.ProgressWindowSet.closeAll();
     const win = Zotero.getMainWindow();
     win.focus();
     await wait(() => win.document.hasFocus(), "main window focus");

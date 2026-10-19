@@ -1,5 +1,5 @@
 ## 常规设置
-section-general = 常规设置
+section-general = 自动导入与后台处理
 easyscholar-key-label = EasyScholar API 密钥
 easyscholar-key-description = 输入 EasyScholar「用户信息 - 开放接口」中的密钥。密钥保存在本机；手动查询、测试连接及明确启用的自动查询会向 EasyScholar 发送 HTTPS 请求。
 easyscholar-key-link = 查看 API 文档
@@ -198,7 +198,7 @@ section-creators = 作者与创作者
 section-language = 语言
 section-article = 期刊文章与出版物
 section-article-abbreviation = 期刊名称缩写
-section-article-esi = 期刊索引与自定义数据库
+section-article-esi = 期刊评级、索引与数据源
 section-article-pagination = 卷期与页码
 section-conference = 会议论文
 section-thesis = 学位论文
@@ -536,3 +536,5 @@ metadata-source-local =
 metadata-source-cloud =
   .label = 优先云端数据（核验通过后更新已有字段）
 review-cloud-priority = DOI 已核验一致，按照云端优先设置采用来源字段；差异字段：{ $fields }。
+
+feedback-performance-heading = 通知与执行性能

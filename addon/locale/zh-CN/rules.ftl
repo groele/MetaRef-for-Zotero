@@ -368,7 +368,7 @@ rule-tool-update-metadata-dialog-allow-type-changed =
 rule-tool-update-metadata-dialog-notes = 说明
 rule-tool-update-metadata-dialog-note-rate-limit = 某些 API 有速率限制；请避免批量处理。
 rule-tool-update-metadata-dialog-note-chinese-limit = 中文题目可尝试 CNKI 搜索；需标题唯一匹配，访问限制或验证页面会导致查询失败。
-rule-tool-update-metadata-dialog-note-type-change = 「所有字段」模式下若允许更改条目类型，Zotero 可能会移除新类型不支持的字段或调整作者角色；请先检查更新结果。
+rule-tool-update-metadata-dialog-note-type-change = 普通书目更新不改变条目类型；启用版本演进时保留预印本并关联正式版。
 
 
 ## tool-get-short-doi

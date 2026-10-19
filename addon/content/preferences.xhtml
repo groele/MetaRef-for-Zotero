@@ -44,31 +44,6 @@
     />
     <!-- 格式化时 -->
     <checkbox
-      data-l10n-id="notify-on-lint"
-      preference="lint.notify"
-      native="true"
-    />
-
-    <!-- lint.numConcurrent -->
-    <hbox align="center">
-      <label
-        id="__addonRef__-concurrency-label"
-        data-l10n-id="lint-numConcurrent"
-      />
-      <html:input
-        type="number"
-        min="1"
-        max="16"
-        step="1"
-        preference="lint.numConcurrent"
-        aria-labelledby="__addonRef__-concurrency-label"
-      />
-      <description
-        data-l10n-id="lint-numConcurrent-description"
-        class="metaref-pref-description"
-      />
-    </hbox>
-    <checkbox
       data-l10n-id="metadata-auto-update-on-added"
       preference="metadata.autoUpdateOnAdded"
       native="true"
@@ -76,13 +51,13 @@
       data-l10n-id="metadata-auto-update-description"
       class="metaref-pref-description"
     />
-    <button
-      id="__addonRef__-integration-status"
-      data-l10n-id="integration-status-button"
+    <checkbox
+      data-l10n-id="easyscholar-auto-update-on-added"
+      preference="easyscholar.autoUpdateOnAdded"
       native="true"
     />
     <description
-      data-l10n-id="integration-undo-description"
+      data-l10n-id="easyscholar-auto-update-on-added-description"
       class="metaref-pref-description"
     />
   </groupbox>
@@ -138,8 +113,46 @@
       class="metaref-pref-description"
     />
     <html:p id="metaref-runtime-data-policy" class="metaref-pref-description" />
+    <groupbox id="metaref-feedback-performance">
+      <label><html:h3 data-l10n-id="feedback-performance-heading" /></label>
+      <checkbox
+        data-l10n-id="notify-on-lint"
+        preference="lint.notify"
+        native="true"
+      />
+
+      <!-- lint.numConcurrent -->
+      <hbox align="center">
+        <label
+          id="__addonRef__-concurrency-label"
+          data-l10n-id="lint-numConcurrent"
+        />
+        <html:input
+          type="number"
+          min="1"
+          max="16"
+          step="1"
+          preference="lint.numConcurrent"
+          aria-labelledby="__addonRef__-concurrency-label"
+        />
+        <description
+          data-l10n-id="lint-numConcurrent-description"
+          class="metaref-pref-description"
+        />
+      </hbox>
+    </groupbox>
     <groupbox>
       <label><html:h3 data-l10n-id="batch-feedback-heading" /></label>
+      <button
+        id="__addonRef__-integration-status"
+        data-l10n-id="integration-status-button"
+        native="true"
+      />
+      <description
+        data-l10n-id="integration-undo-description"
+        class="metaref-pref-description"
+      />
+
       <description
         data-l10n-id="batch-feedback-description"
         class="metaref-pref-description"
@@ -806,7 +819,7 @@
 
       <!-- 期刊索引数据库 -->
       <groupbox id="metaref-easyscholar-settings">
-        <label><html:h3 data-l10n-id="section-article-esi" /></label>
+        <label><html:h2 data-l10n-id="section-article-esi" /></label>
         <vbox class="indented-pref">
           <label data-l10n-id="easyscholar-key-label" />
           <html:input
@@ -834,15 +847,6 @@
           />
           <description
             data-l10n-id="easyscholar-key-description"
-            class="metaref-pref-description"
-          />
-          <checkbox
-            data-l10n-id="easyscholar-auto-update-on-added"
-            preference="easyscholar.autoUpdateOnAdded"
-            native="true"
-          />
-          <description
-            data-l10n-id="easyscholar-auto-update-on-added-description"
             class="metaref-pref-description"
           />
         </vbox>

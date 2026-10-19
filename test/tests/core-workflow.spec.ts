@@ -18,6 +18,7 @@ describe("core command execution and optional costs", function () {
   let alert: typeof Zotero.alert;
   let translations = 0;
   let requests = 0;
+  let requestedJournals: string[] = [];
   let response: any;
   const create = async (title = "Core workflow fixture.", doi = "10.1234/core-workflow") => {
     const item = new Zotero.Item("journalArticle");
@@ -46,6 +47,7 @@ describe("core command execution and optional costs", function () {
 
   beforeEach(function () {
     translations = requests = 0;
+    requestedJournals = [];
     for (const key of ["lint.onAdded", "workflow.updateMetadata", "workflow.remoteAuthorsOnCheck", "workflow.updateJournalRankings", "workflow.reviewDuplicatesOnCheck", "workflow.reviewDuplicatesOnUpdate", "workflow.scanPDF", "workflow.searchTitle", "metadata.updateJournalInfo"])
       pref(key, false);
     pref("workflow.updateBibliographic", true);
@@ -65,6 +67,7 @@ describe("core command execution and optional costs", function () {
         return request.call(Zotero.HTTP, _method, url, options);
       requests++;
       assert.include(url, "easyscholar.cc", "fallback searches do not silently contact another service");
+      requestedJournals.push(new URL(url).searchParams.get("publicationName") || "unknown journal");
       return { status: 200, responseText: JSON.stringify({ code: 200, data: { officialRank: { all: { sci: "Q1" } } } }) };
     };
     (Zotero as any).alert = () => {};
@@ -364,14 +367,14 @@ describe("core command execution and optional costs", function () {
       pref(`easyscholar.fields.${field.key}`, field.key === "sci");
     await plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
     assert.equal(translations, 0);
-    assert.equal(requests, 1);
+    assert.equal(requests, 1, `journal requests: ${requestedJournals.join(", ")}`);
     assert.include(item.getField("extra"), "SCI: 是");
     assert.equal(item.getField("title"), "Core workflow fixture.");
     pref("workflow.updateBibliographic", true);
     const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
     const result = await pending;
     assert.isTrue(result.records.some((record: any) => record.code === "journal-summary"), "unchanged bibliography does not suppress the metrics stage");
-    assert.equal(requests, 1, "the second metrics lookup reuses its cached response");
+    assert.equal(requests, 1, `the second metrics lookup reuses its cached response: ${requestedJournals.join(", ")}`);
   });
 
   it("does not search by title or scan PDF caches when both fallback options are disabled", async function () {
