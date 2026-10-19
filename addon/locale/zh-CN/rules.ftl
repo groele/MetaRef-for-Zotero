@@ -556,3 +556,8 @@ duplicates-mark-not = 标记为不是重复条目
 review-result-excluded = 已标记为非重复
 review-operation-cancelled = 已停止核对；已完成的操作保留。
 review-related-applied = 已建立与正式版条目 { $id } 的关联。
+
+rule-correct-abstract-format =
+    .label = 规范化摘要排版
+rule-correct-abstract-format-description = 清理多余空白、合并段内断行，并修复独立断行的化学式片段，保留原意与分段。默认启用；开启“新增条目时自动检查并整理”时自动执行。已有条目可通过“检查并修复元数据”批量处理。
+rule-correct-abstract-format-menu-field = 规范化摘要排版

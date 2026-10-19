@@ -1,4 +1,6 @@
-> 当前版本为 12.0.0，本轮问题、修复和未覆盖项见[主版本审查](major-version-audit-2026-10-19.md)，包哈希及实际测试计数见 dist/verification.json。
+> 当前版本为 12.1.0，新增摘要规范化与通知原位更新见[发布说明](releases/metaflow-v12.1.0.md)；包哈希及实际测试计数见 dist/verification.json。下文保留此前审查记录。
+
+> 12.0.0 历史审查中的问题、修复和未覆盖项见[主版本审查](major-version-audit-2026-10-19.md)，包哈希及实际测试计数见 dist/verification.json。
 
 > 11.2.1 历史交付验收见[发布说明](releases/metaflow-v11.2.1.md)及 dist/verification.json；商业发行边界仍见[全局审查台账](commercial-readiness-2026-10-18.md)。本页后续内容为历史记录。
 

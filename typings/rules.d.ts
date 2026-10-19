@@ -17,6 +17,7 @@ type ID =
   | "correct-creators-punctuation"
   | "correct-creators-case"
   | "correct-creators-pinyin"
+  | "correct-abstract-format"
   | "correct-date-format"
   | "correct-extra-order"
   | "require-doi"

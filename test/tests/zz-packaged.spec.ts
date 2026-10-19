@@ -12,6 +12,7 @@ describe("production XPI installation", function () {
     Zotero.Prefs.set(autoKey, false, true);
     const item = new Zotero.Item("journalArticle");
     item.setField("title", "Packaged MoS2");
+    item.setField("abstractNote", "ABSTRACT\n\n Packaged   WSe\n2\n and Cu\n+\n results.");
     item.setField("publicationTitle", "Physical Review Letters");
     assert.isTrue(Zotero.ItemFields.isValidForType(Zotero.ItemFields.getID("archive"), item.itemTypeID), "journal articles support the Archive field");
     assert.isTrue(Zotero.ItemFields.isValidForType(Zotero.ItemFields.getID("archiveLocation"), item.itemTypeID), "journal articles support the Archive Location field shown as 档案编号");
@@ -44,7 +45,8 @@ describe("production XPI installation", function () {
       assert.isTrue(plugin.data.alive);
       const license = await Zotero.File.getResourceAsync(installed.getResourceURI("licenses/MetaFlow-AGPL-3.0.txt").spec);
       assert.include(String(license), "GNU AFFERO GENERAL PUBLIC LICENSE");
-      await plugin.hooks.onLintInBatch(["correct-title-chemical-formula", "require-journal-abbr", "tool-query-esi", "tool-query-nature-index"], [item, crossDisciplinary, unmatched]);
+      await plugin.hooks.onLintInBatch(["correct-title-chemical-formula", "correct-abstract-format", "require-journal-abbr", "tool-query-esi", "tool-query-nature-index"], [item, crossDisciplinary, unmatched]);
+      assert.equal(item.getField("abstractNote"), "Packaged WSe2 and Cu+ results.");
       await item.reload(["itemData"], true);
       await crossDisciplinary.reload(["itemData"], true);
       await unmatched.reload(["itemData"], true);

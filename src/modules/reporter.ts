@@ -355,6 +355,20 @@ export class ProgressUI {
     this.progressWindow?.changeLine({ text, idx: 0 });
   }
 
+  public showCoreFinished(text: string, failed: boolean, openReport: () => Promise<void>): boolean {
+    const helper = this.progressWindow;
+    if (!helper)
+      return false;
+    this.running = false;
+    helper.changeLine({ type: failed ? "fail" : "default", text, progress: 100, idx: 0 });
+    const lines = (helper as unknown as { lines: { _hbox?: Element }[] }).lines;
+    lines[2]?._hbox?.removeEventListener("click", this.handleStopRequest as EventListener);
+    // The completion notice owns the existing window and its lifetime from here.
+    this.progressWindow = undefined;
+    void configureCompletionNotice(helper, openReport, true);
+    return true;
+  }
+
   public updateProgress(current: number, total: number, phase?: "idle" | "linting" | "saving"): void {
     if (!this.progressWindow)
       return;

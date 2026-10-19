@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-12.1.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,23 +19,24 @@
 
 ---
 
-> **12.0.0 更新：**报告支持搜索、筛选和每页 25 条展示；批处理主动让出界面线程以响应停止；卸载等待完整核心任务收尾；修复异常请求缓存重试并保护更高格式版本的期刊索引。详细变化与验证边界见[发布说明](docs/releases/metaflow-v12.0.0.md)和[本轮审查](docs/major-version-audit-2026-10-19.md)。
+> **12.1.0 更新：**摘要规范化默认纳入“检查并修复元数据”，也随新增条目自动整理执行，可在设置中关闭；清理摘要多余空白、断行和可识别的化学式片段。右下角提示由整理中原位更新为完成结果，避免重复弹出。详细变化见[发布说明](docs/releases/metaflow-v12.1.0.md)。
 
-> 本次按要求作为主版本里程碑发布，沿用已有偏好和本地数据格式，无需迁移设置。此前[审查台账](docs/commercial-readiness-2026-10-18.md)保留商业发行条件的边界。
+> 沿用已有偏好和本地数据格式，无需迁移设置。此前[审查台账](docs/commercial-readiness-2026-10-18.md)保留商业发行条件的边界。
 
 ## 📖 项目简介
 
 **Zotero MetaFlow** 是专为 Zotero 设计的文献元数据治理与期刊指标管理插件（隶属于 Zotero Flow Series 生产力套件）。
 
-日常科研中，从各大数据库、网页或 DOI 导入的文献元数据往往存在标题大小写混乱、作者姓名格式不一、缺失期刊缩写、无效字段冗余、缺少期刊学术评级等问题。Zotero MetaFlow 提供了 **58 项内置规则与工具**、**61 项 EasyScholar 期刊评价指标**、**Nature Index 2026 与 ESI 期刊清单本地快照**，以及**智能网络元数据自动补全**，让您的个人知识库井然有序、规范专业。
+日常科研中，从各大数据库、网页或 DOI 导入的文献元数据往往存在标题大小写混乱、作者姓名格式不一、缺失期刊缩写、无效字段冗余、缺少期刊学术评级等问题。Zotero MetaFlow 提供了 **59 项内置规则与工具**、**61 项 EasyScholar 期刊评价指标**、**Nature Index 2026 与 ESI 期刊清单本地快照**，以及**智能网络元数据自动补全**，让您的个人知识库井然有序、规范专业。
 
 ---
 
 ## ✨ 核心特性
 
-### 1. 🧹 深度元数据清洗与规范化（58 项规则与工具）
+### 1. 🧹 深度元数据清洗与规范化（59 项规则与工具）
 
 - **标题格式规整**：支持将全大写或杂乱标题一键转换为规范的句首字母大写（Sentence case）或标题大写（Title Case），内置智能词典自动保护化学式（如 $\text{CO}_2$、$\text{H}_2\text{O}$）、基因命名、mRNA 及专有名词。
+- **摘要排版规范化**：清理多余空白和段内断行，保留分段与已有行内格式，合并可识别的独立断行化学式片段。默认纳入“检查并修复元数据”和新增条目自动整理；可在“元数据规则 → 其他字段”中关闭。
 - **作者与创作者修复**：智能识别姓名前后颠倒、拼音转换与声调标注，剔除无效作者并修复作者角色。
 - **DOI 标准化与 ShortDOI**：自动剔除多余 URL 前缀，验证 DOI 格式，并将 ShortDOI 解析为完整 DOI，同时在 Extra 中保留短标识符。
 - **页码范围优化**：规范连接符为标准 en-dash（`-`），智能剔除多余的补零（例如将 `001-008` 或 `101--108` 修正为规范的 `101-108`）。
@@ -123,7 +124,7 @@ MetaFlow 将多个 Zotero 开源插件所启发的功能整合到**统一的命�
 
 | 项目                   | 说明                                                                                  |
 | :--------------------- | :------------------------------------------------------------------------------------ |
-| **插件版本**           | `12.0.0`                                                                              |
+| **插件版本**           | `12.1.0`                                                                              |
 | **插件 ID**            | `metaflow@groele`                                                                     |
 | **支持的 Zotero 版本** | `Zotero 10.0 – 11.*`（严格测试覆盖 Windows Zotero 10.0.6 与 Zotero 11 dev Gecko 153） |
 | **操作系统**           | Windows / macOS / Linux                                                               |

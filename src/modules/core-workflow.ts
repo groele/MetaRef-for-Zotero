@@ -170,8 +170,8 @@ async function executeWorkflow(command: CoreCommand, items: Zotero.Item[]) {
   if (addon.data.alive) {
     addon.runner.lastResult = result;
     addon.data.lastCoreWorkflow = { lastResult: result, stages };
-    updateBatchFeedback(result);
     showCoreCompletionToast(result);
+    updateBatchFeedback(result);
   }
   return result;
 }

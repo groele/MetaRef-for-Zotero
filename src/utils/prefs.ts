@@ -136,6 +136,7 @@ export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "rule.correct-bookTitle-sentence-case": true,
   "rule.correct-proceedingsTitle-sentence-case": false,
   "rule.correct-extra-order": true,
+  "rule.correct-abstract-format": true,
   "rule.tool-update-metadata.option.slient": false,
   "rule.tool-update-metadata.option.mode": "blank",
   "rule.tool-update-metadata.option.allow-type-changed": true,

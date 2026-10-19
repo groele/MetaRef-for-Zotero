@@ -65,8 +65,10 @@ export function closeCoreFeedback() {
 }
 
 export function showCoreCompletionToast(result: BatchResult) {
-  if (!getPref("lint.notify"))
+  if (!getPref("lint.notify")) {
+    closeCoreFeedback();
     return;
+  }
   const outcome = result.cancelled
     ? getString("core-task-stopped")
     : result.failed || result.preparationFailed
@@ -76,10 +78,16 @@ export function showCoreCompletionToast(result: BatchResult) {
           : getString("core-task-finished");
   const summary = getString("batch-feedback-summary", { args: { total: result.total, saved: result.saved, failed: result.failed, warnings: result.warnings } });
   try {
+    const openReport = () => createReporter(result.records, result.changes, `${outcome} · ${summary}`);
+    if (coreProgress?.showCoreFinished(`${outcome} · ${summary}`, Boolean(result.failed || result.preparationFailed), openReport)) {
+      coreProgress = undefined;
+      progressState = undefined;
+      return;
+    }
     const notice = new ztoolkit.ProgressWindow(addon.data.config.addonName, { closeOnClick: false, closeTime: -1 })
       .createLine({ type: result.failed || result.preparationFailed ? "fail" : "default", text: `${outcome} · ${summary}`, progress: 100, idx: 0 })
       .show();
-    void configureCompletionNotice(notice, () => createReporter(result.records, result.changes, `${outcome} · ${summary}`));
+    void configureCompletionNotice(notice, openReport);
   }
   catch (error) {
     logger.error("Cannot show core workflow completion toast", error);

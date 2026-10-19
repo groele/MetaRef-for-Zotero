@@ -555,3 +555,8 @@ duplicates-mark-not = Mark as Not Duplicates
 review-result-excluded = Marked as not duplicates
 review-operation-cancelled = Review stopped. Completed operations are retained.
 review-related-applied = Linked to published item { $id }.
+
+rule-correct-abstract-format =
+    .label = Normalize abstract formatting
+rule-correct-abstract-format-description = Remove excess whitespace, join wrapped lines and repair isolated chemical formula fragments while preserving meaning and paragraphs. Enabled by default; runs when automatic formatting of new items is enabled. Use Check and Fix Metadata for existing items.
+rule-correct-abstract-format-menu-field = Normalize abstract formatting

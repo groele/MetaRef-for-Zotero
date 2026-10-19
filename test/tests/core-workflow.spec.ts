@@ -151,11 +151,30 @@ describe("core command execution and optional costs", function () {
     }
   });
 
-  it("shows one native completion notice for a core command and opens details only on click", async function () {
+  it("reuses the running window for completion and opens details only on click", async function () {
     pref("lint.notify", true);
     const item = await create();
     const before = plugin().data.dialogs.size;
-    await plugin().hooks.onLintInBatch("standard", [item], { core: true });
+    const runner = plugin().runner;
+    const add = runner.add;
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => release = resolve);
+    runner.add = async function (...args: any[]) {
+      await gate;
+      return add.apply(this, args);
+    };
+    let running: Window;
+    const pending = plugin().hooks.onLintInBatch("standard", [item], { core: true });
+    try {
+      running = await progressNotice();
+      release();
+      await pending;
+    }
+    finally {
+      release();
+      runner.add = add;
+      await pending;
+    }
     const notices = () => [...Services.wm.getEnumerator("") as unknown as Iterable<Window>]
       .filter(win => !win.closed && win.document.documentElement?.hasAttribute("data-metaref-completion"));
     for (let attempt = 0; attempt < 100 && !notices().length; attempt++)
@@ -164,6 +183,9 @@ describe("core command execution and optional costs", function () {
     assert.equal(plugin().data.dialogs.size, before);
     assert.isNull(Zotero.getMainWindow().document.querySelector("#metaref-core-task"));
     const notice = notices()[0];
+    assert.strictEqual(notice, running!, "completion updates the same native window without reopening it");
+    assert.isFalse(notice.document.documentElement!.hasAttribute("data-metaref-core-progress"));
+    assert.equal(notice.document.querySelector("#metaref-core-task-action")?.getAttribute("hidden"), "true");
     const content = notice.document.getElementById("zotero-progress-text-box")!;
     content.dispatchEvent(new (notice as any).KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     for (let attempt = 0; attempt < 100 && plugin().data.dialogs.size === before; attempt++)

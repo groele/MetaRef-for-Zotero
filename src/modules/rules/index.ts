@@ -1,6 +1,7 @@
 import type { Rule, RuleForRegularItemScopeItem, RuleForRegularScopeField } from "./rule-base";
 import { getPref } from "../../utils/prefs";
 import { ToolReviewDuplicates, ToolReviewMetadata, ToolReviewPreprint } from "../review";
+import { CorrectAbstractFormat } from "./correct-abstract-format";
 import { CorrectCreatorsCase } from "./correct-creators-case";
 import { CorrectCreatorsPinyin } from "./correct-creators-pinyin";
 import { CorrectDateFormat, CorrectFilingDateFormat, CorrectIssueDateFormat, CorrectPriorityDateFormat } from "./correct-date-format";
@@ -68,6 +69,7 @@ const register: Rule<any>[] = [
   CorrectCreatorsPinyin,
 
   // Other general fields
+  CorrectAbstractFormat,
   CorrectDateFormat,
   CorrectExtraOrder,
 

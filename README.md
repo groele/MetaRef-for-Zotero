@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-12.1.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,23 +19,24 @@
 
 ---
 
-> **12.0.0 release:** searchable, filtered reports with 25 item cards per page; cooperative batch scheduling for responsive stopping; complete core-workflow shutdown; recoverable request caches and forward-format journal-index protection. See the [release notes](docs/releases/metaflow-v12.0.0.md) and [audit](docs/major-version-audit-2026-10-19.md) for measured verification and limits.
+> **12.1.0 release:** normalize imported abstract whitespace and wrapped chemical formula fragments by default through Check and Fix Metadata. The new setting also controls automatic formatting on import. Core commands now update their running notification in place when finished. See the [release notes](docs/releases/metaflow-v12.1.0.md).
 
-> Existing preferences, library metadata and local runtime formats remain compatible. This major release was requested as a product milestone; it does not require a settings migration. The earlier [audit ledger](docs/commercial-readiness-2026-10-18.md) retains broader commercial-readiness limitations.
+> Existing preferences, library metadata and local runtime formats remain compatible; no settings migration is required. The earlier [audit ledger](docs/commercial-readiness-2026-10-18.md) retains broader commercial-readiness limitations.
 
 ## 📖 Overview
 
 **Zotero MetaFlow** is a Zotero add-on for reference metadata governance and journal academic metrics management (part of the Zotero Flow Series).
 
-When importing items from academic databases, web pages, or DOI translators, metadata is often fraught with issues: messy title letter cases, inconsistent author name formats, missing journal abbreviations, redundant or null fields, and absence of journal tier ratings. Zotero MetaFlow provides **40 metadata rules and 18 tools**, **61 EasyScholar journal ranking and metric fields**, **local Nature Index 2026 and ESI journal-list snapshots**, and **intelligent online metadata enrichment**, keeping your scholarly library standardized, accurate, and professional.
+When importing items from academic databases, web pages, or DOI translators, metadata is often fraught with issues: messy title letter cases, inconsistent author name formats, missing journal abbreviations, redundant or null fields, and absence of journal tier ratings. Zotero MetaFlow provides **41 metadata rules and 18 tools**, **61 EasyScholar journal ranking and metric fields**, **local Nature Index 2026 and ESI journal-list snapshots**, and **intelligent online metadata enrichment**, keeping your scholarly library standardized, accurate, and professional.
 
 ---
 
 ## ✨ Key Features
 
-### 1. 🧹 Deep Metadata Cleaning & Standardization (58 Rules and Tools)
+### 1. 🧹 Deep Metadata Cleaning & Standardization (59 Rules and Tools)
 
 - **Title Case Formatting**: Convert messy or all-caps titles into standard Sentence case or Title Case with one click. An intelligent dictionary preserves chemical formulas ($\text{CO}_2$, $\text{H}_2\text{O}$), gene symbols, mRNA, and proper nouns.
+- **Abstract Formatting**: Clean excess whitespace and wrapped lines, preserve paragraphs and existing inline formatting, and join recognized isolated chemical formula fragments. Enabled by default in Check and Fix Metadata and automatic import; configurable under Metadata Rules → Other Fields.
 - **Author & Creator Normalization**: Fix inverted names, handle Pinyin transliteration and tone markers, purge invalid creators, and correct creator roles.
 - **DOI Normalization & ShortDOI**: Strip redundant URL prefixes, validate DOI syntax, and resolve shortDOIs to full DOIs while preserving the short identifier in Extra.
 - **Page Range Optimization**: Normalize range delimiters to standard en-dashes (`-`) and remove redundant leading zeroes (e.g. `001-008` or `101--108` $\rightarrow$ `101-108`).
@@ -110,7 +111,7 @@ MetaFlow unifies capabilities inspired by several Zotero extensions into **one c
 
 ### Two streamlined commands
 
-1. **Check and Repair Metadata** — runs enabled local format and completeness rules. Optional identity verification, journal metrics, and interactive duplicate review can be enabled independently.
+1. **Check and Fix Metadata** — runs enabled local format and completeness rules. Optional identity verification, journal metrics, and interactive duplicate review can be enabled independently.
 2. **Update Metadata** — checks external bibliographic evidence and lets you review proposed field changes; optional local formatting, journal metrics, and duplicate review can be included.
 
 Specialized operations (creator styling, title replacement, ShortDOI generation, Extra cleanup and similar parameter-driven tools) remain accessible from the relevant preferences/tool sections; they are not silently run during every check.
@@ -123,7 +124,7 @@ Specialized operations (creator styling, title replacement, ShortDOI generation,
 
 | Item                          | Details                                                                                          |
 | :---------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Add-on Version**            | `12.0.0`                                                                                         |
+| **Add-on Version**            | `12.1.0`                                                                                         |
 | **Add-on ID**                 | `metaflow@groele`                                                                                |
 | **Supported Zotero Versions** | `Zotero 10.0 – 11.*` (Verified on Windows Zotero 10.0.6 & Zotero 11 dev Gecko 153)               |
 | **Operating Systems**         | Windows / macOS / Linux                                                                          |
@@ -152,7 +153,7 @@ Specialized operations (creator styling, title replacement, ShortDOI generation,
    - Provide your EasyScholar Secret Key if you want to retrieve CAS Tiers or CCF ratings.
    - Select your preferred metrics and choose whether to register them as columns in the item tree.
 4. **Run MetaFlow**:
-   - Select one or more items, then use **Zotero MetaFlow: Check and Repair Metadata** or **Zotero MetaFlow: Update Metadata** from the item context menu. Configure optional stages in the core command settings; specialized tools remain available in preferences.
+   - Select one or more items, then use **Zotero MetaFlow: Check and Fix Metadata** or **Zotero MetaFlow: Update Metadata** from the item context menu. Configure optional stages in the core command settings; specialized tools remain available in preferences.
 
 ---
 
@@ -229,4 +230,4 @@ Distributed under the **[GNU Affero General Public License v3.0 or later (AGPL-3
 
 ### Workflow and data design
 
-Version 12.0.0 combines automatic metadata decisions, complete-command scheduling and feedback, and a bounded local runtime history file. See [workflow and data layout](docs/global-workflow-and-data-layout.md) and [automatic metadata and cache policy](docs/automatic-metadata-and-runtime-cache.md) for settings, data retention and verification limits.
+Version 12.1.0 combines automatic metadata decisions, complete-command scheduling and feedback, and a bounded local runtime history file. See [workflow and data layout](docs/global-workflow-and-data-layout.md) and [automatic metadata and cache policy](docs/automatic-metadata-and-runtime-cache.md) for settings, data retention and verification limits.

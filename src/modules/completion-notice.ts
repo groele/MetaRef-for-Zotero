@@ -13,10 +13,10 @@ export function closeCompletionNotices() {
 }
 
 /** Keep native bottom-right positioning, with a fixed lifetime and an explicit report action. */
-export async function configureCompletionNotice(helper: ProgressWindowHelper, openReport: () => Promise<void>) {
+export async function configureCompletionNotice(helper: ProgressWindowHelper, openReport: () => Promise<void>, compact = false) {
   const parent = Zotero.getMainWindow();
   closeCompletionNotices();
-  const lines = (helper as unknown as { lines: { _itemText?: Element }[] }).lines;
+  const lines = (helper as unknown as { lines: { _itemText?: Element; _hbox?: Element }[] }).lines;
   let closed = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let stopPositioning = () => {};
@@ -35,6 +35,10 @@ export async function configureCompletionNotice(helper: ProgressWindowHelper, op
     await waitUtilAsync(() => closed || Boolean(lines[0]?._itemText), 25);
     if (closed)
       return;
+    if (compact) {
+      for (const line of lines.slice(1))
+        line._hbox?.setAttribute("hidden", "true");
+    }
     const win = lines[0]._itemText!.ownerDocument!.defaultView!;
     // Native sizeToContent can settle asynchronously under Linux window managers.
     const tile = () => {
@@ -52,6 +56,7 @@ export async function configureCompletionNotice(helper: ProgressWindowHelper, op
     };
     helper.addDescription(getString("completion-notice-open"));
     win.requestAnimationFrame(tile);
+    win.document.documentElement!.removeAttribute("data-metaref-core-progress");
     win.document.documentElement!.setAttribute("data-metaref-completion", "true");
     (win.document.documentElement as HTMLElement).style.cursor = "pointer";
     const open = () => {
