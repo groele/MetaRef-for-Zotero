@@ -79,6 +79,46 @@ When importing items from academic databases, web pages, or DOI translators, met
 
 ---
 
+## 🔗 Integrated Research Workflows
+
+MetaFlow unifies capabilities inspired by several Zotero extensions into **one coherent set of commands, preferences, and review steps**. These are integrations adapted to MetaFlow—not claims that every feature of the upstream extensions has been reproduced.
+
+| Integrated capability | What MetaFlow provides | Relevant upstream project |
+| --- | --- | --- |
+| **Duplicate review & merging** | Duplicate candidate detection; item-by-item review; configurable master-item selection; bounded bulk merging; duplicate statistics; false-positive / non-duplicate records and manual import/export | [Zoplicate](https://github.com/ChenglongMa/zoplicate) |
+| **Metadata verification** | DOI, ISBN, PMID/PMCID and arXiv identifier checks; title-based fallback when enabled; source comparison and selective field adoption | [ZotMeta](https://github.com/RoadToDream/ZotMeta) |
+| **DOI workflows** | DOI normalization, ShortDOI resolution, identifier validation, and optional ShortDOI generation | [DOI Manager](https://github.com/bwiernik/zotero-shortdoi) |
+| **Preprint-to-publication workflow** | Review of arXiv-linked published versions; either update the original record or create/link a publication record after identity verification | [arXiv Workflow](https://github.com/AllanChain/zotero-arxiv-workflow) |
+| **Journal abbreviations** | Curated journal mappings, offline ISO 4 inference, journal/conference-name normalization | [Zotero Journal Abbreviation](https://github.com/zoushucai/zotero-journalabbr) |
+| **Journal rankings and metrics** | EasyScholar metrics, journal rankings, configurable Zotero columns, selective Extra output, and journal sidebar | [Update IFs / EasyScholar](https://github.com/redleafnew/zotero-updateifsE) |
+
+### Duplicate review and citation-safe merging
+
+- **Import decisions:** keep newly imported items, keep existing items, keep all, or ask before acting. The configured default keeps all items; import-time automatic merges are subject to strict identifier and version checks.
+- **Master-item strategies:** oldest added, newest added, most recently modified, or most complete. The selected master determines which Zotero item identity is retained. **Tag-ranked master selection is not documented as an implemented V11.2.1 option.**
+- **Manual and bulk review:** compare candidate metadata, choose the retained item, optionally select field values, and process disjoint duplicate groups with controlled concurrency (1–8 groups; default 3).
+- **False positives:** mark two records as non-duplicates, or import/export these decisions for manual transfer.
+- **Native merge semantics:** attachments, notes, tags, and citation redirection rely on Zotero's native merge mechanism; items are not merged by deleting one record and recreating another. A merge is different from a standalone deletion.
+- **Safety boundary:** shared DOI alone is not sufficient to override an explicit version conflict; ambiguous or mismatched records require review. Pause/stop lets already started merges complete.
+
+### Identifier verification and publication updates
+
+- **Identity before adoption:** compare DOI, ISBN, PMID/PMCID or arXiv evidence with the selected item. If identifiers conflict, do not silently accept the result.
+- **Review differences:** inspect candidate fields and sources; fill missing fields by default and explicitly opt in to replacing existing values.
+- **Optional discovery:** when an identifier is absent, inspect a limited existing PDF text cache or perform title lookup only when enabled. A result match must still pass identity checks.
+- **arXiv publication linkage:** inspect clearly linked published DOI evidence; keep the preprint and publication linked, or update the original record when explicitly selected. Automatic PDF replacement is not part of this feature.
+
+### Two streamlined commands
+
+1. **Check and Repair Metadata** — runs enabled local format and completeness rules. Optional identity verification, journal metrics, and interactive duplicate review can be enabled independently.
+2. **Update Metadata** — checks external bibliographic evidence and lets you review proposed field changes; optional local formatting, journal metrics, and duplicate review can be included.
+
+Specialized operations (creator styling, title replacement, ShortDOI generation, Extra cleanup and similar parameter-driven tools) remain accessible from the relevant preferences/tool sections; they are not silently run during every check.
+
+**Further reading:** [Integrated workflow design](docs/integrated-workflows-2026-10-17.md) · [Core workflow audit](docs/core-workflow-audit-2026-10-18.md) · [Journal metric integration](docs/greenfrog-integration-2026-10-16.md).
+
+---
+
 ## 🖥️ System Requirements & Compatibility
 
 | Item                          | Details                                                                                          |
@@ -152,6 +192,8 @@ Zotero MetaFlow stands on the shoulders of giants in the open source community. 
   Special thanks to zoushucai for the inspiring `zotero-journalabbr` project! Its innovative approach to journal abbreviation normalization, mapping dictionaries, and Zotero integration offered invaluable references for our journal abbreviation subsystem.
 - **[redleafnew/zotero-updateifsE](https://github.com/redleafnew/zotero-updateifsE)**:
   Special thanks to redleafnew for the outstanding `zotero-updateifsE` project! Its trailblazing work in leveraging the EasyScholar API to fetch CAS journal tiers, impact factors, and writing metrics back to Zotero's Extra field provided foundational insights for MetaFlow's 61-metric integration, master preference control, and item column architecture.
+
+- **[ChenglongMa/zoplicate](https://github.com/ChenglongMa/zoplicate)**, **[RoadToDream/ZotMeta](https://github.com/RoadToDream/ZotMeta)**, **[bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi)** and **[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)**: Important reference projects for duplicate-management, identity validation, DOI, and preprint workflows. MetaFlow adapts the relevant ideas within its own architecture; this does not imply complete feature equivalence or official affiliation.
 
 ### Plugin Tooling & Infrastructure
 
