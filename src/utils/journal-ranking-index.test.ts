@@ -60,3 +60,15 @@ it("does not rewrite unchanged journal data across repeated flushes", async () =
   await index.flushJournalRankingIndex();
   expect(stored.writes).toBe(1);
 });
+
+it("preserves a newer journal index on downgrade while permitting session-only lookups", async () => {
+  const future = { version: 2, entries: { future: { payload: "preserve" } } };
+  stored.value = future;
+  const index = await setup();
+  await index.loadJournalRankingIndex();
+  await index.saveJournalRankingIndex(item(), { jcr: "Q1" }, new Set(["jcr"]));
+  expect(index.readJournalRankingIndex(item()).get("jcr")).toBe("Q1");
+  await index.flushJournalRankingIndex();
+  expect(stored.writes).toBe(0);
+  expect(stored.value).toBe(future);
+});

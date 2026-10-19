@@ -146,7 +146,7 @@ async function cachedGET(url: string, options: RequestOptions, signal: AbortSign
       if (store === serviceRequests)
         return { status: result.status, response: result.response, responseText: result.responseText, _metaflowCacheExpires: created.expires } as unknown as Awaited<ReturnType<typeof requestGET>>;
       return result;
-    }, (error) => {
+    }).catch((error) => {
       if (store.get(key) === created)
         store.delete(key);
       throw error;

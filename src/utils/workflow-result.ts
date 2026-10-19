@@ -40,6 +40,10 @@ export class CoreWorkflowQueue<T> {
   private tail = Promise.resolve();
   private pending = new Map<string, Promise<T>>();
 
+  public async drain(): Promise<void> {
+    await this.tail;
+  }
+
   public add(key: string, run: () => Promise<T>): Promise<T> {
     const existing = this.pending.get(key);
     if (existing)

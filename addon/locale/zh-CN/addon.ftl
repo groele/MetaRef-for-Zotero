@@ -38,3 +38,13 @@ report-prepare-failed = 规则准备失败
 info-batch-details = 已保存 { $saved }；未变化 { $unchanged }；不适用 { $notApplicable }；提醒 { $warnings }。
 
 completion-notice-open = 点击查看报告 · 5 秒后自动消失
+
+report-search = 搜索标题、条目 ID、规则或消息
+report-filter = 筛选报告条目
+report-filter-all = 所有条目
+report-filter-warning = 有警告的条目
+report-filter-error = 有错误的条目
+report-filter-changed = 有字段变更的条目
+report-previous = 上一页
+report-next = 下一页
+report-page = 第 { $page } / { $pages } 页 · { $count } 个条目

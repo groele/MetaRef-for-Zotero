@@ -8,6 +8,17 @@ afterEach(() => {
 });
 
 describe("public API request lifetime", () => {
+  it("evicts a response that fails cache processing so the next request can recover", async () => {
+    const invalid = { status: 200, response: { toJSON() {
+      throw new Error("Invalid response");
+    } } };
+    const request = vi.fn().mockResolvedValueOnce(invalid).mockResolvedValue({ status: 200, response: "Recovered" });
+    vi.stubGlobal("Zotero", { getMainWindow: () => ({ AbortController }), HTTP: { request } });
+    await expect(requestCachedGET("https://example.org/recover")).rejects.toThrow("Invalid response");
+    await expect(requestCachedGET("https://example.org/recover")).resolves.toMatchObject({ response: "Recovered" });
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
   it("connects abort to the real request canceller", async () => {
     const controller = new AbortController();
     const cancel = vi.fn();

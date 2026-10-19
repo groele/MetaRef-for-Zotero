@@ -1,4 +1,6 @@
-> 当前版本为 11.2.1，最新交付验收见[发布说明](releases/metaflow-v11.2.1.md)及 dist/verification.json；商业发行边界仍见[全局审查台账](commercial-readiness-2026-10-18.md)。本页后续内容为历史记录。
+> 当前版本为 12.0.0，本轮问题、修复和未覆盖项见[主版本审查](major-version-audit-2026-10-19.md)，包哈希及实际测试计数见 dist/verification.json。
+
+> 11.2.1 历史交付验收见[发布说明](releases/metaflow-v11.2.1.md)及 dist/verification.json；商业发行边界仍见[全局审查台账](commercial-readiness-2026-10-18.md)。本页后续内容为历史记录。
 
 > 最新本地候选修复见 [10.6.0 API、指标总开关、列与完整执行链审查](api-columns-workflow-10.6.0.md)；验证以该交付的 verification.json 为准，以下保留历史记录。
 

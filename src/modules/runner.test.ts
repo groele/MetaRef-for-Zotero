@@ -43,6 +43,36 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("rule-level rollback", () => {
+  it("lets native input cancel a large synchronous batch before every item runs", async () => {
+    const runner = new LintRunner();
+    const items = Array.from({ length: 200 }, (_, index) => Object.assign(createItem(), { id: index + 1 }));
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const result = await runner.add({ items, silent: true, rules: [{ id: "local", scope: "item", apply({ item }: ApplyContext) {
+        timer ??= setTimeout(() => runner.cancel(), 0);
+        item.setField("title", "Formatted");
+      } }] as any });
+      expect(result?.cancelled).toBe(true);
+      expect(result!.processed).toBeLessThan(items.length);
+      expect(result!.saved).toBeGreaterThan(0);
+      expect(result!.saved).toBe(result!.changes.filter(change => change.saved).length);
+    }
+    finally { clearTimeout(timer); }
+  });
+
+  it("responds to input even when one item has many immediately resolved rules", async () => {
+    const runner = new LintRunner();
+    const apply = vi.fn();
+    const timer = setTimeout(() => runner.cancel(), 0);
+    try {
+      const rules = Array.from({ length: 200 }, (_, index) => ({ id: `rule-${index}`, scope: "item", apply }));
+      const result = await runner.add({ items: [createItem()], silent: true, rules } as any);
+      expect(result?.cancelled).toBe(true);
+      expect(apply.mock.calls.length).toBeLessThan(200);
+    }
+    finally { clearTimeout(timer); }
+  });
+
   it("cancels a queued owner's batch without cancelling the unrelated running batch", async () => {
     const runner = new LintRunner();
     let release!: () => void;

@@ -6,6 +6,24 @@ const batch = (items: NonNullable<BatchResult["itemOutcomes"]>, overrides: Parti
 const outcome = (itemID: number, saved = false) => ({ itemID, processed: true, saved, changed: saved, failed: false, applicable: true });
 
 describe("whole-command results and scheduling", () => {
+  it("drains queued commands and their failure cleanup before shutdown completes", async () => {
+    const queue = new CoreWorkflowQueue<void>();
+    let release!: () => void;
+    const gate = new Promise<void>(resolve => release = resolve);
+    const first = queue.add("first", async () => gate);
+    const second = queue.add("second", async () => {
+      throw new Error("failed");
+    });
+    const rejection = expect(second).rejects.toThrow("failed");
+    let drained = false;
+    const pending = queue.drain().then(() => drained = true);
+    await Promise.resolve();
+    expect(drained).toBe(false);
+    release();
+    await Promise.all([first, rejection, pending]);
+    expect(drained).toBe(true);
+  });
+
   it("counts each item once while retaining every stage's evidence and errors", () => {
     const metadata = batch([{ ...outcome(1, true), failed: true }, outcome(2)], { records: [{ itemID: 1, title: "", ruleID: "metadata", level: "warning", message: "warning" }], changes: [{ itemID: 1, ruleID: "metadata", field: "date", before: "", after: "2026", saved: true }] });
     const formatting = batch([outcome(1, true), outcome(2, true)], { changes: [{ itemID: 1, ruleID: "format", field: "title", before: "A.", after: "A", saved: true }] });

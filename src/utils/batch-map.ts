@@ -1,3 +1,4 @@
+import { createWorkCheckpoint } from "./cooperative-scheduler";
 import { normalizedConcurrency } from "./rule-execution";
 
 /** Preserve input order, drain started work, and yield during large cached batches. */
@@ -5,7 +6,7 @@ export async function mapBatch<T, R>(values: readonly T[], concurrency: number, 
   signal?.throwIfAborted();
   const results: R[] = [];
   let next = 0;
-  let completed = 0;
+  const checkpoint = createWorkCheckpoint();
   let failed = false;
   const worker = async () => {
     while (!failed && next < values.length) {
@@ -18,8 +19,7 @@ export async function mapBatch<T, R>(values: readonly T[], concurrency: number, 
         failed = true;
         throw error;
       }
-      if (++completed % 64 === 0)
-        await new Promise<void>(resolve => setTimeout(resolve, 0));
+      await checkpoint();
     }
   };
   const settled = await Promise.allSettled(Array.from({ length: Math.min(values.length, normalizedConcurrency(concurrency)) }, worker));

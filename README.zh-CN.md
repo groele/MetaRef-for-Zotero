@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-11.2.1-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,9 +19,9 @@
 
 ---
 
-> **11.2.1 更新：**移除底部进度横条，两个核心命令的进度、停止和完成反馈统一使用右下角原生通知。功能变化及验证边界见[发布说明](docs/releases/metaflow-v11.2.1.md)，整体配置与数据位置见[功能与数据布局](docs/global-workflow-and-data-layout.md)。
+> **12.0.0 更新：**报告支持搜索、筛选和每页 25 条展示；批处理主动让出界面线程以响应停止；卸载等待完整核心任务收尾；修复异常请求缓存重试并保护更高格式版本的期刊索引。详细变化与验证边界见[发布说明](docs/releases/metaflow-v12.0.0.md)和[本轮审查](docs/major-version-audit-2026-10-19.md)。
 
-> 11.2.1 保留统一本地／云端元数据优先级，以及可点击查看报告、5 秒后自动消失的完成通知。当前验收见发布说明；此前[审查台账](docs/commercial-readiness-2026-10-18.md)保留商业发行条件的边界。
+> 本次按要求作为主版本里程碑发布，沿用已有偏好和本地数据格式，无需迁移设置。此前[审查台账](docs/commercial-readiness-2026-10-18.md)保留商业发行条件的边界。
 
 ## 📖 项目简介
 
@@ -83,19 +83,19 @@
 
 MetaFlow 将多个 Zotero 开源插件所启发的功能整合到**统一的命令、设置和核对流程**中。这些功能经过 MetaFlow 自身的适配和实现，并不代表完整复刻各上游插件的全部功能。
 
-| 整合能力 | MetaFlow 目前提供的功能 | 相关开源项目 |
-| --- | --- | --- |
-| **重复文献核对与合并** | 重复候选检测、逐条核对、主条目选择、批量合并、重复数量统计、误报排除及非重复记录导入导出 | [Zoplicate](https://github.com/ChenglongMa/zoplicate) |
-| **元数据身份核验** | DOI、ISBN、PMID/PMCID、arXiv 标识符校验；可选标题检索；来源对比与字段选择性采纳 | [ZotMeta](https://github.com/RoadToDream/ZotMeta) |
-| **DOI 与 ShortDOI 管理** | DOI 规范化、ShortDOI 解析、标识符验证，以及按需生成 ShortDOI | [DOI Manager](https://github.com/bwiernik/zotero-shortdoi) |
-| **预印本与正式版管理** | 核验 arXiv 明确关联的正式发表 DOI，选择原位更新或创建并关联正式版记录 | [arXiv Workflow](https://github.com/AllanChain/zotero-arxiv-workflow) |
-| **期刊缩写整理** | 期刊全称/缩写映射、离线 ISO 4 推断、期刊与会议名称规范化 | [Zotero Journal Abbreviation](https://github.com/zoushucai/zotero-journalabbr) |
-| **期刊评价与学术指标** | EasyScholar 指标、分区查询、文献列表自定义列、Extra 选择性输出及期刊侧栏 | [Update IFs / EasyScholar](https://github.com/redleafnew/zotero-updateifsE) |
+| 整合能力                 | MetaFlow 目前提供的功能                                                                  | 相关开源项目                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **重复文献核对与合并**   | 重复候选检测、逐条核对、主条目选择、批量合并、重复数量统计、误报排除及非重复记录导入导出 | [Zoplicate](https://github.com/ChenglongMa/zoplicate)                          |
+| **元数据身份核验**       | DOI、ISBN、PMID/PMCID、arXiv 标识符校验；可选标题检索；来源对比与字段选择性采纳          | [ZotMeta](https://github.com/RoadToDream/ZotMeta)                              |
+| **DOI 与 ShortDOI 管理** | DOI 规范化、ShortDOI 解析、标识符验证，以及按需生成 ShortDOI                             | [DOI Manager](https://github.com/bwiernik/zotero-shortdoi)                     |
+| **预印本与正式版管理**   | 核验 arXiv 明确关联的正式发表 DOI，选择原位更新或创建并关联正式版记录                    | [arXiv Workflow](https://github.com/AllanChain/zotero-arxiv-workflow)          |
+| **期刊缩写整理**         | 期刊全称/缩写映射、离线 ISO 4 推断、期刊与会议名称规范化                                 | [Zotero Journal Abbreviation](https://github.com/zoushucai/zotero-journalabbr) |
+| **期刊评价与学术指标**   | EasyScholar 指标、分区查询、文献列表自定义列、Extra 选择性输出及期刊侧栏                 | [Update IFs / EasyScholar](https://github.com/redleafnew/zotero-updateifsE)    |
 
 ### 重复文献核对与安全合并
 
 - **导入处理策略：**可选择保留新导入条目、保留已有条目、全部保留或始终询问。默认全部保留；自动合并另受标识符与版本一致性限制。
-- **主条目选择：**支持最早添加、最新添加、最近修改、信息最完整等策略。主条目决定最终保留哪个 Zotero 条目身份。**V11.2.1 的现有文档未将“按标签优先级选择主条目”列为已实现选项。**
+- **主条目选择：**支持最早添加、最新添加、最近修改、信息最完整等策略。主条目决定最终保留哪个 Zotero 条目身份。**V12.0.0 的现有文档未将“按标签优先级选择主条目”列为已实现选项。**
 - **人工与批量核对：**比较候选条目的元数据，选择保留项和需要采纳的字段；将重复条目组织为互不重叠的组，按受控并发处理（1–8 组，默认 3）。
 - **误报排除：**可将指定条目标记为非重复，并导入、导出此类判定记录，供人工迁移。
 - **原生合并：**附件、笔记、标签和 Word 引用重定向依赖 Zotero 原生合并机制，并非简单删除其中一个条目后重新创建。
@@ -123,7 +123,7 @@ MetaFlow 将多个 Zotero 开源插件所启发的功能整合到**统一的命�
 
 | 项目                   | 说明                                                                                  |
 | :--------------------- | :------------------------------------------------------------------------------------ |
-| **插件版本**           | `11.2.1`                                                                              |
+| **插件版本**           | `12.0.0`                                                                              |
 | **插件 ID**            | `metaflow@groele`                                                                     |
 | **支持的 Zotero 版本** | `Zotero 10.0 – 11.*`（严格测试覆盖 Windows Zotero 10.0.6 与 Zotero 11 dev Gecko 153） |
 | **操作系统**           | Windows / macOS / Linux                                                               |

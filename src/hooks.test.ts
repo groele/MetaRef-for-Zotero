@@ -6,7 +6,9 @@ const mocks = vi.hoisted(() => ({
   unregister: vi.fn(),
   load: vi.fn(),
   locale: vi.fn(),
+  stopCore: vi.fn(),
 }));
+vi.mock("./modules/core-workflow", () => ({ stopCoreWorkflows: mocks.stopCore, localDOICheck: vi.fn(), runCoreWorkflow: vi.fn() }));
 vi.mock("./utils/persistence-shutdown", () => ({ registerPersistenceShutdown: vi.fn(() => vi.fn()) }));
 vi.mock("./modules/item-tree", () => ({ registerExtraColumns: mocks.register, unregisterExtraColumns: mocks.unregister }));
 vi.mock("./modules/journal-pane", () => ({ registerJournalPane: mocks.register, unregisterJournalPane: mocks.unregister, refreshJournalPane: vi.fn(), setJournalUpdateResult: vi.fn() }));
@@ -29,6 +31,20 @@ describe("startup cancellation and failure cleanup", () => {
     vi.stubGlobal("addon", addon);
     vi.stubGlobal("ztoolkit", { unregisterAll: vi.fn() });
     vi.stubGlobal("Zotero", { MetaRef: addon, getMainWindows: () => [] });
+  });
+
+  it("cancels both queues and waits for complete core workflows before unloading locale", async () => {
+    let release!: () => void;
+    mocks.stopCore.mockImplementation(() => new Promise<void>(resolve => release = resolve));
+    const pending = hooks.onShutdown();
+    await vi.waitFor(() => expect(mocks.stopCore).toHaveBeenCalledOnce());
+    expect(addon.data.alive).toBe(false);
+    expect(addon.runner.stop).toHaveBeenCalledOnce();
+    expect(mocks.locale).not.toHaveBeenCalled();
+    release();
+    await pending;
+    expect(addon.runner.stop).toHaveBeenCalledOnce();
+    expect(mocks.locale).toHaveBeenCalledOnce();
   });
 
   it("does not register resources if disabled while waiting for the host", async () => {

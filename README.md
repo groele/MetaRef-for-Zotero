@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-11.2.1-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-12.0.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,9 +19,9 @@
 
 ---
 
-> **11.2.1 release:** removes the bottom progress bar and consolidates core command progress, stopping and completion feedback in native bottom-right notifications. See the [release notes](docs/releases/metaflow-v11.2.1.md) for behavior changes and verification boundaries.
+> **12.0.0 release:** searchable, filtered reports with 25 item cards per page; cooperative batch scheduling for responsive stopping; complete core-workflow shutdown; recoverable request caches and forward-format journal-index protection. See the [release notes](docs/releases/metaflow-v12.0.0.md) and [audit](docs/major-version-audit-2026-10-19.md) for measured verification and limits.
 
-> Version 11.2.1 retains shared local/cloud metadata priority and clickable five-second completion notices. See the release notes for current verification; the earlier [audit ledger](docs/commercial-readiness-2026-10-18.md) retains broader commercial-readiness limitations.
+> Existing preferences, library metadata and local runtime formats remain compatible. This major release was requested as a product milestone; it does not require a settings migration. The earlier [audit ledger](docs/commercial-readiness-2026-10-18.md) retains broader commercial-readiness limitations.
 
 ## 📖 Overview
 
@@ -83,19 +83,19 @@ When importing items from academic databases, web pages, or DOI translators, met
 
 MetaFlow unifies capabilities inspired by several Zotero extensions into **one coherent set of commands, preferences, and review steps**. These are integrations adapted to MetaFlow—not claims that every feature of the upstream extensions has been reproduced.
 
-| Integrated capability | What MetaFlow provides | Relevant upstream project |
-| --- | --- | --- |
-| **Duplicate review & merging** | Duplicate candidate detection; item-by-item review; configurable master-item selection; bounded bulk merging; duplicate statistics; false-positive / non-duplicate records and manual import/export | [Zoplicate](https://github.com/ChenglongMa/zoplicate) |
-| **Metadata verification** | DOI, ISBN, PMID/PMCID and arXiv identifier checks; title-based fallback when enabled; source comparison and selective field adoption | [ZotMeta](https://github.com/RoadToDream/ZotMeta) |
-| **DOI workflows** | DOI normalization, ShortDOI resolution, identifier validation, and optional ShortDOI generation | [DOI Manager](https://github.com/bwiernik/zotero-shortdoi) |
-| **Preprint-to-publication workflow** | Review of arXiv-linked published versions; either update the original record or create/link a publication record after identity verification | [arXiv Workflow](https://github.com/AllanChain/zotero-arxiv-workflow) |
-| **Journal abbreviations** | Curated journal mappings, offline ISO 4 inference, journal/conference-name normalization | [Zotero Journal Abbreviation](https://github.com/zoushucai/zotero-journalabbr) |
-| **Journal rankings and metrics** | EasyScholar metrics, journal rankings, configurable Zotero columns, selective Extra output, and journal sidebar | [Update IFs / EasyScholar](https://github.com/redleafnew/zotero-updateifsE) |
+| Integrated capability                | What MetaFlow provides                                                                                                                                                                              | Relevant upstream project                                                      |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Duplicate review & merging**       | Duplicate candidate detection; item-by-item review; configurable master-item selection; bounded bulk merging; duplicate statistics; false-positive / non-duplicate records and manual import/export | [Zoplicate](https://github.com/ChenglongMa/zoplicate)                          |
+| **Metadata verification**            | DOI, ISBN, PMID/PMCID and arXiv identifier checks; title-based fallback when enabled; source comparison and selective field adoption                                                                | [ZotMeta](https://github.com/RoadToDream/ZotMeta)                              |
+| **DOI workflows**                    | DOI normalization, ShortDOI resolution, identifier validation, and optional ShortDOI generation                                                                                                     | [DOI Manager](https://github.com/bwiernik/zotero-shortdoi)                     |
+| **Preprint-to-publication workflow** | Review of arXiv-linked published versions; either update the original record or create/link a publication record after identity verification                                                        | [arXiv Workflow](https://github.com/AllanChain/zotero-arxiv-workflow)          |
+| **Journal abbreviations**            | Curated journal mappings, offline ISO 4 inference, journal/conference-name normalization                                                                                                            | [Zotero Journal Abbreviation](https://github.com/zoushucai/zotero-journalabbr) |
+| **Journal rankings and metrics**     | EasyScholar metrics, journal rankings, configurable Zotero columns, selective Extra output, and journal sidebar                                                                                     | [Update IFs / EasyScholar](https://github.com/redleafnew/zotero-updateifsE)    |
 
 ### Duplicate review and citation-safe merging
 
 - **Import decisions:** keep newly imported items, keep existing items, keep all, or ask before acting. The configured default keeps all items; import-time automatic merges are subject to strict identifier and version checks.
-- **Master-item strategies:** oldest added, newest added, most recently modified, or most complete. The selected master determines which Zotero item identity is retained. **Tag-ranked master selection is not documented as an implemented V11.2.1 option.**
+- **Master-item strategies:** oldest added, newest added, most recently modified, or most complete. The selected master determines which Zotero item identity is retained. **Tag-ranked master selection is not documented as an implemented V12.0.0 option.**
 - **Manual and bulk review:** compare candidate metadata, choose the retained item, optionally select field values, and process disjoint duplicate groups with controlled concurrency (1–8 groups; default 3).
 - **False positives:** mark two records as non-duplicates, or import/export these decisions for manual transfer.
 - **Native merge semantics:** attachments, notes, tags, and citation redirection rely on Zotero's native merge mechanism; items are not merged by deleting one record and recreating another. A merge is different from a standalone deletion.
@@ -123,7 +123,7 @@ Specialized operations (creator styling, title replacement, ShortDOI generation,
 
 | Item                          | Details                                                                                          |
 | :---------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Add-on Version**            | `11.2.1`                                                                                         |
+| **Add-on Version**            | `12.0.0`                                                                                         |
 | **Add-on ID**                 | `metaflow@groele`                                                                                |
 | **Supported Zotero Versions** | `Zotero 10.0 – 11.*` (Verified on Windows Zotero 10.0.6 & Zotero 11 dev Gecko 153)               |
 | **Operating Systems**         | Windows / macOS / Linux                                                                          |
@@ -229,4 +229,4 @@ Distributed under the **[GNU Affero General Public License v3.0 or later (AGPL-3
 
 ### Workflow and data design
 
-Version 11.2.1 combines automatic metadata decisions, complete-command scheduling and feedback, and a bounded local runtime history file. See [workflow and data layout](docs/global-workflow-and-data-layout.md) and [automatic metadata and cache policy](docs/automatic-metadata-and-runtime-cache.md) for settings, data retention and verification limits.
+Version 12.0.0 combines automatic metadata decisions, complete-command scheduling and feedback, and a bounded local runtime history file. See [workflow and data layout](docs/global-workflow-and-data-layout.md) and [automatic metadata and cache policy](docs/automatic-metadata-and-runtime-cache.md) for settings, data retention and verification limits.

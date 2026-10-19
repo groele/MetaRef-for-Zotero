@@ -1,6 +1,7 @@
 import type { Arrayable } from "../utils/types";
 import type { FieldChange, ReportInfo } from "./reporter";
 import type { ApplyContext, PrepareContext, Rule } from "./rules/rule-base";
+import { createWorkCheckpoint } from "../utils/cooperative-scheduler";
 import { DataLoader } from "../utils/data-loader";
 import { toArray } from "../utils/general";
 import { ItemMutationJournal } from "../utils/item-mutation-journal";
@@ -119,6 +120,7 @@ export class LintRunner {
   private processedIDs = new Set<number>();
   private lastProgressTime = 0;
   private lastProgressPhase?: RunnerStats["phase"];
+  private checkpoint = createWorkCheckpoint();
   public lastResult?: BatchResult;
   private readonly ui = new ProgressUI({
     onCancel: () => this.cancel(),
@@ -240,6 +242,9 @@ export class LintRunner {
       let next = 0;
       const worker = async () => {
         while (!this.cancelled && next < items.length) {
+          await this.checkpoint();
+          if (this.cancelled || next >= items.length)
+            break;
           const item = items[next++];
           try {
             await this.lintItem(item, rules, optionsMap);
@@ -270,6 +275,7 @@ export class LintRunner {
     const optionsMap = new Map<ID, any>();
 
     for (const rule of rules) {
+      await this.checkpoint();
       if (this.cancelled)
         break;
       if (!ruleSupportsItems(rule, items)) {
@@ -338,6 +344,7 @@ export class LintRunner {
     const original = JSON.stringify(item.toJSON());
 
     for (const rule of rules) {
+      await this.checkpoint();
       if (this.cancelled || this.unsafeItems.has(item))
         break;
       if (!optionsMap.has(rule.id))
@@ -564,6 +571,7 @@ export class LintRunner {
     this.preparationFailed = 0;
     this.lastProgressTime = 0;
     this.lastProgressPhase = undefined;
+    this.checkpoint = createWorkCheckpoint();
     this.failedItems.clear();
     this.changes = [];
     this.savedValues.clear();

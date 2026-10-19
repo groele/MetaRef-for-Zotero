@@ -4,7 +4,7 @@ Last verified: 2026-10-19
 
 ## One product release line
 
-`groele/Zotero-MetaFlow` keeps only `main` (`origin/main`) on GitHub after integration and cleanup. Version tags and merged commits retain release history. The source version and stable update feed are `11.2.1`, released as `V11.2.1`. Release notes and `dist/verification.json` record the package and validation scope.
+`groele/Zotero-MetaFlow` keeps only `main` (`origin/main`) on GitHub after integration and cleanup. Version tags and merged commits retain release history. The source version and stable update feed are `12.0.0`, released as `V12.0.0`. Release notes and `dist/verification.json` record the package and validation scope.
 
 PR [#5](https://github.com/groele/Zotero-MetaFlow/pull/5) was merged into `main` at `0eb6a68`, and its feature branch was deleted. Do not publish the beta XPI or its update metadata through the stable feed.
 

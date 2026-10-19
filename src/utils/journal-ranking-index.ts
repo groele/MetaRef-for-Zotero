@@ -14,6 +14,7 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 let revision = 0;
 let dirty = false;
 let queuedRevision = -1;
+let readOnly = false;
 
 function filePath() {
   return typeof IOUtils !== "undefined" && (Zotero as any).Profile?.dir
@@ -43,6 +44,11 @@ async function load() {
       if (!(await IOUtils.exists(path)))
         return;
       const store = await IOUtils.readJSON(path) as Store;
+      if (store.version > 1) {
+        readOnly = true;
+        logger.warn("Journal ranking index uses a newer format; preserving the file without rewriting it");
+        return;
+      }
       if (store.version !== 1 || !store.entries || typeof store.entries !== "object")
         return;
       for (const [key, entry] of Object.entries(store.entries).slice(-MAX_ENTRIES)) {
@@ -64,6 +70,8 @@ async function load() {
 }
 
 function scheduleWrite() {
+  if (readOnly)
+    return;
   if (timer)
     clearTimeout(timer);
   timer = setTimeout(() => {
@@ -131,7 +139,7 @@ export async function flushJournalRankingIndex() {
   const path = filePath();
   if (!path)
     return;
-  if (!dirty || queuedRevision === revision)
+  if (readOnly || !dirty || queuedRevision === revision)
     return writes;
   const token = revision;
   queuedRevision = token;
@@ -157,6 +165,7 @@ export function resetJournalRankingIndex() {
   entries.clear();
   ready = undefined;
   dirty = false;
+  readOnly = false;
   queuedRevision = -1;
   revision++;
 }

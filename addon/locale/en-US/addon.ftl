@@ -38,3 +38,13 @@ report-prepare-failed = Rule preparation failed
 info-batch-details = Saved { $saved }; unchanged { $unchanged }; not applicable { $notApplicable }; warnings { $warnings }.
 
 completion-notice-open = Click to view the report · Closes automatically after 5 seconds
+
+report-search = Search title, item ID, rule or message
+report-filter = Filter report items
+report-filter-all = All items
+report-filter-warning = Items with warnings
+report-filter-error = Items with errors
+report-filter-changed = Items with field changes
+report-previous = Previous
+report-next = Next
+report-page = Page { $page } of { $pages } · { $count } items

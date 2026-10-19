@@ -1,7 +1,7 @@
 import type { Arrayable } from "./utils/types";
 import { closeCoreFeedback } from "./modules/batch-feedback";
 import { closeCompletionNotices } from "./modules/completion-notice";
-import { localDOICheck, runCoreWorkflow } from "./modules/core-workflow";
+import { localDOICheck, runCoreWorkflow, stopCoreWorkflows } from "./modules/core-workflow";
 import { invalidateDuplicateStats, registerDuplicateStats, unregisterDuplicateStats } from "./modules/duplicate-stats";
 import { registerExtraColumns, unregisterExtraColumns } from "./modules/item-tree";
 import { refreshJournalPane, registerJournalPane, setJournalUpdateResult, unregisterJournalPane } from "./modules/journal-pane";
@@ -117,7 +117,7 @@ async function onShutdown() {
     closeCoreFeedback,
     closeCompletionNotices,
     closeAllDialogs,
-    () => addon.runner.stop(),
+    () => Promise.all([stopCoreWorkflows(), addon.runner.stop()]),
     flushRuntimeData,
     flushServiceCache,
     flushJournalRankingIndex,

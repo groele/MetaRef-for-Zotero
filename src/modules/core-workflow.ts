@@ -33,6 +33,11 @@ export function localDOICheck() {
 
 const queue = new CoreWorkflowQueue<BatchResult | undefined>();
 
+export async function stopCoreWorkflows() {
+  addon.data.activeCoreWorkflow?.cancel();
+  await queue.drain();
+}
+
 export function runCoreWorkflow(command: CoreCommand, items: Zotero.Item[]) {
   const selected = [...new Map(items.filter(item => item?.id && item.isRegularItem() && !item.deleted && item.isEditable()).map(item => [item.id, item])).values()];
   const key = `${command}:${selected.map(item => item.id).sort((a, b) => a - b).join(",")}`;

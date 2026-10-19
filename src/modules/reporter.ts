@@ -3,6 +3,7 @@ import { useDialog } from "../utils/dialog";
 import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
+import { reportPage } from "../utils/report-view";
 import { waitUtilAsync } from "../utils/wait";
 import { configureCompletionNotice } from "./completion-notice";
 import { Rules } from "./rules";
@@ -45,6 +46,13 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [],
   infos.forEach(info => entryFor(info.itemID, info.title).infos.push(info));
   changes.forEach(change => entryFor(change.itemID).changes.push(change));
 
+  const indexed = [...entries.values()].map(entry => ({
+    ...entry,
+    search: [entry.itemID, entry.title, ...entry.infos.flatMap(info => [info.ruleID, info.message, info.source]), ...entry.changes.flatMap(change => [change.field, change.source])].join(" ").normalize("NFKC").toLowerCase(),
+  }));
+  let page = 0;
+  const initial = reportPage(indexed);
+
   const { dialog, openAndWaitClose, close } = useDialog(new ztoolkit.Dialog(1, 1));
   dialog.addCell(0, 0, {
     tag: "div",
@@ -77,52 +85,117 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [],
           }
         },
       },
-    }, ...[...entries.values()].map(entry => (
-      {
-        tag: "div",
-        styles: {
-          border: "var(--material-border)",
-          borderRadius: "8px",
-          padding: "10px",
-          backgroundColor: "var(--material-background)",
-        },
-        children: [
-          {
-            tag: "a",
-            properties: {
-              textContent: entry.itemID ? `${entry.itemID} - ${entry.title}` : entry.title,
-            },
-            styles: {
-              fontWeight: "bold",
-              marginBottom: "8px",
-              display: "block",
-              fontSize: "15px",
-              color: "var(--fill-primary)",
-              textDecoration: "none",
-            },
-            listeners: [
-              {
-                type: "click",
-                listener: () => {
-                  if (entry.itemID)
-                    Zotero.getActiveZoteroPane()?.selectItem(entry.itemID);
-                },
-              },
-            ],
-          },
-          ...entry.infos.map(createRuleResultRows),
-          ...entry.changes.map(change => ({
-            tag: "details",
-            children: [{ tag: "summary", properties: { textContent: `${change.field}${change.source ? ` · ${change.source}` : ""}` } }, {
-              tag: "pre",
-              properties: { textContent: JSON.stringify({ before: change.before, after: change.after, saved: change.saved }, null, 2) },
-              styles: { whiteSpace: "pre-wrap", overflowWrap: "anywhere" },
-            }],
-          } satisfies TagElementProps)),
-        ],
-      }
-    ) satisfies TagElementProps)],
+    }, {
+      tag: "div",
+      styles: { display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" },
+      children: [{
+        tag: "input",
+        attributes: { "type": "search", "aria-label": getString("report-search") },
+        properties: { id: "metaref-report-search", placeholder: getString("report-search"), oninput: () => refresh(true) },
+      }, {
+        tag: "select",
+        attributes: { "aria-label": getString("report-filter") },
+        properties: { id: "metaref-report-filter", onchange: () => refresh(true) },
+        children: ["all", "warning", "error", "changed"].map(value => ({
+          tag: "option",
+          properties: { value, textContent: getString(`report-filter-${value}` as Parameters<typeof getString>[0]) },
+        })),
+      }, {
+        tag: "button",
+        properties: { id: "metaref-report-previous", textContent: getString("report-previous"), disabled: true, onclick: () => {
+          page--;
+          refresh();
+        } },
+      }, {
+        tag: "span",
+        attributes: { "aria-live": "polite", "role": "status" },
+        properties: { id: "metaref-report-page", textContent: pageText(initial) },
+      }, {
+        tag: "button",
+        properties: { id: "metaref-report-next", textContent: getString("report-next"), disabled: initial.pageCount <= 1, onclick: () => {
+          page++;
+          refresh();
+        } },
+      }],
+    }, {
+      tag: "div",
+      properties: { id: "metaref-report-entries" },
+      styles: { display: "flex", flexDirection: "column", gap: "12px" },
+      children: initial.entries.map(createEntry),
+    }],
   });
+
+  function pageText(result: ReturnType<typeof reportPage>) {
+    return getString("report-page", { args: { page: result.page + 1, pages: result.pageCount, count: result.total } });
+  }
+
+  function refresh(reset = false) {
+    const doc = dialog.window.document;
+    const query = (doc.getElementById("metaref-report-search") as HTMLInputElement).value;
+    const filter = (doc.getElementById("metaref-report-filter") as HTMLSelectElement).value;
+    const result = reportPage(indexed, query, filter, reset ? 0 : page);
+    page = result.page;
+    const host = doc.getElementById("metaref-report-entries")!;
+    host.replaceChildren();
+    for (const entry of result.entries)
+      ztoolkit.UI.appendElement(createEntry(entry), host);
+    doc.getElementById("metaref-report-page")!.textContent = pageText(result);
+    (doc.getElementById("metaref-report-previous") as HTMLButtonElement).disabled = page === 0;
+    (doc.getElementById("metaref-report-next") as HTMLButtonElement).disabled = page + 1 >= result.pageCount;
+  }
+
+  function createEntry(entry: (typeof indexed)[number]): TagElementProps {
+    return {
+      tag: "div",
+      attributes: { "data-metaref-report-item": String(entry.itemID) },
+      styles: {
+        border: "var(--material-border)",
+        borderRadius: "8px",
+        padding: "10px",
+        backgroundColor: "var(--material-background)",
+      },
+      children: [
+        {
+          tag: "button",
+          attributes: { type: "button" },
+          properties: {
+            textContent: entry.itemID ? `${entry.itemID} - ${entry.title}` : entry.title,
+          },
+          styles: {
+            fontWeight: "bold",
+            marginBottom: "8px",
+            display: "block",
+            fontSize: "15px",
+            color: "var(--fill-primary)",
+            textDecoration: "none",
+            textAlign: "left",
+            border: "none",
+            background: "transparent",
+            padding: "0",
+            cursor: "pointer",
+          },
+          listeners: [
+            {
+              type: "click",
+              listener: () => {
+                if (entry.itemID)
+                  Zotero.getActiveZoteroPane()?.selectItem(entry.itemID);
+              },
+            },
+          ],
+        },
+        ...entry.infos.map(createRuleResultRows),
+        ...entry.changes.map(change => ({
+          tag: "details",
+          children: [{ tag: "summary", properties: { textContent: `${change.field}${change.source ? ` · ${change.source}` : ""}` } }, {
+            tag: "pre",
+            properties: { textContent: JSON.stringify({ before: change.before, after: change.after, saved: change.saved }, null, 2) },
+            styles: { whiteSpace: "pre-wrap", overflowWrap: "anywhere" },
+          }],
+        } satisfies TagElementProps)),
+      ],
+    };
+  }
 
   function createRuleResultRows(info: ReportInfo): TagElementProps {
     return {
@@ -180,13 +253,20 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [],
           },
           properties: {
             textContent: info.action?.label,
-            onclick: async () => {
+            onclick: async (event: Event) => {
+              const button = event.currentTarget as HTMLButtonElement;
+              if (button.disabled)
+                return;
+              button.disabled = true;
               try {
                 await info.action?.callback();
               }
               catch (error) {
                 createLogger("reporter").error("Report action failed:", error);
                 return;
+              }
+              finally {
+                button.disabled = false;
               }
 
               // If only one rule reports an issue for an item,
