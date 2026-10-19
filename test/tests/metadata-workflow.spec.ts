@@ -111,14 +111,20 @@ describe("metadata workflow in Zotero", function () {
       assert.isNull(metarefPane.querySelector(".metaref-settings-search, .metaref-settings-jump"));
       const resets = metarefPane.querySelectorAll("button[data-l10n-id='metaref-settings-custom-data-reset']");
       assert.lengthOf(resets, 4);
-      const resetPath = resets[0].parentElement!.querySelector("input[preference]") as HTMLInputElement;
+      const resetRow = metarefPane.querySelector("#metaref-title-choose-custom-data-button")!.parentElement!;
+      const resetFile = resetRow.querySelector("button[data-l10n-id='metaref-settings-custom-data-reset']")!;
+      const resetPath = resetRow.querySelector("input[preference]") as HTMLInputElement;
       const resetPref = resetPath.getAttribute("preference")!;
       const originalPath = Zotero.Prefs.get(resetPref, true);
-      Zotero.Prefs.set(resetPref, "missing-qa.csv", true);
-      resets[0].dispatchEvent(new win.Event("command", { bubbles: true }));
-      assert.equal(Zotero.Prefs.get(resetPref, true), "");
-      assert.equal(resetPath.value, "");
-      Zotero.Prefs.set(resetPref, originalPath as string, true);
+      try {
+        Zotero.Prefs.set(resetPref, "missing-qa.csv", true);
+        resetFile.dispatchEvent(new win.Event("command", { bubbles: true }));
+        assert.equal(Zotero.Prefs.get(resetPref, true), "");
+        assert.equal(resetPath.value, "");
+      }
+      finally {
+        Zotero.Prefs.set(resetPref, originalPath as string, true);
+      }
       const concurrency = metarefPane.querySelector<HTMLInputElement>(`[preference='${prefix}.lint.numConcurrent']`)!;
       assert.equal(concurrency.min, "1");
       assert.equal(concurrency.max, "16");
