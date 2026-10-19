@@ -1,12 +1,12 @@
 {
   "version": "11.2.1",
-  "verifiedAt": "2026-10-19T10:41:17.104983+08:00",
-  "sourceBaselineCommit": "a308248fb2c02d9da83a44e5c37a4cec732e2482",
+  "verifiedAt": "2026-10-19T10:53:49.750680+08:00",
+  "sourceBaselineCommit": "3a2730b09bf1c5667f3d7d4ddb5ddf28d1e26499",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3467838,
-    "sha256": "ecdc30ff72e861e55e92951cb88680ad3d9ef8122137f5982b52d7ca5be01831",
-    "sha512": "8038d1d557c06f6215e7b95ccfc21a2287796146afa824cc3b5d0b9ebc38f6e186bf9a6ef2b28b2c20393b19390b0e6e4adc4aa452ee86c5d341d465d3b92636",
+    "bytes": 3467947,
+    "sha256": "c3116efeff0c7dfdd9343bd8a9b8345eaf0d69865bcf3de65ed13fc70d975637",
+    "sha512": "b442f3b501d72898b06da579111130321179a3bdf842467a8e3775d2edb46e6d7f63b1cf623f262c06eff77550f040cdad18d1ba5fb21482b387e88685c26694",
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
@@ -53,7 +53,13 @@
         "failed": 0,
         "scope": "Targeted core-workflow, cache-feedback and production XPI installation regression. Includes no inline bar during execution, native cancellation, five-second completion, click-only reports and closing before initialization finishes."
       }
-    ]
+    ],
+    "crossPlatformCandidate": {
+      "run": "https://github.com/groele/Zotero-MetaFlow/actions/runs/39191186843",
+      "passed": 192,
+      "failed": 1,
+      "failure": "Linux native-window alignment settled after the initial animation-frame positioning. Added bounded retiling and main-window resize tracking; final CI must recheck."
+    }
   },
   "limits": [
     "Previous full-suite evidence belongs to 11.2.0. This patch uses targeted native regressions.",

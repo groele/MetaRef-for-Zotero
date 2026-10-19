@@ -19,11 +19,13 @@ export async function configureCompletionNotice(helper: ProgressWindowHelper, op
   const lines = (helper as unknown as { lines: { _itemText?: Element }[] }).lines;
   let closed = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let stopPositioning = () => {};
   const close = () => {
     if (closed)
       return;
     closed = true;
     clearTimeout(timer);
+    stopPositioning();
     parent.removeEventListener("unload", close);
     notices.delete(close);
     helper.close();
@@ -40,6 +42,14 @@ export async function configureCompletionNotice(helper: ProgressWindowHelper, op
         (Zotero.ProgressWindowSet as typeof Zotero.ProgressWindowSet & { tile: (window: Window) => void }).tile(win);
     };
     win.addEventListener("resize", tile);
+    parent.addEventListener("resize", tile);
+    // Some window managers apply outer geometry after resize and animation-frame callbacks.
+    const layoutTimers = [100, 250].map(delay => setTimeout(tile, delay));
+    stopPositioning = () => {
+      layoutTimers.forEach(clearTimeout);
+      win.removeEventListener("resize", tile);
+      parent.removeEventListener("resize", tile);
+    };
     helper.addDescription(getString("completion-notice-open"));
     win.requestAnimationFrame(tile);
     win.document.documentElement!.setAttribute("data-metaref-completion", "true");

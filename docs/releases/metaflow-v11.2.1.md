@@ -3,6 +3,7 @@
 Released on 2026-10-19.
 
 - Remove the core command bottom bar throughout execution and after completion. Both core commands now show their stage and stop action in a native bottom-right notification.
+- Retile native completion notices after window-manager geometry settles and when the main window resizes.
 - Preserve five-second completion notices, click-to-open reports and persistent runtime records. Detailed reports never open automatically.
 - Prevent a progress notification closed during asynchronous initialization from attaching stale controls. Cancellation remains scoped to the current core workflow.
 
