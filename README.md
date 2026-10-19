@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-11.1.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-11.2.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,9 +19,9 @@
 
 ---
 
-> **11.1.0 release:** adds automatic identity-checked metadata filling, bulk duplicate merging, complete-command scheduling and feedback, and bounded local runtime records. See the [release notes](docs/releases/metaflow-v11.1.0.md) for behavior changes and verification boundaries.
+> **11.2.0 release:** adds automatic identity-checked metadata filling, bulk duplicate merging, complete-command scheduling and feedback, and bounded local runtime records. See the [release notes](docs/releases/metaflow-v11.2.0.md) for behavior changes and verification boundaries.
 
-> The `11.1.1-beta.1` readiness candidate and remaining release gates are documented in the [audit ledger](docs/commercial-readiness-2026-10-18.md). Stable downloads remain 11.1.0.
+> Version 11.2.0 adds shared local/cloud metadata priority and clickable five-second completion notices. See the release notes for current verification; the earlier [audit ledger](docs/commercial-readiness-2026-10-18.md) retains broader commercial-readiness limitations.
 
 ## 📖 Overview
 
@@ -83,7 +83,7 @@ When importing items from academic databases, web pages, or DOI translators, met
 
 | Item                          | Details                                                                                          |
 | :---------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Add-on Version**            | `11.1.0`                                                                                         |
+| **Add-on Version**            | `11.2.0`                                                                                         |
 | **Add-on ID**                 | `metaflow@groele`                                                                                |
 | **Supported Zotero Versions** | `Zotero 10.0 – 11.*` (Verified on Windows Zotero 10.0.6 & Zotero 11 dev Gecko 153)               |
 | **Operating Systems**         | Windows / macOS / Linux                                                                          |
@@ -187,4 +187,4 @@ Distributed under the **[GNU Affero General Public License v3.0 or later (AGPL-3
 
 ### Workflow and data design
 
-Version 11.1.0 combines automatic metadata decisions, complete-command scheduling and feedback, and a bounded local runtime history file. See [workflow and data layout](docs/global-workflow-and-data-layout.md) and [automatic metadata and cache policy](docs/automatic-metadata-and-runtime-cache.md) for settings, data retention and verification limits.
+Version 11.2.0 combines automatic metadata decisions, complete-command scheduling and feedback, and a bounded local runtime history file. See [workflow and data layout](docs/global-workflow-and-data-layout.md) and [automatic metadata and cache policy](docs/automatic-metadata-and-runtime-cache.md) for settings, data retention and verification limits.

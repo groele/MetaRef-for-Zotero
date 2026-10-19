@@ -1,4 +1,4 @@
-> 当前候选为 11.1.1-beta.1，最新证据及待解决的商业发布门槛见[全局审查台账](commercial-readiness-2026-10-18.md)。本页后续内容为历史记录。
+> 当前版本为 11.2.0，最新交付验收见[发布说明](releases/metaflow-v11.2.0.md)及 dist/verification.json；商业发行边界仍见[全局审查台账](commercial-readiness-2026-10-18.md)。本页后续内容为历史记录。
 
 > 最新本地候选修复见 [10.6.0 API、指标总开关、列与完整执行链审查](api-columns-workflow-10.6.0.md)；验证以该交付的 verification.json 为准，以下保留历史记录。
 

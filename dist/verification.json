@@ -1,25 +1,43 @@
 {
-  "version": "11.1.0",
-  "verifiedAt": "2026-10-18T18:08:08.230218+08:00",
-  "sourceBaselineCommit": "0e534805ad717b75b341f076ff906ecb682b0f40",
+  "version": "11.2.0",
+  "verifiedAt": "2026-10-19T10:18:56.667277+08:00",
+  "sourceBaselineCommit": "87228406a3ef607402e5aff31cfa3b9ceeef1277",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3465934,
-    "sha256": "509761fae8f5770a1af56b20da85faa02ae6debf0428e06a1f38483969d4e7dc",
+    "bytes": 3467812,
+    "sha256": "8c3ad8d42697eda48fa8e49b68b02a8051e5f822230306e7d4c29177405f8d64",
+    "sha512": "b77f585ddcd6dc61ec0b0165175f56d9a89a7afe88f7f15e05642b252a23f62ab21e7912a551ba202fc45af67b76730ab4688ec5b0e08b02fc9e18c40fcc0dca",
     "manifest": {
+      "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "11.1.0",
-      "id": "metaflow@groele",
-      "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
-      "strict_min_version": "10.0",
-      "strict_max_version": "11.*"
+      "version": "11.2.0",
+      "description": "Validate, organize and enrich reference metadata in Zotero.",
+      "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
+      "author": "groele",
+      "icons": {
+        "16": "content/icons/metaref-16.png",
+        "32": "content/icons/metaref-32.png",
+        "48": "content/icons/metaref-48.png",
+        "96": "content/icons/metaref-96.png",
+        "128": "content/icons/metaref-128.png",
+        "256": "content/icons/metaref-256.png",
+        "512": "content/icons/metaref-512.png"
+      },
+      "applications": {
+        "zotero": {
+          "id": "metaflow@groele",
+          "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
+          "strict_min_version": "10.0",
+          "strict_max_version": "11.*"
+        }
+      }
     },
     "productionXpiInstalledAndLoaded": true
   },
   "checks": {
     "unit": {
-      "passed": 519,
-      "files": 80
+      "passed": 539,
+      "files": 83
     },
     "productionBuild": "passed",
     "typescript": "passed",
@@ -31,34 +49,31 @@
       {
         "host": "Windows Zotero 10.0.6 / Gecko 140",
         "locale": "zh-CN",
-        "passed": 61,
-        "scope": "affected metadata, core commands, runtime storage, caches, startup and production XPI installation"
-      },
-      {
-        "host": "Windows Zotero 11.0-dev.5+dac1ad489 / Gecko 153",
-        "locale": "en-US",
-        "passed": 61,
-        "scope": "same final production XPI and affected suite"
+        "passedUnique": 192,
+        "fullRun": {
+          "passed": 191,
+          "failed": 1,
+          "failure": "An old test selected a reset button by DOM order; it selected the newly promoted asynchronous journal-database control."
+        },
+        "affectedRerun": {
+          "passed": 6,
+          "includes": "Correct function-addressed reset test and installation of the same retained production XPI with SHA-512 verification."
+        },
+        "scope": "All full-run cases accepted with the corrected test rechecked separately; no third identical full run was counted."
       }
     ],
-    "reusedBroaderEvidence": {
-      "candidateVersion": "11.0.1-beta.3",
-      "host": "Windows Zotero 11.0-dev.5+dac1ad489 / Gecko 153",
-      "passed": 103,
-      "scope": "unchanged settings bindings, menu, bulk duplicate decisions and related modules",
-      "note": "Not an additional final-package full-suite count."
+    "settingsAudit": {
+      "beforeControls": 259,
+      "afterControls": 259,
+      "duplicateBindings": 0,
+      "affectedNativeChecks": 21,
+      "capture": "Native before/after screenshots captured and inspected in this release run."
     }
-  },
-  "dataPolicy": {
-    "runtimeHistoryDays": 30,
-    "runtimeHistoryRuns": 200,
-    "runtimeHistoryBytes": 2097152,
-    "oneHistoryRecordPerCoreCommand": true
   },
   "limits": [
     "Online providers use controlled responses.",
-    "Zotero 11 coverage is development-build validation.",
-    "No full third-party co-install matrix, macOS/Linux or long-duration large-library validation."
-  ],
-  "knownBuildWarning": "Historical ancestor tsconfig path warning in this local layout; current checkout production and test TypeScript checks pass."
+    "Zotero 11 development-build evidence belongs to earlier candidates; the final 11.2.0 XPI was not rerun on Zotero 11.",
+    "No full third-party co-install matrix, screen-reader certification or long-duration large-library validation.",
+    "Commercial redistribution conditions for bundled reference datasets remain documented in the audit ledger."
+  ]
 }
