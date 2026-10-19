@@ -4,6 +4,7 @@ import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
 import { waitUtilAsync } from "../utils/wait";
+import { configureCompletionNotice } from "./completion-notice";
 import { Rules } from "./rules";
 
 export interface FieldChange {
@@ -32,7 +33,7 @@ export interface ReportInfo {
   source?: string;
 }
 
-export function createReporter(infos: ReportInfo[], changes: FieldChange[] = []) {
+export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [], summary?: string) {
   const entries = new Map<number, { itemID: number; title: string; infos: ReportInfo[]; changes: FieldChange[] }>();
   const entryFor = (itemID: number, title?: string) => {
     if (!entries.has(itemID)) {
@@ -54,7 +55,7 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [])
       fontFamily: "Segoe UI, sans-serif",
       fontSize: "14px",
     },
-    children: [{
+    children: [...(summary ? [{ tag: "p", properties: { textContent: summary } } satisfies TagElementProps] : []), {
       tag: "button",
       properties: {
         id: "metaref-report-export",
@@ -203,21 +204,16 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [])
   return openAndWaitClose(addon.data.config.addonName);
 }
 
-const SUCCESS_CLOSE_DELAY = 1500;
-
 export class ProgressUI {
   private progressWindow?: ProgressWindowHelper;
   private _onCancel?: () => void;
   private running = false;
-  private closeTimer?: ReturnType<typeof setTimeout>;
 
   constructor(options?: { onCancel?: () => void }) {
     this._onCancel = options?.onCancel;
   }
 
   public close(): void {
-    clearTimeout(this.closeTimer);
-    this.closeTimer = undefined;
     this.progressWindow?.close();
     this.progressWindow = undefined;
     this.running = false;
@@ -290,12 +286,11 @@ export class ProgressUI {
     });
   }
 
-  public showFinished(successCount: number, errorCount: number, duration: number, cancelled = false, skipped = 0, preparationFailed = 0, details?: { saved: number; unchanged: number; notApplicable: number; warnings: number }): void {
+  public showFinished(successCount: number, errorCount: number, duration: number, cancelled = false, skipped = 0, preparationFailed = 0, details?: { saved: number; unchanged: number; notApplicable: number; warnings: number; records?: ReportInfo[]; changes?: FieldChange[] }): void {
     if (!this.progressWindow)
       return;
 
     this.running = false;
-    const closeDelay = errorCount || preparationFailed ? 6000 : cancelled ? 2500 : details?.warnings ? 4000 : SUCCESS_CLOSE_DELAY;
     const text = cancelled
       ? getString("info-batch-cancelled", { args: { processed: successCount + errorCount, skipped } })
       : successCount + errorCount
@@ -312,12 +307,12 @@ export class ProgressUI {
       .changeLine({ text, progress: 100, idx: 0 })
       .changeLine({ text: details ? getString("info-batch-details", { args: details }) : "", progress: 100, idx: 1 })
       .changeLine({ text: getString("info-batch-duration", { args: { seconds: duration.toFixed(1) } }), idx: 2 });
-    clearTimeout(this.closeTimer);
-    const completedWindow = this.progressWindow;
-    this.closeTimer = setTimeout(() => {
-      if (this.progressWindow === completedWindow)
-        this.close();
-    }, closeDelay);
+    // The stop line becomes a report entry after completion.
+    (this.progressWindow as unknown as { lines: { _hbox?: Element }[] }).lines[2]?._hbox?.removeEventListener("click", this.handleStopRequest as EventListener);
+    const records = details?.records || [];
+    const changes = details?.changes || [];
+    const summary = `${text} · ${details ? getString("info-batch-details", { args: details }) : ""}`;
+    void configureCompletionNotice(this.progressWindow, () => createReporter(records, changes, summary));
     if (preparationFailed && successCount + errorCount)
       this.showError();
   }

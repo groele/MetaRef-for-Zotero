@@ -99,6 +99,27 @@ describe("core command execution and optional costs", function () {
     assert.equal(translations + requests, 0);
   });
 
+  it("shows one native completion notice for a core command and opens details only on click", async function () {
+    pref("lint.notify", true);
+    const item = await create();
+    const before = plugin().data.dialogs.size;
+    await plugin().hooks.onLintInBatch("standard", [item], { core: true });
+    const notices = () => [...Services.wm.getEnumerator("") as unknown as Iterable<Window>]
+      .filter(win => !win.closed && win.document.documentElement?.hasAttribute("data-metaref-completion"));
+    for (let attempt = 0; attempt < 100 && !notices().length; attempt++)
+      await Zotero.Promise.delay(25);
+    assert.lengthOf(notices(), 1);
+    assert.equal(plugin().data.dialogs.size, before);
+    assert.isNull(Zotero.getMainWindow().document.querySelector("#metaref-core-task"));
+    const notice = notices()[0];
+    const content = notice.document.getElementById("zotero-progress-text-box")!;
+    content.dispatchEvent(new (notice as any).KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    for (let attempt = 0; attempt < 100 && plugin().data.dialogs.size === before; attempt++)
+      await Zotero.Promise.delay(25);
+    assert.isTrue(notice.closed);
+    assert.equal(plugin().data.dialogs.size, before + 1);
+  });
+
   it("stops a core task waiting for the runner without cancelling or modifying another task", async function () {
     const other = await create("Background task", "10.1234/background-task");
     const target = await create();

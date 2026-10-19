@@ -1,5 +1,6 @@
 import type { Arrayable } from "./utils/types";
 import { closeCoreFeedback } from "./modules/batch-feedback";
+import { closeCompletionNotices } from "./modules/completion-notice";
 import { localDOICheck, runCoreWorkflow } from "./modules/core-workflow";
 import { invalidateDuplicateStats, registerDuplicateStats, unregisterDuplicateStats } from "./modules/duplicate-stats";
 import { registerExtraColumns, unregisterExtraColumns } from "./modules/item-tree";
@@ -114,6 +115,7 @@ async function onShutdown() {
     unregisterPrefsWindows,
     closeReviewPanels,
     closeCoreFeedback,
+    closeCompletionNotices,
     closeAllDialogs,
     () => addon.runner.stop(),
     flushRuntimeData,

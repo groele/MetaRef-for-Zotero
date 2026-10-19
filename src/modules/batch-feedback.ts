@@ -5,6 +5,7 @@ import { preferenceListeners } from "../utils/preference-listeners";
 import { getPref } from "../utils/prefs";
 import { RUNTIME_HISTORY_BYTES, RUNTIME_HISTORY_LIMIT, RUNTIME_HISTORY_TTL } from "../utils/runtime-data-policy";
 import { flushRuntimeData, readRuntimeData, runtimeDataPath } from "../utils/runtime-data-storage";
+import { configureCompletionNotice } from "./completion-notice";
 import { createReporter } from "./reporter";
 
 const logger = createLogger("batch-feedback");
@@ -70,9 +71,10 @@ export function showCoreCompletionToast(result: BatchResult) {
           : getString("core-task-finished");
   const summary = getString("batch-feedback-summary", { args: { total: result.total, saved: result.saved, failed: result.failed, warnings: result.warnings } });
   try {
-    new ztoolkit.ProgressWindow(addon.data.config.addonName, { closeOnClick: true, closeTime: 4500 })
+    const notice = new ztoolkit.ProgressWindow(addon.data.config.addonName, { closeOnClick: false, closeTime: -1 })
       .createLine({ type: result.failed || result.preparationFailed ? "fail" : "default", text: `${outcome} · ${summary}`, progress: 100, idx: 0 })
       .show();
+    void configureCompletionNotice(notice, () => createReporter(result.records, result.changes, `${outcome} · ${summary}`));
   }
   catch (error) {
     logger.error("Cannot show core workflow completion toast", error);

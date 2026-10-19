@@ -36,3 +36,5 @@ report-export = 导出报告与字段变更
 report-export-failed = 导出失败，点击重试。
 report-prepare-failed = 规则准备失败
 info-batch-details = 已保存 { $saved }；未变化 { $unchanged }；不适用 { $notApplicable }；提醒 { $warnings }。
+
+completion-notice-open = 点击查看报告 · 5 秒后自动消失

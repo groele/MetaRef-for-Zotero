@@ -36,3 +36,5 @@ report-export = Export report and field changes
 report-export-failed = Export failed. Click to retry.
 report-prepare-failed = Rule preparation failed
 info-batch-details = Saved { $saved }; unchanged { $unchanged }; not applicable { $notApplicable }; warnings { $warnings }.
+
+completion-notice-open = Click to view the report · Closes automatically after 5 seconds

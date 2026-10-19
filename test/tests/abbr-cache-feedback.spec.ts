@@ -137,7 +137,7 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
     finally { Zotero.HTTP.request = original; }
   });
 
-  it("closes a normal success notification after about 1.5 seconds without mouse interaction", async function () {
+  it("closes a normal success notification after five seconds without mouse interaction", async function () {
     pref("lint.notify", true);
     const ui = plugin().runner.ui;
     await ui.init();
@@ -145,13 +145,45 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
     const nativeWindow = helper.lines[2]._itemText.ownerDocument.defaultView;
     try {
       ui.showFinished(1, 0, 0.1, false, 0, 0, { saved: 1, unchanged: 0, notApplicable: 0, warnings: 0 });
-      nativeWindow.dispatchEvent(new nativeWindow.MouseEvent("mouseover", { bubbles: true }));
       await Zotero.Promise.delay(500);
       assert.isFalse(nativeWindow.closed, "a success stays visible long enough to read");
-      await Zotero.Promise.delay(1600);
+      const parent = Zotero.getMainWindow();
+      assert.closeTo(nativeWindow.screenX, parent.screenX + parent.outerWidth - nativeWindow.outerWidth - 25, 2);
+      assert.isBelow(nativeWindow.screenY, parent.screenY + parent.outerHeight);
+      nativeWindow.dispatchEvent(new nativeWindow.MouseEvent("mouseover", { bubbles: true }));
+      await Zotero.Promise.delay(5000);
       assert.isTrue(nativeWindow.closed, "no mouse entry is required to dismiss the notice");
       assert.isFalse(ui.running);
     }
     finally { ui.close(); }
+  });
+
+  it("opens the completed report only on click, retaining its original records", async function () {
+    pref("lint.notify", true);
+    const ui = plugin().runner.ui;
+    await ui.init();
+    const nativeWindow = (ui as any).progressWindow.lines[2]._itemText.ownerDocument.defaultView;
+    const before = new Set(plugin().data.dialogs.values());
+    const records = [{ itemID: 0, title: "Completed task fixture", ruleID: "require-language", level: "info", message: "Original notification report" }];
+    try {
+      ui.showFinished(1, 0, 0.1, false, 0, 0, { saved: 1, unchanged: 0, notApplicable: 0, warnings: 0, records, changes: [] });
+      await Zotero.Promise.delay(200);
+      assert.equal(plugin().data.dialogs.size, before.size, "completion does not open a report");
+      nativeWindow.dispatchEvent(new nativeWindow.MouseEvent("mouseup", { bubbles: true, button: 0 }));
+      for (let attempt = 0; attempt < 100 && plugin().data.dialogs.size === before.size; attempt++)
+        await Zotero.Promise.delay(25);
+      assert.isTrue(nativeWindow.closed);
+      const report = [...plugin().data.dialogs.values()].find(win => !before.has(win)) as Window;
+      assert.exists(report);
+      assert.include(report.document.body!.textContent, "Original notification report");
+      report.close();
+    }
+    finally {
+      ui.close();
+      for (const win of plugin().data.dialogs.values()) {
+        if (!before.has(win))
+          win.close();
+      }
+    }
   });
 });

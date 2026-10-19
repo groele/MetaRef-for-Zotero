@@ -62,6 +62,7 @@ export type FluentMessageId =
   | 'batch-feedback-view-report'
   | 'bold'
   | 'cancel'
+  | 'completion-notice-open'
   | 'confirm'
   | 'core-feedback-cancelled'
   | 'core-feedback-completed'
