@@ -39,6 +39,17 @@ describe("core command execution and optional costs", function () {
     throw new Error("Core metadata review did not open");
   };
 
+  const progressNotice = async () => {
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const win = [...Services.wm.getEnumerator("") as unknown as Iterable<Window>]
+        .find(win => !win.closed && win.document.documentElement?.hasAttribute("data-metaref-core-progress"));
+      if (win)
+        return win;
+      await Zotero.Promise.delay(25);
+    }
+    throw new Error("Native core progress did not open");
+  };
+
   before(function () {
     Search = Zotero.Translate.Search;
     request = Zotero.HTTP.request;
@@ -46,6 +57,7 @@ describe("core command execution and optional costs", function () {
   });
 
   beforeEach(function () {
+    pref("lint.notify", true);
     translations = requests = 0;
     requestedJournals = [];
     for (const key of ["lint.onAdded", "workflow.updateMetadata", "workflow.remoteAuthorsOnCheck", "workflow.updateJournalRankings", "workflow.reviewDuplicatesOnCheck", "workflow.reviewDuplicatesOnUpdate", "workflow.scanPDF", "workflow.searchTitle", "metadata.updateJournalInfo"])
@@ -177,9 +189,10 @@ describe("core command execution and optional costs", function () {
     try {
       for (let attempt = 0; attempt < 100 && !plugin().data.activeCoreWorkflow; attempt++)
         await Zotero.Promise.delay(10);
-      const stop = Zotero.getMainWindow().document.querySelector<HTMLButtonElement>("#metaref-core-task-action")!;
+      const notice = await progressNotice();
+      const stop = notice.document.querySelector<HTMLElement>("#metaref-core-task-action")!;
       assert.isNotNull(stop);
-      stop.click();
+      stop.dispatchEvent(new (notice as any).MouseEvent("click", { bubbles: true }));
     }
     finally { release(); }
     assert.isFalse((await background).cancelled);
@@ -239,18 +252,20 @@ describe("core command execution and optional costs", function () {
     assert.equal(plugin().data.dialogs.size, dialogs, "completion does not open a detailed report");
   });
 
-  it("shows inline progress and stops later stages without a metadata confirmation window", async function () {
+  it("shows native progress without an inline bar and stops later stages without a metadata confirmation window", async function () {
     const item = await create();
     const doc = Zotero.getMainWindow().document;
     (Zotero.Translate as any).Search = function () {
       return { setIdentifier() {}, getTranslators: async () => ["controlled"], setTranslator() {}, translate: async () => {
         assert.equal(plugin().data.activeCoreWorkflow.stage, "metadata");
-        const stop = doc.querySelector<HTMLButtonElement>("#metaref-core-task-action")!;
+        const notice = await progressNotice();
+        const stop = notice.document.querySelector<HTMLElement>("#metaref-core-task-action")!;
         assert.isNotNull(stop);
-        assert.equal(doc.querySelector("#metaref-core-task-status")!.getAttribute("aria-live"), "polite");
+        assert.isNull(doc.getElementById("metaref-core-task"), "running commands never add a bottom bar");
+        assert.isNotNull(notice.document.querySelector("[aria-live=\"polite\"]"));
         assert.isNull(doc.getElementById("metaref-metadata-review"));
-        stop.click();
-        assert.isTrue(stop.disabled);
+        stop.dispatchEvent(new (notice as any).MouseEvent("click", { bubbles: true }));
+        assert.equal(stop.getAttribute("aria-disabled"), "true");
         return [structuredClone(response)];
       } };
     };
@@ -383,6 +398,7 @@ describe("core command execution and optional costs", function () {
     const attachment = await Zotero.Attachments.importFromFile({ file: PathUtils.join(fixture, "pages-three.pdf"), parentItemID: item.id });
     await IOUtils.writeUTF8(Zotero.Fulltext.getItemCacheFile(attachment).path, "DOI: 10.1234/core-pdf-fallback");
     assert.isEmpty(await plugin().api.review.discoverIdentifiers(item, undefined, false));
+    pref("lint.notify", true);
     translations = requests = 0;
     pref("workflow.formatAfterUpdate", false);
     const pending = plugin().hooks.onLintInBatch("tool-update-metadata", [item], { review: true });

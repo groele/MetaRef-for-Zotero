@@ -6,7 +6,7 @@
 
 [English](README.md) · [简体中文](README.zh-CN.md)
 
-[![Version](https://img.shields.io/badge/version-11.2.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
+[![Version](https://img.shields.io/badge/version-11.2.1-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
 [![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
@@ -19,9 +19,9 @@
 
 ---
 
-> **11.2.0 更新：**新增按判据自动填充元数据、多个重复组批量合并、完整命令调度与轻量反馈，以及独立的本地运行记录。功能变化及验证边界见[发布说明](docs/releases/metaflow-v11.2.0.md)，整体配置与数据位置见[功能与数据布局](docs/global-workflow-and-data-layout.md)。
+> **11.2.1 更新：**移除底部进度横条，两个核心命令的进度、停止和完成反馈统一使用右下角原生通知。功能变化及验证边界见[发布说明](docs/releases/metaflow-v11.2.1.md)，整体配置与数据位置见[功能与数据布局](docs/global-workflow-and-data-layout.md)。
 
-> 11.2.0 新增统一本地／云端元数据优先级，以及可点击查看报告、5 秒后自动消失的完成通知。当前验收见发布说明；此前[审查台账](docs/commercial-readiness-2026-10-18.md)保留商业发行条件的边界。
+> 11.2.1 保留统一本地／云端元数据优先级，以及可点击查看报告、5 秒后自动消失的完成通知。当前验收见发布说明；此前[审查台账](docs/commercial-readiness-2026-10-18.md)保留商业发行条件的边界。
 
 ## 📖 项目简介
 
@@ -83,7 +83,7 @@
 
 | 项目                   | 说明                                                                                  |
 | :--------------------- | :------------------------------------------------------------------------------------ |
-| **插件版本**           | `11.2.0`                                                                              |
+| **插件版本**           | `11.2.1`                                                                              |
 | **插件 ID**            | `metaflow@groele`                                                                     |
 | **支持的 Zotero 版本** | `Zotero 10.0 – 11.*`（严格测试覆盖 Windows Zotero 10.0.6 与 Zotero 11 dev Gecko 153） |
 | **操作系统**           | Windows / macOS / Linux                                                               |

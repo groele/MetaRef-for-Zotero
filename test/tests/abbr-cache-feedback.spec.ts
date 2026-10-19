@@ -137,6 +137,21 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
     finally { Zotero.HTTP.request = original; }
   });
 
+  it("does not revive a progress notification closed before initialization finishes", async function () {
+    pref("lint.notify", true);
+    const ui = plugin().runner.ui;
+    const initializing = ui.init(false, "Immediate completion fixture");
+    const helper = (ui as any).progressWindow;
+    ui.close();
+    await initializing;
+    await Zotero.Promise.delay(300);
+    assert.isUndefined((ui as any).progressWindow);
+    assert.isFalse((ui as any).running);
+    const nativeWindow = helper.lines[0]?._itemText?.ownerDocument?.defaultView;
+    if (nativeWindow)
+      assert.isTrue(nativeWindow.closed, "a late load cannot restore a completed task notification");
+  });
+
   it("closes a normal success notification after five seconds without mouse interaction", async function () {
     pref("lint.notify", true);
     const ui = plugin().runner.ui;

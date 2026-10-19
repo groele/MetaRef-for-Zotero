@@ -1,16 +1,16 @@
 {
-  "version": "11.2.0",
-  "verifiedAt": "2026-10-19T10:18:56.667277+08:00",
-  "sourceBaselineCommit": "87228406a3ef607402e5aff31cfa3b9ceeef1277",
+  "version": "11.2.1",
+  "verifiedAt": "2026-10-19T10:41:17.104983+08:00",
+  "sourceBaselineCommit": "a308248fb2c02d9da83a44e5c37a4cec732e2482",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3467812,
-    "sha256": "8c3ad8d42697eda48fa8e49b68b02a8051e5f822230306e7d4c29177405f8d64",
-    "sha512": "b77f585ddcd6dc61ec0b0165175f56d9a89a7afe88f7f15e05642b252a23f62ab21e7912a551ba202fc45af67b76730ab4688ec5b0e08b02fc9e18c40fcc0dca",
+    "bytes": 3467838,
+    "sha256": "ecdc30ff72e861e55e92951cb88680ad3d9ef8122137f5982b52d7ca5be01831",
+    "sha512": "8038d1d557c06f6215e7b95ccfc21a2287796146afa824cc3b5d0b9ebc38f6e186bf9a6ef2b28b2c20393b19390b0e6e4adc4aa452ee86c5d341d465d3b92636",
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "11.2.0",
+      "version": "11.2.1",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
       "author": "groele",
@@ -49,31 +49,17 @@
       {
         "host": "Windows Zotero 10.0.6 / Gecko 140",
         "locale": "zh-CN",
-        "passedUnique": 192,
-        "fullRun": {
-          "passed": 191,
-          "failed": 1,
-          "failure": "An old test selected a reset button by DOM order; it selected the newly promoted asynchronous journal-database control."
-        },
-        "affectedRerun": {
-          "passed": 6,
-          "includes": "Correct function-addressed reset test and installation of the same retained production XPI with SHA-512 verification."
-        },
-        "scope": "All full-run cases accepted with the corrected test rechecked separately; no third identical full run was counted."
+        "passedUnique": 31,
+        "failed": 0,
+        "scope": "Targeted core-workflow, cache-feedback and production XPI installation regression. Includes no inline bar during execution, native cancellation, five-second completion, click-only reports and closing before initialization finishes."
       }
-    ],
-    "settingsAudit": {
-      "beforeControls": 259,
-      "afterControls": 259,
-      "duplicateBindings": 0,
-      "affectedNativeChecks": 21,
-      "capture": "Native before/after screenshots captured and inspected in this release run."
-    }
+    ]
   },
   "limits": [
+    "Previous full-suite evidence belongs to 11.2.0. This patch uses targeted native regressions.",
     "Online providers use controlled responses.",
-    "Zotero 11 development-build evidence belongs to earlier candidates; the final 11.2.0 XPI was not rerun on Zotero 11.",
-    "No full third-party co-install matrix, screen-reader certification or long-duration large-library validation.",
-    "Commercial redistribution conditions for bundled reference datasets remain documented in the audit ledger."
+    "The final 11.2.1 XPI was not rerun on Zotero 11.",
+    "No full third-party co-install matrix or long-duration large-library validation.",
+    "Commercial redistribution conditions for reference datasets remain documented in the audit ledger."
   ]
 }

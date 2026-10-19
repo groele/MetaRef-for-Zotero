@@ -6,9 +6,11 @@ import { getPref } from "../utils/prefs";
 import { RUNTIME_HISTORY_BYTES, RUNTIME_HISTORY_LIMIT, RUNTIME_HISTORY_TTL } from "../utils/runtime-data-policy";
 import { flushRuntimeData, readRuntimeData, runtimeDataPath } from "../utils/runtime-data-storage";
 import { configureCompletionNotice } from "./completion-notice";
-import { createReporter } from "./reporter";
+import { createReporter, ProgressUI } from "./reporter";
 
 const logger = createLogger("batch-feedback");
+let coreProgress: ProgressUI | undefined;
+let progressState: typeof addon.data.activeCoreWorkflow;
 
 function reportDetails(result: BatchResult) {
   return { records: result.records, changes: result.changes };
@@ -55,6 +57,9 @@ function coreResultText(result: BatchResult) {
 }
 
 export function closeCoreFeedback() {
+  coreProgress?.close();
+  coreProgress = undefined;
+  progressState = undefined;
   for (const win of Zotero.getMainWindows())
     win.document.getElementById("metaref-core-task")?.remove();
 }
@@ -81,40 +86,31 @@ export function showCoreCompletionToast(result: BatchResult) {
   }
 }
 
-/** Keep the stop control inline while a complete command is running. */
 function updateCoreFeedback() {
+  // Remove bars left by earlier versions, including in secondary main windows.
+  for (const win of Zotero.getMainWindows())
+    win.document.getElementById("metaref-core-task")?.remove();
   const state = addon.data.activeCoreWorkflow;
   if (!state) {
     closeCoreFeedback();
     return;
   }
-  for (const win of Zotero.getMainWindows()) {
-    const doc = win.document;
-    const host = doc.getElementById("zotero-items-pane");
-    if (!host)
-      continue;
-    let panel = doc.getElementById("metaref-core-task");
-    if (!panel) {
-      panel = ztoolkit.UI.createElement(doc, "section", {
-        properties: { id: "metaref-core-task" },
-        attributes: { "aria-label": addon.data.config.addonName },
-        styles: { flex: "0 0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", padding: "8px 12px", borderTop: "1px solid var(--fill-quinary)", background: "var(--material-background)", color: "var(--fill-primary)", fontSize: "13px" },
-      });
-      panel.append(ztoolkit.UI.createElement(doc, "span", { properties: { id: "metaref-core-task-status" }, attributes: { "role": "status", "aria-live": "polite" }, styles: { flex: "1 1 220px", overflowWrap: "anywhere" } }));
-      panel.append(ztoolkit.UI.createElement(doc, "button", { properties: { id: "metaref-core-task-action" }, attributes: { type: "button" } }));
-      host.append(panel);
-    }
-    const status = panel.querySelector<HTMLSpanElement>("#metaref-core-task-status")!;
-    status.textContent = `${addon.data.config.addonName} · ${coreProgressText()}`;
-    status.title = coreProgressText();
-    const action = panel.querySelector<HTMLButtonElement>("#metaref-core-task-action")!;
-    action.textContent = getString("core-task-stop");
-    action.disabled = state.cancelled;
-    action.onclick = () => {
-      addon.data.activeCoreWorkflow?.cancel();
+  if (progressState !== state) {
+    closeCoreFeedback();
+    progressState = state;
+    const progress = coreProgress = new ProgressUI({ onCancel: () => {
+      state.cancel();
       updateBatchFeedback();
-    };
+    } });
+    void progress.init(false, coreProgressText()).then(() => {
+      if (coreProgress === progress && addon.data.activeCoreWorkflow === state)
+        progress.updateCoreProgress(coreProgressText());
+    }).catch((error) => {
+      progress.close();
+      logger.error("Cannot show core workflow progress", error);
+    });
   }
+  coreProgress?.updateCoreProgress(coreProgressText());
 }
 
 export function setupBatchFeedback(pane: Element) {

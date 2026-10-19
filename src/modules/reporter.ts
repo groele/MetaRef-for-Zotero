@@ -219,7 +219,7 @@ export class ProgressUI {
     this.running = false;
   }
 
-  public async init(slient?: boolean): Promise<void> {
+  public async init(slient?: boolean, coreStatus?: string): Promise<void> {
     this.close();
 
     if (slient || !getPref("lint.notify"))
@@ -232,13 +232,13 @@ export class ProgressUI {
     })
       .createLine({
         type: "default",
-        text: getString("info-batch-init"),
+        text: coreStatus || getString("info-batch-init"),
         progress: 0,
         idx: 0,
       })
       .createLine({
         type: "default",
-        text: getString("info-batch-pending-save"),
+        text: coreStatus ? "" : getString("info-batch-pending-save"),
         progress: 0,
         idx: 1,
       })
@@ -248,13 +248,31 @@ export class ProgressUI {
       })
       .show();
 
-    // @ts-expect-error miss types
-    await waitUtilAsync(() => Boolean(this.progressWindow?.lines?.[2]?._itemText));
-    // @ts-expect-error miss types
-    const stopLine = this.progressWindow?.lines?.[2];
-    if (stopLine?._hbox) {
-      stopLine._hbox.addEventListener("click", this.handleStopRequest);
+    const helper = this.progressWindow;
+    const lines = (helper as unknown as { lines: { _itemText?: Element; _hbox?: Element }[] }).lines;
+    await waitUtilAsync(() => this.progressWindow !== helper || Boolean(lines[2]?._itemText));
+    if (this.progressWindow !== helper)
+      return;
+    const stop = lines[2]?._hbox;
+    if (stop) {
+      stop.addEventListener("click", this.handleStopRequest as EventListener);
+      if (coreStatus) {
+        const root = stop.ownerDocument!.documentElement!;
+        root.setAttribute("data-metaref-core-progress", "true");
+        stop.id = "metaref-core-task-action";
+        stop.setAttribute("role", "button");
+        stop.setAttribute("tabindex", "0");
+        stop.addEventListener("keydown", ((event: KeyboardEvent) => {
+          if (event.key === "Enter" || event.key === " ")
+            this.handleStopRequest(event);
+        }) as EventListener);
+        lines[0]._itemText?.setAttribute("aria-live", "polite");
+      }
     }
+  }
+
+  public updateCoreProgress(text: string): void {
+    this.progressWindow?.changeLine({ text, idx: 0 });
   }
 
   public updateProgress(current: number, total: number, phase?: "idle" | "linting" | "saving"): void {
@@ -317,11 +335,11 @@ export class ProgressUI {
       this.showError();
   }
 
-  private handleStopRequest = (ev: MouseEvent): void => {
-    if (!this.running) {
-      this.close();
+  private handleStopRequest = (ev: Event): void => {
+    if (!this.running)
       return;
-    }
+    this.running = false;
+    (ev.currentTarget as Element | null)?.setAttribute("aria-disabled", "true");
     ev.stopPropagation();
     ev.preventDefault();
     this.progressWindow?.changeLine({
