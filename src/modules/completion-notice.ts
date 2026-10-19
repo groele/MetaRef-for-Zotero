@@ -34,7 +34,14 @@ export async function configureCompletionNotice(helper: ProgressWindowHelper, op
     if (closed)
       return;
     const win = lines[0]._itemText!.ownerDocument!.defaultView!;
+    // Native sizeToContent can settle asynchronously under Linux window managers.
+    const tile = () => {
+      if (!closed && !win.closed)
+        (Zotero.ProgressWindowSet as typeof Zotero.ProgressWindowSet & { tile: (window: Window) => void }).tile(win);
+    };
+    win.addEventListener("resize", tile);
     helper.addDescription(getString("completion-notice-open"));
+    win.requestAnimationFrame(tile);
     win.document.documentElement!.setAttribute("data-metaref-completion", "true");
     (win.document.documentElement as HTMLElement).style.cursor = "pointer";
     const open = () => {

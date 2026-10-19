@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, readdirSync, statSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -40,7 +40,9 @@ const qa = path.join(projectRoot, ".scaffold", "qa");
 mkdirSync(qa, { recursive: true });
 const packagePath = path.join(qa, "zotero-metaflow-production.xpi");
 copyFileSync(path.join(projectRoot, ".scaffold", "build", "zotero-metaflow.xpi"), packagePath);
-copyFileSync(path.join(projectRoot, ".scaffold", "build", "update-beta.json"), path.join(qa, "zotero-metaflow-production-update.json"));
+const version = JSON.parse(readFileSync(path.join(projectRoot, "package.json"), "utf8")).version;
+const updateFile = version.includes("-") ? "update-beta.json" : "update.json";
+copyFileSync(path.join(projectRoot, ".scaffold", "build", updateFile), path.join(qa, "zotero-metaflow-production-update.json"));
 run(["exec", "zotero-plugin", "test", "--no-watch"], {
   ...process.env,
   METAREF_TEST_PACKAGE_PATH: packagePath,
