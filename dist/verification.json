@@ -1,16 +1,16 @@
 {
-  "version": "12.0.0",
-  "verifiedAt": "2026-10-19T16:24:40.380660+08:00",
-  "sourceCommit": "913e533b44e0e75573eb4d35c055c80d0ecdaf54",
+  "version": "12.1.0",
+  "verifiedAt": "2026-10-19T22:12:43.803467+08:00",
+  "sourceCommit": "2dfcea6688832350e1d181c73e9069b9e28a43db",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3469545,
-    "sha256": "569072e1a5c54ee9abccc51bc02ca1174b294ebcbac3335b5836e6a8a260c70f",
-    "sha512": "3e3a3a478e78cf9c85b1f4a292e0ed07174b70d26e76e904ff1848616a8a2c3a0d20bc194a55510c8350cffc79a195d4a06f839626d985ebf6ca79814019b3d1",
+    "bytes": 3470704,
+    "sha256": "f8104b45cf643e1bc9db9e6858371cb9114134c5681feb3a9f052b568d973137",
+    "sha512": "ee22ec8ce7a0933f404c92d6dbd36b9fc3dac3279a70427f2047a7993526d4bed08ea9d8e19e3afce98c67c305ab32bc9d8eee8fca7b7cc37183c7cb801c6967",
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "12.0.0",
+      "version": "12.1.0",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
       "author": "groele",
@@ -37,8 +37,8 @@
   },
   "checks": {
     "unit": {
-      "passed": 548,
-      "files": 84
+      "passed": 553,
+      "files": 85
     },
     "productionBuild": "passed",
     "typescript": "passed",
@@ -47,61 +47,34 @@
     "autocorrect": "passed",
     "whitespace": "passed",
     "manifestAndFeedHash": "passed",
-    "settingsStatic": {
-      "defaultCount": 285,
-      "staticControlCount": 122,
-      "missingDefaults": [],
-      "duplicateStaticBindings": [],
-      "unresolvedVisibleBindings": []
-    },
     "nativeFinal": [
       {
         "host": "Windows Zotero 10.0.6 / Gecko 140",
         "locale": "zh-CN",
-        "passed": 195,
+        "passed": 198,
         "failed": 0,
-        "scope": "Complete native suite including settings, metadata, rollback, duplicates, persistence, report navigation, responsive cancellation and production XPI installation"
+        "scope": "Complete native suite including abstract rules, import switches, core notification reuse, cancellation, settings, metadata, transactions, duplicates and production XPI installation"
       },
       {
         "host": "Windows Zotero 10.0.6 / Gecko 140",
         "locale": "en-US",
-        "passed": 5,
+        "passed": 4,
         "failed": 0,
-        "scope": "Same production XPI: responsive cancellation, report paging/filter/export, platform/startup and production installation"
+        "scope": "Final production XPI: abstract normalization, settings gates, automatic import and production package installation; explicit item-data reload arguments in test fixtures"
       }
-    ],
-    "visualQA": {
-      "locale": "en-US",
-      "scope": "Native report screenshot inspected: controls, pagination, warning/error cards and wrapping"
-    },
-    "performance": {
-      "version": "12.0.0",
-      "zoteroVersion": "10.0.6",
-      "locale": "zh-CN",
-      "itemCount": 160,
-      "sequentialBatches": 8,
-      "journalFileReads": 0,
-      "indexingMs": 141,
-      "batchMs": 680,
-      "progressUpdates": 8,
-      "burstItems": 16,
-      "burstBatches": 1,
-      "burstMs": 564,
-      "notificationMs": 61
-    }
+    ]
   },
   "limitations": [
     "Zotero 11 development builds were not rerun for this release. Compatibility metadata remains 10.0–11.x.",
     "No macOS/Linux or exhaustive third-party coexistence validation.",
     "Provider responses are controlled fixtures; live account permissions and availability are not certified.",
-    "The 160-item scenario is not a large-library long-duration stress test or a guaranteed speedup.",
-    "Cooperative scheduling cannot preempt a single long synchronous operation; report pagination bounds item cards, not evidence rows within one item."
+    "Abstract paragraph boundaries and chemical fragment detection are conservative heuristics; arbitrary malformed publisher text is not guaranteed to be repaired."
   ],
   "evidenceLogSha256": {
-    "unit-final.log": "88f0bcd5813b5557f7e700f0724a51b5cb9aefa7a9d145f66c9bd79039383ff9",
-    "zotero10-final.log": "5a7a9a73198c212b72092ed1753c85ba6930f8e92b1468c33b1415d7d975e8ad",
-    "zotero10-en-final.log": "688a00240c50a03f5d99fa0b6ad54b73aea50181f463737aa4b2a50276a99229",
-    "lint-final.log": "28ea95e63c681933605a3c4a141795cab9eb43956bd23e5c8be506321a8cb7ca",
-    "test-types-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "unit.log": "39e6dd4b7e25d7985c0afea63ada99637a8a767202afc993d329f44e0c1f9882",
+    "e2e-full.log": "5a02a1eb049b7337221d987f1c6ce5d49689447cf27bfd2c8821c2c55d5d20d8",
+    "e2e-package-en.log": "c3ae74f4e2f88b7ebaab66e04fa7551d7681e7134e2320977e4cf9ebc40ccbeb",
+    "lint-final.log": "43cf4fe18504fd1dcbab6675b56728419a3e8ad1f90ed46329dd9850823aee43",
+    "test-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   }
 }
