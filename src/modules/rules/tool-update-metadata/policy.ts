@@ -7,7 +7,7 @@ export function normalizeDOI(value?: string): string {
 }
 
 function normalizedTitle(value?: string): string {
-  return (value || "").normalize("NFKC").replace(/<[^>]*>/g, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+  return (value || "").normalize("NFKC").replace(/<(?:[\w-]+:)?math\b[^>]*>[\s\S]*?<\/(?:[\w-]+:)?math\s*>/gi, math => math.replace(/<[^>]*>/g, "").replace(/\s+/g, "")).replace(/<(sub|sup)\b[^>]*>([\s\S]*?)<\/\1>/gi, (_match, _tag, content: string) => content.replace(/<[^>]*>/g, "").trim()).replace(/<[^>]*>/g, "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 }
 
 export function titlesAgree(original: string, candidate: string): boolean {

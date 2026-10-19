@@ -99,6 +99,43 @@ describe("core command execution and optional costs", function () {
     assert.equal(translations + requests, 0);
   });
 
+  it("honors local and cloud priority in both core commands without bypassing DOI verification", async function () {
+    pref("workflow.updateMetadata", true);
+    pref("workflow.formatAfterUpdate", false);
+    response.title = "Verified cloud title";
+    for (const command of ["standard", "tool-update-metadata"]) {
+      const item = await create("Local corrected title");
+      item.setField("date", "2025");
+      item.setField("publicationTitle", "Local corrected journal");
+      await item.saveTx();
+      response.publicationTitle = "Verified Cloud Journal";
+      pref("rule.tool-update-metadata.option.mode", "blank");
+      await plugin().hooks.onLintInBatch(command, [item], command === "standard" ? { core: true } : { review: true });
+      assert.equal(item.getField("title"), "Local corrected title");
+      assert.equal(item.getField("date"), "2025");
+      pref("rule.tool-update-metadata.option.mode", "all");
+      await plugin().hooks.onLintInBatch(command, [item], command === "standard" ? { core: true } : { review: true });
+      await item.reload(["itemData", "creators"], true);
+      assert.equal(item.getField("title"), response.title);
+      assert.equal(item.getField("date"), "2026");
+      assert.equal(item.getField("publicationTitle"), "Verified Cloud Journal");
+      assert.isTrue(plugin().runner.lastResult.records.some((record: any) => record.code === "metadata-cloud-priority"));
+      const correctDOI = response.DOI;
+      response.DOI = "10.1234/wrong-work";
+      response.title = "Contradictory DOI title";
+      try {
+        await plugin().hooks.onLintInBatch(command, [item], command === "standard" ? { core: true } : { review: true });
+        assert.equal(item.getField("DOI"), correctDOI);
+        assert.notEqual(item.getField("title"), response.title);
+        assert.isTrue(plugin().runner.lastResult.records.some((record: any) => record.code === "metadata-auto-blocked"));
+      }
+      finally {
+        response.DOI = correctDOI;
+        response.title = "Verified cloud title";
+      }
+    }
+  });
+
   it("shows one native completion notice for a core command and opens details only on click", async function () {
     pref("lint.notify", true);
     const item = await create();

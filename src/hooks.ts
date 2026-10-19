@@ -335,11 +335,12 @@ async function onLintInBatch(
     rules.push(localDOICheck());
   }
   if (requestedIDs.includes("standard") && !context.automatic) {
+    const mode = getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" as const : "blank" as const;
     if (getPref("workflow.updateMetadata" as any, false) && !rules.some(rule => rule.id === "tool-update-metadata")) {
-      rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false, repairCreators: getPref("metadata.repairCreators" as any, true) === true }) });
+      rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode, allowTypeChanged: false, repairCreators: getPref("metadata.repairCreators" as any, true) === true }) });
     }
     else if (getPref("workflow.remoteAuthorsOnCheck" as any, false) && getPref("metadata.repairCreators" as any, true) && rules.some(rule => rule.id === "require-creators") && !rules.some(rule => rule.id === "tool-update-metadata")) {
-      rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode: "blank", allowTypeChanged: false, repairCreators: true, creatorsOnly: true }) });
+      rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode, allowTypeChanged: false, repairCreators: true, creatorsOnly: true }) });
     }
     if (hasEnabledJournalMetrics() && getPref("workflow.updateJournalRankings" as any, false) && !rules.some(rule => rule.id === "tool-update-easyscholar"))
       rules.push(Rules.getByID("tool-update-easyscholar")!);
@@ -351,7 +352,7 @@ async function onLintInBatch(
   const updateJournal = hasEnabledJournalMetrics() && !context.automatic && getPref("metadata.updateJournalInfo" as any, true)
     && (requestedIDs.includes("tool-update-metadata") || (requestedIDs.includes("standard") && getPref("workflow.updateMetadata" as any, false)));
   if (updateJournal) {
-    const mode = getPref("rule.tool-update-metadata.option.mode") === "all" && !requestedIDs.includes("standard") ? "all" as const : "blank" as const;
+    const mode = getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" as const : "blank" as const;
     const rule = { ...ToolUpdateEasyScholar, prepare: () => ({ mode }) };
     const index = rules.findIndex(rule => rule.id === "tool-update-easyscholar");
     if (index >= 0)

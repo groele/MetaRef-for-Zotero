@@ -1423,19 +1423,14 @@
     <groupbox>
       <label><html:h3 data-l10n-id="metadata-update-defaults" /></label>
       <hbox align="center">
-        <label data-l10n-id="rule-tool-update-metadata-dialog-mode"></label>
+        <label data-l10n-id="metadata-source-priority"></label>
         <radiogroup
           orient="horizontal"
+          id="metaref-metadata-source-priority"
           preference="rule.tool-update-metadata.option.mode"
         >
-          <radio
-            data-l10n-id="rule-tool-update-metadata-dialog-mode-all"
-            value="all"
-          />
-          <radio
-            data-l10n-id="rule-tool-update-metadata-dialog-mode-blank"
-            value="blank"
-          />
+          <radio data-l10n-id="metadata-source-local" value="blank" />
+          <radio data-l10n-id="metadata-source-cloud" value="all" />
         </radiogroup>
       </hbox>
 

@@ -33,10 +33,25 @@ describe("automatic metadata decisions", () => {
     expect(automaticSelection(value, false, false).selection!.fields.has("creators")).toBe(false);
     expect(automaticSelection({ ...value, excludedFields: ["creators"] }, true, true).selection!.fields.has("creators")).toBe(false);
   });
-  it("rejects blocked sources and identity conflicts even in overwrite mode", () => {
+  it("rejects blocked sources and contradictory identifiers even with cloud priority", () => {
     expect(automaticSelection(proposal({ blocked: true }), true).reason).toBe("blocked");
-    expect(automaticSelection(proposal({ conflicts: ["title"] }), true).reason).toBe("conflict");
     expect(automaticSelection(proposal({ candidate: { DOI: "10.1234/other" } }), true).reason).toBe("conflict");
+    expect(automaticSelection(proposal({ conflicts: ["DOI"] }), true).reason).toBe("conflict");
+  });
+  it("allows cloud field differences only after verifying the same explicit DOI", () => {
+    const value = proposal({ conflicts: ["title", "date", "creators"] });
+    expect(automaticSelection(value).reason).toBe("conflict");
+    expect(automaticSelection(value, true).selection?.fields.has("date")).toBe(true);
+    for (const extra of [
+      { original: { title: "Local without a DOI" } },
+      { candidate: { title: "Source without a DOI" } },
+      { identifier: identifier("10.1234/other") },
+      { identifier: identifier("10.1234/test", "DOI", "PDF excerpt") },
+      { identifier: identifier("Local title", "Title") },
+      { preprintURL: "https://arxiv.org/abs/2610.12345" },
+    ]) {
+      expect(automaticSelection({ ...value, ...extra }, true).reason).toBe("conflict");
+    }
   });
   it("requires independent corroboration for a PDF or title lookup", () => {
     for (const candidate of [identifier("10.1234/test", "DOI", "PDF header"), identifier("Optical response of layered materials", "Title")]) {

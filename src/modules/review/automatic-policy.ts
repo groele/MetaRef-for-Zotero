@@ -26,11 +26,15 @@ export function automaticIdentifier(candidates: IdentifierCandidate[]): Identifi
 export function automaticSelection(proposal: ReviewProposal, overwrite = false, repairCreators = false): { selection?: MetadataDecision; reason?: "blocked" | "conflict" | "evidence" } {
   if (proposal.blocked)
     return { reason: "blocked" };
-  if (proposal.conflicts.length)
-    return { reason: "conflict" };
   const originalDOI = normalizeDOI(proposal.original.DOI);
   const returnedDOI = normalizeDOI(proposal.candidate.DOI);
   if (!proposal.preprintURL && originalDOI && returnedDOI && !originalDOI.startsWith("10/") && originalDOI !== returnedDOI)
+    return { reason: "conflict" };
+  // User authority applies to field differences only after an explicit DOI is verified.
+  const verifiedDOI = !proposal.preprintURL && proposal.identifier.kind === "DOI" && !proposal.identifier.excerpt
+    && originalDOI && !originalDOI.startsWith("10/") && originalDOI === returnedDOI
+    && originalDOI === normalizeDOI(proposal.identifier.value);
+  if (proposal.conflicts.length && !(overwrite && verifiedDOI && proposal.conflicts.every(field => ["title", "date", "creators"].includes(field))))
     return { reason: "conflict" };
   // A title search or PDF excerpt needs independent agreement with existing metadata.
   if (proposal.identifier.kind === "Title" || proposal.identifier.excerpt) {

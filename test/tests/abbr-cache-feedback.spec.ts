@@ -164,7 +164,7 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
     await ui.init();
     const nativeWindow = (ui as any).progressWindow.lines[2]._itemText.ownerDocument.defaultView;
     const before = new Set(plugin().data.dialogs.values());
-    const records = [{ itemID: 0, title: "Completed task fixture", ruleID: "require-language", level: "info", message: "Original notification report" }];
+    const records = ["tool-review-metadata", "tool-update-easyscholar"].map(ruleID => ({ itemID: 0, title: "Completed task fixture", ruleID, level: "info", message: "Original notification report" }));
     try {
       ui.showFinished(1, 0, 0.1, false, 0, 0, { saved: 1, unchanged: 0, notApplicable: 0, warnings: 0, records, changes: [] });
       await Zotero.Promise.delay(200);
@@ -176,6 +176,8 @@ describe("abbreviations, durable cache and quiet completion in Zotero", function
       const report = [...plugin().data.dialogs.values()].find(win => !before.has(win)) as Window;
       assert.exists(report);
       assert.include(report.document.body!.textContent, "Original notification report");
+      assert.notInclude(report.document.body!.textContent, "metaref-rule-tool-review-metadata");
+      assert.notInclude(report.document.body!.textContent, "metaref-rule-tool-update-easyscholar");
       report.close();
     }
     finally {

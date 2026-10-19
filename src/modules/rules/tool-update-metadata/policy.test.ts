@@ -20,6 +20,13 @@ describe("metadata identity and completion", () => {
     expect(titlesAgree("Spin dynamics in MoS2", "Spin dynamics in WS2")).toBe(false);
     expect(metadataIdentity({ title: "Same title", date: "2020" }, {}, { title: "Same title", date: "2025" })).toBe(false);
   });
+  it("compares HTML and indented MathML formulas without treating formatting as a different work", () => {
+    const html = "Ultrafast moiré-resolved spectroscopy of interlayer-exciton thermalization in twisted WSe<sub>2</sub>/WS<sub>2</sub> heterobilayers";
+    const formula = "<mml:math xmlns:mml=\"http://www.w3.org/1998/Math/MathML\"><mml:mrow>\n <mml:msub><mml:mi>WSe</mml:mi>\n <mml:mn>2</mml:mn></mml:msub><mml:mo>/</mml:mo>\n <mml:msub><mml:mi>WS</mml:mi><mml:mn>2</mml:mn></mml:msub></mml:mrow></mml:math>";
+    expect(titlesAgree(html, html.replace("WSe<sub>2</sub>/WS<sub>2</sub>", formula))).toBe(true);
+    expect(titlesAgree("Optical response in WSe<sub>2</sub>", "Optical response in WS<sub>2</sub>")).toBe(false);
+    expect(titlesAgree("<i>Spin</i> dynamics", "Spin dynamics")).toBe(true);
+  });
   it("fills missing fields without letting a later service overwrite earlier data", () => {
     expect(mergeMetadata({ title: "First", creators: [] }, { title: "Second", date: "2026", creators: [{ creatorType: "author", lastName: "Doe" }] }))
       .toEqual({ title: "First", date: "2026", creators: [{ creatorType: "author", lastName: "Doe" }] });

@@ -44,6 +44,7 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
     targetItemTypes: version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "book", "bookSection"],
     async prepare({ items, signal }) {
       const repairCreators = features.repairCreators ?? (getPref("metadata.repairCreators", true) === true);
+      const overwrite = features.overwrite ?? (getPref("rule.tool-update-metadata.option.mode") === "all");
       const evidence = new Map<string, Promise<ReviewProposal>>();
       const failures = new Map<number, string>();
       const failureCodes = new Map<number, string>();
@@ -94,7 +95,7 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
       signal?.throwIfAborted();
       const selections: MetadataDecision[] = [];
       for (const proposal of proposals) {
-        const decision = automaticSelection(proposal, features.overwrite, repairCreators);
+        const decision = automaticSelection(proposal, overwrite, repairCreators);
         if (decision.selection) {
           selections.push(decision.selection);
         }
@@ -113,8 +114,12 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
         return;
       }
       const selection = options.selectionsByItem.get(item.id);
-      if (selection)
+      if (selection) {
         applyReviewedMetadata(item, selection, report);
+        const resolved = selection.proposal.conflicts.filter(field => selection.fields.has(field));
+        if (resolved.length)
+          report({ level: "info", code: "metadata-cloud-priority", source: selection.proposal.source, message: getString("review-cloud-priority", { args: { fields: resolved.join(", ") } }) });
+      }
     },
   });
 }

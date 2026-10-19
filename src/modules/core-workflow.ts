@@ -62,7 +62,7 @@ async function executeWorkflow(command: CoreCommand, items: Zotero.Item[]) {
     controller.abort(new Error("Core workflow cancelled"));
   } };
   const started = Date.now();
-  const overwrite = command === "update" && getPref("rule.tool-update-metadata.option.mode") === "all";
+  const overwrite = getPref("rule.tool-update-metadata.option.mode") === "all";
   const reviewOptions = {
     scanPDF: pref("workflow.scanPDF", false),
     searchTitle: pref("workflow.searchTitle", false),

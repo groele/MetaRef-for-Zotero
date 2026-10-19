@@ -328,7 +328,7 @@ menu-placement =
 menu-placement-primary = Top-level context menu
 menu-placement-nested = MetaFlow submenu
 
-metadata-update-saved-description = Both core commands fill fields according to validation rules, without review or confirmation UI. Update respects blank/overwrite mode; Check fills blanks by default. Identity conflicts or insufficient evidence preserve the item and record the reason. Enabled arXiv publication lookup creates or reuses a related publication and preserves the preprint.
+metadata-update-saved-description = Shared by enabled online metadata steps in both core commands and standalone verification; this does not enable online steps. Local priority is the default; author completion follows its separate switch. Cloud priority may resolve field differences after verifying an exact DOI match. Conflicting DOIs and insufficient evidence are still rejected; empty source values never erase local fields. Import, abbreviation and ranking source policies stay independent; preprints remain linked to their published versions.
 metadata-repair-creators =
     .label = Repair authors from verified metadata, including missing, partial and incorrect lists
 metadata-repair-creators-description = Includes authors in automatic bibliographic filling. After identity verification, enabling this option repairs incomplete existing author lists. Disabling it preserves authors during metadata filling and in related publications. Explicit author verification during Check and local author formatting follow their own switches.
@@ -530,3 +530,10 @@ core-task-finished = Completed
 core-task-attention = Needs Attention
 core-task-stopped = Stopped
 core-task-no-stages = No Steps Enabled
+
+metadata-source-priority = Metadata source priority
+metadata-source-local =
+  .label = Prefer local data (keep existing fields and fill blanks)
+metadata-source-cloud =
+  .label = Prefer cloud data (update existing fields after verification)
+review-cloud-priority = Verified matching DOI; applied cloud priority to source fields. Differing fields: { $fields }.

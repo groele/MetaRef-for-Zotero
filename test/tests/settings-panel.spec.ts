@@ -39,6 +39,28 @@ describe("settings panel layout and validation in Zotero", function () {
     assert.isNull(pane.querySelector(".metaref-settings-search, .metaref-settings-jump, .metaref-settings-disclosure, .metaref-settings-rule-actions"));
   });
 
+  it("persists the single local/cloud priority control through real radio clicks", function () {
+    const key = pref("rule.tool-update-metadata.option.mode");
+    const before = Zotero.Prefs.get(key, true);
+    const group = pane.querySelector("#metaref-metadata-source-priority")!;
+    assert.exists(group);
+    assert.lengthOf(pane.querySelectorAll(`[preference='${key}']`), 1);
+    try {
+      for (const value of ["all", "blank"]) {
+        const radio = group.querySelector<HTMLElement>(`radio[value='${value}']`)!;
+        assert.isNotEmpty(radio.getAttribute("label") || radio.textContent || "");
+        radio.click();
+        assert.equal(Zotero.Prefs.get(key, true), value);
+      }
+    }
+    finally {
+      if (before === undefined)
+        Zotero.Prefs.clear(key, true);
+      else
+        Zotero.Prefs.set(key, before as string, true);
+    }
+  });
+
   it("persists every available checkbox binding and connects standard rule switches to the runner", function () {
     const controls = [...pane.querySelectorAll<HTMLInputElement>("input[type='checkbox'][preference]")];
     const saved = new Map(controls.map(control => [control.getAttribute("preference")!, { value: Zotero.Prefs.get(control.getAttribute("preference")!, true), checked: control.checked }]));

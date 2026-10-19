@@ -146,7 +146,7 @@ export function createReporter(infos: ReportInfo[], changes: FieldChange[] = [],
         {
           tag: "a",
           properties: {
-            textContent: info.label ?? (Rules.getByID(info.ruleID as ID) ? getString((Rules.getByID(info.ruleID as ID)!.nameKey || `rule-${info.ruleID}`) as Parameters<typeof getString>[0], "label") : info.ruleID),
+            textContent: info.label ?? (Rules.getByID(info.ruleID as ID) ? getString((Rules.getByID(info.ruleID as ID)!.nameKey || `rule-${info.ruleID}`) as Parameters<typeof getString>[0]) : info.ruleID),
           // href: `https://github.com/groele/Zotero-MetaFlow/blob/main/docs/rules/${info.ruleID}.md`,
           },
           styles: {

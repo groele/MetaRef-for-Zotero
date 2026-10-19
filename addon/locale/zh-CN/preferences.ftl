@@ -327,7 +327,7 @@ menu-placement =
 menu-placement-primary = 右键一级菜单
 menu-placement-nested = MetaFlow 子菜单
 
-metadata-update-saved-description = 两个核心命令均按判据直接填充，不显示审阅或确认界面。“更新元数据”遵循补空／覆盖模式，“检查并修复”默认仅补空字段。身份冲突或证据不足时保留原值并记录原因；启用 arXiv 正式版查询后，自动建立或复用关联正式版并保留预印本。
+metadata-update-saved-description = 两个核心命令已启用的联网步骤及单独核验共用此设置，不会自动启用联网。默认本地优先；作者仍按独立开关补全。云端优先在 DOI 核验一致时可更新标题、年份等差异字段；不同 DOI 或证据不足仍跳过，来源空值不清除本地。自动导入、期刊缩写和评级数据源策略不变，预印本继续保留并关联正式版。
 metadata-repair-creators =
     .label = 按核验后的文献来源修复作者名单（含缺失、删除部分和已有错误）
 metadata-repair-creators-description = 控制书目信息自动填充是否包含作者。身份核验通过且开关开启时，会补全已有但不完整的作者名单；关闭时元数据补全不改作者，关联正式版也保留原有作者；单独启用的“检查时联网核验作者”和本地作者格式规则按各自开关执行。
@@ -529,3 +529,10 @@ core-task-finished = 已完成
 core-task-attention = 有待处理问题
 core-task-stopped = 已停止
 core-task-no-stages = 未启用执行步骤
+
+metadata-source-priority = 元数据来源优先级
+metadata-source-local =
+  .label = 优先本地数据（保留已有字段，补齐空缺）
+metadata-source-cloud =
+  .label = 优先云端数据（核验通过后更新已有字段）
+review-cloud-priority = DOI 已核验一致，按照云端优先设置采用来源字段；差异字段：{ $fields }。
