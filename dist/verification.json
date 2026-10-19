@@ -1,16 +1,16 @@
 {
-  "version": "11.2.1",
-  "verifiedAt": "2026-10-19T10:53:49.750680+08:00",
-  "sourceBaselineCommit": "3a2730b09bf1c5667f3d7d4ddb5ddf28d1e26499",
+  "version": "12.0.0",
+  "verifiedAt": "2026-10-19T16:24:40.380660+08:00",
+  "sourceCommit": "913e533b44e0e75573eb4d35c055c80d0ecdaf54",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3467947,
-    "sha256": "c3116efeff0c7dfdd9343bd8a9b8345eaf0d69865bcf3de65ed13fc70d975637",
-    "sha512": "b442f3b501d72898b06da579111130321179a3bdf842467a8e3775d2edb46e6d7f63b1cf623f262c06eff77550f040cdad18d1ba5fb21482b387e88685c26694",
+    "bytes": 3469545,
+    "sha256": "569072e1a5c54ee9abccc51bc02ca1174b294ebcbac3335b5836e6a8a260c70f",
+    "sha512": "3e3a3a478e78cf9c85b1f4a292e0ed07174b70d26e76e904ff1848616a8a2c3a0d20bc194a55510c8350cffc79a195d4a06f839626d985ebf6ca79814019b3d1",
     "manifest": {
       "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "11.2.1",
+      "version": "12.0.0",
       "description": "Validate, organize and enrich reference metadata in Zotero.",
       "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
       "author": "groele",
@@ -32,12 +32,13 @@
         }
       }
     },
-    "productionXpiInstalledAndLoaded": true
+    "productionXpiInstalledAndLoaded": true,
+    "installationScope": "Temporary installation in an isolated scaffold profile; daily user profile untouched"
   },
   "checks": {
     "unit": {
-      "passed": 539,
-      "files": 83
+      "passed": 548,
+      "files": 84
     },
     "productionBuild": "passed",
     "typescript": "passed",
@@ -45,27 +46,62 @@
     "eslint": "passed",
     "autocorrect": "passed",
     "whitespace": "passed",
+    "manifestAndFeedHash": "passed",
+    "settingsStatic": {
+      "defaultCount": 285,
+      "staticControlCount": 122,
+      "missingDefaults": [],
+      "duplicateStaticBindings": [],
+      "unresolvedVisibleBindings": []
+    },
     "nativeFinal": [
       {
         "host": "Windows Zotero 10.0.6 / Gecko 140",
         "locale": "zh-CN",
-        "passedUnique": 31,
+        "passed": 195,
         "failed": 0,
-        "scope": "Targeted core-workflow, cache-feedback and production XPI installation regression. Includes no inline bar during execution, native cancellation, five-second completion, click-only reports and closing before initialization finishes."
+        "scope": "Complete native suite including settings, metadata, rollback, duplicates, persistence, report navigation, responsive cancellation and production XPI installation"
+      },
+      {
+        "host": "Windows Zotero 10.0.6 / Gecko 140",
+        "locale": "en-US",
+        "passed": 5,
+        "failed": 0,
+        "scope": "Same production XPI: responsive cancellation, report paging/filter/export, platform/startup and production installation"
       }
     ],
-    "crossPlatformCandidate": {
-      "run": "https://github.com/groele/Zotero-MetaFlow/actions/runs/39191186843",
-      "passed": 192,
-      "failed": 1,
-      "failure": "Linux native-window alignment settled after the initial animation-frame positioning. Added bounded retiling and main-window resize tracking; final CI must recheck."
+    "visualQA": {
+      "locale": "en-US",
+      "scope": "Native report screenshot inspected: controls, pagination, warning/error cards and wrapping"
+    },
+    "performance": {
+      "version": "12.0.0",
+      "zoteroVersion": "10.0.6",
+      "locale": "zh-CN",
+      "itemCount": 160,
+      "sequentialBatches": 8,
+      "journalFileReads": 0,
+      "indexingMs": 141,
+      "batchMs": 680,
+      "progressUpdates": 8,
+      "burstItems": 16,
+      "burstBatches": 1,
+      "burstMs": 564,
+      "notificationMs": 61
     }
   },
-  "limits": [
-    "Previous full-suite evidence belongs to 11.2.0. This patch uses targeted native regressions.",
-    "Online providers use controlled responses.",
-    "The final 11.2.1 XPI was not rerun on Zotero 11.",
-    "No full third-party co-install matrix or long-duration large-library validation.",
-    "Commercial redistribution conditions for reference datasets remain documented in the audit ledger."
-  ]
+  "limitations": [
+    "Zotero 11 development builds were not rerun for this release. Compatibility metadata remains 10.0–11.x.",
+    "No macOS/Linux or exhaustive third-party coexistence validation.",
+    "Provider responses are controlled fixtures; live account permissions and availability are not certified.",
+    "The 160-item scenario is not a large-library long-duration stress test or a guaranteed speedup.",
+    "Cooperative scheduling cannot preempt a single long synchronous operation; report pagination bounds item cards, not evidence rows within one item."
+  ],
+  "evidenceLogSha256": {
+    "unit-final.log": "88f0bcd5813b5557f7e700f0724a51b5cb9aefa7a9d145f66c9bd79039383ff9",
+    "zotero10-final.log": "5a7a9a73198c212b72092ed1753c85ba6930f8e92b1468c33b1415d7d975e8ad",
+    "zotero10-en-final.log": "688a00240c50a03f5d99fa0b6ad54b73aea50181f463737aa4b2a50276a99229",
+    "lint-final.log": "28ea95e63c681933605a3c4a141795cab9eb43956bd23e5c8be506321a8cb7ca",
+    "test-types-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
 }
