@@ -1,0 +1,136 @@
+# Zotero MetaFlow
+
+**Zotero Flow Series · Metadata**
+
+Validate, normalize, and enrich reference metadata.
+
+[简体中文](README.md) · [English](README.en.md)
+
+[![Release](https://img.shields.io/badge/version-12.1.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/V12.1.0) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
+
+[Overview](#overview) · [Installation and updates](#installation) · [Quick start](#quick-start) · [Key features](#features) · [Settings](#settings) · [Data, sync, and services](#data) · [Compatibility and validation](#compatibility) · [Troubleshooting](#troubleshooting) · [Development and documentation](#development) · [The Flow series](#series) · [Origin and license](#license)
+
+<a id="overview"></a>
+
+## Overview
+
+For researchers maintaining a literature library: configure metadata rules, journal abbreviations, online enrichment, and journal metrics in one add-on.
+
+Install this add-on independently and combine it with other Flow products as needed.
+
+<a id="installation"></a>
+
+## Installation and updates
+
+1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) (add-on version **12.1.0**), not the Source code ZIP.
+2. In Zotero, open **Tools → Plugins/Add-ons**, then choose **Install Add-on From File** from the gear menu.
+3. Select the XPI, complete installation, and restart if requested.
+
+Use the add-on manager to check for later updates. Automatic checking/installation depends on Zotero, per-add-on update settings, and compatibility. Back up important data before upgrades or migration.
+
+Update feed: [dist/update.json](https://github.com/groele/Zotero-MetaFlow/blob/main/dist/update.json) · Add-on ID: `metaflow@groele`.
+
+<a id="quick-start"></a>
+
+## Quick start
+
+1. Select a small set of items and choose the rules you need in settings.
+2. Run Check and Fix Metadata or Update Metadata from the item context menu.
+3. Review the result report before processing more items; configure online metrics as needed.
+
+<a id="features"></a>
+
+## Key features
+
+| Feature             | Scope                                                                                                   |
+| ------------------- | ------------------------------------------------------------------------------------------------------- |
+| Field normalization | Normalize titles, creators, abstracts, dates, pages, and DOIs with selected rules.                      |
+| Journal information | Use abbreviation datasets and local journal lists; online EasyScholar metrics require a configured key. |
+| Online enrichment   | Enrich metadata using item identifiers and source checks, with fill-empty or overwrite policies.        |
+| Batch reports       | Review changes and errors; retain review steps for duplicates and preprint workflows.                   |
+
+<a id="settings"></a>
+
+## Settings
+
+Open the add-on preference page in **Zotero → Settings → Zotero MetaFlow**.
+
+Configure rules, formatting on import, enrichment policy, journal metrics, and display separately. Review a small sample before batch processing.
+
+<a id="data"></a>
+
+## Data, sync, and services
+
+- Rules can write Zotero item fields; journal-metric display and Extra writes have separate settings.
+- Enrichment and metric queries contact their respective services. Bundled lists are snapshots, not live coverage or article certification.
+
+<a id="compatibility"></a>
+
+## Compatibility and validation
+
+| Item                   | Scope                                                                                                                                                     |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current add-on version | 12.1.0                                                                                                                                                    |
+| Declared Zotero range  | `10.0` through `11.*`                                                                                                                                     |
+| Evidence boundary      | This documentation update does not rerun MetaFlow business workflows or native regression; historical evidence remains in its guides and audit documents. |
+
+Add-on and Zotero versions are separate. Manifest compatibility does not establish testing on every host, operating system, or service. This branding/documentation update does not rerun business workflow tests.
+
+<a id="troubleshooting"></a>
+
+## Troubleshooting
+
+If metrics are missing, check credentials, query/display switches, and service results. Review uncertain metadata and duplicate candidates rather than relying on titles alone.
+
+For an issue, include add-on/Zotero versions, OS, steps, expected/actual results, and sanitized errors.
+
+<a id="development"></a>
+
+## Development and documentation
+
+Normal installation needs no development environment. Existing developer entry points follow; use an isolated profile for native tests.
+
+```powershell
+pnpm install
+pnpm test:unit
+pnpm lint:check
+pnpm build
+```
+
+- [工作流与数据设计 / Workflow and data](docs/global-workflow-and-data-layout.md)
+- [自动整理与缓存 / Automation and cache](docs/automatic-metadata-and-runtime-cache.md)
+- [版本说明 / Release notes](docs/releases/metaflow-v12.1.0.md)
+- [产品简介 / Product profile](docs/brand/PRODUCT.md)
+- [品牌规范 / Brand guide](docs/brand/BRAND.md)
+- [README 模板 / README template](docs/brand/README-TEMPLATE.md)
+- [后续提升清单 / Improvement priorities](docs/brand/IMPROVEMENTS.md)
+- [Previous detailed guide · README.md](docs/reference/README.md)
+- [Previous detailed guide · README.zh-CN.md](docs/reference/README.zh-CN.md)
+
+Previous detailed guides retain feature detail, shortcuts, historical evidence, and full attribution. Their versions and test results belong to the recorded stage.
+
+<a id="series"></a>
+
+## The Flow series
+
+| Product                                                        | Role                                                                       |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| [Zotero RefFlow](https://github.com/groele/Zotero-RefFlow)     | Discovery · Discover references, citing works, and related research.       |
+| [Zotero MetaFlow](https://github.com/groele/Zotero-MetaFlow)   | Metadata · Validate, normalize, and enrich reference metadata.             |
+| [Zotero ViewFlow](https://github.com/groele/Zotero-ViewFlow)   | Preview · Preview and copy formatted references in Zotero’s item pane.     |
+| [Zotero MindFlow](https://github.com/groele/Zotero-MindFlow)   | Knowledge · Organize papers, annotations, and ideas into editable maps.    |
+| [Zotero TaskFlow](https://github.com/groele/Zotero-TaskFlow)   | Tasks · Turn literature reading into trackable tasks and plans.            |
+| [Zotero CiteFlow](https://github.com/groele/Zotero-CiteFlow)   | Citation · Track Word citations and connect them to Zotero items.          |
+| [Zotero PaperFlow](https://github.com/groele/Zotero-PaperFlow) | Publication · Manage manuscripts, submission rounds, and review responses. |
+
+Each add-on installs and updates separately. A shared brand does not imply a shared database or automatic integration of every workflow.
+
+<a id="license"></a>
+
+## Origin and license
+
+Derived from northword/zotero-format-metadata and built with the Zotero add-on toolchain. Full acknowledgements for other projects, datasets, services, and authors remain in the detailed guides.
+
+License: [AGPL-3.0-or-later](LICENSE).
+
+This series is independently maintained and is not an official Zotero product. Zotero and third-party names, trademarks, and materials belong to their respective rights holders.

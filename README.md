@@ -1,233 +1,136 @@
-<div align="center">
-
 # Zotero MetaFlow
 
-**Validate, organize, and enrich your reference metadata and journal academic metrics in Zotero.**
+**Zotero Flow Series · 元数据整理**
 
-[English](README.md) · [简体中文](README.zh-CN.md)
+校验、规范并补全文献元数据。
 
-[![Version](https://img.shields.io/badge/version-12.1.0-blue.svg)](https://github.com/groele/Zotero-MetaFlow/releases)
-[![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0%E2%80%9311.*-brightgreen.svg)](https://www.zotero.org/)
-[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange.svg)](LICENSE)
-[![GitHub Release](https://img.shields.io/github/v/release/groele/Zotero-MetaFlow?include_prereleases&color=7289da)](https://github.com/groele/Zotero-MetaFlow/releases)
+[简体中文](README.md) · [English](README.en.md)
 
-[📦 Download XPI](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi) · [🚀 Quick Start](#-quick-start) · [💡 Key Features](#-key-features) · [💖 Acknowledgements](#-open-source-projects--acknowledgements) · [📝 Issues](https://github.com/groele/Zotero-MetaFlow/issues)
+[![当前版本](https://img.shields.io/badge/version-12.1.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/V12.1.0) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
 
-**Zotero Flow Series**
+[产品定位](#overview) · [安装与更新](#installation) · [快速开始](#quick-start) · [核心功能](#features) · [设置与使用](#settings) · [数据、同步与外部服务](#data) · [兼容性与验证范围](#compatibility) · [常见问题](#troubleshooting) · [开发与详细文档](#development) · [系列产品](#series) · [项目来源与许可](#license)
 
-</div>
+<a id="overview"></a>
 
----
+## 产品定位
 
-> **12.1.0 release:** normalize imported abstract whitespace and wrapped chemical formula fragments by default through Check and Fix Metadata. The new setting also controls automatic formatting on import. Core commands now update their running notification in place when finished. See the [release notes](docs/releases/metaflow-v12.1.0.md).
+面向需要批量维护文献库的研究者，将字段规范、期刊缩写、在线补全和期刊指标整合到可配置的规则与工具中。
 
-> Existing preferences, library metadata and local runtime formats remain compatible; no settings migration is required. The earlier [audit ledger](docs/commercial-readiness-2026-10-18.md) retains broader commercial-readiness limitations.
+本插件可以独立安装，按需与系列其他插件组合使用。
 
-## 📖 Overview
+<a id="installation"></a>
 
-**Zotero MetaFlow** is a Zotero add-on for reference metadata governance and journal academic metrics management (part of the Zotero Flow Series).
+## 安装与更新
 
-When importing items from academic databases, web pages, or DOI translators, metadata is often fraught with issues: messy title letter cases, inconsistent author name formats, missing journal abbreviations, redundant or null fields, and absence of journal tier ratings. Zotero MetaFlow provides **41 metadata rules and 18 tools**, **61 EasyScholar journal ranking and metric fields**, **local Nature Index 2026 and ESI journal-list snapshots**, and **intelligent online metadata enrichment**, keeping your scholarly library standardized, accurate, and professional.
+1. 下载 [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi)（插件版本 **12.1.0**），不要安装 Source code ZIP。
+2. 在 Zotero 打开 **工具 → 插件／附加组件**，从齿轮菜单选择 **从文件安装插件**。
+3. 选择 XPI，完成安装；按提示重启 Zotero。
 
----
+后续可在插件管理器中检查更新。自动检查／安装取决于 Zotero 与该插件的更新设置和兼容范围。升级或迁移前备份重要数据。
 
-## ✨ Key Features
+更新清单：[dist/update.json](https://github.com/groele/Zotero-MetaFlow/blob/main/dist/update.json) · 插件 ID: `metaflow@groele`.
 
-### 1. 🧹 Deep Metadata Cleaning & Standardization (59 Rules and Tools)
+<a id="quick-start"></a>
 
-- **Title Case Formatting**: Convert messy or all-caps titles into standard Sentence case or Title Case with one click. An intelligent dictionary preserves chemical formulas ($\text{CO}_2$, $\text{H}_2\text{O}$), gene symbols, mRNA, and proper nouns.
-- **Abstract Formatting**: Clean excess whitespace and wrapped lines, preserve paragraphs and existing inline formatting, and join recognized isolated chemical formula fragments. Enabled by default in Check and Fix Metadata and automatic import; configurable under Metadata Rules → Other Fields.
-- **Author & Creator Normalization**: Fix inverted names, handle Pinyin transliteration and tone markers, purge invalid creators, and correct creator roles.
-- **DOI Normalization & ShortDOI**: Strip redundant URL prefixes, validate DOI syntax, and resolve shortDOIs to full DOIs while preserving the short identifier in Extra.
-- **Page Range Optimization**: Normalize range delimiters to standard en-dashes (`-`) and remove redundant leading zeroes (e.g. `001-008` or `101--108` $\rightarrow$ `101-108`).
-- **Date Standardization**: Format all publication dates into standard ISO 8601 (`YYYY-MM-DD`).
-- **Field Misuse & Redundancy Removal**: Safely scrub `null` and `undefined` strings, strip extraneous trailing periods in titles, and correct misused fields (such as journal articles incorrectly catalogued as web pages).
-- **University & Place Mapping**: Built-in global database mapping universities to their respective cities, automatically filling publication locations for theses and dissertations.
+## 快速开始
 
-### 2. 📚 Authoritative Journal Abbreviations & ISO 4
+1. 先选少量文献，在设置中选择需要的规则。
+2. 从条目右键菜单运行“检查并修复元数据”或“更新元数据”。
+3. 检查结果报告，再对更多条目执行；在线指标按需配置。
 
-- **JabRef Journal Abbreviation Database**: Integrated repository of standard academic journal full names and abbreviations.
-- **Offline ISO 4 Inference Engine**: Infer compliant journal abbreviations offline using standard LTWA (List of Title Word Abbreviations) rules without an active internet connection.
-- **Language-Adaptive Strategies**: Specialized abbreviation rules distinguishing between Chinese and English journals.
+<a id="features"></a>
 
-### 3. 📊 Journal Metrics & Multi-Dimensional Tier Management
+## 核心功能
 
-- **Full EasyScholar API Integration**: Comprehensive support for **61 ranking and metric indicators**, including CAS Journal Tiers (中科院分区), CCF Recommendations, JCR Quartiles, SCI / SSCI, Excellence Action Plan (卓越行动计划), Peking University Core (北大核心), CSSCI, CSCD, and more.
-- **Master Authority & Visibility Isolation**: Settings switches strictly control remote API lookups, sidebar display, Extra field writing, and custom column registration.
-- **Nature Index journal membership**: Compare against the bundled 2026 snapshot of 177 journals. Membership does not prove that an individual article is counted; this is not a live tracking or official certification service.
-- **Essential Science Indicators (ESI) Databases**: Built-in global ESI journal databases for local journal-discipline recognition.
-- **Custom Item Tree Columns & Native Sorting**: Register journal metrics (e.g. CAS Tier, CCF Grade, Nature Index) as native columns in Zotero's main item view with sorting capabilities.
-- **Dedicated Journal Sidebar Pane (Journal Insights)**：Real-time panoramic view of journal metrics in the item sidebar, complete with metric badges and one-click completion actions.
-- **72-Hour Persistent Cache**: Query results persist across restarts with request deduplication to save API quota and accelerate browsing.
+| 功能     | 使用范围                                                           |
+| -------- | ------------------------------------------------------------------ |
+| 字段规范 | 整理标题、作者、摘要、日期、页码与 DOI；按需要选择规则。           |
+| 期刊信息 | 使用期刊缩写数据与本地期刊名单；EasyScholar 在线指标需要配置密钥。 |
+| 在线补全 | 根据条目标识与来源核验结果补全元数据，并配置填空或覆盖策略。       |
+| 批量报告 | 查看执行结果、变更与错误；重复项和预印本流程保留人工复核环节。     |
 
-### 4. 🌐 Intelligent Online Metadata Enrichment
+<a id="settings"></a>
 
-- **Multi-Source Fetching**: Fetch and enrich publication data through DOI, ISBN, arXiv ID, Semantic Scholar, and translator services.
-- **Flexible Update Policies**: Choose between "Blank-only" and "Overwrite" policies to safeguard user-curated records.
-- **Asynchronous Live-Item Safety**: Strict pre- and post-flight verification of item identity and mutation journals to prevent cross-contamination caused by network latency or item type migrations.
+## 设置与使用
 
-### 5. 🛡️ Batch Processing & Data Safety
+在 **Zotero → 设置 → Zotero MetaFlow** 中查看插件偏好页。
 
-- **Serial Batch Queue & Configurable Concurrency**: Batch process extensive libraries safely with concurrency throttled between 1 and 16 workers.
-- **Item Mutation Journal**: Fine-grained rollback of failing rules isolates errors, ensuring passing rules are cleanly applied.
-- **Atomic Transactions & Fallback Recovery**: Automatically reload and restore item snapshots if a batch transaction fails, retrying items individually.
-- **Comprehensive Execution Report**: Detailed before/after diff summary with one-click JSON export for audit trails.
+规则开关、自动导入整理、补全策略、期刊指标与显示位置分别配置。先在少量条目上确认结果，再批量处理。
 
-### 6. ✍️ Rich-Text Title Toolbar
+<a id="data"></a>
 
-- Integrated lightweight toolbar above Zotero's title editor: quickly wrap selected text with `<i>` (italics/taxa), `<b>` (bold), `<sub>` (subscript), `<sup>` (superscript), or `<span class="nocase">` (case protection).
-- Preserves native selection and cursor focus with instant live rendering preview.
+## 数据、同步与外部服务
 
----
+- 规则可能写入 Zotero 条目字段；期刊指标的侧栏显示与写入 Extra 分别受设置控制。
+- 在线补全与指标查询会联系相应外部服务；离线名单是随包快照，不能代表实时收录或文章认证。
 
-## 🔗 Integrated Research Workflows
+<a id="compatibility"></a>
 
-MetaFlow unifies capabilities inspired by several Zotero extensions into **one coherent set of commands, preferences, and review steps**. These are integrations adapted to MetaFlow—not claims that every feature of the upstream extensions has been reproduced.
+## 兼容性与验证范围
 
-| Integrated capability                | What MetaFlow provides                                                                                                                                                                              | Relevant upstream project                                                      |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **Duplicate review & merging**       | Duplicate candidate detection; item-by-item review; configurable master-item selection; bounded bulk merging; duplicate statistics; false-positive / non-duplicate records and manual import/export | [Zoplicate](https://github.com/ChenglongMa/zoplicate)                          |
-| **Metadata verification**            | DOI, ISBN, PMID/PMCID and arXiv identifier checks; title-based fallback when enabled; source comparison and selective field adoption                                                                | [ZotMeta](https://github.com/RoadToDream/ZotMeta)                              |
-| **DOI workflows**                    | DOI normalization, ShortDOI resolution, identifier validation, and optional ShortDOI generation                                                                                                     | [DOI Manager](https://github.com/bwiernik/zotero-shortdoi)                     |
-| **Preprint-to-publication workflow** | Review of arXiv-linked published versions; either update the original record or create/link a publication record after identity verification                                                        | [arXiv Workflow](https://github.com/AllanChain/zotero-arxiv-workflow)          |
-| **Journal abbreviations**            | Curated journal mappings, offline ISO 4 inference, journal/conference-name normalization                                                                                                            | [Zotero Journal Abbreviation](https://github.com/zoushucai/zotero-journalabbr) |
-| **Journal rankings and metrics**     | EasyScholar metrics, journal rankings, configurable Zotero columns, selective Extra output, and journal sidebar                                                                                     | [Update IFs / EasyScholar](https://github.com/redleafnew/zotero-updateifsE)    |
+| 项目                   | 范围                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| 当前插件版本           | 12.1.0                                                                               |
+| 清单声明的 Zotero 范围 | `10.0` 至 `11.*`                                                                     |
+| 当前说明               | 本轮未重新运行 MetaFlow 的业务流程或原生回归；历史验证记录位于原有指南和审查文档中。 |
 
-### Duplicate review and citation-safe merging
+插件版本与 Zotero 版本分别管理。清单允许安装，不代表所有版本、操作系统和外部服务均已验证。本次品牌文档更新未重新执行业务功能测试。
 
-- **Import decisions:** keep newly imported items, keep existing items, keep all, or ask before acting. The configured default keeps all items; import-time automatic merges are subject to strict identifier and version checks.
-- **Master-item strategies:** oldest added, newest added, most recently modified, or most complete. The selected master determines which Zotero item identity is retained. **Tag-ranked master selection is not documented as an implemented V12.0.0 option.**
-- **Manual and bulk review:** compare candidate metadata, choose the retained item, optionally select field values, and process disjoint duplicate groups with controlled concurrency (1–8 groups; default 3).
-- **False positives:** mark two records as non-duplicates, or import/export these decisions for manual transfer.
-- **Native merge semantics:** attachments, notes, tags, and citation redirection rely on Zotero's native merge mechanism; items are not merged by deleting one record and recreating another. A merge is different from a standalone deletion.
-- **Safety boundary:** shared DOI alone is not sufficient to override an explicit version conflict; ambiguous or mismatched records require review. Pause/stop lets already started merges complete.
+<a id="troubleshooting"></a>
 
-### Identifier verification and publication updates
+## 常见问题
 
-- **Identity before adoption:** compare DOI, ISBN, PMID/PMCID or arXiv evidence with the selected item. If identifiers conflict, do not silently accept the result.
-- **Review differences:** inspect candidate fields and sources; fill missing fields by default and explicitly opt in to replacing existing values.
-- **Optional discovery:** when an identifier is absent, inspect a limited existing PDF text cache or perform title lookup only when enabled. A result match must still pass identity checks.
-- **arXiv publication linkage:** inspect clearly linked published DOI evidence; keep the preprint and publication linked, or update the original record when explicitly selected. Automatic PDF replacement is not part of this feature.
+指标未显示时，检查密钥、查询开关、显示开关和来源返回结果。对有疑问的元数据或重复候选先复核，勿仅凭标题自动认定同一文献。
 
-### Two streamlined commands
+反馈时提供插件与 Zotero 版本、系统、操作步骤、预期／实际结果和脱敏错误。
 
-1. **Check and Fix Metadata** — runs enabled local format and completeness rules. Optional identity verification, journal metrics, and interactive duplicate review can be enabled independently.
-2. **Update Metadata** — checks external bibliographic evidence and lets you review proposed field changes; optional local formatting, journal metrics, and duplicate review can be included.
+<a id="development"></a>
 
-Specialized operations (creator styling, title replacement, ShortDOI generation, Extra cleanup and similar parameter-driven tools) remain accessible from the relevant preferences/tool sections; they are not silently run during every check.
+## 开发与详细文档
 
-**Further reading:** [Integrated workflow design](docs/integrated-workflows-2026-10-17.md) · [Core workflow audit](docs/core-workflow-audit-2026-10-18.md) · [Journal metric integration](docs/greenfrog-integration-2026-10-16.md).
+普通安装无需开发环境。以下为仓库已有开发入口，涉及原生测试时使用独立配置。
 
----
-
-## 🖥️ System Requirements & Compatibility
-
-| Item                          | Details                                                                                          |
-| :---------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Add-on Version**            | `12.1.0`                                                                                         |
-| **Add-on ID**                 | `metaflow@groele`                                                                                |
-| **Supported Zotero Versions** | `Zotero 10.0 – 11.*` (Verified on Windows Zotero 10.0.6 & Zotero 11 dev Gecko 153)               |
-| **Operating Systems**         | Windows / macOS / Linux                                                                          |
-| **Runtime Dependencies**      | Self-contained pure ESM module running directly in Gecko (no Node.js or Python runtime required) |
-
----
-
-## 📦 Installation
-
-1. **Download Add-on**: Go to the [Releases page](https://github.com/groele/Zotero-MetaFlow/releases) or click [Download zotero-metaflow.xpi](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi).
-2. **Open Zotero**: In the menu bar, navigate to **Tools** $\rightarrow$ **Plugins** (or **Add-ons**).
-3. **Install from File**: Click the gear icon in the top right, select **Install Add-on From File...**, and choose the downloaded `.xpi` file.
-4. **Restart Zotero**: Follow Zotero's prompt to restart the application.
-
-> 💡 **Automatic Updates**: MetaFlow includes built-in auto-update support via [update.json](https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json).
-
----
-
-## 🚀 Quick Start
-
-1. **Open Preferences**: In Zotero, go to **Edit** $\rightarrow$ **Preferences** (or **Zotero** $\rightarrow$ **Preferences** on macOS) and select the **MetaFlow** tab.
-2. **Configure Rules**:
-   - Enable your desired metadata rules (e.g., Sentence Case, En-dash for pages, Remove Trailing Dots).
-   - Optionally toggle "Auto-lint when items are added" for hands-free maintenance.
-3. **Configure Journal Metrics (Optional)**:
-   - Provide your EasyScholar Secret Key if you want to retrieve CAS Tiers or CCF ratings.
-   - Select your preferred metrics and choose whether to register them as columns in the item tree.
-4. **Run MetaFlow**:
-   - Select one or more items, then use **Zotero MetaFlow: Check and Fix Metadata** or **Zotero MetaFlow: Update Metadata** from the item context menu. Configure optional stages in the core command settings; specialized tools remain available in preferences.
-
----
-
-## 🛠️ Development & Testing
-
-This project is built using `pnpm` and `zotero-plugin-scaffold`:
-
-```bash
-# 1. Clone repository
-git clone https://github.com/groele/Zotero-MetaFlow.git
-cd Zotero-MetaFlow
-
-# 2. Install dependencies (pnpm 12+ recommended)
+```powershell
 pnpm install
-
-# 3. Run unit tests
 pnpm test:unit
-
-# 4. Code quality & lint checks
 pnpm lint:check
-
-# 5. Build production bundle (output to .scaffold/build/)
 pnpm build
 ```
 
----
+- [工作流与数据设计 / Workflow and data](docs/global-workflow-and-data-layout.md)
+- [自动整理与缓存 / Automation and cache](docs/automatic-metadata-and-runtime-cache.md)
+- [版本说明 / Release notes](docs/releases/metaflow-v12.1.0.md)
+- [产品简介 / Product profile](docs/brand/PRODUCT.md)
+- [品牌规范 / Brand guide](docs/brand/BRAND.md)
+- [README 模板 / README template](docs/brand/README-TEMPLATE.md)
+- [后续提升清单 / Improvement priorities](docs/brand/IMPROVEMENTS.md)
+- [原详细指南 · README.md](docs/reference/README.md)
+- [原详细指南 · README.zh-CN.md](docs/reference/README.zh-CN.md)
 
-## 💖 Open Source Projects & Acknowledgements
+原详细指南保留功能细节、快捷键、历史验证与完整致谢；其中版本和测试结果属于各自记录时间。
 
-Zotero MetaFlow stands on the shoulders of giants in the open source community. We express our deepest gratitude and recognition to the following open-source projects and their creators:
+<a id="series"></a>
 
-### Foundational Open Source Projects
+## 系列产品
 
-- **[northword/zotero-format-metadata](https://github.com/northword/zotero-format-metadata)** (Linter for Zotero):
-  Originally developed and branched from `zotero-format-metadata` by northword. Its rule architecture and batch execution engine laid the cornerstone for this project. We sincerely thank northword and all upstream contributors for their pioneering efforts.
-- **[zoushucai/zotero-journalabbr](https://github.com/zoushucai/zotero-journalabbr)**:
-  Special thanks to zoushucai for the inspiring `zotero-journalabbr` project! Its innovative approach to journal abbreviation normalization, mapping dictionaries, and Zotero integration offered invaluable references for our journal abbreviation subsystem.
-- **[redleafnew/zotero-updateifsE](https://github.com/redleafnew/zotero-updateifsE)**:
-  Special thanks to redleafnew for the outstanding `zotero-updateifsE` project! Its trailblazing work in leveraging the EasyScholar API to fetch CAS journal tiers, impact factors, and writing metrics back to Zotero's Extra field provided foundational insights for MetaFlow's 61-metric integration, master preference control, and item column architecture.
+| 产品                                                           | 定位                                                    |
+| -------------------------------------------------------------- | ------------------------------------------------------- |
+| [Zotero RefFlow](https://github.com/groele/Zotero-RefFlow)     | 文献发现 · 检索参考文献、被引文献与相关研究。           |
+| [Zotero MetaFlow](https://github.com/groele/Zotero-MetaFlow)   | 元数据整理 · 校验、规范并补全文献元数据。               |
+| [Zotero ViewFlow](https://github.com/groele/Zotero-ViewFlow)   | 阅读预览 · 在 Zotero 侧栏预览并复制格式化引文。         |
+| [Zotero MindFlow](https://github.com/groele/Zotero-MindFlow)   | 知识组织 · 将文献、批注与思路组织为可编辑导图。         |
+| [Zotero TaskFlow](https://github.com/groele/Zotero-TaskFlow)   | 任务推进 · 将文献研读转化为可追踪的任务与计划。         |
+| [Zotero CiteFlow](https://github.com/groele/Zotero-CiteFlow)   | 写作引用 · 追踪 Word 文档引用，并连接 Zotero 文献操作。 |
+| [Zotero PaperFlow](https://github.com/groele/Zotero-PaperFlow) | 投稿审稿 · 管理手稿、投稿轮次与审稿回复。               |
 
-- **[ChenglongMa/zoplicate](https://github.com/ChenglongMa/zoplicate)**, **[RoadToDream/ZotMeta](https://github.com/RoadToDream/ZotMeta)**, **[bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi)** and **[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)**: Important reference projects for duplicate-management, identity validation, DOI, and preprint workflows. MetaFlow adapts the relevant ideas within its own architecture; this does not imply complete feature equivalence or official affiliation.
+各插件分别安装和更新；同属一个系列不意味着共享数据库或已自动联通所有流程。
 
-### Plugin Tooling & Infrastructure
+<a id="license"></a>
 
-- **[windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)**: Outstanding modern Zotero plugin template and workflow by windingwind.
-- **[northword/zotero-plugin-scaffold](https://github.com/northword/zotero-plugin-scaffold)**: Professional build and scaffolding toolchain for Zotero extensions.
-- **[windingwind/zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit)**: Comprehensive runtime API toolkit and abstraction layer for Zotero.
+## 项目来源与许可
 
-### Curated Datasets & Web Services
+基于 northword 的 zotero-format-metadata，并使用 Zotero 插件工具链。其他参考项目、数据集、服务与作者致谢完整保留在详细指南中。
 
-- **[JabRef / abbrv.jabref.org](https://github.com/JabRef/abbrv.jabref.org)**: High quality, curated worldwide academic journal title abbreviation dataset.
-- **[EasyScholar](https://www.easyscholar.cc/)**：Open academic journal evaluation, ranking, and indexing service.
-- **[Nature Index](https://www.nature.com/nature-index/)**：Authoritative science research output database by Springer Nature.
+许可：[AGPL-3.0-or-later](LICENSE).
 
-### Core Open Source Libraries
-
-- **[es-toolkit](https://github.com/toss/es-toolkit)**: Modern, ultra-fast JavaScript utility library.
-- **[tinyld](https://github.com/mayankdugar/tinyld)**: Lightweight, pure JavaScript language detector.
-- **[tiny-pinyin](https://github.com/creeperyang/pinyin)**: Fast Chinese Pinyin conversion library.
-- **[p-throttle](https://github.com/sindresorhus/p-throttle)**: Reliable promise rate limiter by Sindre Sorhus.
-- **[csvtojson](https://github.com/Keyang/node-csvtojson)**: Fast CSV dataset parser.
-- **[quote-quote](https://github.com/unindented/quote-quote)**: String quotation normalization library.
-- **[esbuild](https://github.com/evanw/esbuild)** / **[vitest](https://github.com/vitest-dev/vitest)** / **[eslint](https://github.com/eslint/eslint)** / **[autocorrect](https://github.com/huacnlee/autocorrect)**: Modern engineering foundation ensuring blazing fast bundling, testing, linting, and formatting.
-
----
-
-## 📄 License
-
-Distributed under the **[GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later)](LICENSE)**.
-
-- All derivative modifications and new features remain free and open source.
-- Third-party components, datasets, and icons retain their respective licenses and copyright notices.
-- Zotero is a registered trademark of the Corporation for Digital Scholarship. This project is an independent third-party add-on and is not affiliated with or endorsed by Zotero.
-
-### Workflow and data design
-
-Version 12.1.0 combines automatic metadata decisions, complete-command scheduling and feedback, and a bounded local runtime history file. See [workflow and data layout](docs/global-workflow-and-data-layout.md) and [automatic metadata and cache policy](docs/automatic-metadata-and-runtime-cache.md) for settings, data retention and verification limits.
+本系列独立维护，并非 Zotero 官方产品。Zotero 及第三方名称、商标与材料归各自权利人所有。

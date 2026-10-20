@@ -1,0 +1,21 @@
+{
+  "name": "Zotero MetaFlow",
+  "series": "Zotero Flow",
+  "role": [
+    "元数据整理",
+    "Metadata"
+  ],
+  "shortDescription": [
+    "校验、规范并补全文献元数据。",
+    "Validate, normalize, and enrich reference metadata."
+  ],
+  "introduction": [
+    "面向需要批量维护文献库的研究者，将字段规范、期刊缩写、在线补全和期刊指标整合到可配置的规则与工具中。",
+    "For researchers maintaining a literature library: configure metadata rules, journal abbreviations, online enrichment, and journal metrics in one add-on."
+  ],
+  "githubDescription": "Validate, normalize, and enrich reference metadata. Part of Zotero Flow.",
+  "repository": "https://github.com/groele/Zotero-MetaFlow",
+  "addonID": "metaflow@groele",
+  "version": "12.1.0",
+  "license": "AGPL-3.0-or-later"
+}
