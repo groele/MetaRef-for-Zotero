@@ -1,4 +1,4 @@
-> 当前版本为 12.1.0，新增摘要规范化与通知原位更新见[发布说明](releases/metaflow-v12.1.0.md)；包哈希及实际测试计数见 dist/verification.json。下文保留此前审查记录。
+> 当前版本为 12.5.1，设置页字号与强调色已按系列规范统一。此前摘要规范化与通知原位更新见[12.1.0 发布说明](releases/metaflow-v12.1.0.md)；本次包哈希及验证范围见 dist/verification.json。下文保留此前审查记录。
 
 > 12.0.0 历史审查中的问题、修复和未覆盖项见[主版本审查](major-version-audit-2026-10-19.md)，包哈希及实际测试计数见 dist/verification.json。
 

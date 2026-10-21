@@ -1,16 +1,16 @@
 # Zotero MetaFlow
 
-> Source metadata is 12.5.0. The latest downloadable XPI remains the previous release until a 12.5.0 package is published.
+> Current add-on version: 12.5.1. Typography and accent colors follow the Zotero Flow brand guidelines.
 
 **Zotero Flow Series · Metadata**
 
-*让研究的每一步衔接起来。 / Connect each step of research.*
+_让研究的每一步衔接起来。 / Connect each step of research._
 
 Validate, normalize, and enrich reference metadata.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Release](https://img.shields.io/badge/version-12.5.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.0) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
+[![Release](https://img.shields.io/badge/version-12.5.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.1) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.1/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [Overview](#overview) · [Installation and updates](#installation) · [Quick start](#quick-start) · [Key features](#features) · [Settings](#settings) · [Data, sync, and services](#data) · [Compatibility and validation](#compatibility) · [Troubleshooting](#troubleshooting) · [Development and documentation](#development) · [The Flow series](#series) · [Origin and license](#license)
 
@@ -26,7 +26,7 @@ Install this add-on independently and combine it with other Flow products as nee
 
 ## Installation and updates
 
-1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) (add-on version **12.1.0**), not the Source code ZIP.
+1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.1/zotero-metaflow.xpi) (add-on version **12.5.1**), not the Source code ZIP.
 2. In Zotero, open **Tools → Plugins/Add-ons**, then choose **Install Add-on From File** from the gear menu.
 3. Select the XPI, complete installation, and restart if requested.
 
@@ -74,7 +74,7 @@ Configure rules, formatting on import, enrichment policy, journal metrics, and d
 
 | Item                   | Scope                                                                                                                                                     |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Current add-on version | 12.5.0                                                                                                                                                    |
+| Current add-on version | 12.5.1                                                                                                                                                    |
 | Declared Zotero range  | `10.0` through `11.*`                                                                                                                                     |
 | Evidence boundary      | This documentation update does not rerun MetaFlow business workflows or native regression; historical evidence remains in its guides and audit documents. |
 
@@ -103,7 +103,7 @@ pnpm build
 
 - [工作流与数据设计 / Workflow and data](docs/global-workflow-and-data-layout.md)
 - [自动整理与缓存 / Automation and cache](docs/automatic-metadata-and-runtime-cache.md)
-- [版本说明 / Release notes](docs/releases/metaflow-v12.1.0.md)
+- [版本说明 / Release notes](docs/releases/metaflow-v12.5.1.md)
 - [产品简介 / Product profile](docs/brand/PRODUCT.md)
 - [品牌规范 / Brand guide](docs/brand/BRAND.md)
 - [README 模板 / README template](docs/brand/README-TEMPLATE.md)

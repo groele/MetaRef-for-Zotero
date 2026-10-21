@@ -1,16 +1,16 @@
 # Zotero MetaFlow
 
-> 源码版本为 12.5.0；目前最新可下载的 XPI 仍为旧版，待发布 12.5.0 安装包后再更新下载地址。
+> 当前插件版本为 12.5.1，字号与强调色按 Zotero Flow 品牌规范统一。
 
 **Zotero Flow Series · 元数据整理**
 
-*让研究的每一步衔接起来。 / Connect each step of research.*
+_让研究的每一步衔接起来。 / Connect each step of research._
 
 校验、规范并补全文献元数据。
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![当前版本](https://img.shields.io/badge/version-12.5.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.0) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
+[![当前版本](https://img.shields.io/badge/version-12.5.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.1) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.1/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [产品定位](#overview) · [安装与更新](#installation) · [快速开始](#quick-start) · [核心功能](#features) · [设置与使用](#settings) · [数据、同步与外部服务](#data) · [兼容性与验证范围](#compatibility) · [常见问题](#troubleshooting) · [开发与详细文档](#development) · [系列产品](#series) · [项目来源与许可](#license)
 
@@ -26,7 +26,7 @@
 
 ## 安装与更新
 
-1. 下载 [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi)（插件版本 **12.1.0**），不要安装 Source code ZIP。
+1. 下载 [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.1/zotero-metaflow.xpi)（插件版本 **12.5.1**），不要安装 Source code ZIP。
 2. 在 Zotero 打开 **工具 → 插件／附加组件**，从齿轮菜单选择 **从文件安装插件**。
 3. 选择 XPI，完成安装；按提示重启 Zotero。
 
@@ -74,7 +74,7 @@
 
 | 项目                   | 范围                                                                                 |
 | ---------------------- | ------------------------------------------------------------------------------------ |
-| 当前插件版本           | 12.5.0                                                                               |
+| 当前插件版本           | 12.5.1                                                                               |
 | 清单声明的 Zotero 范围 | `10.0` 至 `11.*`                                                                     |
 | 当前说明               | 本轮未重新运行 MetaFlow 的业务流程或原生回归；历史验证记录位于原有指南和审查文档中。 |
 
@@ -103,7 +103,7 @@ pnpm build
 
 - [工作流与数据设计 / Workflow and data](docs/global-workflow-and-data-layout.md)
 - [自动整理与缓存 / Automation and cache](docs/automatic-metadata-and-runtime-cache.md)
-- [版本说明 / Release notes](docs/releases/metaflow-v12.1.0.md)
+- [版本说明 / Release notes](docs/releases/metaflow-v12.5.1.md)
 - [产品简介 / Product profile](docs/brand/PRODUCT.md)
 - [品牌规范 / Brand guide](docs/brand/BRAND.md)
 - [README 模板 / README template](docs/brand/README-TEMPLATE.md)
