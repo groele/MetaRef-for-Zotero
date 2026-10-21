@@ -1,5 +1,7 @@
 # Zotero MetaFlow
 
+> Source metadata is 12.5.0. The latest downloadable XPI remains the previous release until a 12.5.0 package is published.
+
 **Zotero Flow Series · Metadata**
 
 *让研究的每一步衔接起来。 / Connect each step of research.*
@@ -8,7 +10,7 @@ Validate, normalize, and enrich reference metadata.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Release](https://img.shields.io/badge/version-12.1.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/V12.1.0) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
+[![Release](https://img.shields.io/badge/version-12.5.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.0) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [Overview](#overview) · [Installation and updates](#installation) · [Quick start](#quick-start) · [Key features](#features) · [Settings](#settings) · [Data, sync, and services](#data) · [Compatibility and validation](#compatibility) · [Troubleshooting](#troubleshooting) · [Development and documentation](#development) · [The Flow series](#series) · [Origin and license](#license)
 
@@ -72,7 +74,7 @@ Configure rules, formatting on import, enrichment policy, journal metrics, and d
 
 | Item                   | Scope                                                                                                                                                     |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Current add-on version | 12.1.0                                                                                                                                                    |
+| Current add-on version | 12.5.0                                                                                                                                                    |
 | Declared Zotero range  | `10.0` through `11.*`                                                                                                                                     |
 | Evidence boundary      | This documentation update does not rerun MetaFlow business workflows or native regression; historical evidence remains in its guides and audit documents. |
 

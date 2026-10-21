@@ -1,5 +1,7 @@
 # Zotero MetaFlow
 
+> 源码版本为 12.5.0；目前最新可下载的 XPI 仍为旧版，待发布 12.5.0 安装包后再更新下载地址。
+
 **Zotero Flow Series · 元数据整理**
 
 *让研究的每一步衔接起来。 / Connect each step of research.*
@@ -8,7 +10,7 @@
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![当前版本](https://img.shields.io/badge/version-12.1.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/V12.1.0) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
+[![当前版本](https://img.shields.io/badge/version-12.5.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.0) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [产品定位](#overview) · [安装与更新](#installation) · [快速开始](#quick-start) · [核心功能](#features) · [设置与使用](#settings) · [数据、同步与外部服务](#data) · [兼容性与验证范围](#compatibility) · [常见问题](#troubleshooting) · [开发与详细文档](#development) · [系列产品](#series) · [项目来源与许可](#license)
 
@@ -72,7 +74,7 @@
 
 | 项目                   | 范围                                                                                 |
 | ---------------------- | ------------------------------------------------------------------------------------ |
-| 当前插件版本           | 12.1.0                                                                               |
+| 当前插件版本           | 12.5.0                                                                               |
 | 清单声明的 Zotero 范围 | `10.0` 至 `11.*`                                                                     |
 | 当前说明               | 本轮未重新运行 MetaFlow 的业务流程或原生回归；历史验证记录位于原有指南和审查文档中。 |
 
