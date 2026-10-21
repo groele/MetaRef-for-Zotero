@@ -1,80 +1,34 @@
 {
-  "version": "12.1.0",
-  "verifiedAt": "2026-10-19T22:12:43.803467+08:00",
-  "sourceCommit": "2dfcea6688832350e1d181c73e9069b9e28a43db",
+  "version": "12.5.1",
+  "verifiedAt": "2026-10-21T12:55:25+08:00",
+  "sourceCommit": "187c821c247dae6079b84581df7439023356073a",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3470704,
-    "sha256": "f8104b45cf643e1bc9db9e6858371cb9114134c5681feb3a9f052b568d973137",
-    "sha512": "ee22ec8ce7a0933f404c92d6dbd36b9fc3dac3279a70427f2047a7993526d4bed08ea9d8e19e3afce98c67c305ab32bc9d8eee8fca7b7cc37183c7cb801c6967",
+    "bytes": 3470706,
+    "sha256": "f89443dd4d4efc82f2e5dc3ec0d8280aeac8110f80de26f0e07a09a329ea84db",
+    "sha512": "fc0c73be54db7195800647672573f4a470da569beaea1e48bec859f906c3ae7a212a9232f3d5a0281fbcabe0c03e569260ad07e6ee904fb5be8a78f85ff4070a",
     "manifest": {
-      "manifest_version": 2,
       "name": "Zotero MetaFlow",
-      "version": "12.1.0",
-      "description": "Validate, organize and enrich reference metadata in Zotero.",
-      "homepage_url": "https://github.com/groele/Zotero-MetaFlow",
-      "author": "groele",
-      "icons": {
-        "16": "content/icons/metaref-16.png",
-        "32": "content/icons/metaref-32.png",
-        "48": "content/icons/metaref-48.png",
-        "96": "content/icons/metaref-96.png",
-        "128": "content/icons/metaref-128.png",
-        "256": "content/icons/metaref-256.png",
-        "512": "content/icons/metaref-512.png"
-      },
-      "applications": {
-        "zotero": {
-          "id": "metaflow@groele",
-          "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
-          "strict_min_version": "10.0",
-          "strict_max_version": "11.*"
-        }
-      }
-    },
-    "productionXpiInstalledAndLoaded": true,
-    "installationScope": "Temporary installation in an isolated scaffold profile; daily user profile untouched"
+      "version": "12.5.1",
+      "id": "metaflow@groele",
+      "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
+      "strict_min_version": "10.0",
+      "strict_max_version": "11.*"
+    }
   },
   "checks": {
-    "unit": {
-      "passed": 553,
-      "files": 85
-    },
     "productionBuild": "passed",
     "typescript": "passed",
-    "testTypescript": "passed",
-    "eslint": "passed",
-    "autocorrect": "passed",
-    "whitespace": "passed",
+    "xpiZipMagic": "passed (PK)",
+    "manifestVersion": "passed",
+    "requiredResources": "passed (bootstrap, settings CSS, icons, en-US and zh-CN locales)",
+    "excludedTestAndDependencyDirectories": "passed",
     "manifestAndFeedHash": "passed",
-    "nativeFinal": [
-      {
-        "host": "Windows Zotero 10.0.6 / Gecko 140",
-        "locale": "zh-CN",
-        "passed": 198,
-        "failed": 0,
-        "scope": "Complete native suite including abstract rules, import switches, core notification reuse, cancellation, settings, metadata, transactions, duplicates and production XPI installation"
-      },
-      {
-        "host": "Windows Zotero 10.0.6 / Gecko 140",
-        "locale": "en-US",
-        "passed": 4,
-        "failed": 0,
-        "scope": "Final production XPI: abstract normalization, settings gates, automatic import and production package installation; explicit item-data reload arguments in test fixtures"
-      }
-    ]
+    "unitTests": "not run",
+    "liveZoteroInstall": "not run"
   },
   "limitations": [
-    "Zotero 11 development builds were not rerun for this release. Compatibility metadata remains 10.0–11.x.",
-    "No macOS/Linux or exhaustive third-party coexistence validation.",
-    "Provider responses are controlled fixtures; live account permissions and availability are not certified.",
-    "Abstract paragraph boundaries and chemical fragment detection are conservative heuristics; arbitrary malformed publisher text is not guaranteed to be repaired."
-  ],
-  "evidenceLogSha256": {
-    "unit.log": "39e6dd4b7e25d7985c0afea63ada99637a8a767202afc993d329f44e0c1f9882",
-    "e2e-full.log": "5a02a1eb049b7337221d987f1c6ce5d49689447cf27bfd2c8821c2c55d5d20d8",
-    "e2e-package-en.log": "c3ae74f4e2f88b7ebaab66e04fa7551d7681e7134e2320977e4cf9ebc40ccbeb",
-    "lint-final.log": "43cf4fe18504fd1dcbab6675b56728419a3e8ad1f90ed46329dd9850823aee43",
-    "test-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-  }
+    "Package validation does not verify the rendered interface in Zotero desktop.",
+    "Unit tests and live Zotero installation were not run for this typography patch."
+  ]
 }
