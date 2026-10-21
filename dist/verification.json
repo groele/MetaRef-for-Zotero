@@ -1,34 +1,46 @@
 {
-  "version": "12.5.1",
-  "verifiedAt": "2026-10-21T12:57:21+08:00",
-  "sourceCommit": "507dbee3d848c4bae27ed5aa429e96765a657764",
-  "package": {
-    "filename": "zotero-metaflow.xpi",
-    "bytes": 3470709,
-    "sha256": "fb3eab574cd350905f88d0ce4d20d82560b967538cd664f936b322e3ef070045",
-    "sha512": "4297454bf2813951946dd831e69d276642bccd031d44d177b291aa79749ad0c13a2cf979ff4190217c244fad0cd3d787366acaa3e3ca90e1e0ab4dea02b0ad31",
-    "manifest": {
-      "name": "Zotero MetaFlow",
-      "version": "12.5.1",
-      "id": "metaflow@groele",
-      "update_url": "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
-      "strict_min_version": "10.0",
-      "strict_max_version": "11.*"
-    }
-  },
+  "product": "Zotero MetaFlow",
+  "version": "12.5.2",
+  "verifiedAt": "2026-10-21T21:04:22.884721+08:00",
+  "sourceBaseCommit": "01d32dffd370e546ea83c3fa48db3bbdaad97c71",
+  "builtFromWorkingTree": true,
+  "file": "zotero-metaflow.xpi",
+  "size": 3470809,
+  "sha256": "15a18d1ed457f52be5a7ce7a6b220998ecc983411e553b2f21310bf9c83559cb",
+  "sha512": "d93edfbda72718250025ec7e3499e0d4f20ed50a243391e7701f2217d164b5f7e1ced32fef275f0378ef848cab092b8dcf28740382ddc764d4af8e37a2b667e4",
+  "entries": 52,
+  "payloadVerifiedAgainstBuild": true,
+  "settingsCSSMatchesSource": true,
+  "updateFeedHashMatches": true,
   "checks": {
     "productionBuild": "passed",
     "typescript": "passed",
-    "xpiZipMagic": "passed (PK)",
-    "manifestVersion": "passed",
-    "requiredResources": "passed (bootstrap, settings CSS, icons, en-US and zh-CN locales)",
-    "excludedTestAndDependencyDirectories": "passed",
-    "manifestAndFeedHash": "passed",
-    "unitTests": "not run",
-    "liveZoteroInstall": "not run"
+    "lint": "passed",
+    "unitTests": {
+      "files": 85,
+      "passed": 553,
+      "failed": 0
+    },
+    "nativeSettings": {
+      "host": "10.0.6",
+      "comparisonCases": 8,
+      "metaFlowCases": 4,
+      "passed": true,
+      "themes": [
+        "light",
+        "dark"
+      ],
+      "actualWidths": [
+        904,
+        800
+      ],
+      "reference": "ViewFlow 12.5.2",
+      "isolatedProfile": true
+    },
+    "screenshots": "inspected",
+    "excludedTestHarness": "passed"
   },
   "limitations": [
-    "Package validation does not verify the rendered interface in Zotero desktop.",
-    "Unit tests and live Zotero installation were not run for this typography patch."
+    "Zotero 11 and all metadata, external-service and storage workflows were not revalidated."
   ]
 }

@@ -224,6 +224,7 @@
 }
 
 #metaref button {
+  font-family: inherit;
   font-size: 13px;
 }
 
@@ -300,9 +301,22 @@
 
 #metaref {
   --flow-pref-accent: light-dark(#245ac7, #9bbcff);
+  font-family: system-ui, "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   line-height: 1.6;
   container: metaref-settings / inline-size;
+}
+
+#metaref label,
+#metaref checkbox,
+#metaref radio,
+#metaref menulist,
+#metaref textbox,
+#metaref select,
+#metaref input:not([type="checkbox"]):not([type="radio"]) {
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 #metaref .metaref-check-option {
