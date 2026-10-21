@@ -1,12 +1,12 @@
 {
   "version": "12.5.1",
-  "verifiedAt": "2026-10-21T12:55:25+08:00",
-  "sourceCommit": "187c821c247dae6079b84581df7439023356073a",
+  "verifiedAt": "2026-10-21T12:57:21+08:00",
+  "sourceCommit": "507dbee3d848c4bae27ed5aa429e96765a657764",
   "package": {
     "filename": "zotero-metaflow.xpi",
-    "bytes": 3470706,
-    "sha256": "f89443dd4d4efc82f2e5dc3ec0d8280aeac8110f80de26f0e07a09a329ea84db",
-    "sha512": "fc0c73be54db7195800647672573f4a470da569beaea1e48bec859f906c3ae7a212a9232f3d5a0281fbcabe0c03e569260ad07e6ee904fb5be8a78f85ff4070a",
+    "bytes": 3470709,
+    "sha256": "fb3eab574cd350905f88d0ce4d20d82560b967538cd664f936b322e3ef070045",
+    "sha512": "4297454bf2813951946dd831e69d276642bccd031d44d177b291aa79749ad0c13a2cf979ff4190217c244fad0cd3d787366acaa3e3ca90e1e0ab4dea02b0ad31",
     "manifest": {
       "name": "Zotero MetaFlow",
       "version": "12.5.1",
