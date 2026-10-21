@@ -223,9 +223,12 @@
   gap: 6px;
 }
 
+#metaref button {
+  font-size: 13px;
+}
+
 .metaref-settings-tools button {
   margin: 0;
-  font-size: 13px;
 }
 
 .metaref-settings-jump {
