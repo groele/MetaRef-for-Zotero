@@ -2,6 +2,8 @@
 
 **Zotero Flow Series · 元数据整理**
 
+*让研究的每一步衔接起来。 / Connect each step of research.*
+
 校验、规范并补全文献元数据。
 
 [简体中文](README.md) · [English](README.en.md)

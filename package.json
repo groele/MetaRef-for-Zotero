@@ -3,7 +3,7 @@
   "type": "module",
   "version": "12.1.0",
   "packageManager": "pnpm@12.3.4",
-  "description": "Validate, organize and enrich reference metadata in Zotero.",
+  "description": "Validate, normalize, and enrich reference metadata.",
   "config": {
     "addonName": "Zotero MetaFlow",
     "addonID": "metaflow@groele",

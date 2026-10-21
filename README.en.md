@@ -2,6 +2,8 @@
 
 **Zotero Flow Series · Metadata**
 
+*让研究的每一步衔接起来。 / Connect each step of research.*
+
 Validate, normalize, and enrich reference metadata.
 
 [简体中文](README.md) · [English](README.en.md)
