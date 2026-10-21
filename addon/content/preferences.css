@@ -24,7 +24,7 @@
 }
 
 .metaref-pref-description {
-  font-size: 0.85em;
+  font-size: 13px;
 }
 
 .metaref-pref-collapsible {
@@ -109,7 +109,7 @@
   min-width: 0;
   margin: 0;
   padding: 3px 7px;
-  font-size: 0.9em;
+  font-size: 13px;
 }
 
 .metaref-shortcut-preview {
@@ -119,7 +119,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: monospace;
-  font-size: 0.88em;
+  font-size: 13px;
   opacity: 0.75;
 }
 
@@ -225,6 +225,7 @@
 
 .metaref-settings-tools button {
   margin: 0;
+  font-size: 13px;
 }
 
 .metaref-settings-jump {
@@ -238,7 +239,7 @@
 }
 
 .metaref-settings-count {
-  font-size: 0.9em;
+  font-size: 13px;
 }
 
 #metaref input:focus-visible,
@@ -253,7 +254,7 @@
 
 .metaref-input-status {
   flex-basis: 100%;
-  font-size: 0.9em;
+  font-size: 13px;
   overflow-wrap: anywhere;
 }
 
@@ -294,6 +295,13 @@
   margin-block: 8px 12px;
 }
 
+#metaref {
+  --flow-pref-accent: light-dark(#245ac7, #9bbcff);
+  font-size: 14px;
+  line-height: 1.6;
+  container: metaref-settings / inline-size;
+}
+
 #metaref .metaref-check-option {
   display: flex;
   align-items: flex-start;
@@ -312,7 +320,7 @@
   width: 16px;
   height: 16px;
   margin: 2px 0 0;
-  accent-color: var(--accent-blue, #4070f4);
+  accent-color: var(--flow-pref-accent);
 }
 
 #metaref-easyscholar-test {
@@ -364,12 +372,8 @@
 .metaref-setting-card > summary h3,
 .metaref-setting-card > summary h2 {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-}
-
-#metaref {
-  container: metaref-settings / inline-size;
 }
 
 .metaref-setting-card > p,
@@ -380,7 +384,7 @@
 .metaref-setting-card > p,
 .metaref-card-body > p {
   color: var(--fill-secondary);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -412,8 +416,8 @@
 .metaref-card-hint {
   margin-inline-start: auto;
   color: var(--fill-secondary);
-  font-size: 11px;
-  white-space: nowrap;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .metaref-setting-card > groupbox {
