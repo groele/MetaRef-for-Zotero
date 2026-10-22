@@ -4,7 +4,7 @@
 
 核验日期：2026-10-17。被核验原件为用户提供的《zotero-metaflow-comprehensive-audit-2026.md》，原件予以保留。
 
-修复基线：维护工作树 `.scaffold/publish/metaflow-10.0.1`，提交 `635c397`，package.json 10.6.0。修复版为 10.6.1。根目录是另外一套历史源码，不能以根目录文件推断维护版本行为。初次核验时该版本尚未提交或发布；当前发布状态见 [GitHub Release 10.6.1](https://github.com/groele/Zotero-MetaFlow/releases/tag/V10.6.1)。
+修复基线：维护工作树 `.scaffold/publish/metaflow-10.0.1`，提交 `635c397`，package.json 10.6.0。修复版为 10.6.1。根目录是另外一套历史源码，不能以根目录文件推断维护版本行为。初次核验时该版本尚未提交或发布；当前发布状态见 [GitHub Release 10.6.1](https://github.com/groele/Zotero-MetaFlow/releases/tag/v10.6.1)。
 
 ## 结论
 

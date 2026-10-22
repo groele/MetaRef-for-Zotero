@@ -1,0 +1,204 @@
+{
+  "date": "2026-10-22",
+  "repository": "groele/Zotero-MetaFlow",
+  "migrations": [
+    {
+      "plugin": "MetaFlow",
+      "old": "V10",
+      "new": "v10.0.0",
+      "commit": "5c994870e22df0848183458c42329766ae198e59",
+      "oldObject": "75c3bcf8b529e2586a413cff0f1f867963bde50f",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        412623835
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V10/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V10.0.1",
+      "new": "v10.0.1",
+      "commit": "a228f3b19af745967be0461e9a2aef060d03780e",
+      "oldObject": "1da3c3a2cef055282affddda90d012cbe1388da6",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        414650922
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V10.0.1/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V10.1.0",
+      "new": "v10.1.0",
+      "commit": "584394bc5d4d7fc99499c71cb450b3b10a375ca8",
+      "oldObject": "1db93d7e447b4ef4581ddadca951f79ff7dc368d",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        414683078
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V10.1.0/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V10.4.0",
+      "new": "v10.4.0",
+      "commit": "fd2fb7e0f20181e93d4cc10dd8b1817f4d7b998a",
+      "oldObject": "4e853b602482ce7bd2bd3a76e6b502556012391c",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        415032620
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V10.4.0/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V10.5.0",
+      "new": "v10.5.0",
+      "commit": "45a71cb1daff85fb8b752b546efaf8b01e0e69cb",
+      "oldObject": "c483e3d036ae3f8e1a8fc81a95e1479beae02932",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        415325400
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V10.5.0/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V10.6.0",
+      "new": "v10.6.0",
+      "commit": "635c397fae78f44930745bca14434a1b96e990ce",
+      "oldObject": "9398d12b138d10ecd4723a1c7dc7e7cf2153a60d",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        415526645
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V10.6.0/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V10.6.1",
+      "new": "v10.6.1",
+      "commit": "3b280bc25a8b83133e2117a60858647dfe86e868",
+      "oldObject": "779162a64b03b4f62fb0d92f6475c99eb15bd414",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        415634327
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V10.6.1/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V10.6.2",
+      "new": "v10.6.2",
+      "commit": "6835a5b5bd6eb83958b379359c94c7e654fd7fe7",
+      "oldObject": "09844c05117a9feba52726ff803c20b7cb2b3455",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        415648791
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V10.6.2/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V11.0.0",
+      "new": "v11.0.0",
+      "commit": "0e534805ad717b75b341f076ff906ecb682b0f40",
+      "oldObject": "c213ac6e944fb60d4d890e66e8c9fd42b7bcd5c8",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        416190741
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V11.0.0/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V11.1.0",
+      "new": "v11.1.0",
+      "commit": "3c744e6bb570e0fd0e51262af0271344494b6354",
+      "oldObject": "28a8c911c87156c69e5fe1de4e41a079ac51fe2e",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        416448366
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V11.1.0/SHA256SUMS.txt",
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V11.1.0/verification.json",
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V11.1.0/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V11.2.0",
+      "new": "v11.2.0",
+      "commit": "a308248fb2c02d9da83a44e5c37a4cec732e2482",
+      "oldObject": "7ad5372dc4d6386c733b91cd9164189ffefe6cc6",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        416845859
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V11.2.0/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V11.2.1",
+      "new": "v11.2.1",
+      "commit": "2a2f3d91d56d156dac387275257c2bc668bdffda",
+      "oldObject": "4e676e67d07abfdcf52b5d46d2914db56d2fec10",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        416859803
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V11.2.1/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V12.0.0",
+      "new": "v12.0.0",
+      "commit": "90359479054b7074a4c553add71ce665f779640b",
+      "oldObject": "daef622e57b9b72895f92c15a47614e139a6f29b",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        417058201
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V12.0.0/zotero-metaflow.xpi"
+      ]
+    },
+    {
+      "plugin": "MetaFlow",
+      "old": "V12.1.0",
+      "new": "v12.1.0",
+      "commit": "a32babb3a631a12abc5839276dd9002605387178",
+      "oldObject": "ff65fcadb104cfe7f3dc6b8735dac596be2971a5",
+      "alreadyCanonical": false,
+      "releaseIDs": [
+        417374403
+      ],
+      "releaseAssets": [
+        "https://github.com/groele/Zotero-MetaFlow/releases/download/V12.1.0/zotero-metaflow.xpi"
+      ]
+    }
+  ]
+}

@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - v**
-      - V**
 
 permissions:
   contents: write
@@ -12,13 +11,25 @@ permissions:
   pull-requests: write
 
 jobs:
+  validate-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python3 scripts/release-tags.py --tag "$RELEASE_TAG"
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+
   create-release:
+    needs: validate-tag
     uses: zotero-plugin-dev/workflows/.github/workflows/release-plugin.yml@main
 
     with:
       release: |
         version="${GITHUB_REF_NAME#v}"
-        version="${version#V}"
         notes_file="$(find docs/releases -maxdepth 1 -type f -iname "metaflow-v${version}.md" -print -quit)"
         if [ -z "$notes_file" ]; then
           notes_file="$(find docs/releases -maxdepth 1 -type f -iname "v${version}.md" -print -quit)"

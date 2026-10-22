@@ -138,3 +138,5 @@ Derived from northword/zotero-format-metadata and built with the Zotero add-on t
 License: [AGPL-3.0-or-later](LICENSE).
 
 This series is independently maintained and is not an official Zotero product. Zotero and third-party names, trademarks, and materials belong to their respective rights holders.
+
+[Release/tag policy](docs/release-tag-policy.md)
