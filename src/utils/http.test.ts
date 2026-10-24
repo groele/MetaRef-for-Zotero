@@ -8,6 +8,19 @@ afterEach(() => {
 });
 
 describe("public API request lifetime", () => {
+  it("disables Gecko retries so only the bounded MetaFlow retry policy runs", async () => {
+    const request = vi.fn(async (_method, _url, options) => {
+      expect(options.errorDelayMax).toBe(0);
+      expect(options.noRetryOnThrottle).toBe(true);
+      throw Object.assign(new Error("Service unavailable"), { status: 503, xmlhttp: { getResponseHeader: () => "60" } });
+    });
+    vi.stubGlobal("Zotero", { HTTP: { request } });
+    await expect(requestGET("https://example.org/unavailable", { errorDelayMax: 3600000 }))
+      .rejects
+      .toMatchObject({ status: 503 });
+    expect(request).toHaveBeenCalledOnce();
+  });
+
   it("evicts a response that fails cache processing so the next request can recover", async () => {
     const invalid = { status: 200, response: { toJSON() {
       throw new Error("Invalid response");

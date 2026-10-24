@@ -186,9 +186,14 @@ export async function requestHTTP(method: "GET" | "POST", url: string, options: 
     signal?.throwIfAborted();
     let abort: (() => void) | undefined;
     try {
-      const response = await Zotero.HTTP.request(method, url, {
+      // The native throttle opt-out is verified on Zotero 10.0.6 but is not
+      // declared by the currently pinned zotero-types package yet.
+      const requestOptions: RequestOptions & { noRetryOnThrottle: boolean } = {
         timeout: 15_000,
         ...options,
+        // Gecko otherwise retries 429/5xx for up to an hour underneath our policy.
+        errorDelayMax: 0,
+        noRetryOnThrottle: true,
         cancellerReceiver(cancel: () => void) {
           abort = cancel;
           if (signal?.aborted)
@@ -197,7 +202,8 @@ export async function requestHTTP(method: "GET" | "POST", url: string, options: 
             signal?.addEventListener("abort", cancel, { once: true });
           options.cancellerReceiver?.(cancel);
         },
-      });
+      };
+      const response = await Zotero.HTTP.request(method, url, requestOptions);
       signal?.throwIfAborted();
       return response;
     }

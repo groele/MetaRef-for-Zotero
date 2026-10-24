@@ -1,28 +1,28 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.5.3",
+  "version": "12.5.4",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3470828,
-  "sha256": "b48c5db740d46569717060ec1f62cabec71e2b5313b7bcd161a104f956cc05bd",
-  "sha512": "08dfc25a801d7b400b25c9a0a682971cf4935270a4860c316c45b4c49fa49e92811c88719745bb39c2d4112cf4b54eb95182a256c3983cc88dc88dfea4f27bb9",
+  "bytes": 3470907,
+  "sha256": "d1813c71586331aa2b5ad15545babe9e18d847df5ca2b967950ff6b3f44d8642",
+  "sha512": "5f90ee87c89de9c8f5ced5e26340aae3fa693ffdc5ccd31a7109707a308d8dd3caf9a2d0810f61edc3793b739aad030a223fcd7ab8ab66a0f47247a403055af3",
   "entries": 40,
   "sourcePayloadVerified": true,
   "updateFeedsVerified": [
     "update.json",
     "dist/update.json"
   ],
-  "sourceBaseCommit": "83b5b8e45bff24a602f14077ce030020845d894e",
+  "sourceBaseCommit": "ecbca76511a41ebc6aa91e3c22581e3168146262",
   "automatedTests": {
-    "passed": 555,
+    "passed": 556,
     "failed": 0
   },
   "nativeZotero": {
     "version": "10.0.6",
     "profile": "isolated",
-    "initial": 11,
-    "restart": 11,
-    "boundary": "Combined five-plugin controlled checks. RefFlow/MetaFlow lifetime helpers bundled from maintained sources. Not a full workflow or visual audit."
+    "initial": 9,
+    "restart": 9,
+    "boundary": "Four production plugins. Controlled reminder/AI/column checks plus real loopback Gecko HTTP via MetaFlow helper. Not paid AI, live metadata providers, Word insertion or full visual QA."
   },
   "mainProfileInstalled": false,
   "automaticUpdateInstallation": "not performed"

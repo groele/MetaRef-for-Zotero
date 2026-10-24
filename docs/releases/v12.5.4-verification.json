@@ -1,0 +1,29 @@
+{
+  "product": "Zotero MetaFlow",
+  "version": "12.5.4",
+  "addonID": "metaflow@groele",
+  "file": "zotero-metaflow.xpi",
+  "bytes": 3470907,
+  "sha256": "d1813c71586331aa2b5ad15545babe9e18d847df5ca2b967950ff6b3f44d8642",
+  "sha512": "5f90ee87c89de9c8f5ced5e26340aae3fa693ffdc5ccd31a7109707a308d8dd3caf9a2d0810f61edc3793b739aad030a223fcd7ab8ab66a0f47247a403055af3",
+  "entries": 40,
+  "sourcePayloadVerified": true,
+  "updateFeedsVerified": [
+    "update.json",
+    "dist/update.json"
+  ],
+  "sourceBaseCommit": "ecbca76511a41ebc6aa91e3c22581e3168146262",
+  "automatedTests": {
+    "passed": 556,
+    "failed": 0
+  },
+  "nativeZotero": {
+    "version": "10.0.6",
+    "profile": "isolated",
+    "initial": 9,
+    "restart": 9,
+    "boundary": "Four production plugins. Controlled reminder/AI/column checks plus real loopback Gecko HTTP via MetaFlow helper. Not paid AI, live metadata providers, Word insertion or full visual QA."
+  },
+  "mainProfileInstalled": false,
+  "automaticUpdateInstallation": "not performed"
+}
