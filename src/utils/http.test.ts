@@ -93,5 +93,7 @@ describe("public API request lifetime", () => {
     controller.abort(new Error("Last cancelled"));
     await cancelled;
     expect(cancel).toHaveBeenCalledOnce();
+    // Drain the eager transport's rejection too, not just the subscriber race.
+    await new Promise(resolve => setTimeout(resolve, 0));
   });
 });

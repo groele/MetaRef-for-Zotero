@@ -147,10 +147,14 @@ async function cachedGET(url: string, options: RequestOptions, signal: AbortSign
         return { status: result.status, response: result.response, responseText: result.responseText, _metaflowCacheExpires: created.expires } as unknown as Awaited<ReturnType<typeof requestGET>>;
       return result;
     }).catch((error) => {
+      created.settled = true;
       if (store.get(key) === created)
         store.delete(key);
       throw error;
     });
+    // The eager shared request can reject before a cancelled subscriber starts
+    // waiting. Observe it without changing the rejection seen by active users.
+    void created.promise.catch(() => {});
     store.set(key, created);
     trimRequests(store);
     entry = created;

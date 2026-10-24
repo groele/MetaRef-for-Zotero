@@ -90,7 +90,10 @@ export async function waitForOperation<T>(operation: () => T | Promise<T>, signa
       timer = setTimeout(() => reject(new Error(`Preparation timed out after ${timeout}ms`)), timeout);
   });
   try {
-    return await Promise.race([Promise.resolve().then(operation), cancelled]);
+    return await Promise.race([Promise.resolve().then(() => {
+      signal.throwIfAborted();
+      return operation();
+    }), cancelled]);
   }
   finally {
     clearTimeout(timer);

@@ -1,7 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { executeRule, normalizedConcurrency } from "./rule-execution";
+import { executeRule, normalizedConcurrency, waitForOperation } from "./rule-execution";
 
 describe("rule deadlines", () => {
+  it("does not start queued preparation after same-turn cancellation", async () => {
+    const controller = new AbortController();
+    let calls = 0;
+    const pending = waitForOperation(() => {
+      calls++;
+    }, controller.signal);
+    controller.abort(new Error("Batch cancelled"));
+    await expect(pending).rejects.toThrow("Batch cancelled");
+    expect(calls).toBe(0);
+  });
+
+  it("still runs active preparation and preserves its result", async () => {
+    const controller = new AbortController();
+    await expect(waitForOperation(() => 42, controller.signal)).resolves.toBe(42);
+  });
+
   it("rejects a late field write without affecting a subsequent rule", async () => {
     const item = { title: "before", setField(_field: string, value: string) {
       this.title = value;

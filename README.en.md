@@ -1,6 +1,6 @@
 # Zotero MetaFlow
 
-> Current add-on version: 12.5.2. Typography and accent colors follow the Zotero Flow brand guidelines.
+> Current add-on version: 12.5.3. Typography and accent colors follow the Zotero Flow brand guidelines.
 
 **Zotero Flow Series · Metadata**
 
@@ -10,7 +10,7 @@ Validate, normalize, and enrich reference metadata.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Release](https://img.shields.io/badge/version-12.5.2-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.2) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.2/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
+[![Release](https://img.shields.io/badge/version-12.5.3-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.3) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.3/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [Overview](#overview) · [Installation and updates](#installation) · [Quick start](#quick-start) · [Key features](#features) · [Settings](#settings) · [Data, sync, and services](#data) · [Compatibility and validation](#compatibility) · [Troubleshooting](#troubleshooting) · [Development and documentation](#development) · [The Flow series](#series) · [Origin and license](#license)
 
@@ -26,7 +26,7 @@ Install this add-on independently and combine it with other Flow products as nee
 
 ## Installation and updates
 
-1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.2/zotero-metaflow.xpi) (add-on version **12.5.2**), not the Source code ZIP.
+1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.3/zotero-metaflow.xpi) (add-on version **12.5.3**), not the Source code ZIP.
 2. In Zotero, open **Tools → Plugins/Add-ons**, then choose **Install Add-on From File** from the gear menu.
 3. Select the XPI, complete installation, and restart if requested.
 
@@ -72,13 +72,13 @@ Configure rules, formatting on import, enrichment policy, journal metrics, and d
 
 ## Compatibility and validation
 
-| Item                   | Scope                                                                                                             |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Current add-on version | 12.5.2                                                                                                            |
-| Declared Zotero range  | `10.0` through `11.*`                                                                                             |
-| Evidence boundary      | Version 12.5.2 passed 553 unit tests and an isolated native typography comparison with ViewFlow on Zotero 10.0.6. |
+| Item                   | Scope                                                                                                                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Current add-on version | 12.5.3                                                                                                                                                                                                 |
+| Declared Zotero range  | `10.0` through `11.*`                                                                                                                                                                                  |
+| Evidence boundary      | 12.5.3 passed 555 unit tests, type checking and lint on changed files, plus isolated Zotero 10.0.6 cancellation/coexistence checks. Full settings visual and online metadata workflows were not rerun. |
 
-Add-on and Zotero versions are separate. Manifest compatibility does not establish testing on every host, operating system, or service. The native check covers font inheritance, text sizes, light/dark themes and two window widths. Zotero 11 and all business workflows were not revalidated.
+Add-on and Zotero versions are separate. Declared compatibility does not establish testing on every host, operating system or service. This patch validates the targeted behaviors listed above, not all plugin workflows or main-profile installation.
 
 <a id="troubleshooting"></a>
 
@@ -103,7 +103,7 @@ pnpm build
 
 - [工作流与数据设计 / Workflow and data](docs/global-workflow-and-data-layout.md)
 - [自动整理与缓存 / Automation and cache](docs/automatic-metadata-and-runtime-cache.md)
-- [版本说明 / Release notes](docs/releases/metaflow-v12.5.2.md)
+- [版本说明 / Release notes](docs/releases/metaflow-v12.5.3.md)
 - [产品简介 / Product profile](docs/brand/PRODUCT.md)
 - [品牌规范 / Brand guide](docs/brand/BRAND.md)
 - [README 模板 / README template](docs/brand/README-TEMPLATE.md)
