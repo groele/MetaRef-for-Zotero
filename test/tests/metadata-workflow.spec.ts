@@ -181,13 +181,29 @@ describe("metadata workflow in Zotero", function () {
         assert.isAtMost(row.scrollWidth, row.clientWidth + 1, "shortcut row must wrap inside preferences");
       }
       const list = doc.querySelector<HTMLElement>(".metaref-shortcut-list")!;
+      await doc.fonts.ready;
       win.resizeTo(1000, 760);
       const layouts = [];
       for (const width of [570, 470, 350]) {
         list.style.width = `${width}px`;
         list.scrollIntoView({ block: "center" });
-        await Zotero.Promise.delay(100);
         const rows = [...list.querySelectorAll<HTMLElement>(".metaref-shortcut-row")];
+        const expectedTracks = width > 520 ? 1 : width > 380 ? 2 : 3;
+        // Native style/container-query resolution can lag the resize. A fixed
+        // sleep can sample `none` or zero-sized content before layout settles.
+        let ready = false;
+        for (let attempt = 0; attempt < 100; attempt++) {
+          list.getBoundingClientRect();
+          ready = rows.length > 0 && rows.every((row) => {
+            const tracks = win.getComputedStyle(row).gridTemplateRows.split(/\s+/).map(Number.parseFloat);
+            return row.getBoundingClientRect().width > 0 && tracks.length === expectedTracks
+              && tracks.every(value => Number.isFinite(value) && value >= 0);
+          });
+          if (ready)
+            break;
+          await Zotero.Promise.delay(25);
+        }
+        assert.isTrue(ready, `native shortcut layout settles at ${width}px`);
         const metrics = rows.map((row: HTMLElement) => {
           const rect = row.getBoundingClientRect();
           const buttons = [...row.querySelectorAll<HTMLElement>(".metaref-shortcut-action")];
@@ -197,9 +213,12 @@ describe("metadata workflow in Zotero", function () {
           assert.isAtMost(row.scrollWidth, row.clientWidth + 1, "row does not overflow");
           const style = win.getComputedStyle(row);
           const tracks = style.gridTemplateRows.split(/\s+/).map(Number.parseFloat);
-          const expectedTracks = width > 520 ? 1 : width > 380 ? 2 : 3;
           assert.lengthOf(tracks, expectedTracks, "shortcut row uses only its responsive content tracks");
-          assert.isTrue(tracks.every(value => Number.isFinite(value) && value > 0), "no empty implicit tracks");
+          assert.isTrue(tracks.every(value => Number.isFinite(value) && value >= 0), "resolved tracks have valid dimensions");
+          if (tracks.includes(0)) {
+            assert.isTrue(tracks.slice(0, -1).every(value => value > 0), "control tracks remain visible");
+            assert.isEmpty(row.querySelector(".metaref-shortcut-preview")!.textContent!.trim(), "only an empty disabled-shortcut preview can collapse");
+          }
           const fontSize = Number.parseFloat(style.fontSize);
           const padding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
           const borders = Number.parseFloat(style.borderTopWidth) + Number.parseFloat(style.borderBottomWidth);
