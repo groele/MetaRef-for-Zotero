@@ -78,6 +78,10 @@ describe("core command execution and optional costs", function () {
       if (url.startsWith("http://localhost:"))
         return request.call(Zotero.HTTP, _method, url, options);
       requests++;
+      if (!url.includes("easyscholar.cc")) {
+        const target = new URL(url);
+        requestedJournals.push(`unexpected: ${target.origin}${target.pathname}`);
+      }
       assert.include(url, "easyscholar.cc", "fallback searches do not silently contact another service");
       requestedJournals.push(new URL(url).searchParams.get("publicationName") || "unknown journal");
       return { status: 200, responseText: JSON.stringify({ code: 200, data: { officialRank: { all: { sci: "Q1" } } } }) };

@@ -195,7 +195,10 @@ describe("metadata workflow in Zotero", function () {
         for (let attempt = 0; attempt < 100; attempt++) {
           list.getBoundingClientRect();
           ready = rows.length > 0 && rows.every((row) => {
-            const tracks = win.getComputedStyle(row).gridTemplateRows.split(/\s+/).map(Number.parseFloat);
+            const style = win.getComputedStyle(row);
+            if (!style)
+              return false;
+            const tracks = style.gridTemplateRows.split(/\s+/).map(Number.parseFloat);
             return row.getBoundingClientRect().width > 0 && tracks.length === expectedTracks
               && tracks.every(value => Number.isFinite(value) && value >= 0);
           });
@@ -212,6 +215,8 @@ describe("metadata workflow in Zotero", function () {
           assert.isAtMost(reset.right, rect.right + 1, "actions remain within the row");
           assert.isAtMost(row.scrollWidth, row.clientWidth + 1, "row does not overflow");
           const style = win.getComputedStyle(row);
+          if (!style)
+            throw new Error("Native shortcut computed style is unavailable");
           const tracks = style.gridTemplateRows.split(/\s+/).map(Number.parseFloat);
           assert.lengthOf(tracks, expectedTracks, "shortcut row uses only its responsive content tracks");
           assert.isTrue(tracks.every(value => Number.isFinite(value) && value >= 0), "resolved tracks have valid dimensions");

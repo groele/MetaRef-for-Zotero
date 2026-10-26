@@ -396,10 +396,12 @@ abbr-settings-description = Integrates journalabbr source priorities, output for
 abbr-custom-required = Select and validate a custom abbreviation file before using the custom-only source.
 
 api-cache-heading = API lookup cache
-api-cache-description = Successful EasyScholar and Semantic Scholar responses are cached for 72 hours in this profile. Concurrent journal queries and known paper identifiers share responses. Only responses and hashed indexes are stored, without request URLs or API keys. Old entries retain their original expiry. Connection tests go online; expiry, eviction, changed queries or credentials and explicit clearing allow fresh responses to replace the cache.
+api-cache-description = Successful EasyScholar responses are cached for 72 hours and Semantic Scholar responses for 24 hours. Successful empty journal results expire within 5 minutes. These two caches persist in this profile across restarts, storing only responses and hashed indexes without request URLs or API keys. Concurrent journal queries and known paper identifiers share responses. Successful Chinese supplemental lookups are cached for 10 minutes in this session and are also removed by explicit clearing. Connection tests go online; expiry, eviction, changed queries or credentials and explicit clearing allow fresh requests.
 api-cache-clear =
     .label = Clear API lookup cache
 api-cache-cleared = API lookup cache cleared. The next lookup will request fresh data; saved item fields are preserved.
+api-cache-clearing = Clearing API lookup cache…
+api-cache-clear-failed = Could not clear the disk cache. Check profile directory permissions or the plugin version and retry. Saved item fields are preserved.
 
 metadata-update-journal-info =
     .label = Include journal rankings, impact factors and indexes in metadata updates

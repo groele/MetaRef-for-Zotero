@@ -1,29 +1,45 @@
-/** Keep every settings section on the same native, collapsible card layout. */
+/** Keep one disclosure level while retaining the controls in their functional groups. */
 export function setupFunctionCards(pane: Element) {
   const doc = pane.ownerDocument!;
+  for (const detail of pane.querySelectorAll("details.metaref-pref-collapsible")) {
+    const section = doc.createElementNS("http://www.w3.org/1999/xhtml", "section");
+    for (const { name, value } of detail.attributes) {
+      if (name !== "open")
+        section.setAttribute(name, value);
+    }
+    section.classList.add("metaref-setting-card", "metaref-static-card");
+    const summary = detail.querySelector(":scope > summary")!;
+    const header = doc.createElementNS("http://www.w3.org/1999/xhtml", "header");
+    for (const { name, value } of summary.attributes)
+      header.setAttribute(name, value);
+    header.classList.add("metaref-card-heading");
+    header.append(...summary.childNodes);
+    section.append(header, ...[...detail.children].filter(child => child !== summary));
+    detail.replaceWith(section);
+  }
   for (const group of [...pane.querySelectorAll<HTMLElement>("groupbox")].reverse()) {
-    if (group.parentElement?.matches("details.metaref-setting-card"))
+    if (group.parentElement?.matches(".metaref-setting-card"))
       continue;
     const heading = group.querySelector(":scope > label");
     if (!heading)
       continue;
     const top = group.parentElement === pane;
-    const card = doc.createElementNS("http://www.w3.org/1999/xhtml", "details") as HTMLDetailsElement;
-    card.className = `metaref-setting-card${top ? " metaref-section-card" : ""}`;
-    card.open = Boolean(heading.querySelector("[data-l10n-id$='metadata-update-defaults']"))
-      || (top && Boolean(heading.querySelector("[data-l10n-id$='section-general'], [data-l10n-id$='core-workflows-heading']")));
-    const summary = doc.createElementNS("http://www.w3.org/1999/xhtml", "summary");
+    const card = doc.createElementNS("http://www.w3.org/1999/xhtml", top ? "details" : "section");
+    card.className = `metaref-setting-card ${top ? "metaref-section-card" : "metaref-static-card"}`;
+    const summary = doc.createElementNS("http://www.w3.org/1999/xhtml", top ? "summary" : "header");
+    if (!top)
+      summary.className = "metaref-card-heading";
     summary.append(heading);
     group.before(card);
     card.append(summary, group);
   }
-  for (const detail of pane.querySelectorAll("details.metaref-pref-collapsible, details.metaref-setting-card")) {
+  for (const detail of pane.querySelectorAll(".metaref-setting-card")) {
     detail.classList.add("metaref-setting-card");
     if (detail.querySelector(":scope > groupbox, :scope > .metaref-card-body"))
       continue;
     const body = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
     body.className = "metaref-card-body";
-    body.append(...[...detail.children].filter(child => child.localName !== "summary"));
+    body.append(...[...detail.children].filter(child => child.localName !== "summary" && !child.classList.contains("metaref-card-heading")));
     detail.append(body);
   }
   for (const parent of pane.querySelectorAll("groupbox, .indented-pref")) {
@@ -50,4 +66,7 @@ export function setupFunctionCards(pane: Element) {
     if (section)
       pane.append(section);
   }
+  [...pane.querySelectorAll<HTMLDetailsElement>(":scope > .metaref-section-card")].forEach((card, index) => {
+    card.open = index === 0;
+  });
 }

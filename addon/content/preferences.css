@@ -225,7 +225,7 @@
 
 #metaref button {
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .metaref-settings-tools button {
@@ -371,6 +371,25 @@
   padding: 11px 13px;
   cursor: pointer;
   list-style: none;
+}
+
+#metaref .metaref-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 11px 13px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#metaref .metaref-card-heading > label,
+#metaref .metaref-card-heading h2,
+#metaref .metaref-card-heading h3,
+#metaref .metaref-card-heading h4 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: inherit;
 }
 
 .metaref-setting-card > summary::after {

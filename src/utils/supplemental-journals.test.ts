@@ -1,8 +1,35 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchSupplementalJournalRank, getNjauCore, parseChineseImpactFactors } from "./supplemental-journals";
+import { clearSupplementalJournalCache, fetchSupplementalJournalRank, getNjauCore, parseChineseImpactFactors } from "./supplemental-journals";
 
 describe("supplemental journal sources", () => {
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    clearSupplementalJournalCache();
+    vi.unstubAllGlobals();
+  });
+  it("reuses supplemental results until explicit clearing, then fetches fresh data", async () => {
+    const request = vi.fn().mockResolvedValueOnce({ responseText: JSON.stringify({ classname: "old" }) }).mockResolvedValue({ responseText: JSON.stringify({ classname: "fresh" }) });
+    vi.stubGlobal("Zotero", { HTTP: { request } });
+    const fields = new Set(["njauQuality"] as const);
+    expect((await fetchSupplementalJournalRank("Cache reset fixture", fields)).data.njauQuality).toBe("old");
+    await fetchSupplementalJournalRank("Cache reset fixture", fields);
+    expect(request).toHaveBeenCalledTimes(1);
+    clearSupplementalJournalCache();
+    expect((await fetchSupplementalJournalRank("Cache reset fixture", fields)).data.njauQuality).toBe("fresh");
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+  it("does not repopulate a cleared cache when an earlier request completes", async () => {
+    let release!: (value: { responseText: string }) => void;
+    const request = vi.fn().mockImplementationOnce(() => new Promise(resolve => release = resolve)).mockResolvedValue({ responseText: JSON.stringify({ classname: "fresh" }) });
+    vi.stubGlobal("Zotero", { HTTP: { request } });
+    const fields = new Set(["njauQuality"] as const);
+    const old = fetchSupplementalJournalRank("Pending reset fixture", fields);
+    await vi.waitFor(() => expect(release).toBeTypeOf("function"));
+    clearSupplementalJournalCache();
+    release({ responseText: JSON.stringify({ classname: "obsolete" }) });
+    await old;
+    expect((await fetchSupplementalJournalRank("Pending reset fixture", fields)).data.njauQuality).toBe("fresh");
+    expect(request).toHaveBeenCalledTimes(2);
+  });
   it("uses the attributed historical NJAU list and validates numeric impact factors", () => {
     expect(getNjauCore("病毒学报")).toBe("一类核心");
     expect(getNjauCore("\u6570\u5B66\u5E74\u520AA\u8F91")).toBe("二类核心");

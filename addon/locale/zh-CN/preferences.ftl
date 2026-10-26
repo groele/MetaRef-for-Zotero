@@ -395,10 +395,12 @@ abbr-settings-description = 整合 zotero-journalabbr 的来源优先级、格�
 abbr-custom-required = 请先选择并验证自定义缩写文件，再使用“仅自定义文件”来源。
 
 api-cache-heading = API 查询缓存
-api-cache-description = EasyScholar 与 Semantic Scholar 的成功响应缓存 72 小时，同刊并发和已知论文标识符共享响应；缓存保存到当前 Zotero 配置目录，重启后继续使用。仅保存响应与哈希索引，不保存请求 URL 或密钥。旧缓存保留原到期时间。连接测试直接联网；过期、淘汰、查询或凭据改变、主动清缓存后重新请求，成功刷新可覆盖旧缓存。
+api-cache-description = EasyScholar 成功响应缓存 72 小时，Semantic Scholar 成功响应缓存 24 小时；无期刊结果的成功响应最多缓存 5 分钟。这两类缓存保存到当前 Zotero 配置目录，可跨重启使用；仅保存响应与哈希索引，不保存请求 URL 或密钥。同刊并发和已知论文标识符共享响应。中文补充来源的成功查询在本次运行内缓存 10 分钟，主动清理时也会移除。连接测试直接联网；过期、淘汰、查询或凭据改变、主动清缓存后重新请求。
 api-cache-clear =
     .label = 清除 API 查询缓存
 api-cache-cleared = API 查询缓存已清除，下次查询将重新请求；已写入文献的数据不受影响。
+api-cache-clearing = 正在清除 API 查询缓存…
+api-cache-clear-failed = 未能清除磁盘缓存。请检查配置目录权限或插件版本后重试；已写入文献的数据不受影响。
 
 metadata-update-journal-info =
     .label = 更新元数据时同时更新期刊分区、影响因子与期刊索引

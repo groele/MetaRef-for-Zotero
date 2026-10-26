@@ -43,6 +43,45 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("rule-level rollback", () => {
+  function failedTransaction(item: Zotero.Item, persisted: Record<string, string>) {
+    const target = item as any;
+    target.persisted = { ...target.fields };
+    target.reload = async () => {
+      target.fields = { ...target.persisted };
+      target.changed = false;
+    };
+    target.saveTx = async () => target.save();
+    (Zotero.DB as any).executeTransaction = async (fn: () => Promise<void>) => {
+      await fn();
+      target.persisted = { ...persisted };
+      throw new Error("Transaction rolled back; another writer committed before retry");
+    };
+  }
+
+  it("rebases fallback saves onto independently committed fields instead of replacing a stale snapshot", async () => {
+    const runner = new LintRunner();
+    const item = createItem();
+    failedTransaction(item, { title: "Original", itemType: "journalArticle", extra: "New manual note" });
+    const result = await runner.add({ items: [item], silent: true, rules: [{ id: "format-title", scope: "item", apply({ item }: ApplyContext) {
+      item.setField("title", "Formatted");
+    } }] as any });
+    expect((item as any).persisted).toEqual({ title: "Formatted", itemType: "journalArticle", extra: "New manual note" });
+    expect(result).toMatchObject({ saved: 1, failed: 0 });
+  });
+
+  it("skips a conflicting fallback and reports the unsaved field without overwriting the latest title", async () => {
+    const runner = new LintRunner();
+    const item = createItem();
+    failedTransaction(item, { title: "Latest manual title", itemType: "journalArticle" });
+    const result = await runner.add({ items: [item], silent: true, rules: [{ id: "format-title", scope: "item", apply({ item }: ApplyContext) {
+      item.setField("title", "Formatted");
+    } }] as any });
+    expect(item.getField("title")).toBe("Latest manual title");
+    expect((item as any).persisted.title).toBe("Latest manual title");
+    expect(result).toMatchObject({ saved: 0, failed: 1 });
+    expect(result?.records).toEqual(expect.arrayContaining([expect.objectContaining({ code: "item-save-conflict" })]));
+    expect(result?.changes[0]).toMatchObject({ after: "Formatted", saved: false });
+  });
   it("lets native input cancel a large synchronous batch before every item runs", async () => {
     const runner = new LintRunner();
     const items = Array.from({ length: 200 }, (_, index) => Object.assign(createItem(), { id: index + 1 }));

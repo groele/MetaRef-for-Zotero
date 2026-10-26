@@ -9,7 +9,7 @@ const sizes = new Map<string, number>();
 let bytes = 0;
 let ready: Promise<void> | undefined;
 let timer: ReturnType<typeof setTimeout> | undefined;
-let writes = Promise.resolve();
+let writes = Promise.resolve(true);
 let generation = 0;
 let session = 0;
 let revision = 0;
@@ -166,17 +166,21 @@ export async function storeServiceAliases(key: string, aliases: string[], value:
   if (changed)
     schedule();
 }
-export async function clearStoredServiceCache(namespace?: string) {
+export async function clearStoredServiceCache(namespace?: string, requireWrite = false) {
   generation++;
   await load();
-  if (readOnly)
+  if (readOnly) {
+    if (requireWrite)
+      throw new Error("A newer cache format must be cleared by its owning plugin version");
     return;
+  }
   for (const key of entries.keys()) {
     if (!namespace || key.startsWith(`${namespace}:`))
       remove(key);
   }
   schedule();
-  await flushServiceCache();
+  if (await flushServiceCache() === false && requireWrite)
+    throw new Error("API cache could not be cleared on disk");
 }
 export async function flushServiceCache() {
   clearTimeout(timer);
@@ -201,12 +205,14 @@ export async function flushServiceCache() {
     await IOUtils.writeJSON(file, snapshot, { tmpPath: `${file}.tmp` });
     if (revision === token)
       dirty = false;
+    return true;
   }).catch((error) => {
     if (queuedRevision === token)
       queuedRevision = -1;
     logger.debug("API cache write failed", error);
+    return false;
   });
-  await writes;
+  return writes;
 }
 export function resetServiceCacheSession() {
   clearTimeout(timer);

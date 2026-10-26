@@ -8,6 +8,7 @@ import { watchPreferencePane } from "../utils/preference-window";
 import { getPref, setPref } from "../utils/prefs";
 import { clearStoredServiceCache } from "../utils/service-cache-storage";
 import { normalizeShortcut, recordShortcut, SHORTCUT_DEFAULTS, shortcutPreview } from "../utils/shortcuts";
+import { clearSupplementalJournalCache } from "../utils/supplemental-journals";
 import { setupBatchFeedback } from "./batch-feedback";
 import { setupCustomDataFiles } from "./custom-data-settings";
 import { setupDuplicateSettings } from "./duplicate-settings";
@@ -118,10 +119,25 @@ export function registerPrefsScripts(_window: Window) {
   const cacheButton = pane.querySelector("#metaref-clear-api-cache");
   if (cacheButton) {
     preferenceListeners(pane)(cacheButton, "command", async () => {
-      clearEasyScholarCache();
-      clearSemanticScholarCache();
-      await clearStoredServiceCache();
-      pane.querySelector("#metaref-api-cache-status")!.textContent = getString("api-cache-cleared");
+      if (cacheButton.hasAttribute("disabled"))
+        return;
+      const status = pane.querySelector("#metaref-api-cache-status")!;
+      cacheButton.setAttribute("disabled", "true");
+      status.textContent = getString("api-cache-clearing");
+      try {
+        clearEasyScholarCache();
+        clearSemanticScholarCache();
+        clearSupplementalJournalCache();
+        await clearStoredServiceCache(undefined, true);
+        if (pane.isConnected && addon.data.alive)
+          status.textContent = getString("api-cache-cleared");
+      }
+      catch (error) {
+        createLogger("preference").error("API cache clear failed", error);
+        if (pane.isConnected && addon.data.alive)
+          status.textContent = getString("api-cache-clear-failed");
+      }
+      finally { cacheButton.removeAttribute("disabled"); }
     });
   }
   setupIntegrationStatus(pane);
@@ -236,10 +252,10 @@ function setupEasyScholarSettings(pane: Element) {
     const heading = group.querySelector(":scope > label");
     if (!heading)
       continue;
-    const card = doc.createElementNS("http://www.w3.org/1999/xhtml", "details") as HTMLDetailsElement;
-    card.className = "metaref-setting-card";
-    card.open = Boolean(group.querySelector("[preference$='.easyscholar.fields.jcr']"));
-    const summary = doc.createElementNS("http://www.w3.org/1999/xhtml", "summary");
+    const card = doc.createElementNS("http://www.w3.org/1999/xhtml", "section");
+    card.className = "metaref-setting-card metaref-static-card";
+    const summary = doc.createElementNS("http://www.w3.org/1999/xhtml", "header");
+    summary.className = "metaref-card-heading";
     const count = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
     count.className = "metaref-card-hint";
     const updateCount = () => {

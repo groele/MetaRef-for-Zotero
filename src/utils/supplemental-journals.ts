@@ -18,6 +18,12 @@ export function parseChineseImpactFactors(raw: unknown): Pick<EasyScholarRank, "
 
 interface SupplementalResult { data: Partial<EasyScholarRank>; errors: string[] }
 const cache = new Map<string, { expires: number; result: SupplementalResult }>();
+let generation = 0;
+
+export function clearSupplementalJournalCache() {
+  generation++;
+  cache.clear();
+}
 
 export async function fetchSupplementalJournalRank(title: string, fields: ReadonlySet<EasyScholarField>, signal?: AbortSignal): Promise<SupplementalResult> {
   const chineseIF = (fields.has("compoundIF") || fields.has("comprehensiveIF")) && /\p{Script=Han}/u.test(title);
@@ -27,6 +33,7 @@ export async function fetchSupplementalJournalRank(title: string, fields: Readon
   const cached = cache.get(key);
   if (cached && cached.expires > Date.now())
     return cached.result;
+  const token = generation;
   const result: SupplementalResult = { data: fields.has("njauCore") ? { njauCore: getNjauCore(title) } : {}, errors: [] };
   const tasks: { source: string; run: (sourceSignal: AbortSignal) => Promise<Partial<EasyScholarRank>> }[] = [];
   if (chineseIF) {
@@ -50,7 +57,7 @@ export async function fetchSupplementalJournalRank(title: string, fields: Readon
     else
       result.errors.push(`${tasks[index].source}: ${String(response.reason)}`);
   });
-  if (!result.errors.length) {
+  if (!result.errors.length && token === generation) {
     if (cache.size >= 128)
       cache.delete(cache.keys().next().value!);
     cache.set(key, { expires: Date.now() + 600_000, result });

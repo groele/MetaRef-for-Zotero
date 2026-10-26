@@ -1,8 +1,9 @@
 import type { EasyScholarField, EasyScholarRank } from "./easyscholar";
 import { EASYSCHOLAR_FIELD_DEFINITIONS } from "./easyscholar";
+import { extractISSNs } from "./esi";
 import { createLogger } from "./logger";
 
-interface Entry { updatedAt: number; values: Partial<Record<EasyScholarField, string>> }
+interface Entry { updatedAt: number; values: Partial<Record<EasyScholarField, string>>; issns?: string[] }
 interface Store { version: 1; entries: Record<string, Entry> }
 const logger = createLogger("journal-ranking-index");
 const entries = new Map<string, Entry>();
@@ -31,7 +32,7 @@ function keys(item: Zotero.Item) {
   const title = item.itemType === "conferencePaper"
     ? item.getField("proceedingsTitle") || item.getField("conferenceName")
     : item.getField("publicationTitle");
-  const issns = String(item.getField("ISSN") || "").split(/[;,\s]+/).map(value => value.replace(/[^\dX]/gi, "").toUpperCase()).filter(Boolean);
+  const issns = extractISSNs(String(item.getField("ISSN") || "")).filter(value => /^\d{7}[\dX]$/.test(value));
   return [...issns.map(value => `${type}:issn:${value}`), ...(normalize(title) ? [`${type}:title:${normalize(title)}`] : [])];
 }
 
@@ -52,7 +53,7 @@ async function load() {
       if (store.version !== 1 || !store.entries || typeof store.entries !== "object")
         return;
       for (const [key, entry] of Object.entries(store.entries).slice(-MAX_ENTRIES)) {
-        if (!key || !Number.isFinite(entry?.updatedAt) || !entry.values || typeof entry.values !== "object")
+        if (!key || !Number.isSafeInteger(entry?.updatedAt) || entry.updatedAt < 0 || !entry.values || typeof entry.values !== "object" || Array.isArray(entry.values))
           continue;
         const values: Entry["values"] = {};
         for (const field of EASYSCHOLAR_FIELD_DEFINITIONS) {
@@ -60,8 +61,12 @@ async function load() {
           if (typeof value === "string" && value.trim())
             values[field.key] = value.trim();
         }
-        if (Object.keys(values).length)
-          entries.set(key, { updatedAt: entry.updatedAt, values });
+        // An explicit empty snapshot records a removal. Dropping it would let
+        // an older alias restore the removed membership after a restart.
+        if (Object.keys(values).length || Object.keys(entry.values).length === 0) {
+          const issns = Array.isArray(entry.issns) ? [...new Set(entry.issns.filter(value => typeof value === "string" && /^\d{7}[\dX]$/.test(value)))] : undefined;
+          entries.set(key, { updatedAt: entry.updatedAt, values, ...issns && { issns } });
+        }
       }
     }
     catch (error) { logger.warn("Unable to load local journal rankings", error); }
@@ -84,23 +89,41 @@ export async function loadJournalRankingIndex() {
   await load();
 }
 
-export function readJournalRankingIndex(item: Zotero.Item) {
-  const result = new Map<EasyScholarField, string>();
-  for (const key of keys(item)) {
-    for (const [field, value] of Object.entries(entries.get(key)?.values || {}) as [EasyScholarField, string][]) {
-      if (!result.has(field))
-        result.set(field, value);
-    }
+function matchingSnapshot(item: Zotero.Item, forWrite = false) {
+  const itemKeys = keys(item);
+  const issns = itemKeys.filter(key => key.includes(":issn:")).map(key => key.split(":issn:")[1]);
+  const knownISSN = itemKeys.some(key => key.includes(":issn:") && entries.has(key));
+  let latest: Entry | undefined;
+  for (const key of itemKeys) {
+    const entry = entries.get(key);
+    if (!entry)
+      continue;
+    const conflicting = issns.length && entry.issns?.length && !entry.issns.some(value => issns.includes(value));
+    if (conflicting && (forWrite || knownISSN))
+      continue;
+    // Legacy title rows have no identity evidence. Keep an explicit ISSN's
+    // established precedence until a verified update supplies that evidence.
+    if (knownISSN && key.includes(":title:") && !entry.issns?.length)
+      continue;
+    if (!latest || entry.updatedAt > latest.updatedAt)
+      latest = entry;
   }
-  return result;
+  return { latest, itemKeys, issns };
+}
+
+export function readJournalRankingIndex(item: Zotero.Item) {
+  const { latest } = matchingSnapshot(item);
+  // Every saved entry is a complete snapshot. Mixing older aliases into the
+  // latest one can revive a deliberately removed value.
+  return new Map(Object.entries(latest?.values || {}) as [EasyScholarField, string][]);
 }
 
 export async function saveJournalRankingIndex(item: Zotero.Item, values: Partial<EasyScholarRank>, selected: ReadonlySet<EasyScholarField>, mode: "blank" | "all" = "all") {
   await load();
-  const itemKeys = keys(item);
+  const { latest, itemKeys, issns } = matchingSnapshot(item, true);
   if (!itemKeys.length || !selected.size)
     return;
-  const existing = readJournalRankingIndex(item);
+  const existing = new Map(Object.entries(latest?.values || {}) as [EasyScholarField, string][]);
   const next = new Map(existing);
   let changed = false;
   for (const field of selected) {
@@ -117,11 +140,18 @@ export async function saveJournalRankingIndex(item: Zotero.Item, values: Partial
       }
     }
   }
-  if (!changed)
+  const existingAliases = itemKeys.map(key => entries.get(key));
+  const identity = [...new Set([...latest?.issns || [], ...issns])];
+  const aliasChanged = existingAliases.some(entry => entry
+    ? Object.keys(entry.values).length !== next.size || [...next].some(([field, value]) => entry.values[field] !== value)
+    || entry.issns?.length !== identity.length || identity.some(value => !entry.issns?.includes(value))
+    : next.size > 0 || existingAliases.some(Boolean));
+  if (!changed && !aliasChanged)
     return;
   dirty = true;
   revision++;
-  const snapshot = { updatedAt: Date.now(), values: Object.fromEntries(next) as Entry["values"] };
+  const updatedAt = Math.max(Date.now(), ...existingAliases.map(entry => (entry?.updatedAt ?? -1) + 1));
+  const snapshot = { updatedAt, values: Object.fromEntries(next) as Entry["values"], issns: identity };
   for (const key of itemKeys) {
     entries.delete(key);
     entries.set(key, snapshot);

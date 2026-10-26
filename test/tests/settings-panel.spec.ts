@@ -192,6 +192,7 @@ describe("settings panel layout and validation in Zotero", function () {
     assert.isNotNull(pane.querySelector(":scope > .metaref-section-card > #metaref-core-workflows"));
     assert.isNotNull(pane.querySelector(":scope > .metaref-section-card > #metaref-tool-center"));
     const sections = [...pane.querySelectorAll(":scope > .metaref-section-card")];
+    assert.lengthOf(pane.querySelectorAll("details details"), 0, "settings expose a single disclosure level");
     assert.isNotNull(sections[0].querySelector(":scope > summary [data-l10n-id$='section-general']"));
     assert.isNotNull(sections[1].querySelector(":scope > summary [data-l10n-id$='core-workflows-heading']"));
     assert.lengthOf(pane.querySelectorAll("checkbox[preference]"), 0, "all preference checkboxes use the same visible native control");
@@ -245,7 +246,8 @@ describe("settings panel layout and validation in Zotero", function () {
     assert.include(data.querySelector("#metaref-runtime-data-policy")!.textContent!, "30");
     assert.lengthOf(pane.querySelectorAll("#metaref-clear-api-cache"), 1);
     const cards = [...pane.querySelectorAll<HTMLDetailsElement>(":scope > .metaref-section-card")];
-    assert.isTrue(cards[1].open, "core commands are easy to find on initial opening");
+    assert.isTrue(cards[0].open, "the first group opens initially");
+    assert.isTrue(cards.slice(1).every(card => !card.open), "other groups wait for the user's choice");
     const rules = cards.find(card => card.querySelector(":scope > summary [data-l10n-id$='section-rules']"))!;
     assert.isFalse(rules.open, "advanced rules remain available without filling the initial screen");
     const card = data.closest("details") as HTMLDetailsElement;
@@ -277,7 +279,7 @@ describe("settings panel layout and validation in Zotero", function () {
       for (const [key, id] of [["menu.standard", "metaref-workflow-settings"], ["menu.tool-update-metadata", "metaref-update-workflow-settings"]]) {
         const visible = find(key) as HTMLInputElement;
         assert.lengthOf(pane.querySelectorAll(`[preference='${pref(key)}']`), 1);
-        assert.equal(visible.closest("details")!.id, id);
+        assert.equal(visible.closest(".metaref-static-card")!.id, id);
         visible.click();
         assert.equal(Zotero.Prefs.get(pref(key), true), visible.checked);
         assert.deepEqual(stages.map(key => Zotero.Prefs.get(pref(key), true)), beforeStages);
@@ -562,7 +564,7 @@ describe("settings panel layout and validation in Zotero", function () {
 
   it("keeps identifier controls inset from card edges at both window widths", async function () {
     const input = find("rule.no-doi-prefix");
-    const card = input.closest("details") as HTMLDetailsElement;
+    const card = input.closest(".metaref-static-card")!;
     const states = new Map<HTMLDetailsElement, boolean>();
     for (let ancestor: Element | null = card; ancestor; ancestor = ancestor.parentElement) {
       if (ancestor.localName === "details") {
@@ -579,7 +581,7 @@ describe("settings panel layout and validation in Zotero", function () {
         const rect = card.getBoundingClientRect();
         const control = input.getBoundingClientRect();
         assert.isAtLeast(control.left - rect.left, 13, "checkbox clears the border");
-        const heading = card.querySelector(":scope > summary")!.firstElementChild!.getBoundingClientRect();
+        const heading = card.querySelector(":scope > .metaref-card-heading")!.firstElementChild!.getBoundingClientRect();
         assert.closeTo(control.left, heading.left, 1, "checkbox aligns with its heading");
         assert.isAtLeast(rect.right - control.right, 13);
         assert.isAtMost(pane.scrollWidth, pane.clientWidth + 1);

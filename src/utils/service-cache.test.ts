@@ -45,6 +45,28 @@ describe("authenticated service response cache", () => {
     expect(request).toHaveBeenCalledTimes(2);
   });
 
+  it("reports an explicit cache-clear write failure and permits a later retry", async () => {
+    await fetch();
+    await flushServiceCache();
+    const write = vi.spyOn(IOUtils, "writeJSON").mockRejectedValueOnce(new Error("Disk denied"));
+    try {
+      await expect(clearStoredServiceCache(undefined, true)).rejects.toThrow();
+      await expect(clearStoredServiceCache(undefined, true)).resolves.toBeUndefined();
+      expect(write).toHaveBeenCalledTimes(2);
+    }
+    finally { write.mockRestore(); }
+  });
+
+  it("does not report a newer-format disk cache as cleared", async () => {
+    await fetch();
+    await flushServiceCache();
+    const snapshot = files.values().next().value;
+    snapshot.version = 99;
+    resetServiceCacheSession();
+    await expect(clearStoredServiceCache(undefined, true)).rejects.toThrow();
+    expect(files.values().next().value).toBe(snapshot);
+  });
+
   it("survives a session reset without persisting the key or extending the TTL", async () => {
     await fetch();
     await flushServiceCache();

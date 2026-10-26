@@ -5,7 +5,7 @@ import { createWorkCheckpoint } from "../utils/cooperative-scheduler";
 import { DataLoader } from "../utils/data-loader";
 import { toArray } from "../utils/general";
 import { ItemMutationJournal } from "../utils/item-mutation-journal";
-import { rollbackItemChanges } from "../utils/item-recovery";
+import { rebaseItemSnapshot, rollbackItemChanges } from "../utils/item-recovery";
 import { getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
@@ -106,6 +106,7 @@ function shouldApplyRule(rule: Rule<any>, item: Zotero.Item): boolean {
 export class LintRunner {
   private stats: RunnerStats = this.emptyStats();
   private modifiedItems = new Set<Zotero.Item>();
+  private itemBaselines = new Map<Zotero.Item, Record<string, unknown>>();
   private runningQueue: Promise<void> = Promise.resolve();
   private cancelled = false;
   private preparation?: AbortController;
@@ -341,7 +342,8 @@ export class LintRunner {
       this.unsafeItems.delete(item);
     }
     const errors: any[] = [];
-    const original = JSON.stringify(item.toJSON());
+    const baseline = item.toJSON() as Record<string, unknown>;
+    const original = JSON.stringify(baseline);
 
     for (const rule of rules) {
       await this.checkpoint();
@@ -392,6 +394,7 @@ export class LintRunner {
 
     if (!this.unsafeItems.has(item) && item.hasChanged() && JSON.stringify(item.toJSON()) !== original) {
       this.modifiedItems.add(item);
+      this.itemBaselines.set(item, baseline);
     }
 
     // If there are errors, throw a error so queue can catch
@@ -438,7 +441,15 @@ export class LintRunner {
           // save() reloads the item before commit. Rollback does not restore its change flags.
           if (item.id)
             await item.reload(["primaryData", "itemData", "creators", "tags", "collections", "relations"], true);
-          item.fromJSON(snapshots.get(item)!, { strict: true });
+          const latest = item.toJSON() as Record<string, unknown>;
+          const rebased = rebaseItemSnapshot(this.itemBaselines.get(item)!, snapshots.get(item)! as Record<string, unknown>, latest);
+          const conflicts = item.deleted || !item.isEditable() ? ["editable"] : rebased.conflicts;
+          if (conflicts.length) {
+            this.failedItems.add(item.id || item);
+            this.stats.records.push({ itemID: item.id, title: item.getDisplayTitle(), ruleID: "item-save", code: "item-save-conflict", level: "error", message: getString("report-save-conflict", { args: { fields: conflicts.join(", ") } }) });
+            continue;
+          }
+          item.fromJSON(rebased.data, { strict: true });
           await item.saveTx({ skipSelect: true, ...{ undoAction: "metaref-undo-action-lint-metadata", undoActionArgs: { count: 1 } } });
           this.saved++;
           this.savedValues.set(item.id, item.toJSON() as Record<string, unknown>);
@@ -457,9 +468,7 @@ export class LintRunner {
           try {
             await item.reload(["primaryData", "itemData", "creators", "tags", "collections", "relations"], true);
             const persisted = item.toJSON() as Record<string, unknown>;
-            for (const field of ["key", "version", "dateAdded", "dateModified"])
-              recovered[field] = persisted[field];
-            item.fromJSON(recovered, { strict: true });
+            item.fromJSON(rebaseItemSnapshot(this.itemBaselines.get(item)!, recovered, persisted).data, { strict: true });
           }
           catch (recoveryError) {
             this.unsafeItems.add(item);
@@ -574,6 +583,7 @@ export class LintRunner {
     this.checkpoint = createWorkCheckpoint();
     this.failedItems.clear();
     this.changes = [];
+    this.itemBaselines.clear();
     this.savedValues.clear();
     this.applicableIDs.clear();
     this.processedIDs.clear();
@@ -611,6 +621,7 @@ export class LintRunner {
       recordRuntimeResult(this.lastResult);
     // Release batch state before opening UI, which may fail when a window closes.
     this.modifiedItems.clear();
+    this.itemBaselines.clear();
     this.savedValues.clear();
     this.changes = [];
     DataLoader.clearBatchCache();

@@ -35,6 +35,7 @@ info-batch-duration = 耗时 { $seconds } 秒
 report-export = 导出报告与字段变更
 report-export-failed = 导出失败，点击重试。
 report-prepare-failed = 规则准备失败
+report-save-conflict = 条目在保存重试前已被更新，已保留当前文库内容，本次变更未覆盖。请核对后重新运行；冲突字段：{ $fields }。
 info-batch-details = 已保存 { $saved }；未变化 { $unchanged }；不适用 { $notApplicable }；提醒 { $warnings }。
 
 completion-notice-open = 点击查看报告 · 5 秒后自动消失

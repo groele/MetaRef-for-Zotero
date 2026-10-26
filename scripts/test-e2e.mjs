@@ -1,27 +1,40 @@
-import { spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { stripVTControlCharacters } from "node:util";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-function run(args, env = process.env, requireTests = false) {
-  const result = spawnSync("pnpm", args, { cwd: projectRoot, stdio: requireTests ? ["inherit", "pipe", "pipe"] : "inherit", encoding: "utf8", maxBuffer: 16 * 1024 * 1024, shell: process.platform === "win32", env });
-  if (requireTests) {
-    process.stdout.write(result.stdout || "");
-    process.stderr.write(result.stderr || "");
-  }
-  if (result.error)
-    throw result.error;
-  if (result.status !== 0)
-    process.exit(result.status ?? 1);
-  if (requireTests) {
-    const plain = stripVTControlCharacters(`${result.stdout}\n${result.stderr}`);
-    const count = plain.match(/Test run completed\s*-\s*(\d+) passed/);
-    if (!count || Number(count[1]) === 0)
-      throw new Error("The E2E runner did not report any passing tests; refusing an empty or incomplete run.");
-  }
+async function run(args, env = process.env, requireTests = false) {
+  // Reuse the manager selected by the parent instead of re-entering a global
+  // version-manager wrapper, which can require another registry verification.
+  const manager = env.npm_execpath && existsSync(env.npm_execpath) ? env.npm_execpath : "pnpm";
+  const script = /\.[cm]?js$/i.test(manager);
+  await new Promise((resolve, reject) => {
+    const child = spawn(script ? process.execPath : manager, script ? [manager, ...args] : args, { cwd: projectRoot, stdio: requireTests ? ["inherit", "pipe", "pipe"] : "inherit", shell: process.platform === "win32" && !script && !/\.exe$/i.test(manager), env });
+    let output = "";
+    for (const [stream, target] of [[child.stdout, process.stdout], [child.stderr, process.stderr]]) {
+      stream?.setEncoding("utf8");
+      stream?.on("data", (chunk) => {
+        target.write(chunk);
+        output = (output + chunk).slice(-1024 * 1024);
+      });
+    }
+    child.once("error", reject);
+    child.once("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(`E2E command failed with exit code ${code}`));
+        return;
+      }
+      const count = stripVTControlCharacters(output).match(/Test run completed\s*-\s*(\d+) passed/);
+      if (requireTests && (!count || Number(count[1]) === 0)) {
+        reject(new Error("The E2E runner did not report any passing tests; refusing an empty or incomplete run."));
+        return;
+      }
+      resolve();
+    });
+  });
 }
 
 const testDirectory = path.resolve(projectRoot, process.env.METAREF_TEST_ENTRIES || "test/tests");
@@ -35,7 +48,7 @@ function containsTests(directory) {
 if (!containsTests(testDirectory))
   throw new Error("The selected E2E directory contains no test files.");
 
-run(["build"]);
+await run(["build"]);
 const qa = path.join(projectRoot, ".scaffold", "qa");
 mkdirSync(qa, { recursive: true });
 const packagePath = path.join(qa, "zotero-metaflow-production.xpi");
@@ -43,7 +56,7 @@ copyFileSync(path.join(projectRoot, ".scaffold", "build", "zotero-metaflow.xpi")
 const version = JSON.parse(readFileSync(path.join(projectRoot, "package.json"), "utf8")).version;
 const updateFile = version.includes("-") ? "update-beta.json" : "update.json";
 copyFileSync(path.join(projectRoot, ".scaffold", "build", updateFile), path.join(qa, "zotero-metaflow-production-update.json"));
-run(["exec", "zotero-plugin", "test", "--no-watch"], {
+await run(["exec", "zotero-plugin", "test", "--no-watch"], {
   ...process.env,
   METAREF_TEST_PACKAGE_PATH: packagePath,
   ZOTERO_PLUGIN_KILL_COMMAND: process.env.ZOTERO_PLUGIN_KILL_COMMAND || (process.platform === "win32" ? "pwsh -NoProfile -Command \"exit 0\"" : "true"),

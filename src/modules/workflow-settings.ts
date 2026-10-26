@@ -27,10 +27,11 @@ export function setupWorkflowSettings(pane: Element) {
     const row = pane.querySelector(`[data-core-menu-command='${id}']`)!;
     target.insertBefore(row, target.children[2] || null);
   };
-  const card = doc.createElementNS("http://www.w3.org/1999/xhtml", "details") as HTMLDetailsElement;
-  card.className = "metaref-setting-card";
+  const card = doc.createElementNS("http://www.w3.org/1999/xhtml", "section");
+  card.className = "metaref-setting-card metaref-static-card";
   card.id = "metaref-workflow-settings";
-  const summary = doc.createElementNS("http://www.w3.org/1999/xhtml", "summary");
+  const summary = doc.createElementNS("http://www.w3.org/1999/xhtml", "header");
+  summary.className = "metaref-card-heading";
   doc.l10n!.setAttributes(summary, "metaref-workflow-heading");
   card.append(summary);
   const description = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
@@ -72,10 +73,11 @@ export function setupWorkflowSettings(pane: Element) {
   };
   moveChoice("workflow.remoteAuthorsOnCheck", card);
   const makeCard = (id: string, heading: string, description: string) => {
-    const section = doc.createElementNS("http://www.w3.org/1999/xhtml", "details");
+    const section = doc.createElementNS("http://www.w3.org/1999/xhtml", "section");
     section.id = id;
-    section.className = "metaref-setting-card";
-    const title = doc.createElementNS("http://www.w3.org/1999/xhtml", "summary");
+    section.className = "metaref-setting-card metaref-static-card";
+    const title = doc.createElementNS("http://www.w3.org/1999/xhtml", "header");
+    title.className = "metaref-card-heading";
     doc.l10n!.setAttributes(title, heading);
     const note = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
     doc.l10n!.setAttributes(note, description);

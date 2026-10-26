@@ -24,8 +24,21 @@ describe("local runtime data persistence", function () {
   });
 
   afterEach(async function () {
-    for (const store of stores.splice(0))
-      await store.flush();
+    for (const store of stores.splice(0)) {
+      for (let attempt = 0; ; attempt++) {
+        try {
+          await store.flush();
+          break;
+        }
+        catch (error) {
+          if (attempt >= 2 || !String(error).includes("NS_ERROR_FILE_ACCESS_DENIED"))
+            throw error;
+          // Windows may briefly retain a file handle during atomic replacement.
+          // Only teardown retries; write-failure assertions in test bodies stay strict.
+          await Zotero.Promise.delay(50 * (attempt + 1));
+        }
+      }
+    }
     assert.equal(PathUtils.parent(directory), PathUtils.tempDir);
     await IOUtils.remove(directory, { recursive: true });
   });

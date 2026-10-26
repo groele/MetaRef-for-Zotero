@@ -208,6 +208,6 @@ export function defineRule<Options = unknown>(
   rule.apply = withThrottle((ctx) => {
     ctx.signal?.throwIfAborted();
     return apply(ctx);
-  }, rule.cooldown ?? 0);
+  }, rule.cooldown ?? 0, ctx => ctx.signal);
   return rule as Rule<Options>;
 }

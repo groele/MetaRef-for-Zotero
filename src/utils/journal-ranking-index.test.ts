@@ -4,6 +4,7 @@ const stored = vi.hoisted(() => ({ value: undefined as any, writes: 0 }));
 vi.mock("./logger", () => ({ createLogger: () => ({ warn: vi.fn(), error: vi.fn() }) }));
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.resetModules();
   stored.value = undefined;
@@ -71,4 +72,95 @@ it("preserves a newer journal index on downgrade while permitting session-only l
   await index.flushJournalRankingIndex();
   expect(stored.writes).toBe(0);
   expect(stored.value).toBe(future);
+});
+
+it("uses the latest complete snapshot instead of reviving a removed field from an older ISSN alias", async () => {
+  vi.useFakeTimers();
+  const index = await setup();
+  const both = item("Journal QA", "1234-5678; 8765-4321");
+  await index.saveJournalRankingIndex(both, { sci: "是", jcr: "Q1", impactFactor: "34.9" }, new Set(["sci", "jcr", "impactFactor"]));
+  await index.saveJournalRankingIndex(item(), { sci: "否", jcr: "Q2" }, new Set(["sci", "jcr"]));
+  expect(index.readJournalRankingIndex(both)).toEqual(new Map([["jcr", "Q2"], ["impactFactor", "34.9"]]));
+  await index.flushJournalRankingIndex();
+});
+
+it("keeps an empty newer snapshot after restart so an obsolete membership does not return", async () => {
+  vi.useFakeTimers();
+  const index = await setup();
+  const both = item("Journal QA", "1234-5678; 8765-4321");
+  await index.saveJournalRankingIndex(both, { sci: "是" }, new Set(["sci"]));
+  await index.saveJournalRankingIndex(item(), { sci: "否" }, new Set(["sci"]));
+  await index.flushJournalRankingIndex();
+  vi.resetModules();
+  const reloaded = await import("./journal-ranking-index");
+  await reloaded.loadJournalRankingIndex();
+  expect(reloaded.readJournalRankingIndex(both).has("sci")).toBe(false);
+});
+
+it("recognizes a newer title snapshot when its ISSN alias still contains older values", async () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(2000);
+  const index = await setup();
+  await index.saveJournalRankingIndex(item(), { jcr: "Q1" }, new Set(["jcr"]));
+  vi.setSystemTime(1000);
+  await index.saveJournalRankingIndex(item("Journal QA", ""), { jcr: "Q2" }, new Set(["jcr"]));
+  expect(index.readJournalRankingIndex(item()).get("jcr")).toBe("Q2");
+  await index.flushJournalRankingIndex();
+});
+
+it("records a newly learned alias even when the selected values are unchanged", async () => {
+  const index = await setup();
+  await index.saveJournalRankingIndex(item(), { jcr: "Q1" }, new Set(["jcr"]));
+  await index.flushJournalRankingIndex();
+  await index.saveJournalRankingIndex(item("Corrected Journal QA"), { jcr: "Q1" }, new Set(["jcr"]));
+  await index.flushJournalRankingIndex();
+  expect(index.readJournalRankingIndex(item("Corrected Journal QA", "")).get("jcr")).toBe("Q1");
+  expect(stored.writes).toBe(2);
+});
+
+it("does not share rankings through a malformed partial ISSN", async () => {
+  const index = await setup();
+  await index.saveJournalRankingIndex(item("First Journal", "1234"), { jcr: "Q1" }, new Set(["jcr"]));
+  expect(index.readJournalRankingIndex(item("Other Journal", "1234")).size).toBe(0);
+  await index.flushJournalRankingIndex();
+});
+
+it("keeps a known ISSN distinct when a different journal has the same normalized title", async () => {
+  vi.useFakeTimers();
+  const index = await setup();
+  const first = item("Shared Journal", "1234-5678");
+  const other = item("Shared Journal", "8765-4321");
+  await index.saveJournalRankingIndex(first, { jcr: "Q1" }, new Set(["jcr"]));
+  await index.saveJournalRankingIndex(other, { jcr: "Q2" }, new Set(["jcr"]));
+  expect(index.readJournalRankingIndex(first).get("jcr")).toBe("Q1");
+  expect(index.readJournalRankingIndex(other).get("jcr")).toBe("Q2");
+  await index.flushJournalRankingIndex();
+  vi.resetModules();
+  const reloaded = await import("./journal-ranking-index");
+  await reloaded.loadJournalRankingIndex();
+  expect(reloaded.readJournalRankingIndex(first).get("jcr")).toBe("Q1");
+  expect(reloaded.readJournalRankingIndex(other).get("jcr")).toBe("Q2");
+});
+
+it("does not carry unselected fields from a conflicting known ISSN into a new snapshot", async () => {
+  const index = await setup();
+  await index.saveJournalRankingIndex(item("Shared Journal", "1234-5678"), { jcr: "Q1", impactFactor: "34.9" }, new Set(["jcr", "impactFactor"]));
+  const other = item("Shared Journal", "8765-4321");
+  await index.saveJournalRankingIndex(other, { jcr: "Q2" }, new Set(["jcr"]));
+  expect(index.readJournalRankingIndex(other).has("impactFactor")).toBe(false);
+  await index.flushJournalRankingIndex();
+});
+
+it("loads legacy v1 rows without identity metadata and keeps their known ISSN precedence", async () => {
+  stored.value = { version: 1, entries: {
+    "journal:issn:12345678": { updatedAt: 1000, values: { jcr: "Q1" } },
+    "journal:title:journalqa": { updatedAt: 2000, values: { jcr: "Q2" } },
+  } };
+  const index = await setup();
+  await index.loadJournalRankingIndex();
+  expect(index.readJournalRankingIndex(item()).get("jcr")).toBe("Q1");
+  await index.saveJournalRankingIndex(item(), { jcr: "Q3" }, new Set(["jcr"]));
+  await index.flushJournalRankingIndex();
+  expect(stored.value.version).toBe(1);
+  expect(stored.value.entries["journal:issn:12345678"].issns).toEqual(["12345678"]);
 });

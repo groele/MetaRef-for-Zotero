@@ -41,7 +41,7 @@ export function requestServiceGET(namespace: string, url: string, options: Reque
   return cachedGET(url, options, signal, serviceRequests, serviceKey(namespace, url, options), serviceCacheTTL(namespace));
 }
 
-const easyScholarNetwork = withThrottle(requestGET, 500);
+const easyScholarNetwork = withThrottle(requestGET, 500, (_url, _options, signal) => signal);
 const semanticNetworks = new Map<string, typeof requestGET>();
 
 function networkGET(key: string, url: string, options: RequestOptions, signal: AbortSignal) {
@@ -51,7 +51,7 @@ function networkGET(key: string, url: string, options: RequestOptions, signal: A
     const token = String((options.headers as Record<string, string> | undefined)?.["x-api-key"] || "");
     let request = semanticNetworks.get(token);
     if (!request) {
-      request = withThrottle(requestGET, token ? 1000 : 3000);
+      request = withThrottle(requestGET, token ? 1000 : 3000, (_url, _options, signal) => signal);
       semanticNetworks.set(token, request);
       if (semanticNetworks.size > 16)
         semanticNetworks.delete(semanticNetworks.keys().next().value!);
@@ -203,7 +203,8 @@ export async function requestHTTP(method: "GET" | "POST", url: string, options: 
           options.cancellerReceiver?.(cancel);
         },
       };
-      const response = await Zotero.HTTP.request(method, url, requestOptions);
+      const send = () => Zotero.HTTP.request(method, url, requestOptions);
+      const response = await (signal ? waitForOperation(send, signal) : send());
       signal?.throwIfAborted();
       return response;
     }

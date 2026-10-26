@@ -8,6 +8,34 @@ afterEach(() => {
 });
 
 describe("public API request lifetime", () => {
+  it("releases a direct caller on abort even if the native canceller never settles its transport", async () => {
+    let release!: (value: any) => void;
+    const cancel = vi.fn();
+    const request = vi.fn((_method, _url, options) => {
+      options.cancellerReceiver(cancel);
+      return new Promise((resolve) => {
+        release = resolve;
+      });
+    });
+    vi.stubGlobal("Zotero", { HTTP: { request } });
+    const controller = new AbortController();
+    const pending = requestGET("https://example.org/hanging", {}, controller.signal);
+    await Promise.resolve();
+    controller.abort(new Error("Caller cancelled"));
+    let watchdog: ReturnType<typeof setTimeout>;
+    try {
+      await expect(Promise.race([pending, new Promise((_, reject) => {
+        watchdog = setTimeout(() => reject(new Error("Cancellation did not release caller")), 100);
+      })])).rejects.toThrow("Caller cancelled");
+      expect(cancel).toHaveBeenCalledOnce();
+    }
+    finally {
+      clearTimeout(watchdog!);
+      release({ status: 200 });
+      await pending.catch(() => {});
+    }
+  });
+
   it("disables Gecko retries so only the bounded MetaFlow retry policy runs", async () => {
     const request = vi.fn(async (_method, _url, options) => {
       expect(options.errorDelayMax).toBe(0);
@@ -44,6 +72,7 @@ describe("public API request lifetime", () => {
       return { status: 200 };
     }) } });
     const pending = requestGET("https://example.org", {}, controller.signal);
+    await Promise.resolve();
     controller.abort(new Error("Cancelled"));
     expect(cancel).toHaveBeenCalledOnce();
     release();

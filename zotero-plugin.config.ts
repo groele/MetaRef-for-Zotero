@@ -13,7 +13,7 @@ export default defineConfig({
   id: pkg.config.addonID,
   namespace: pkg.config.addonRef,
   updateURL: "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/update.json",
-  xpiDownloadLink: "https://raw.githubusercontent.com/groele/Zotero-MetaFlow/main/dist/zotero-metaflow.xpi",
+  xpiDownloadLink: `https://github.com/groele/Zotero-MetaFlow/releases/download/v${pkg.version}/zotero-metaflow.xpi`,
   server: {
     startArgs: ["-no-remote"],
   },

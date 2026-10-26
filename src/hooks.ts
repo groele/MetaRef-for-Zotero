@@ -34,6 +34,7 @@ import { getPref } from "./utils/prefs";
 import { flushRuntimeData } from "./utils/runtime-data-storage";
 import { selectedCollections } from "./utils/selection";
 import { flushServiceCache } from "./utils/service-cache-storage";
+import { clearSupplementalJournalCache } from "./utils/supplemental-journals";
 import { REMOTE_STANDARD_RULES } from "./utils/workflow-policy";
 
 const shortcutCleanups = new Map<Window, () => void>();
@@ -109,6 +110,7 @@ async function onShutdown() {
   await cleanupResources([
     () => automaticItems.cancelPending(),
     clearRequestCache,
+    clearSupplementalJournalCache,
     unregisterNotifier,
     unregisterDuplicateStats,
     clearDuplicateSearchCache,
