@@ -1,6 +1,6 @@
 # Zotero MetaFlow
 
-> Current version 12.5.8 fixes linked ISSN snapshots, removed membership fallback, unreadable index protection and JCR quartile display. [Release notes](docs/releases/metaflow-v12.5.8.md).
+> Current version 12.6.0 adds one-click batch merging for duplicate items and retains the 12.5.8 fixes for linked ISSN snapshots, removed membership fallback, unreadable index protection and JCR quartile display. [Release notes](docs/releases/metaflow-v12.6.0.md).
 
 **Zotero Flow Series · Metadata**
 
@@ -10,7 +10,7 @@ Validate, normalize, and enrich reference metadata.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Release](https://img.shields.io/badge/version-12.5.8-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.5.8) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.8/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
+[![Release](https://img.shields.io/badge/version-12.6.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.0) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.0/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [Overview](#overview) · [Installation and updates](#installation) · [Quick start](#quick-start) · [Key features](#features) · [Settings](#settings) · [Data, sync, and services](#data) · [Compatibility and validation](#compatibility) · [Troubleshooting](#troubleshooting) · [Development and documentation](#development) · [The Flow series](#series) · [Origin and license](#license)
 
@@ -26,7 +26,7 @@ Install this add-on independently and combine it with other Flow products as nee
 
 ## Installation and updates
 
-1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.5.8/zotero-metaflow.xpi) (add-on version **12.5.8**), not the Source code ZIP.
+1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.0/zotero-metaflow.xpi) (add-on version **12.6.0**), not the Source code ZIP.
 2. In Zotero, open **Tools → Plugins/Add-ons**, then choose **Install Add-on From File** from the gear menu.
 3. Select the XPI, complete installation, and restart if requested.
 
@@ -61,6 +61,8 @@ Open the add-on preference page in **Zotero → Settings → Zotero MetaFlow**.
 
 Configure rules, formatting on import, enrichment policy, journal metrics, and display separately. Review a small sample before batch processing.
 
+Version 12.6.0 adds “Merge all duplicates in this library” to Zotero's native Duplicate Items pane. Confirm once to process all native duplicate groups, with cancellation and a result summary. It follows MetaFlow's master strategy (oldest by default), fills empty fields, and retains the master's conflicting values. Groups with different types, non-duplicate decisions, or intervening edits are skipped. Zotero's native merge maintains attachments, notes, tags, collections, relations, and Undo.
+
 <a id="data"></a>
 
 ## Data, sync, and services
@@ -74,9 +76,9 @@ Configure rules, formatting on import, enrichment policy, journal metrics, and d
 
 | Item                   | Scope                                                                                                                                                    |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Current add-on version | 12.5.8                                                                                                                                                   |
+| Current add-on version | 12.6.0                                                                                                                                                   |
 | Declared Zotero range  | `10.0` through `11.*`                                                                                                                                    |
-| Evidence boundary      | See the [release notes](docs/releases/metaflow-v12.5.8.md) for validation and compatibility boundaries. No automatic installation into the main profile. |
+| Evidence boundary      | See the [release notes](docs/releases/metaflow-v12.6.0.md) for validation and compatibility boundaries. No automatic installation into the main profile. |
 
 Add-on and Zotero versions are separate. Declared compatibility does not establish testing on every host, operating system or service. This patch validates the targeted behaviors listed above, not all plugin workflows or main-profile installation.
 
@@ -103,7 +105,7 @@ pnpm build
 
 - [工作流与数据设计 / Workflow and data](docs/global-workflow-and-data-layout.md)
 - [自动整理与缓存 / Automation and cache](docs/automatic-metadata-and-runtime-cache.md)
-- [版本说明 / Release notes](docs/releases/metaflow-v12.5.8.md)
+- [版本说明 / Release notes](docs/releases/metaflow-v12.6.0.md)
 - [产品简介 / Product profile](docs/brand/PRODUCT.md)
 - [品牌规范 / Brand guide](docs/brand/BRAND.md)
 - [README 模板 / README template](docs/brand/README-TEMPLATE.md)

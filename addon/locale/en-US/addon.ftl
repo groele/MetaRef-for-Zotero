@@ -49,3 +49,13 @@ report-filter-changed = Items with field changes
 report-previous = Previous
 report-next = Next
 report-page = Page { $page } of { $pages } · { $count } items
+
+native-duplicates-merge-all = Merge all duplicates in this library
+native-duplicates-start = Start batch merge
+native-duplicates-dismiss = Dismiss results
+native-duplicates-scanning = Scanning all native duplicate groups in this library…
+native-duplicates-empty = There are no duplicate groups to process in this library.
+native-duplicates-confirmation = { $groups } groups, { $items } items. Master strategy: { $strategy }. Empty fields are filled; conflicting fields keep the master value. Zotero's native merge preserves attachments, notes, tags, collections and relations. Groups with different types, non-duplicate decisions or intervening edits are skipped. Start merging?
+native-duplicates-progress = Processed { $completed }/{ $total } groups; merged { $merged } duplicate items; skipped { $skipped } groups; failed { $failed } groups.
+native-duplicates-stopped = Stopped: processed { $completed }/{ $total } groups; merged { $merged } duplicate items; skipped { $skipped } groups; failed { $failed } groups. Completed merges are retained.
+native-duplicates-error = Batch merge failed: { $error }

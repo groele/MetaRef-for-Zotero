@@ -49,3 +49,13 @@ report-filter-changed = 有字段变更的条目
 report-previous = 上一页
 report-next = 下一页
 report-page = 第 { $page } / { $pages } 页 · { $count } 个条目
+
+native-duplicates-merge-all = 一键合并当前库全部重复项
+native-duplicates-start = 开始批量合并
+native-duplicates-dismiss = 关闭结果
+native-duplicates-scanning = 正在扫描当前文库的全部原生重复组…
+native-duplicates-empty = 当前文库没有可处理的重复组。
+native-duplicates-confirmation = 共 { $groups } 组、{ $items } 个条目。主条目策略：{ $strategy }。自动补齐空字段，冲突字段保留主条目值；附件、笔记、标签、集合及关联交由 Zotero 原生合并保留。不同类型、非重复标记或处理中变更的组将跳过。是否开始？
+native-duplicates-progress = 已处理 { $completed }/{ $total } 组，合并 { $merged } 个重复条目，跳过 { $skipped } 组，失败 { $failed } 组。
+native-duplicates-stopped = 已停止：处理 { $completed }/{ $total } 组，合并 { $merged } 个重复条目，跳过 { $skipped } 组，失败 { $failed } 组。已完成的合并保留。
+native-duplicates-error = 批量合并失败：{ $error }

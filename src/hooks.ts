@@ -6,6 +6,7 @@ import { invalidateDuplicateStats, registerDuplicateStats, unregisterDuplicateSt
 import { registerExtraColumns, unregisterExtraColumns } from "./modules/item-tree";
 import { refreshJournalPane, registerJournalPane, setJournalUpdateResult, unregisterJournalPane } from "./modules/journal-pane";
 import { registerMenu, unregisterMenu } from "./modules/menu";
+import { registerNativeDuplicatePane, unregisterNativeDuplicatePane } from "./modules/native-duplicate-pane";
 import { registerNotifier, unregisterNotifier } from "./modules/notifier";
 import { registerPrefs, registerPrefsScripts, registerPrefsWindow, unregisterPrefsWindows } from "./modules/preference";
 import { REVIEW_COMMANDS, runReviewCommand } from "./modules/review";
@@ -85,6 +86,7 @@ async function onMainWindowLoad(win: Window): Promise<void> {
   if (!addon.data.alive)
     return;
   registerMainWindowLocale(win);
+  registerNativeDuplicatePane(win);
   shortcutCleanups.get(win)?.();
   shortcutCleanups.set(win, registerShortcuts(win));
   toolbars.get(win)?.clean();
@@ -99,6 +101,7 @@ async function onMainWindowUnload(win: Window): Promise<void> {
   shortcutCleanups.delete(win);
   toolbars.delete(win);
   await cleanupResources([
+    () => unregisterNativeDuplicatePane(win),
     () => shortcuts?.(),
     () => toolbar?.clean(),
     () => unregisterMainWindowLocale(win),
@@ -119,6 +122,7 @@ async function onShutdown() {
     closeCoreFeedback,
     closeCompletionNotices,
     closeAllDialogs,
+    () => Zotero.getMainWindows().forEach(unregisterNativeDuplicatePane),
     () => Promise.all([stopCoreWorkflows(), addon.runner.stop()]),
     flushRuntimeData,
     flushServiceCache,
