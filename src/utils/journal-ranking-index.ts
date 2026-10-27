@@ -3,7 +3,7 @@ import { EASYSCHOLAR_FIELD_DEFINITIONS } from "./easyscholar";
 import { extractISSNs } from "./esi";
 import { createLogger } from "./logger";
 
-interface Entry { updatedAt: number; values: Partial<Record<EasyScholarField, string>>; issns?: string[] }
+interface Entry { updatedAt: number; values: Partial<Record<EasyScholarField, string>>; issns?: string[]; removed?: EasyScholarField[] }
 interface Store { version: 1; entries: Record<string, Entry> }
 const logger = createLogger("journal-ranking-index");
 const entries = new Map<string, Entry>();
@@ -50,8 +50,11 @@ async function load() {
         logger.warn("Journal ranking index uses a newer format; preserving the file without rewriting it");
         return;
       }
-      if (store.version !== 1 || !store.entries || typeof store.entries !== "object")
+      if (store.version !== 1 || !store.entries || typeof store.entries !== "object" || Array.isArray(store.entries)) {
+        readOnly = true;
+        logger.warn("Journal ranking index has an unrecognized structure; preserving the file without rewriting it");
         return;
+      }
       for (const [key, entry] of Object.entries(store.entries).slice(-MAX_ENTRIES)) {
         if (!key || !Number.isSafeInteger(entry?.updatedAt) || entry.updatedAt < 0 || !entry.values || typeof entry.values !== "object" || Array.isArray(entry.values))
           continue;
@@ -65,11 +68,15 @@ async function load() {
         // an older alias restore the removed membership after a restart.
         if (Object.keys(values).length || Object.keys(entry.values).length === 0) {
           const issns = Array.isArray(entry.issns) ? [...new Set(entry.issns.filter(value => typeof value === "string" && /^\d{7}[\dX]$/.test(value)))] : undefined;
-          entries.set(key, { updatedAt: entry.updatedAt, values, ...issns && { issns } });
+          const removed = Array.isArray(entry.removed) ? [...new Set(entry.removed.filter(field => MEMBERSHIP_FIELDS.has(field)))] : undefined;
+          entries.set(key, { updatedAt: entry.updatedAt, values, ...issns && { issns }, ...removed?.length && { removed } });
         }
       }
     }
-    catch (error) { logger.warn("Unable to load local journal rankings", error); }
+    catch (error) {
+      readOnly = true;
+      logger.warn("Unable to load local journal rankings; preserving the file and using session-only updates", error);
+    }
   })();
   await ready;
 }
@@ -93,8 +100,10 @@ function matchingSnapshot(item: Zotero.Item, forWrite = false) {
   const itemKeys = keys(item);
   const issns = itemKeys.filter(key => key.includes(":issn:")).map(key => key.split(":issn:")[1]);
   const knownISSN = itemKeys.some(key => key.includes(":issn:") && entries.has(key));
+  const candidates = new Set(itemKeys);
+  const type = item.itemType === "conferencePaper" ? "conference" : "journal";
   let latest: Entry | undefined;
-  for (const key of itemKeys) {
+  for (const key of candidates) {
     const entry = entries.get(key);
     if (!entry)
       continue;
@@ -105,17 +114,24 @@ function matchingSnapshot(item: Zotero.Item, forWrite = false) {
     // established precedence until a verified update supplies that evidence.
     if (knownISSN && key.includes(":title:") && !entry.issns?.length)
       continue;
+    // Follow only identities already recorded by eligible snapshots. This
+    // repairs older print/electronic aliases without a full index scan.
+    for (const issn of entry.issns || [])
+      candidates.add(`${type}:issn:${issn}`);
     if (!latest || entry.updatedAt > latest.updatedAt)
       latest = entry;
   }
   return { latest, itemKeys, issns };
 }
 
-export function readJournalRankingIndex(item: Zotero.Item) {
+export function readJournalRankingIndex(item: Zotero.Item, fallback?: ReadonlyMap<EasyScholarField, string>) {
   const { latest } = matchingSnapshot(item);
   // Every saved entry is a complete snapshot. Mixing older aliases into the
   // latest one can revive a deliberately removed value.
-  return new Map(Object.entries(latest?.values || {}) as [EasyScholarField, string][]);
+  const values = new Map([...fallback || [], ...Object.entries(latest?.values || {}) as [EasyScholarField, string][]]);
+  for (const field of latest?.removed || [])
+    values.delete(field);
+  return values;
 }
 
 export async function saveJournalRankingIndex(item: Zotero.Item, values: Partial<EasyScholarRank>, selected: ReadonlySet<EasyScholarField>, mode: "blank" | "all" = "all") {
@@ -125,6 +141,7 @@ export async function saveJournalRankingIndex(item: Zotero.Item, values: Partial
     return;
   const existing = new Map(Object.entries(latest?.values || {}) as [EasyScholarField, string][]);
   const next = new Map(existing);
+  const removed = new Set(latest?.removed || []);
   let changed = false;
   for (const field of selected) {
     if (mode === "blank" && next.has(field))
@@ -132,33 +149,42 @@ export async function saveJournalRankingIndex(item: Zotero.Item, values: Partial
     const value = values[field];
     if (typeof value === "string" && value.trim()) {
       if (MEMBERSHIP_FIELDS.has(field) && /^(?:否|no|false|0)$/i.test(value.trim())) {
+        changed = !removed.has(field) || changed;
+        removed.add(field);
         changed = next.delete(field) || changed;
       }
-      else if (next.get(field) !== value.trim()) {
-        next.set(field, value.trim());
-        changed = true;
+      else {
+        changed = removed.delete(field) || changed;
+        if (next.get(field) !== value.trim()) {
+          next.set(field, value.trim());
+          changed = true;
+        }
       }
     }
   }
-  const existingAliases = itemKeys.map(key => entries.get(key));
   const identity = [...new Set([...latest?.issns || [], ...issns])];
+  const type = item.itemType === "conferencePaper" ? "conference" : "journal";
+  const writeKeys = new Set([...itemKeys, ...identity.map(issn => `${type}:issn:${issn}`)]);
+  const existingAliases = [...writeKeys].map(key => entries.get(key));
   const aliasChanged = existingAliases.some(entry => entry
     ? Object.keys(entry.values).length !== next.size || [...next].some(([field, value]) => entry.values[field] !== value)
     || entry.issns?.length !== identity.length || identity.some(value => !entry.issns?.includes(value))
+    || (entry.removed?.length || 0) !== removed.size || [...removed].some(field => !entry.removed?.includes(field))
     : next.size > 0 || existingAliases.some(Boolean));
   if (!changed && !aliasChanged)
-    return;
+    return { sessionOnly: readOnly };
   dirty = true;
   revision++;
   const updatedAt = Math.max(Date.now(), ...existingAliases.map(entry => (entry?.updatedAt ?? -1) + 1));
-  const snapshot = { updatedAt, values: Object.fromEntries(next) as Entry["values"], issns: identity };
-  for (const key of itemKeys) {
+  const snapshot: Entry = { updatedAt, values: Object.fromEntries(next) as Entry["values"], issns: identity, ...removed.size && { removed: [...removed] } };
+  for (const key of writeKeys) {
     entries.delete(key);
     entries.set(key, snapshot);
   }
   while (entries.size > MAX_ENTRIES)
     entries.delete(entries.keys().next().value!);
   scheduleWrite();
+  return { sessionOnly: readOnly };
 }
 
 export async function flushJournalRankingIndex() {

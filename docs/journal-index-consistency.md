@@ -1,16 +1,20 @@
 # Journal ranking index consistency
 
-The profile file `metaflow-journal-rankings-v1.json` retains container version 1, with optional `issns` identity metadata on new snapshots. Older rows without that metadata remain readable. The index is separate from item metadata and the API response cache.
+The profile file `metaflow-journal-rankings-v1.json` retains container version 1, with optional `issns` identity and `removed` membership metadata on new snapshots. Older rows without that metadata remain readable. The index is separate from item metadata and the API response cache.
 
 Each entry is a complete snapshot of the known rankings for its journal or conference, indexed by available ISSNs and the normalized title. A partial update starts with the latest eligible snapshot and preserves its unselected fields. Blank mode retains existing selected values. Readers choose the eligible snapshot with the greatest `updatedAt`; they must not fill its missing fields from an older alias, because an absent value can record an intentional removal. Existing equal timestamps retain the established ISSN-before-title lookup priority.
 
 Eligibility preserves known ISSN identities. A title snapshot explicitly associated with a different ISSN group cannot override an already known ISSN entry. Writes also refuse to inherit unselected fields from that conflicting group. A title-only read can still reuse an established title association when no ISSN entry is known, as before; a verified write with a different ISSN starts its own snapshot. Legacy title rows without identity evidence retain their historical lower priority than a known ISSN row. Shared ISSNs confirmed by a matching snapshot remain attached to partial and title-only updates.
 
+Reads follow the recorded ISSNs of eligible snapshots, including a former title's identity links. Writes refresh every ISSN in the chosen identity group. This repairs stale print/electronic rows written by 12.5.7 without scanning the whole index or joining distinct journals through a shared title.
+
+Explicit negative memberships are also recorded in `removed`. List columns, the native pane and update comparisons merge unrelated Extra rankings with the latest profile snapshot, then suppress those removals. They do not erase Extra. A later positive result clears the removal marker. Legacy records do not identify why a value is missing, so missing markers are not guessed; a new verified lookup records explicit negative results.
+
 An explicit empty `values` object is valid and must survive loading: all previously known values may have been removed. Invalid field payloads are not converted into empty removal records. New timestamps use the current clock or one millisecond beyond the matching aliases, whichever is later. This preserves update order within the same millisecond and during a system-clock correction; `updatedAt` does not identify a provider's ranking edition or dataset year.
 
 A newly learned title or ISSN alias is saved even when the selected metric values are unchanged. Identical values with no new alias do not trigger another disk write. ISSN keys require a complete seven-digit-plus-check-character value; partial identifiers cannot join unrelated journals. This is format validation, not ISSN checksum validation.
 
-The existing entry limit, atomic write path, retry-after-write-failure behavior and newer-format read-only behavior remain in place. No index reset or destructive migration is needed for these corrections.
+The existing entry limit, atomic write path, retry-after-write-failure behavior and newer-format read-only behavior remain in place. An initial read failure or unrecognized container structure also makes the current session read-only, preventing a partial session index from replacing the original file. Session results remain usable, and the update report warns that they are not persisted. A fresh startup retries loading the original file. No index reset or destructive migration is needed for these corrections.
 
 Supplemental-source responses use a separate ten-minute session cache. The settings cache-clear command clears it alongside the EasyScholar and Semantic Scholar caches. A generation token prevents requests started before clearing from repopulating that session cache; cancellation of the request's caller is still governed by its AbortSignal.
 

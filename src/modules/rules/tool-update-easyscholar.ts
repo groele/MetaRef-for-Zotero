@@ -144,7 +144,7 @@ export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
       return;
     }
     const unchanged = watchItemFields(item, ["publicationTitle", "conferenceName", "proceedingsTitle"], report);
-    const originalRankings = new Map([...readJournalRankingValues(String(item.getField("extra") || "")), ...readJournalRankingIndex(item)]);
+    const originalRankings = readJournalRankingIndex(item, readJournalRankingValues(String(item.getField("extra") || "")));
     const enabledFields = getEnabledEasyScholarFields();
     if (!enabledFields.size) {
       report({ level: "info", message: getString("rule-tool-update-easyscholar-disabled") });
@@ -191,7 +191,7 @@ export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
     if (!selected)
       report({ level: "info", message: getString("rule-tool-update-easyscholar-no-selected-results") });
     const current = String(item.getField("extra") || "");
-    const currentRankings = new Map([...readJournalRankingValues(current), ...readJournalRankingIndex(item)]);
+    const currentRankings = readJournalRankingIndex(item, readJournalRankingValues(current));
     const edited = [...enabledFields].filter(key => originalRankings.get(key) !== currentRankings.get(key));
     if (edited.length) {
       edited.forEach(key => enabledFields.delete(key));
@@ -199,9 +199,11 @@ export const ToolUpdateEasyScholar = defineRule<{ mode?: "blank" | "all" }>({
     }
     const mode = options.mode || "all";
     const indexFields = new Set([...enabledFields].filter(key => mode !== "blank" || !originalRankings.has(key)));
-    await saveJournalRankingIndex(item, data, indexFields, mode);
+    const persistence = await saveJournalRankingIndex(item, data, indexFields, mode);
+    if (persistence?.sessionOnly)
+      report({ level: "warning", code: "journal-index-session-only", message: getString("rule-tool-update-easyscholar-session-only") });
     if (!getPref("easyscholar.writeToExtra", false)) {
-      const after = new Map([...readJournalRankingValues(current), ...readJournalRankingIndex(item)]);
+      const after = readJournalRankingIndex(item, readJournalRankingValues(current));
       const changes = summarizeRankingMaps(originalRankings, after);
       debug(`${title}: returned ${returned}, selected ${selected}; MetaFlow index changes: ${JSON.stringify(changes)}.`);
       report({ level: "info", code: "journal-summary", message: getString("rule-tool-update-easyscholar-summary", { args: { title, returned, selected, ...changes } }) });

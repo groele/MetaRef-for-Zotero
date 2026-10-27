@@ -414,6 +414,7 @@ rule-tool-update-easyscholar-not-found = EasyScholar 未返回“{ $title }”�
 rule-tool-update-easyscholar-no-fields = EasyScholar 返回了“{ $title }”的记录，但没有可写入的评级字段。
 rule-tool-update-easyscholar-unchanged = “{ $title }”的已选 EasyScholar 字段与当前内容一致，无需更新。
 rule-tool-update-easyscholar-failed = EasyScholar 查询失败：{ $error }
+rule-tool-update-easyscholar-session-only = 期刊指标索引暂不可写，索引中的新结果仅在当前会话可用。请检查日志，并在重启 Zotero 后重试。
 rule-tool-update-easyscholar-updated = 已获取“{ $title }”的 { $count } 项期刊字段并保存。
 rule-tool-update-easyscholar-cleared = 已根据 EasyScholar 的最新结果，移除“{ $title }”中已失效的收录标记。
 rule-no-field-misuse-review = 请检查 { $field }：“{ $value }”可能是其他工具写入的信息，也可能是有效内容，已保留原值。

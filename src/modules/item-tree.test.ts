@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { EASYSCHOLAR_FIELD_DEFINITIONS } from "../utils/easyscholar";
 import { journalNumericDisplayValue } from "../utils/journal-column-sort";
+import { resetJournalRankingIndex, saveJournalRankingIndex } from "../utils/journal-ranking-index";
 import { registerEasyScholarColumns, registerExtraColumns, unregisterExtraColumns } from "./item-tree";
 
 const mocks = vi.hoisted(() => ({ preferences: new Map<string, unknown>(), insights: vi.fn() }));
@@ -26,6 +27,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   unregisterExtraColumns();
+  resetJournalRankingIndex();
   vi.unstubAllGlobals();
 });
 
@@ -75,4 +77,15 @@ it("matches pane values for canonical, legacy and fullwidth-colon Extra, and ref
   extra = "影响因子: 9.8";
   expect(journalNumericDisplayValue(columns.get("easyScholar-impactFactor").dataProvider(item))).toBe("9.8");
   expect(columns.get("easyScholar-jcr").dataProvider(item)).toBe("");
+});
+
+it("does not revive a removed SCI membership from Extra while preserving unrelated manual rankings", async () => {
+  registerExtraColumns();
+  const extra = "SCI: 是\nCCF: B\nManual note";
+  const item = { itemType: "journalArticle", getField: (key: string) => key === "extra" ? extra : key === "publicationTitle" ? "Removed membership QA" : "" } as unknown as Zotero.Item;
+  await saveJournalRankingIndex(item, { sci: "是" }, new Set(["sci"]));
+  await saveJournalRankingIndex(item, { sci: "否" }, new Set(["sci"]));
+  expect(columns.get("easyScholar-sci").dataProvider(item)).toBe("");
+  expect(columns.get("easyScholar-ccf").dataProvider(item)).toBe("B");
+  expect(item.getField("extra")).toBe(extra);
 });

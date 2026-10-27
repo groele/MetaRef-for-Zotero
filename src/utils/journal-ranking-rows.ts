@@ -1,8 +1,10 @@
 import { EASYSCHOLAR_EXTRA_ALIASES, EASYSCHOLAR_FIELD_DEFINITIONS, getEasyScholarFieldMessageID } from "./easyscholar";
+import { readJournalRankingIndex } from "./journal-ranking-index";
 
 /** Read persisted rankings without querying a network service or changing item metadata. */
-export function journalRankingRows(extra: string) {
-  const values = readJournalRankingValues(extra);
+export function journalRankingRows(extra: string, item?: Zotero.Item) {
+  const extraValues = readJournalRankingValues(extra);
+  const values = item ? readJournalRankingIndex(item, extraValues) : extraValues;
   return EASYSCHOLAR_FIELD_DEFINITIONS.flatMap((field) => {
     const value = values.get(field.key);
     return value ? [{ key: field.key, labelID: getEasyScholarFieldMessageID(field.key), value }] : [];

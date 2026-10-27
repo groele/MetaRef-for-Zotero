@@ -413,6 +413,7 @@ rule-tool-update-easyscholar-not-found = EasyScholar returned no ranking data fo
 rule-tool-update-easyscholar-no-fields = EasyScholar returned a record for “{ $title }” but no ranking fields that can be written.
 rule-tool-update-easyscholar-unchanged = The selected EasyScholar fields for “{ $title }” already match the current Extra content.
 rule-tool-update-easyscholar-failed = EasyScholar lookup failed: { $error }
+rule-tool-update-easyscholar-session-only = Journal index persistence is unavailable. New index values are available for this session only. Check the log and retry after restarting Zotero.
 rule-tool-update-easyscholar-updated = Retrieved and saved { $count } journal fields for “{ $title }”.
 rule-tool-update-easyscholar-cleared = Removed outdated index markers for “{ $title }” based on the latest EasyScholar response.
 rule-no-field-misuse-review = Review { $field }: “{ $value }” may be metadata from another tool. The original value was preserved.

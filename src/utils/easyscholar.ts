@@ -272,7 +272,7 @@ function parseCustomRank(raw: unknown): Partial<EasyScholarRank> {
 export function parseEasyScholarRank(raw: unknown, customRank?: unknown, natureDatasetUUID = ""): EasyScholarRank {
   const data = raw && typeof raw === "object" ? raw as Record<string, unknown> : {};
   return {
-    jcr: value(data, "sci", "ssci", "JCR 分区", "jcr"),
+    jcr: ["sci", "SCI", "ssci", "SSCI", "JCR 分区", "jcr", "JCR"].map(key => value(data, key)).find(rank => rank && /\bQ[1-4]\b|^[1-4一二三四]\s*区$/i.test(rank)),
     impactFactor: value(data, "sciif", "if", "影响因子"),
     impactFactor5Year: value(data, "sciif5", "if5", "5 年影响因子"),
     casUpgrade: value(data, "sciUp", "中科院分区升级版", "中科院升级版"),

@@ -3,13 +3,13 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { EASYSCHOLAR_FIELD_DEFINITIONS } from "../../utils/easyscholar";
 import { clearSelectedJournalExtra, mergeEasyScholarExtra, summarizeEasyScholarChanges, ToolUpdateEasyScholar } from "./tool-update-easyscholar";
 
-const mocks = vi.hoisted(() => ({ fields: new Set<string>(), clear: false, writeToExtra: true, index: new Map<string, string>(), fetch: vi.fn(), supplemental: vi.fn() }));
+const mocks = vi.hoisted(() => ({ fields: new Set<string>(), clear: false, writeToExtra: true, sessionOnly: false, index: new Map<string, string>(), fetch: vi.fn(), supplemental: vi.fn() }));
 vi.mock("../../utils/prefs", () => ({ getPref: (key: string, fallback: unknown) => key === "easyscholar.clearExtraBeforeUpdate" ? mocks.clear : key === "easyscholar.writeToExtra" ? mocks.writeToExtra : key.startsWith("easyscholar.fields.") ? mocks.fields.has(key.slice("easyscholar.fields.".length)) : fallback }));
 vi.mock("../../utils/locale", () => ({ getString: (key: string, options?: unknown) => `${key} ${JSON.stringify(options || {})}` }));
 vi.mock("../../utils/easyscholar", async original => ({ ...await original<object>(), fetchEasyScholarRank: mocks.fetch }));
 vi.mock("../../utils/supplemental-journals", () => ({ fetchSupplementalJournalRank: mocks.supplemental }));
 vi.mock("../../utils/journal-ranking-index", () => ({
-  readJournalRankingIndex: () => new Map(mocks.index),
+  readJournalRankingIndex: (_item: unknown, fallback?: ReadonlyMap<string, string>) => new Map([...fallback || [], ...mocks.index]),
   saveJournalRankingIndex: async (_item: unknown, data: Record<string, string>, selected: Set<string>, mode: string) => {
     for (const key of selected) {
       if (mode !== "blank" || !mocks.index.has(key)) {
@@ -17,6 +17,7 @@ vi.mock("../../utils/journal-ranking-index", () => ({
           mocks.index.set(key, data[key]);
       }
     }
+    return { sessionOnly: mocks.sessionOnly };
   },
 }));
 
@@ -25,6 +26,7 @@ beforeEach(() => {
   mocks.fields.clear();
   mocks.clear = false;
   mocks.writeToExtra = true;
+  mocks.sessionOnly = false;
   mocks.index.clear();
   mocks.fetch.mockReset().mockResolvedValue({ status: "success", data: { impactFactor: "2.5" } });
   mocks.supplemental.mockReset().mockResolvedValue({ data: {}, errors: [] });
@@ -189,6 +191,17 @@ it("counts actual key differences rather than returned values", () => {
     .toEqual({ added: 0, updated: 1, removed: 0 });
   expect(summarizeEasyScholarChanges("CCF: A", "CCF: A"))
     .toEqual({ added: 0, updated: 0, removed: 0 });
+});
+
+it("reports when updated rankings are available only for the current session", async () => {
+  mocks.fields.add("impactFactor");
+  mocks.sessionOnly = true;
+  mocks.writeToExtra = false;
+  const ctx = context();
+  await ToolUpdateEasyScholar.apply(ctx);
+  expect(ctx.report).toHaveBeenCalledWith(expect.objectContaining({ level: "warning", code: "journal-index-session-only", message: expect.stringContaining("rule-tool-update-easyscholar-session-only") }));
+  expect(ctx.item.getField("extra")).toBe("Manual note");
+  expect(mocks.index.get("impactFactor")).toBe("2.5");
 });
 
 it("each of the 61 field switches writes only its selected result and preserves notes", async () => {

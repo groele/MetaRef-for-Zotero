@@ -4,6 +4,17 @@ import { getEnabledEasyScholarFields, mergeEasyScholarExtra } from "../modules/r
 import { clearEasyScholarCache, EASYSCHOLAR_DEFAULT_FIELDS, EASYSCHOLAR_FIELD_DEFINITIONS, fetchEasyScholarRank, getEasyScholarFieldMessageID, parseEasyScholarRank, testEasyScholarConnection } from "./easyscholar";
 
 describe("easyScholar data integration", () => {
+  it("does not present membership flags as a JCR quartile", () => {
+    for (const sci of ["是", "否", true, false, 0, 1])
+      expect(parseEasyScholarRank({ sci }).jcr).toBeUndefined();
+  });
+
+  it("uses an actual SSCI or explicit JCR quartile when the SCI value is a membership flag or placeholder", () => {
+    expect(parseEasyScholarRank({ sci: "否", ssci: "Q2" }).jcr).toBe("Q2");
+    expect(parseEasyScholarRank({ "sci": "暂无", "JCR 分区": "Q3" }).jcr).toBe("Q3");
+    expect(parseEasyScholarRank({ sci: true, jcr: "1 区" }).jcr).toBe("1 区");
+  });
+
   it("does not turn malformed metrics and unknown membership markers into usable rankings", () => {
     const rank = parseEasyScholarRank({ sciif: { value: 34.9 }, sci: "暂无", eii: "-", utd24: [], ft50: "unknown" });
     expect(rank.impactFactor).toBeUndefined();

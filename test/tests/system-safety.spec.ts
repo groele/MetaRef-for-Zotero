@@ -1,5 +1,6 @@
 import { assert } from "chai";
 import { config } from "../../package.json";
+import { EASYSCHOLAR_FIELD_DEFINITIONS } from "../../src/utils/easyscholar";
 import { withThrottle } from "../../src/utils/throttle";
 
 describe("system recovery and cancellation safety", function () {
@@ -136,5 +137,96 @@ describe("system recovery and cancellation safety", function () {
       await IOUtils.remove(obstruction, { ignoreAbsent: true });
       win.close();
     }
+  });
+
+  describe("journal snapshot integrity", function () {
+    let request: typeof Zotero.HTTP.request;
+    let rank: Record<string, string>;
+    const preferences = new Map<string, unknown>();
+    const set = (key: string, value: boolean | string) => {
+      const full = `${config.prefsPrefix}.${key}`;
+      preferences.set(full, Zotero.Prefs.get(full, true));
+      Zotero.Prefs.set(full, value, true);
+    };
+
+    beforeEach(function () {
+      rank = { sci: "Q1" };
+      set("easyscholar.secretKey", `system-index-${Zotero.Utilities.randomString()}`);
+      set("easyscholar.writeToExtra", false);
+      set("easyscholar.updateAbbreviation", false);
+      set("insights.showPane", true);
+      const fields = new Set(["jcr", "sci", "ccf"]);
+      for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
+        set(`easyscholar.fields.${field.key}`, fields.has(field.key));
+      request = Zotero.HTTP.request;
+      (Zotero.HTTP as any).request = async (method: string, url: string, options: unknown) => {
+        if (String(url).startsWith("https://www.easyscholar.cc/")) {
+          const body = JSON.stringify({ code: 200, data: { officialRank: { all: rank } } });
+          return { status: 200, response: body, responseText: body };
+        }
+        return (request as any).call(Zotero.HTTP, method, url, options);
+      };
+    });
+
+    afterEach(function () {
+      Zotero.HTTP.request = request;
+      for (const [key, value] of preferences) {
+        if (value === undefined)
+          Zotero.Prefs.clear(key, true);
+        else
+          Zotero.Prefs.set(key, value as boolean | string, true);
+      }
+      preferences.clear();
+    });
+    const create = async (title: string, issn: string, extra = "Manual index note") => {
+      const item = new Zotero.Item("journalArticle");
+      item.setField("title", "System index safety fixture");
+      item.setField("publicationTitle", title);
+      item.setField("ISSN", issn);
+      item.setField("extra", extra);
+      await item.saveTx();
+      created.push(item);
+      return item;
+    };
+    const column = (item: Zotero.Item, key: string) => {
+      const columns = (Zotero.ItemTreeManager as any).getCustomColumns(undefined, { pluginID: config.addonID });
+      return columns.find((entry: any) => entry.dataKey.endsWith(`easyScholar-${key}`)).dataProvider(item);
+    };
+    const update = async (item: Zotero.Item) => {
+      await plugin().hooks.onLintInBatch("tool-update-easyscholar", [item]);
+      assert.equal(plugin().runner.lastResult.failed, 0);
+    };
+
+    it("refreshes the other known ISSN and its former title after a single-ISSN update", async function () {
+      const both = await create("System alias original", "9292-3101; 9292-3102");
+      const electronic = await create("System alias original", "9292-3102");
+      const titleOnly = await create("System alias original", "");
+      await update(both);
+      rank = { sci: "Q2" };
+      const corrected = await create("System alias corrected", "9292-3101");
+      await update(corrected);
+      assert.equal(column(electronic, "jcr"), "Q2");
+      assert.equal(column(titleOnly, "jcr"), "Q2");
+      assert.equal(electronic.getField("extra"), "Manual index note");
+    });
+
+    it("keeps a negative membership out of both the column and pane without erasing Extra", async function () {
+      rank = { sci: "否" };
+      const extra = "SCI: 是\nCCF: B\nManual index note";
+      const item = await create("System removed membership", "9292-3201", extra);
+      await update(item);
+      assert.equal(column(item, "sci"), "");
+      assert.equal(column(item, "jcr"), "", "membership flags are not quartiles");
+      assert.equal(column(item, "ccf"), "B");
+      assert.equal(item.getField("extra"), extra);
+      const win = Zotero.getMainWindow();
+      await win.ZoteroPane.selectItem(item.id);
+      const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
+      assert.exists(section);
+      await section._handleRefresh();
+      assert.isNull(section.querySelector("[data-journal-ranking='sci']"));
+      assert.isNull(section.querySelector("[data-journal-ranking='jcr']"));
+      assert.equal(section.querySelector("[data-journal-ranking='ccf']")?.textContent, "B");
+    });
   });
 });

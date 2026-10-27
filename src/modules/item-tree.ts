@@ -117,7 +117,7 @@ export function registerEasyScholarColumns() {
       dataProvider: (item: Zotero.Item) => {
         if (!addon.data.alive || !isEasyScholarFieldEnabled(field.key) || !["journalArticle", "conferencePaper"].includes(item.itemType) || (field.key === "esi" && item.itemType !== "journalArticle"))
           return "";
-        const saved = readJournalRankingIndex(item).get(field.key) || savedRankings(item).get(field.key) || "";
+        const saved = readJournalRankingIndex(item, savedRankings(item)).get(field.key) || "";
         return field.key === "esi" ? cachedJournalInsights(item)?.esi || saved : numericFields.has(field.key) ? journalNumericSortValue(saved) : saved;
       },
       ...numericFields.has(field.key) && { renderCell: (_index: number, value: string, column: { className: string }, _first: boolean, doc: Document) => {

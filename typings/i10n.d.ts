@@ -622,6 +622,7 @@ export type FluentMessageId =
   | 'rule-tool-update-easyscholar-no-selected-results'
   | 'rule-tool-update-easyscholar-no-title'
   | 'rule-tool-update-easyscholar-not-found'
+  | 'rule-tool-update-easyscholar-session-only'
   | 'rule-tool-update-easyscholar-source-deadline'
   | 'rule-tool-update-easyscholar-summary'
   | 'rule-tool-update-easyscholar-supplemental-failed'

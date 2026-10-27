@@ -164,3 +164,80 @@ it("loads legacy v1 rows without identity metadata and keeps their known ISSN pr
   expect(stored.value.version).toBe(1);
   expect(stored.value.entries["journal:issn:12345678"].issns).toEqual(["12345678"]);
 });
+
+it("updates print and electronic ISSN readers when only one ISSN and a corrected title are present", async () => {
+  const index = await setup();
+  await index.saveJournalRankingIndex(item("Original Journal", "1234-5678; 8765-4321"), { jcr: "Q1", sci: "是" }, new Set(["jcr", "sci"]));
+  await index.saveJournalRankingIndex(item("Corrected Journal", "1234-5678"), { jcr: "Q2", sci: "否" }, new Set(["jcr", "sci"]));
+  expect(index.readJournalRankingIndex(item("Original Journal", "8765-4321"))).toEqual(new Map([["jcr", "Q2"]]));
+  expect(index.readJournalRankingIndex(item("Original Journal", ""))).toEqual(new Map([["jcr", "Q2"]]));
+  await index.flushJournalRankingIndex();
+});
+
+it("repairs linked stale 12.5.7 snapshots on reads and preserves the latest unselected fields on writes", async () => {
+  const old = { updatedAt: 1000, values: { jcr: "Q1", impactFactor: "8.4" }, issns: ["12345678", "87654321"] };
+  stored.value = { version: 1, entries: {
+    "journal:issn:12345678": { ...old, updatedAt: 2000, values: { jcr: "Q2", impactFactor: "9.1" } },
+    "journal:issn:87654321": old,
+    "journal:title:originaljournal": old,
+  } };
+  const index = await setup();
+  await index.loadJournalRankingIndex();
+  expect(index.readJournalRankingIndex(item("Original Journal", "8765-4321")).get("impactFactor")).toBe("9.1");
+  expect(index.readJournalRankingIndex(item("Original Journal", "")).get("jcr")).toBe("Q2");
+  await index.saveJournalRankingIndex(item("Original Journal", "8765-4321"), { jcr: "Q3" }, new Set(["jcr"]));
+  expect(index.readJournalRankingIndex(item("", "1234-5678"))).toEqual(new Map([["jcr", "Q3"], ["impactFactor", "9.1"]]));
+  await index.flushJournalRankingIndex();
+});
+
+it("preserves an existing journal file when its initial read fails instead of replacing it with one session entry", async () => {
+  const original = { version: 1, entries: { "journal:issn:87654321": { updatedAt: 1000, values: { jcr: "Q1" } } } };
+  stored.value = original;
+  const index = await setup();
+  vi.spyOn(IOUtils, "readJSON").mockRejectedValueOnce(new Error("File is temporarily unreadable"));
+  await index.saveJournalRankingIndex(item(), { jcr: "Q2" }, new Set(["jcr"]));
+  await index.flushJournalRankingIndex();
+  expect(stored.writes).toBe(0);
+  expect(stored.value).toBe(original);
+  expect(index.readJournalRankingIndex(item()).get("jcr")).toBe("Q2");
+});
+
+it("persists a first negative membership without hiding unrelated Extra and allows a later positive correction", async () => {
+  const index = await setup();
+  await index.saveJournalRankingIndex(item(), { sci: "否" }, new Set(["sci"]));
+  await index.flushJournalRankingIndex();
+  await index.saveJournalRankingIndex(item(), { sci: "否" }, new Set(["sci"]));
+  await index.flushJournalRankingIndex();
+  expect(stored.writes).toBe(1);
+  vi.resetModules();
+  const reloaded = await import("./journal-ranking-index");
+  await reloaded.loadJournalRankingIndex();
+  const extra = new Map([["sci", "是"], ["ccf", "B"]] as const);
+  expect(reloaded.readJournalRankingIndex(item(), extra)).toEqual(new Map([["ccf", "B"]]));
+  await reloaded.saveJournalRankingIndex(item(), { sci: "是" }, new Set(["sci"]));
+  expect(reloaded.readJournalRankingIndex(item(), extra)).toEqual(extra);
+  await reloaded.flushJournalRankingIndex();
+});
+
+it("does not link two distinct ISSN groups through their shared title", async () => {
+  const index = await setup();
+  const first = item("Shared Title", "1234-5678; 8765-4321");
+  const other = item("Shared Title", "1111-2222; 3333-4444");
+  await index.saveJournalRankingIndex(first, { jcr: "Q1" }, new Set(["jcr"]));
+  await index.saveJournalRankingIndex(other, { jcr: "Q4" }, new Set(["jcr"]));
+  await index.saveJournalRankingIndex(item("Corrected Title", "1234-5678"), { jcr: "Q2" }, new Set(["jcr"]));
+  expect(index.readJournalRankingIndex(item("Shared Title", "8765-4321")).get("jcr")).toBe("Q2");
+  expect(index.readJournalRankingIndex(item("Shared Title", "3333-4444")).get("jcr")).toBe("Q4");
+  await index.flushJournalRankingIndex();
+});
+
+it("preserves an unrecognized journal index structure while keeping new lookups available in memory", async () => {
+  const original = { version: 1, entries: ["unrecognized payload"] };
+  stored.value = original;
+  const index = await setup();
+  await index.saveJournalRankingIndex(item(), { jcr: "Q2" }, new Set(["jcr"]));
+  await index.flushJournalRankingIndex();
+  expect(stored.value).toBe(original);
+  expect(stored.writes).toBe(0);
+  expect(index.readJournalRankingIndex(item()).get("jcr")).toBe("Q2");
+});
