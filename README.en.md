@@ -1,3 +1,5 @@
+> Local development candidate: **12.6.2** (not published). Stable download links and their existing validation statements below remain for **12.6.1**; this candidate expands product capability and development-origin documentation without updating an online XPI or update feed.
+
 # Zotero MetaFlow
 
 > Current version 12.6.1 restores native bottom-right notifications for duplicate batch confirmation, progress and results, with cancellation and a persistent summary. [Release notes](docs/releases/metaflow-v12.6.1.md).
@@ -46,12 +48,14 @@ Update feed: [dist/update.json](https://github.com/groele/Zotero-MetaFlow/blob/m
 
 ## Key features
 
-| Feature             | Scope                                                                                                   |
-| ------------------- | ------------------------------------------------------------------------------------------------------- |
-| Field normalization | Normalize titles, creators, abstracts, dates, pages, and DOIs with selected rules.                      |
-| Journal information | Use abbreviation datasets and local journal lists; online EasyScholar metrics require a configured key. |
-| Online enrichment   | Enrich metadata using item identifiers and source checks, with fill-empty or overwrite policies.        |
-| Batch reports       | Review changes and errors; retain review steps for duplicates and preprint workflows.                   |
+| Differentiator                              | What it does                                                                                                                                                  | Boundary                                                                                                                          |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Composable metadata rules                   | Applies selected rules to title casing, creators, abstract whitespace, dates, pages, DOIs, and common field misuse.                                           | Rules change Zotero item fields; technical terms, chemical formulae, author identity, and exceptional results still merit review. |
+| Journal abbreviations and local recognition | Uses bundled abbreviation data and offline ISO 4 inference to help normalize journal names, with local ESI/Nature Index snapshots.                            | Bundled lists are versioned snapshots—not live databases or certification of a journal or individual paper.                       |
+| Multi-dimensional journal indicators        | Presents configured EasyScholar metrics, tiers, and indexing information in side-pane/list contexts, with separate controls for lookup, display, and writing. | Online metrics require user-configured credentials; service responses, caching, and field meaning remain source-dependent.        |
+| Identity-first online enrichment            | Enriches from DOI, ISBN, arXiv, and available services with blank-only and explicit overwrite policies.                                                       | Title similarity alone never establishes identity; source conflicts and overwriting curated fields require human judgment.        |
+| Batch queue, rollback, and report           | Uses bounded concurrency plus transactional/snapshot recovery for batch rules, reporting changes and errors for audit.                                        | This contains single-item failures but does not replace backup or human review of duplicates and preprints.                       |
+| Rich-text title helper                      | Adds italics, bold, subscript, superscript, and no-case protection in Zotero’s title editor while preserving native selection/cursor behavior.                | It assists title editing; it does not substitute for journal-specific style review.                                               |
 
 <a id="settings"></a>
 
@@ -137,7 +141,7 @@ Each add-on installs and updates separately. A shared brand does not imply a sha
 
 ## Origin and license
 
-Derived from northword/zotero-format-metadata and built with the Zotero add-on toolchain. Full acknowledgements for other projects, datasets, services, and authors remain in the detailed guides.
+**Derivative notice:** Zotero MetaFlow is derived from northword’s open-source [zotero-format-metadata](https://github.com/northword/zotero-format-metadata) and is built with the `zotero-plugin-template` and `zotero-plugin-scaffold` toolchain. Attribution for the upstream rule/batch architecture and acknowledgements for other projects, datasets, services, and authors remain in the detailed guides; this is independently maintained and not an official Zotero release.
 
 License: [AGPL-3.0-or-later](LICENSE).
 
