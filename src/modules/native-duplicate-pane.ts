@@ -1,6 +1,7 @@
 import type { NativeDuplicatePlan, NativeDuplicateResult } from "./review/native-duplicates";
 import { getString } from "../utils/locale";
 import { selectedLibraryIDs } from "../utils/selection";
+import { waitUtilAsync } from "../utils/wait";
 import { mergeNativeDuplicates, planNativeDuplicates } from "./review/native-duplicates";
 
 const XHTML = "http://www.w3.org/1999/xhtml";
@@ -17,6 +18,7 @@ export function registerNativeDuplicatePane(win: Window) {
   let controller: AbortController | undefined;
   let section: HTMLElement | undefined;
   let feedback: HTMLElement | undefined;
+  let closeNotice = () => {};
   const mount = () => {
     const native = root.querySelector("#zotero-duplicates-merge-button");
     if (!native || section?.isConnected)
@@ -49,7 +51,7 @@ export function registerNativeDuplicatePane(win: Window) {
     dismiss.textContent = getString("native-duplicates-dismiss");
     dismiss.style.font = "inherit";
     dismiss.hidden = true;
-    dismiss.addEventListener("click", () => feedback?.remove());
+    dismiss.addEventListener("click", () => closeNotice());
     for (const control of [start, cancel])
       control.style.font = "inherit";
     actions.append(start, cancel);
@@ -79,14 +81,39 @@ export function registerNativeDuplicatePane(win: Window) {
       controller = new host.AbortController();
       const owner = controller;
       active = owner;
-      feedback?.remove();
+      closeNotice();
       feedback = doc.createElementNS(XHTML, "section") as HTMLElement;
       feedback.id = "metaref-native-duplicates-feedback";
       feedback.setAttribute("aria-label", getString("native-duplicates-merge-all"));
-      feedback.style.cssText = "padding:10px 12px; color:var(--fill-primary); background:var(--material-background); border-top:1px solid var(--fill-quinary); font:14px system-ui, 'Microsoft YaHei UI', sans-serif; overflow-wrap:anywhere";
+      feedback.style.cssText = "width:360px; max-width:80vw; font:14px system-ui, 'Microsoft YaHei UI', sans-serif; overflow-wrap:anywhere";
       dismiss.hidden = true;
       feedback.append(status, actions, dismiss);
-      doc.getElementById("zotero-items-pane")!.append(feedback);
+      const notice = new ztoolkit.ProgressWindow(addon.data.config.addonName, { closeOnClick: false, closeTime: -1 })
+        .createLine({ text: getString("native-duplicates-scanning"), idx: 0 })
+        .show();
+      const lines = (notice as unknown as { lines: { _hbox?: Element }[] }).lines;
+      let popup: Window | undefined;
+      let layoutObserver: MutationObserver | undefined;
+      let closed = false;
+      const tile = () => {
+        if (popup && !popup.closed) {
+          popup.sizeToContent();
+          (Zotero.ProgressWindowSet as typeof Zotero.ProgressWindowSet & { tile: (window: Window) => void }).tile(popup);
+        }
+      };
+      const close = () => {
+        if (closed)
+          return;
+        closed = true;
+        owner.abort();
+        layoutObserver?.disconnect();
+        win.removeEventListener("resize", tile);
+        popup?.removeEventListener("unload", close);
+        popup?.document.documentElement?.removeAttribute("data-metaref-native-duplicates");
+        feedback?.remove();
+        notice.close();
+      };
+      closeNotice = close;
       button.disabled = true;
       status.textContent = getString("native-duplicates-scanning");
       status.removeAttribute("title");
@@ -96,6 +123,18 @@ export function registerNativeDuplicatePane(win: Window) {
       owner.signal.addEventListener("abort", abort, { once: true });
       void addon.runner.exclusive(async (signal) => {
         signal.addEventListener("abort", abort, { once: true });
+        await waitUtilAsync(() => closed || Boolean(lines[0]?._hbox), 25);
+        signal.throwIfAborted();
+        const line = lines[0]._hbox!;
+        popup = line.ownerDocument!.defaultView!;
+        popup.document.documentElement!.setAttribute("data-metaref-native-duplicates", "true");
+        line.setAttribute("hidden", "true");
+        line.parentElement!.append(feedback!);
+        popup.addEventListener("unload", close, { once: true });
+        win.addEventListener("resize", tile);
+        layoutObserver = new host.MutationObserver(tile);
+        layoutObserver.observe(feedback!, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });
+        tile();
         const plan: NativeDuplicatePlan = await planNativeDuplicates(libraryID, signal);
         signal.throwIfAborted();
         if (!plan.groups.length) {
@@ -133,7 +172,7 @@ export function registerNativeDuplicatePane(win: Window) {
         dismiss.hidden = false;
       });
     });
-    section.append(button, status, actions);
+    section.append(button);
     native.parentElement!.after(section);
   };
   const observer = new host.MutationObserver(mount);
@@ -143,7 +182,7 @@ export function registerNativeDuplicatePane(win: Window) {
     controller?.abort();
     observer.disconnect();
     section?.remove();
-    feedback?.remove();
+    closeNotice();
   });
 }
 

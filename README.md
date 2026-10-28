@@ -1,6 +1,6 @@
 # Zotero MetaFlow
 
-> 当前版本 12.6.0：增加重复条目一键批量合并，并保留 12.5.8 的期刊指标同步、收录状态回退、异常索引保护及 JCR 分区修复。[版本说明](docs/releases/metaflow-v12.6.0.md)。
+> 当前版本 12.6.1：将批量合并的确认、进度和结果恢复为原生右下角提示窗，保留取消和完成摘要。[版本说明](docs/releases/metaflow-v12.6.1.md)。
 
 **Zotero Flow Series · 元数据整理**
 
@@ -10,7 +10,7 @@ _让研究的每一步衔接起来。 / Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![当前版本](https://img.shields.io/badge/version-12.6.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.0) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.0/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
+[![当前版本](https://img.shields.io/badge/version-12.6.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.1) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.1/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [产品定位](#overview) · [安装与更新](#installation) · [快速开始](#quick-start) · [核心功能](#features) · [设置与使用](#settings) · [数据、同步与外部服务](#data) · [兼容性与验证范围](#compatibility) · [常见问题](#troubleshooting) · [开发与详细文档](#development) · [系列产品](#series) · [项目来源与许可](#license)
 
@@ -26,7 +26,7 @@ _让研究的每一步衔接起来。 / Connect each step of research._
 
 ## 安装与更新
 
-1. 下载 [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.0/zotero-metaflow.xpi)（插件版本 **12.6.0**），不要安装 Source code ZIP。
+1. 下载 [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.1/zotero-metaflow.xpi)（插件版本 **12.6.1**），不要安装 Source code ZIP。
 2. 在 Zotero 打开 **工具 → 插件／附加组件**，从齿轮菜单选择 **从文件安装插件**。
 3. 选择 XPI，完成安装；按提示重启 Zotero。
 
@@ -61,7 +61,9 @@ _让研究的每一步衔接起来。 / Connect each step of research._
 
 规则开关、自动导入整理、补全策略、期刊指标与显示位置分别配置。先在少量条目上确认结果，再批量处理。
 
-12.6.0 在 Zotero 原生“重复条目”右侧增加“一键合并当前库全部重复项”。点击后统一确认一次即可按原生重复组批量处理，支持取消和结果摘要。沿用 MetaFlow 的主条目策略（默认最早添加），补齐空字段；冲突字段保留主条目值。不同类型、非重复标记及处理中被修改的组会跳过。附件、笔记、标签、集合、关联和撤销由 Zotero 原生合并维护。
+12.6.1 在 Zotero 原生“重复条目”右侧增加“一键合并当前库全部重复项”。点击后统一确认一次即可按原生重复组批量处理，支持取消和结果摘要。沿用 MetaFlow 的主条目策略（默认最早添加），补齐空字段；冲突字段保留主条目值。不同类型、非重复标记及处理中被修改的组会跳过。附件、笔记、标签、集合、关联和撤销由 Zotero 原生合并维护。
+
+12.6.1 将批量合并的确认、进度和结果恢复为原生右下角提示窗，不再在条目列表下方显示提示面板。
 
 <a id="data"></a>
 
@@ -76,9 +78,9 @@ _让研究的每一步衔接起来。 / Connect each step of research._
 
 | 项目                   | 范围                                                                                          |
 | ---------------------- | --------------------------------------------------------------------------------------------- |
-| 当前插件版本           | 12.6.0                                                                                        |
+| 当前插件版本           | 12.6.1                                                                                        |
 | 清单声明的 Zotero 范围 | `10.0` 至 `11.*`                                                                              |
-| 当前说明               | 发布验证与兼容性边界见[版本说明](docs/releases/metaflow-v12.6.0.md)。不自动安装到用户主环境。 |
+| 当前说明               | 发布验证与兼容性边界见[版本说明](docs/releases/metaflow-v12.6.1.md)。不自动安装到用户主环境。 |
 
 插件版本与 Zotero 版本分别管理。兼容声明不等于已验证所有宿主、系统和外部服务；本轮仅验证上述定向行为，未覆盖所有业务流程或主环境安装。
 
@@ -105,7 +107,7 @@ pnpm build
 
 - [工作流与数据设计 / Workflow and data](docs/global-workflow-and-data-layout.md)
 - [自动整理与缓存 / Automation and cache](docs/automatic-metadata-and-runtime-cache.md)
-- [版本说明 / Release notes](docs/releases/metaflow-v12.6.0.md)
+- [版本说明 / Release notes](docs/releases/metaflow-v12.6.1.md)
 - [产品简介 / Product profile](docs/brand/PRODUCT.md)
 - [品牌规范 / Brand guide](docs/brand/BRAND.md)
 - [README 模板 / README template](docs/brand/README-TEMPLATE.md)

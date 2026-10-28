@@ -2,7 +2,7 @@
 
 Introduced in Zotero MetaFlow 12.6.0.
 
-The native Duplicate Items pane includes **Merge all duplicates in this library** below Zotero's single-group merge button. It scans the current library, shows the number of groups and the master strategy, and requests one confirmation for the whole batch. A progress surface below the item tree remains visible when the native pane switches after merging the last group. Users can cancel between groups and dismiss the final summary.
+The native Duplicate Items pane includes **Merge all duplicates in this library** below Zotero's single-group merge button. It scans the current library, shows the number of groups and the master strategy, and requests one confirmation for the whole batch. In 12.6.1, confirmation, progress and the final summary use Zotero's native bottom-right progress window, remaining visible when the native pane switches after merging the last group. Users can cancel between groups and dismiss the final summary. Closing the notification cancels pending work. No feedback panel is inserted below the item tree.
 
 ## Merge policy
 
