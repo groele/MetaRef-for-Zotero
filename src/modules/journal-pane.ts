@@ -225,7 +225,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     rankingSection.append(status);
   }
   if (displayedRankings.length) {
-    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:108px minmax(0,1fr);gap:12px 16px;");
+    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px 32px;");
     for (const ranking of displayedRankings) {
       const label = text("dt", getString(ranking.labelID as any), "margin:0;font-size:12px;color:var(--fill-secondary);");
       const value = text("dd", ranking.value, "margin:0;min-width:0;font-weight:600;white-space:pre-wrap;");
@@ -243,7 +243,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   for (const row of rows) {
     const node = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
     node.setAttribute("data-journal-result", row.label);
-    node.setAttribute("style", "display:grid;grid-template-columns:108px minmax(0,1fr);column-gap:16px;align-items:baseline;");
+    node.setAttribute("style", "display:grid;grid-template-columns:120px minmax(0,1fr);column-gap:32px;align-items:baseline;");
     const value = text("dd", "", "margin:0;min-width:0;");
     value.append(text("div", row.value, row.matched ? "font-size:14px;font-weight:600;" : "font-size:13px;color:var(--fill-secondary);"));
     if (row.basis && !sharedBasis)
