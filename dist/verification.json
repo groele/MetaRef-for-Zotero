@@ -16,6 +16,12 @@
     "autocorrect": "passed",
     "releaseTagSelfTest": "passed"
   },
+  "githubCI": {
+    "run": "https://github.com/groele/Zotero-MetaFlow/actions/runs/40839278527",
+    "attempt": 2,
+    "build": "passed",
+    "nativeZotero": "217 passed"
+  },
   "automatedTests": {
     "files": 87,
     "passed": 608,
@@ -29,7 +35,6 @@
     "mainProfileInstalled": false
   },
   "notVerified": [
-    "full default native CI suite pending on GitHub",
     "PowerPoint external application paste",
     "main profile installation",
     "actual automatic update"
