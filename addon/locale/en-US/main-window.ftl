@@ -87,3 +87,4 @@ journal-share-copy-image = Copy Image
 journal-share-save-image = Save Image
 journal-share-copy-text = Copy Text
 
+journal-share-copied-short = Copied!

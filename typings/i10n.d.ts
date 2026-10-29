@@ -328,6 +328,7 @@ export type FluentMessageId =
   | 'journal-rankings-saved-note'
   | 'journal-share-card'
   | 'journal-share-copied'
+  | 'journal-share-copied-short'
   | 'journal-share-copy-image'
   | 'journal-share-copy-text'
   | 'journal-share-save-image'

@@ -185,6 +185,26 @@ export function setJournalUpdateResult(itemIDs: number[], result?: BatchResult) 
     queryMessages.delete(queryMessages.keys().next().value!);
 }
 
+function createCheckSvgIcon(doc: Document) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = doc.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "15");
+  svg.setAttribute("height", "15");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2.5");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("style", "width:15px;height:15px;display:block;pointer-events:none;color:#10b981;stroke:#10b981;");
+
+  const polyline = doc.createElementNS(svgNS, "polyline");
+  polyline.setAttribute("points", "20 6 9 17 4 12");
+
+  svg.append(polyline);
+  return svg;
+}
+
 function createShareSvgIcon(doc: Document) {
   const svgNS = "http://www.w3.org/2000/svg";
   const svg = doc.createElementNS(svgNS, "svg");
@@ -283,8 +303,29 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     shareBtn.style.background = "transparent";
     shareBtn.style.color = "var(--fill-secondary)";
   });
+  let resetTimer: ReturnType<typeof setTimeout> | undefined;
   shareBtn.addEventListener("click", (e: Event) => {
     e.stopPropagation();
+
+    // Click bounce animation
+    shareBtn.style.transform = "scale(0.78)";
+    setTimeout(() => {
+      shareBtn.style.transform = "scale(1)";
+    }, 120);
+
+    // Switch to green checkmark icon
+    shareBtn.replaceChildren(createCheckSvgIcon(doc));
+    shareBtn.style.color = "#10b981";
+    shareBtn.setAttribute("title", getString("journal-share-copied-short" as any) || "已复制！");
+
+    if (resetTimer)
+      clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+      shareBtn.replaceChildren(createShareSvgIcon(doc));
+      shareBtn.style.color = "var(--fill-secondary,#64748b)";
+      shareBtn.setAttribute("title", getString("journal-share-card" as any) || "分享期刊卡片");
+    }, 1800);
+
     shareJournalCard({
       doc,
       publication: publication || getString("journal-insights-unnamed"),

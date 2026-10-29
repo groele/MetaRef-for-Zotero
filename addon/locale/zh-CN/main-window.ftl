@@ -87,3 +87,4 @@ journal-share-copy-image = 复制图片
 journal-share-save-image = 保存图片
 journal-share-copy-text = 复制文本
 
+journal-share-copied-short = 已复制！

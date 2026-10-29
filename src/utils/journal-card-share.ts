@@ -496,5 +496,6 @@ function showShareModal(opts: ModalOptions) {
   };
   doc.addEventListener("keydown", escHandler);
 
-  doc.body?.append(overlay);
+  const host = doc.getElementById("zotero-pane") || doc.documentElement || doc.body;
+  host?.append(overlay);
 }
