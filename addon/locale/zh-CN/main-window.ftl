@@ -52,6 +52,7 @@ journal-database-issue-nature-required = 缺少期刊名称或 ISSN。
 journal-database-issue-journals = 数据库至少需要一条期刊记录，不能只有会议。
 
 journal-insights-match-detail = 匹配依据：{ $basis }
+journal-insights-match-issn-detail = 匹配依据：ISSN · { $issn }
 
 journal-insights-scope-note = 期刊层面识别，仅供参考。
 
@@ -60,7 +61,8 @@ menu-show-data-directory = 打开 Zotero 数据目录
 menu-show-profile-directory = 打开 Zotero 配置目录
     .label = 打开 Zotero 配置目录
 
-journal-rankings-heading = 期刊分区与评级
+journal-rankings-heading = 评价与指标
+journal-indexing-heading = 学科与收录
 journal-rankings-empty = 暂无已保存的评级。点击右侧 MetaFlow 图标可补全期刊信息。
 journal-rankings-refresh-failed = 期刊信息补全失败，请检查网络和数据源设置后再次点击 MetaFlow 图标。
 journal-insights-unnamed = 未填写期刊名称

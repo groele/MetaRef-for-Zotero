@@ -52,6 +52,7 @@ journal-database-issue-nature-required = Requires a journal title or ISSN.
 journal-database-issue-journals = At least one journal is required; conference-only lists are unsupported.
 
 journal-insights-match-detail = Match basis: { $basis }
+journal-insights-match-issn-detail = Match basis: ISSN · { $issn }
 
 journal-insights-scope-note = Journal-level identification, for reference.
 
@@ -60,7 +61,8 @@ menu-show-data-directory = Open the Zotero data directory
 menu-show-profile-directory = Open the Zotero profile directory
     .label = Open the Zotero profile directory
 
-journal-rankings-heading = Journal quartiles and rankings
+journal-rankings-heading = Evaluation & metrics
+journal-indexing-heading = Disciplines & indexing
 journal-rankings-empty = No saved rankings. Click the MetaFlow sidebar icon to complete journal information.
 journal-rankings-refresh-failed = Journal refresh failed. Check your connection and data source settings, then click the MetaFlow icon again.
 journal-insights-unnamed = Journal name missing
