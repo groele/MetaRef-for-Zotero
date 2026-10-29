@@ -104,6 +104,7 @@ describe("system recovery and cancellation safety", function () {
     await (win as any).Zotero_Preferences.waitForFirstPaneLoad();
     const button = win.document.getElementById("metaref-clear-api-cache")!;
     const status = win.document.getElementById("metaref-api-cache-status")!;
+    await wait(() => win.getComputedStyle(button)?.fontSize === "14px");
     const buttonStyle = win.getComputedStyle(button);
     const statusStyle = win.getComputedStyle(status);
     if (!buttonStyle || !statusStyle)

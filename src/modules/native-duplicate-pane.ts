@@ -95,10 +95,14 @@ export function registerNativeDuplicatePane(win: Window) {
       let popup: Window | undefined;
       let layoutObserver: MutationObserver | undefined;
       let closed = false;
+      const retile = () => {
+        if (popup && !popup.closed)
+          (Zotero.ProgressWindowSet as typeof Zotero.ProgressWindowSet & { tile: (window: Window) => void }).tile(popup);
+      };
       const tile = () => {
         if (popup && !popup.closed) {
           popup.sizeToContent();
-          (Zotero.ProgressWindowSet as typeof Zotero.ProgressWindowSet & { tile: (window: Window) => void }).tile(popup);
+          retile();
         }
       };
       const close = () => {
@@ -109,6 +113,7 @@ export function registerNativeDuplicatePane(win: Window) {
         layoutObserver?.disconnect();
         win.removeEventListener("resize", tile);
         popup?.removeEventListener("unload", close);
+        popup?.removeEventListener("resize", retile);
         popup?.document.documentElement?.removeAttribute("data-metaref-native-duplicates");
         feedback?.remove();
         notice.close();
@@ -131,6 +136,7 @@ export function registerNativeDuplicatePane(win: Window) {
         line.setAttribute("hidden", "true");
         line.parentElement!.append(feedback!);
         popup.addEventListener("unload", close, { once: true });
+        popup.addEventListener("resize", retile);
         win.addEventListener("resize", tile);
         layoutObserver = new host.MutationObserver(tile);
         layoutObserver.observe(feedback!, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden"] });

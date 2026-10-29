@@ -3,9 +3,9 @@
   "version": "12.6.8",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3477581,
-  "sha256": "0c3b04b961cf20dabe8c51dd0c59b06879153c22e4bc93ba009dbc7ae2133a60",
-  "sha512": "121d4d883c5a672b448dafbfd8da64d63cb3974c8e173616e46d6c0dc8af37cb9f3e1269b4220bc91970aaf841e90d3de1b79f2e016b69bfe15b32875d1831ab",
+  "bytes": 3477606,
+  "sha256": "4f7020dd23013eaab2925bb726484c848b3d47f02ab77440188b11092ad6fdfe",
+  "sha512": "a46595cc0e9a882ccf5ce56ed632a1ae27f908c461f8444c3721db4b80fab637b4806d787332cb2889113a40a3a7bdc9bb71e1c1ca924067a91a249c3bd2fed3",
   "entries": 52,
   "zipCRC": "passed",
   "sourceBaseCommit": "8ca058e7ada98c776640f04e7b452a1efdb0c343",
@@ -37,5 +37,6 @@
     "finalLayoutRecheckPassed": 1
   },
   "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.8/zotero-metaflow.xpi",
-  "nativeDuplicateRegressionPassed": 11
+  "nativeDuplicateRegressionPassed": 11,
+  "nativeRecoveryRegressionPassed": 6
 }

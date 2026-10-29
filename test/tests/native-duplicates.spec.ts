@@ -324,7 +324,11 @@ describe("native duplicate pane batch merge", function () {
           assert.isAtLeast(popup.screenX, w.screenX);
           assert.isAtLeast(popup.screenY, w.screenY);
           assert.isAtMost(Math.abs(popup.screenX + popup.outerWidth - w.screenX - w.outerWidth), 40);
-          assert.isAtMost(Math.abs(popup.screenY + popup.outerHeight - w.screenY - w.outerHeight), 60);
+          assert.isAtMost(Math.abs(popup.screenY + popup.outerHeight - w.screenY - w.outerHeight), 60, JSON.stringify({
+            popup: { x: popup.screenX, y: popup.screenY, width: popup.outerWidth, height: popup.outerHeight },
+            owner: { x: w.screenX, y: w.screenY, width: w.outerWidth, height: w.outerHeight },
+            desktop: { width: desktop.availWidth, height: desktop.availHeight },
+          }));
           const canvas = popupDoc.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
           canvas.width = popup.innerWidth;
           canvas.height = popup.innerHeight;
