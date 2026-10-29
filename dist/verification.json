@@ -4,8 +4,8 @@
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
   "bytes": 3487701,
-  "sha256": "56910b7f966697079879bc7b1d7922d9e29e06a62a47f9776e5837ef1c0cad76",
-  "sha512": "f9dcd13c1d14f61b4517f31a88d70d020c026ee4f10610494ad6bf3edde953a072fab3316627a036146e8da5b3000926f3d4e029f6d221f86857dfbe9007b6f1",
+  "sha256": "c20c4c097f601674c0e10c0253bc2390374c04b3d2f01aada8cadd0ba5f173bd",
+  "sha512": "26f07057749425d39026a1faa0b4630de8622355ae4ec66015e8aef480caf7c33b424cbdf1845772a93f5bdcf719895503037cad8b5b0222bc42584aeea3d541",
   "entries": 52,
   "zipCRC": "passed",
   "qualityChecks": {

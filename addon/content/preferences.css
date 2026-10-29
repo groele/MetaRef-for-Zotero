@@ -515,7 +515,7 @@
   margin-block: 8px;
 }
 #metaref .metaref-static-card > .metaref-card-heading {
-  padding: 8px 0;
+  padding: 8px 13px;
 }
 #metaref #metaref-journal-share-settings hbox {
   flex-wrap: wrap;
