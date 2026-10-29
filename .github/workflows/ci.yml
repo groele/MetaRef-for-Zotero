@@ -30,4 +30,15 @@ jobs:
         uses: zotero-plugin-dev/workflows/setup-js@main
       - name: Setup Zotero
         uses: zotero-plugin-dev/setup-zotero@v1
+      - name: Start a window manager
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openbox wmctrl
+          openbox --sm-disable >/tmp/metaflow-openbox.log 2>&1 &
+          for attempt in {1..30}; do
+            wmctrl -m && exit 0
+            sleep 1
+          done
+          cat /tmp/metaflow-openbox.log
+          exit 1
       - run: pnpm test
