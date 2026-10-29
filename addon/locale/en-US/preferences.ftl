@@ -236,6 +236,17 @@ insights-show-pane =
     .label = Show the independent Zotero MetaFlow journal insights section
 insights-description = ESI and Nature Index use an independent pane and optional columns without writing fields or tags. Lookup results are saved to MetaFlow's local journal ranking index by default; automatic queries are off by default. The index is stored in the Zotero profile and does not sync with libraries.
 
+insights-share-heading = Journal Card Sharing Settings
+insights-share-description = Configure the action mode and content when clicking the share icon in the journal insights header.
+insights-share-mode-label = Share mode:
+insights-share-mode-silent = Silent one-click copy (Recommended, no popup)
+insights-share-mode-modal = Preview popup window (Display card modal)
+insights-share-mode-desc = In silent mode, clicking copies directly to clipboard with a toast notice; in popup mode, a preview dialog is displayed.
+insights-share-format-label = Silent copy content:
+insights-share-format-image = Share image (Copy card image)
+insights-share-format-text = Share text (Copy formatted text)
+insights-share-format-desc = Effective only in "Silent one-click copy" mode to choose what is copied directly to the clipboard.
+
 journal-database-nature = Custom Nature Index journal database
 journal-database-nature-path =
     .placeholder = Leave blank for built-in data; JSON / CSV supported

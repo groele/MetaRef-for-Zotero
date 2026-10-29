@@ -23,4 +23,45 @@ describe("journal-card-share", () => {
       });
     }).not.toThrow();
   });
+
+  it("supports silent text, silent image and modal sharing modes", () => {
+    const makeElement = () => ({
+      setAttribute: () => {},
+      append: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      remove: () => {},
+      style: {},
+      replaceChildren: () => {},
+    });
+
+    const fakeDoc = {
+      createElementNS: () => makeElement(),
+      getElementById: () => null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      documentElement: makeElement(),
+      defaultView: {
+        navigator: {
+          clipboard: {
+            writeText: async () => {},
+          },
+        },
+      },
+    } as unknown as Document;
+
+    const data = {
+      doc: fakeDoc,
+      publication: "Nature",
+      displayedRankings: [{ key: "jcr", labelID: "field-jcr", value: "Q1" }],
+      rows: [],
+      matchBases: [],
+    };
+
+    expect(() => {
+      shareJournalCard(data, { mode: "silent", silentFormat: "text" });
+      shareJournalCard(data, { mode: "silent", silentFormat: "image" });
+      shareJournalCard(data, { mode: "modal" });
+    }).not.toThrow();
+  });
 });

@@ -110,6 +110,9 @@ interface Pattern {
 }
 
 function _getString(id: FluentMessageId, options: GetStringOptions): string {
+  if (typeof addon === "undefined")
+    return id;
+
   const localeID = getLocaleID(id);
   if (!localeID)
     return id;
@@ -138,5 +141,7 @@ function _getString(id: FluentMessageId, options: GetStringOptions): string {
 }
 
 export function getLocaleID(id?: FluentMessageId): string | undefined {
+  if (typeof addon === "undefined")
+    return id;
   return id ? `${addon.data.config.addonRef}-${id}` : undefined;
 }

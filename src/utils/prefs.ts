@@ -78,6 +78,8 @@ export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "insights.esiFormat": "{subject}ESI",
   "insights.esiCustomDataPath": "",
   "insights.showPane": true,
+  "insights.shareMode": "silent",
+  "insights.shareSilentFormat": "image",
   "insights.natureCustomDataPath": "",
   "easyscholar.secretKey": "",
   "easyscholar.writeToExtra": false,

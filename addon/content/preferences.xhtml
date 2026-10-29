@@ -1095,6 +1095,62 @@
             class="metaref-pref-description"
           />
         </vbox>
+        <!-- 期刊卡片分享设置 -->
+        <groupbox id="metaref-journal-share-settings">
+          <label><html:h3 data-l10n-id="insights-share-heading" /></label>
+          <description
+            data-l10n-id="insights-share-description"
+            class="metaref-pref-description"
+          />
+          <hbox align="center">
+            <label
+              id="metaref-insights-share-mode-label"
+              data-l10n-id="insights-share-mode-label"
+            />
+            <html:select
+              id="metaref-insights-share-mode"
+              data-share-setting="mode"
+              aria-labelledby="metaref-insights-share-mode-label"
+            >
+              <html:option
+                value="silent"
+                data-l10n-id="insights-share-mode-silent"
+              />
+              <html:option
+                value="modal"
+                data-l10n-id="insights-share-mode-modal"
+              />
+            </html:select>
+          </hbox>
+          <description
+            data-l10n-id="insights-share-mode-desc"
+            class="metaref-pref-description"
+          />
+          <hbox align="center" id="metaref-insights-share-format-row">
+            <label
+              id="metaref-insights-share-format-label"
+              data-l10n-id="insights-share-format-label"
+            />
+            <html:select
+              id="metaref-insights-share-format"
+              data-share-setting="format"
+              aria-labelledby="metaref-insights-share-format-label"
+            >
+              <html:option
+                value="image"
+                data-l10n-id="insights-share-format-image"
+              />
+              <html:option
+                value="text"
+                data-l10n-id="insights-share-format-text"
+              />
+            </html:select>
+          </hbox>
+          <description
+            data-l10n-id="insights-share-format-desc"
+            class="metaref-pref-description"
+          />
+        </groupbox>
         <groupbox>
           <label><html:h3 data-l10n-id="index-source-heading" /></label>
           <hbox align="center">

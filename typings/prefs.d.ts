@@ -49,6 +49,8 @@ declare namespace _ZoteroTypes {
       "insights.esiFormat": string;
       "insights.esiCustomDataPath": string;
       "insights.showPane": boolean;
+      "insights.shareMode": string;
+      "insights.shareSilentFormat": string;
       "insights.natureCustomDataPath": string;
       "easyscholar.secretKey": string;
       "easyscholar.writeToExtra": boolean;

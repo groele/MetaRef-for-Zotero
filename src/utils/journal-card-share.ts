@@ -1,4 +1,5 @@
 import { getString } from "./locale";
+import { getPref } from "./prefs";
 
 export interface JournalCardData {
   doc: Document;
@@ -101,19 +102,42 @@ export function showBottomLeftNotice(doc: Document, message = "Zotero Meta Flow 
   catch {}
 }
 
-export function shareJournalCard(data: JournalCardData) {
+export function shareJournalCard(data: JournalCardData, options?: { mode?: "silent" | "modal"; silentFormat?: "image" | "text" }) {
   const { doc, publication } = data;
   if (!doc)
     return;
 
+  const mode = options?.mode || getPref("insights.shareMode" as any, "silent");
+  const silentFormat = options?.silentFormat || getPref("insights.shareSilentFormat" as any, "image");
+
   const win = doc.defaultView;
   const cardText = generateCardText(data);
 
-  // 1. Copy text to clipboard as primary/fallback text
-  copyTextToClipboard(win, cardText);
-  showBottomLeftNotice(doc, "Zotero Meta Flow 期刊索引图片已复制");
+  if (mode === "silent") {
+    if (silentFormat === "text") {
+      copyTextToClipboard(win, cardText);
+      showBottomLeftNotice(doc, "Zotero Meta Flow 期刊索引文本已复制");
+      return;
+    }
 
-  // 2. Render canvas card
+    copyTextToClipboard(win, cardText);
+    const canvas = renderCardCanvas(doc, data);
+    if (canvas && typeof canvas.toBlob === "function") {
+      new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/png")).then((blob) => {
+        const nav = win?.navigator as any;
+        if (blob && nav?.clipboard?.write && typeof (win as any)?.ClipboardItem !== "undefined") {
+          void nav.clipboard.write([
+            new (win as any).ClipboardItem({ "image/png": blob }),
+          ]).catch(() => {});
+        }
+      });
+    }
+    showBottomLeftNotice(doc, "Zotero Meta Flow 期刊索引图片已复制");
+    return;
+  }
+
+  // Modal mode: copy and display preview modal
+  copyTextToClipboard(win, cardText);
   const canvas = renderCardCanvas(doc, data);
   let blobPromise: Promise<Blob | null> | null = null;
   if (canvas && typeof canvas.toBlob === "function") {
@@ -128,7 +152,7 @@ export function shareJournalCard(data: JournalCardData) {
     });
   }
 
-  // 3. Show a modern preview and share modal
+  showBottomLeftNotice(doc, "Zotero Meta Flow 期刊索引卡片已生成");
   showShareModal({
     doc,
     win,

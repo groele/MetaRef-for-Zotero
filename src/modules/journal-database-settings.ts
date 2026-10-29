@@ -83,3 +83,35 @@ export function setupJournalDatabases(pane: Element) {
     }
   }
 }
+
+export function setupJournalShareSettings(pane: Element) {
+  const listen = preferenceListeners(pane);
+  const modeSelect = pane.querySelector<HTMLSelectElement>("#metaref-insights-share-mode");
+  const formatSelect = pane.querySelector<HTMLSelectElement>("#metaref-insights-share-format");
+  const formatRow = pane.querySelector<HTMLElement>("#metaref-insights-share-format-row");
+
+  if (modeSelect) {
+    modeSelect.value = String(getPref("insights.shareMode" as any, "silent"));
+    const updateFormatVisibility = () => {
+      const isModal = modeSelect.value === "modal";
+      if (formatSelect) {
+        formatSelect.disabled = isModal;
+      }
+      if (formatRow) {
+        formatRow.style.opacity = isModal ? "0.6" : "1";
+      }
+    };
+    updateFormatVisibility();
+    listen(modeSelect, "change", () => {
+      setPref("insights.shareMode" as any, modeSelect.value);
+      updateFormatVisibility();
+    });
+  }
+
+  if (formatSelect) {
+    formatSelect.value = String(getPref("insights.shareSilentFormat" as any, "image"));
+    listen(formatSelect, "change", () => {
+      setPref("insights.shareSilentFormat" as any, formatSelect.value);
+    });
+  }
+}

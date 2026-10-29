@@ -13,7 +13,7 @@ import { setupBatchFeedback } from "./batch-feedback";
 import { setupCustomDataFiles } from "./custom-data-settings";
 import { setupDuplicateSettings } from "./duplicate-settings";
 import { registerExtraColumns } from "./item-tree";
-import { setupJournalDatabases } from "./journal-database-settings";
+import { setupJournalDatabases, setupJournalShareSettings } from "./journal-database-settings";
 import { MENU_GROUPS, MENU_SECTIONS } from "./menu";
 import { Rules } from "./rules";
 import { clearSemanticScholarCache } from "./rules/tool-update-metadata/services/semantic-scholar-service";
@@ -111,6 +111,7 @@ export function registerPrefsScripts(_window: Window) {
   setupCustomDataReset(pane);
   setupCustomDataFiles(pane);
   setupJournalDatabases(pane);
+  setupJournalShareSettings(pane);
   setupDependencies(pane);
   setupEasyScholarConnectionTest(pane);
   setupShortcutInputs(pane);

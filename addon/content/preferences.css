@@ -494,3 +494,10 @@
   max-width: 100%;
   padding: 4px;
 }
+
+#metaref select[data-share-setting] {
+  flex: 1 1 15em;
+  min-width: 0;
+  max-width: 100%;
+  padding: 4px;
+}

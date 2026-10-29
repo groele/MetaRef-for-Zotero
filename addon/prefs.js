@@ -52,6 +52,8 @@ pref("rule.require-journal-abbr.customDataPath", "");
 pref("insights.esiFormat", "{subject}ESI");
 pref("insights.esiCustomDataPath", "");
 pref("insights.showPane", true);
+pref("insights.shareMode", "silent");
+pref("insights.shareSilentFormat", "image");
 pref("insights.natureCustomDataPath", "");
 pref("easyscholar.secretKey", "");
 pref("easyscholar.writeToExtra", false);
