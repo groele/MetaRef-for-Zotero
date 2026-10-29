@@ -298,6 +298,8 @@ describe("native duplicate pane batch merge", function () {
     const originalTheme = Services.prefs.prefHasUserValue(themeKey) ? Services.prefs.getIntPref(themeKey) : undefined;
     const width = w.outerWidth;
     const height = w.outerHeight;
+    const position = { x: w.screenX, y: w.screenY };
+    const desktop = w.screen as Screen & { availLeft?: number; availTop?: number };
     const directory = PathUtils.join(PathUtils.parent(PathUtils.parent(Zotero.Prefs.get("metaref.test.fixturePath", true) as string)!)!, ".scaffold", "qa", "native-duplicate-popup");
     await IOUtils.makeDirectory(directory, { ignoreExisting: true, createAncestors: true });
     try {
@@ -305,7 +307,9 @@ describe("native duplicate pane batch merge", function () {
         Services.prefs.setIntPref(themeKey, theme === "dark" ? 0 : 1);
         await wait(() => w.matchMedia("(prefers-color-scheme: dark)")!.matches === (theme === "dark"));
         for (const size of [1280, 860]) {
-          w.resizeTo(size, 820);
+          w.moveTo(desktop.availLeft || 0, desktop.availTop || 0);
+          w.resizeTo(Math.min(size, desktop.availWidth), Math.min(820, desktop.availHeight));
+          await Zotero.Promise.delay(300);
           (w.document.getElementById("metaref-native-duplicates-merge-all") as HTMLButtonElement).click();
           await wait(confirmationReady);
           const popupDoc = noticeDoc()!;
@@ -334,6 +338,7 @@ describe("native duplicate pane batch merge", function () {
       else
         Services.prefs.setIntPref(themeKey, originalTheme);
       w.resizeTo(width, height);
+      w.moveTo(position.x, position.y);
     }
   });
 });

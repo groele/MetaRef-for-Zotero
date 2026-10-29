@@ -36,5 +36,6 @@
     "automaticUpdateInstallation": "not performed",
     "finalLayoutRecheckPassed": 1
   },
-  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.8/zotero-metaflow.xpi"
+  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.8/zotero-metaflow.xpi",
+  "nativeDuplicateRegressionPassed": 11
 }
