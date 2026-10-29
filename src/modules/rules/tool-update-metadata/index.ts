@@ -4,6 +4,7 @@ import { getPref } from "../../../utils/prefs";
 import { isFieldValidForItemType } from "../../../utils/zotero";
 import { defineRule } from "../rule-base";
 import { extractIdentifiers, isPreprint } from "./identifiers";
+import { resolveMissingISSN } from "./issn-resolver";
 import { mergeMetadata, metadataIdentity, metadataMissing, metadataValuesEqual, normalizeDOI } from "./policy";
 import { services } from "./services";
 
@@ -326,6 +327,33 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     const { itemType, creators, ...fields } = data;
     if (!options.creatorsOnly)
       applyItemFields(fields);
+
+    // 5. Enrich missing ISSN for journalArticle via OpenAlex / Crossref
+    if (!options.creatorsOnly && isFieldValidForItemType("ISSN", item.itemType)) {
+      const oldISSN = item.getField("ISSN");
+      if (!oldISSN || (options.mode === "all" && !data.ISSN)) {
+        try {
+          const resolved = await resolveMissingISSN({
+            doi: identifiers.DOI || (item.getField("DOI") as string),
+            publicationTitle: (item.getField("publicationTitle") as string) || (data.publicationTitle as string),
+            signal,
+            debug,
+          });
+          if (resolved) {
+            item.setField("ISSN", resolved.issn);
+            report({
+              level: "info",
+              field: "ISSN",
+              source: resolved.source,
+              message: getString("rule-tool-update-metadata-field-source", { args: { field: "ISSN", source: resolved.source } }),
+            });
+          }
+        }
+        catch (e) {
+          debug(`ISSN enrichment skipped or failed: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      }
+    }
 
     // if (options.lint)
     //   addon.runner.add({ rules: "standard", items: item });
