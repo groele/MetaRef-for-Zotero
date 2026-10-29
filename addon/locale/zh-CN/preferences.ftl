@@ -244,7 +244,7 @@ insights-share-mode-desc = 静默模式下点击直接复制到剪贴板并在 Z
 insights-share-format-label = 静默复制内容：
 insights-share-format-image = 分享图片（复制卡片图片）
 insights-share-format-text = 分享文本（复制格式化卡片文本）
-insights-share-format-desc = 仅在静默复制模式下生效，控制直接写入剪贴板的内容类型。
+insights-share-format-desc = 仅在静默复制模式下生效；每次只复制所选的一种内容，不会同时写入图片和文字。
 
 journal-database-nature = Nature Index 自定义期刊数据库
 journal-database-nature-path =

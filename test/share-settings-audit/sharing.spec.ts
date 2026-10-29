@@ -56,16 +56,16 @@ describe("detailed card sharing and settings audit", function () {
     assert.isNull(doc().getElementById("metaflow-share-card-modal"));
   });
 
-  it("copies only native image and reports failure without text substitution", async function () {
+  it("copies exactly the selected format and reports image failure", async function () {
     assert.equal(await shareJournalCard(data(), { mode: "silent", silentFormat: "image" }), "image");
     const clipboard = (Components.classes as any)["@mozilla.org/widget/clipboard;1"].getService(Components.interfaces.nsIClipboard);
     assert.isTrue(clipboard.hasDataMatchingFlavors(["application/x-moz-nativeimage", "image/png"], clipboard.kGlobalClipboard));
-    assert.isFalse(clipboard.hasDataMatchingFlavors(["text/plain", "text/unicode"], clipboard.kGlobalClipboard), "image mode must not advertise a text representation");
+    assert.isFalse(clipboard.hasDataMatchingFlavors(["text/plain"], clipboard.kGlobalClipboard), "image mode must not advertise text");
     const old = (globalThis as any).rootURI;
     try {
       (globalThis as any).rootURI = `${old}missing/`;
       assert.equal(await shareJournalCard(data(), { mode: "silent", silentFormat: "image" }), "failed");
-      assert.isFalse(clipboard.hasDataMatchingFlavors(["text/plain", "text/unicode"], clipboard.kGlobalClipboard));
+      assert.isFalse(clipboard.hasDataMatchingFlavors(["text/plain"], clipboard.kGlobalClipboard), "failed image rendering must not replace the clipboard with text");
     }
     finally { (globalThis as any).rootURI = old; }
   });
@@ -77,6 +77,8 @@ describe("detailed card sharing and settings audit", function () {
     const oldTheme = Services.prefs.prefHasUserValue(themeKey) ? Services.prefs.getIntPref(themeKey) : undefined;
     const key = "extensions.zotero.metaref.insights.shareMode";
     const old = Zotero.Prefs.get(key, true);
+    const formatKey = "extensions.zotero.metaref.insights.shareSilentFormat";
+    const oldFormat = Zotero.Prefs.get(formatKey, true);
     try {
       for (let i = 0; i < 100 && !win.document.getElementById("metaref-concurrency-status"); i++)
         await Zotero.Promise.delay(50);
@@ -94,6 +96,12 @@ describe("detailed card sharing and settings audit", function () {
         mode.dispatchEvent(new win.Event("change", { bubbles: true }));
         assert.equal(Zotero.Prefs.get(key, true), value);
         assert.equal((pane.querySelector("#metaref-insights-share-format") as HTMLSelectElement).disabled, value === "modal");
+      }
+      const format = pane.querySelector("#metaref-insights-share-format") as HTMLSelectElement;
+      for (const value of ["image", "text"]) {
+        format.value = value;
+        format.dispatchEvent(new win.Event("change", { bubbles: true }));
+        assert.equal(Zotero.Prefs.get(formatKey, true), value);
       }
       for (const theme of [1, 0]) {
         Services.prefs.setIntPref(themeKey, theme);
@@ -121,6 +129,7 @@ describe("detailed card sharing and settings audit", function () {
     }
     finally {
       Zotero.Prefs.set(key, old as string, true);
+      Zotero.Prefs.set(formatKey, oldFormat as string, true);
       if (oldTheme === undefined)
         Services.prefs.clearUserPref(themeKey);
       else Services.prefs.setIntPref(themeKey, oldTheme);

@@ -1,11 +1,11 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.21",
+  "version": "12.6.22",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3487701,
-  "sha256": "c20c4c097f601674c0e10c0253bc2390374c04b3d2f01aada8cadd0ba5f173bd",
-  "sha512": "26f07057749425d39026a1faa0b4630de8622355ae4ec66015e8aef480caf7c33b424cbdf1845772a93f5bdcf719895503037cad8b5b0222bc42584aeea3d541",
+  "bytes": 3487717,
+  "sha256": "8b058af7d1f7644285ec1bac8cb4303c20fdbdb14de5bf8f99fd9326b7cb2d27",
+  "sha512": "258940d680868e4c70e420dcdcab8e0268d8f2eaade41302af08897615215de38c442144d16b5d2b5b681e6b07b7291a15fbb7b6fff79766ad11fce0b2e9b40b",
   "entries": 52,
   "zipCRC": "passed",
   "qualityChecks": {
@@ -13,7 +13,8 @@
     "sourceTypes": "passed",
     "testTypes": "passed",
     "eslint": "passed",
-    "autocorrect": "passed"
+    "autocorrect": "passed",
+    "releaseTagSelfTest": "passed"
   },
   "automatedTests": {
     "files": 87,
@@ -23,14 +24,14 @@
   "nativeZotero": {
     "profile": "isolated",
     "sharingSettingsPassed": 4,
-    "imageOnlyClipboardVerified": true,
-    "textFlavorsAbsentInImageMode": true,
-    "previousRegressionPassed": 6,
+    "issnAndSharingPassed": 6,
+    "selectedFormatExclusiveVerified": true,
     "mainProfileInstalled": false
   },
   "notVerified": [
-    "actual automatic update",
-    "manual save-picker selection",
-    "paste into external apps"
+    "full default native CI suite pending on GitHub",
+    "PowerPoint external application paste",
+    "main profile installation",
+    "actual automatic update"
   ]
 }

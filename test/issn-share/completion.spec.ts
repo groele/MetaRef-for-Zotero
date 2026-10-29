@@ -53,11 +53,25 @@ describe("iSSN and card sharing in isolated Zotero", function () {
     }
   });
 
-  it("copies a native PNG clipboard flavor", async function () {
-    const result = await shareJournalCard({ doc: Zotero.getMainWindow().document, publication: "Nature", displayedRankings: [], rows: [], matchBases: [] }, { mode: "silent", silentFormat: "image" });
-    assert.equal(result, "image");
+  it("copies exactly the configured image or text format", async function () {
+    const itemData = { doc: Zotero.getMainWindow().document, publication: "Nature", displayedRankings: [], rows: [], matchBases: [] };
+    const pref = "extensions.zotero.metaref.insights.shareSilentFormat";
+    const previous = Zotero.Prefs.get(pref, true);
     const clipboard = (Components.classes as any)["@mozilla.org/widget/clipboard;1"].getService(Components.interfaces.nsIClipboard);
-    assert.isTrue(clipboard.hasDataMatchingFlavors(["application/x-moz-nativeimage", "image/png"], clipboard.kGlobalClipboard));
+    try {
+      Zotero.Prefs.set(pref, "image", true);
+      const result = await shareJournalCard(itemData);
+      assert.equal(result, "image");
+      assert.isTrue(clipboard.hasDataMatchingFlavors(["application/x-moz-nativeimage", "image/png"], clipboard.kGlobalClipboard));
+      assert.isFalse(clipboard.hasDataMatchingFlavors(["text/plain"], clipboard.kGlobalClipboard));
+      Zotero.Prefs.set(pref, "text", true);
+      assert.equal(await shareJournalCard(itemData), "text");
+      assert.isFalse(clipboard.hasDataMatchingFlavors(["application/x-moz-nativeimage", "image/png"], clipboard.kGlobalClipboard));
+      assert.isTrue(clipboard.hasDataMatchingFlavors(["text/plain"], clipboard.kGlobalClipboard));
+    }
+    finally {
+      Zotero.Prefs.set(pref, previous as string, true);
+    }
   });
 
   it("renders an accessible share button and completes its pending state", async function () {

@@ -245,7 +245,7 @@ insights-share-mode-desc = In silent mode, clicking copies directly to clipboard
 insights-share-format-label = Silent copy content:
 insights-share-format-image = Share image (Copy card image)
 insights-share-format-text = Share text (Copy formatted text)
-insights-share-format-desc = Effective only in "Silent one-click copy" mode to choose what is copied directly to the clipboard.
+insights-share-format-desc = In silent copy mode, only the selected format is copied; image and text are never written together.
 
 journal-database-nature = Custom Nature Index journal database
 journal-database-nature-path =
