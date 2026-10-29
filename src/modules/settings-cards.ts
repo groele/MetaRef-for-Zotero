@@ -1,3 +1,13 @@
+/** Move functional modules before any renderer consumes their headings. */
+export function organizeSettingsModules(pane: Element) {
+  // These are independent tasks, not formatting rules.
+  for (const heading of ["section-article-esi", "section-article-abbreviation", "insights-share-heading"]) {
+    const group = [...pane.querySelectorAll("groupbox")].find(group => group.querySelector(`:scope > label [data-l10n-id$='${heading}']`));
+    if (group && group.parentElement !== pane)
+      pane.append(group);
+  }
+}
+
 /** Keep one disclosure level while retaining the controls in their functional groups. */
 export function setupFunctionCards(pane: Element) {
   const doc = pane.ownerDocument!;
@@ -61,7 +71,7 @@ export function setupFunctionCards(pane: Element) {
     }
   }
   const sections = [...pane.querySelectorAll(":scope > .metaref-section-card")];
-  for (const id of ["section-general", "core-workflows-heading", "section-updateMetadata", "duplicates-heading", "section-article-esi", "section-article-abbreviation", "section-rules", "data-settings-heading", "workflow-tool-center", "shortcuts-header", "section-rich-text", "section-about"]) {
+  for (const id of ["section-general", "core-workflows-heading", "section-updateMetadata", "duplicates-heading", "section-article-esi", "insights-share-heading", "section-article-abbreviation", "section-rules", "data-settings-heading", "workflow-tool-center", "shortcuts-header", "section-rich-text", "section-about"]) {
     const section = sections.find(section => section.querySelector(`:scope > summary [data-l10n-id$='${id}']`));
     if (section)
       pane.append(section);

@@ -95,9 +95,17 @@ export function registerNativeDuplicatePane(win: Window) {
       let popup: Window | undefined;
       let layoutObserver: MutationObserver | undefined;
       let closed = false;
+      let retileTimers: number[] = [];
       const retile = () => {
-        if (popup && !popup.closed)
-          (Zotero.ProgressWindowSet as typeof Zotero.ProgressWindowSet & { tile: (window: Window) => void }).tile(popup);
+        for (const timer of retileTimers)
+          win.clearTimeout(timer);
+        const place = () => {
+          if (popup && !popup.closed)
+            (Zotero.ProgressWindowSet as typeof Zotero.ProgressWindowSet & { tile: (window: Window) => void }).tile(popup);
+        };
+        place();
+        // Linux window managers can report the final outer size after resize fires.
+        retileTimers = [0, 100, 300].map(delay => win.setTimeout(place, delay));
       };
       const tile = () => {
         if (popup && !popup.closed) {
@@ -109,6 +117,8 @@ export function registerNativeDuplicatePane(win: Window) {
         if (closed)
           return;
         closed = true;
+        retileTimers.forEach(timer => win.clearTimeout(timer));
+        retileTimers = [];
         owner.abort();
         layoutObserver?.disconnect();
         win.removeEventListener("resize", tile);

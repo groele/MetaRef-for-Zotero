@@ -67,7 +67,7 @@ describe("core command execution and optional costs", function () {
     pref("rule.tool-update-metadata.option.mode", "blank");
     pref("rule.no-title-trailing-dot", true);
     pref("rule.no-item-duplication", false);
-    response = { itemType: "journalArticle", title: "Core workflow fixture.", DOI: "10.1234/core-workflow", date: "2026", creators: [{ creatorType: "author", firstName: "Jane", lastName: "Doe" }] };
+    response = { ISSN: "1530-6984", itemType: "journalArticle", title: "Core workflow fixture.", DOI: "10.1234/core-workflow", date: "2026", creators: [{ creatorType: "author", firstName: "Jane", lastName: "Doe" }] };
     (Zotero.Translate as any).Search = function () {
       return { setIdentifier() {}, setSearch() {}, getTranslators: async () => ["controlled"], setTranslator() {}, translate: async () => {
         translations++;
@@ -385,7 +385,8 @@ describe("core command execution and optional costs", function () {
       assert.equal(item.getField("date"), "2026");
       assert.equal(translations, 1);
       assert.lengthOf(batches, 2);
-      assert.deepEqual(batches[0], ["tool-review-metadata"]);
+      assert.deepEqual(batches[0], ["tool-review-metadata", "tool-update-metadata"]);
+      assert.equal(item.getField("ISSN"), "1530-6984", "the review persists ISSN before the missing-ISSN fallback");
       for (const id of ["no-item-duplication", "tool-update-metadata", "correct-doi-long"])
         assert.notInclude(batches[1], id);
       assert.deepEqual(plugin().data.lastCoreWorkflow.stages.map((entry: any) => entry.stage), ["metadata", "format"]);

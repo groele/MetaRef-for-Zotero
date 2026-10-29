@@ -235,16 +235,16 @@ insights-show-pane =
     .label = 显示 Zotero MetaFlow 独立期刊索引侧栏
 insights-description = ESI 与 Nature Index 使用独立侧栏和可选列，不写入文献字段或标签。查询结果默认保存在本机 MetaFlow 期刊评级索引；自动查询默认关闭。索引保存在 Zotero 配置目录，不会随文献库同步。
 
-insights-share-heading = 期刊卡片分享设置
+insights-share-heading = 期刊卡片与分享
 insights-share-description = 控制点击期刊索引标题栏分享图标时的操作模式与复制内容。
 insights-share-mode-label = 分享模式：
-insights-share-mode-silent = 静默一键复制（推荐，不弹出窗口）
-insights-share-mode-modal = 弹出窗口预览（显示卡片弹窗）
-insights-share-mode-desc = 静默模式下点击直接复制到剪贴板并在左下角短暂提示；窗口模式下弹出卡片预览对话框，可选择复制图片、保存图片或复制文本。
+insights-share-mode-silent = 静默复制（推荐）
+insights-share-mode-modal = 预览窗口
+insights-share-mode-desc = 静默模式下点击直接复制到剪贴板并在 Zotero 原生通知中提示；窗口模式下弹出卡片预览对话框，可选择复制图片、保存图片或复制文本。
 insights-share-format-label = 静默复制内容：
 insights-share-format-image = 分享图片（复制卡片图片）
 insights-share-format-text = 分享文本（复制格式化卡片文本）
-insights-share-format-desc = 仅在「静默一键复制」模式下生效，控制直接写入剪贴板的内容类型。
+insights-share-format-desc = 仅在静默复制模式下生效，控制直接写入剪贴板的内容类型。
 
 journal-database-nature = Nature Index 自定义期刊数据库
 journal-database-nature-path =

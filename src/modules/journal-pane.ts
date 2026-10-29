@@ -316,11 +316,11 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
       const result = await shareJournalCard({ doc, publication: publication || getString("journal-insights-unnamed"), displayedRankings, sciRanking, rows, matchBases, issn });
       if (!shareBtn.isConnected)
         return;
-      const key = result === "failed" ? "failed" : result === "image" ? "image-copied" : "text-copied";
+      const key = result === "preview" ? "preview-ready" : result === "failed" ? "failed" : result === "image" ? "image-copied" : "text-copied";
       shareBtn.title = getString(`journal-share-${key}` as any);
       shareBtn.setAttribute("aria-label", shareBtn.title);
-      shareBtn.replaceChildren(result === "failed" ? createShareSvgIcon(doc) : createCheckSvgIcon(doc));
-      if (result !== "failed") {
+      shareBtn.replaceChildren(["failed", "preview"].includes(result) ? createShareSvgIcon(doc) : createCheckSvgIcon(doc));
+      if (result === "image" || result === "text") {
         shareBtn.setAttribute("data-share-success", "true");
         const icon = shareBtn.firstElementChild!;
         successAnimation = icon.animate(reduced
@@ -339,7 +339,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
         }, 1600);
         doc.defaultView?.addEventListener("unload", clearSuccess, { once: true });
       }
-      if (!reduced && result !== "failed")
+      if (!reduced && (result === "image" || result === "text"))
         shareBtn.firstElementChild?.animate?.([{ transform: "scale(.8)", opacity: 0.4 }, { transform: "scale(1)", opacity: 1 }], { duration: 180, easing: "ease-out" });
     }
     finally {

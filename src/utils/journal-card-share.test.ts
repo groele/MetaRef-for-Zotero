@@ -6,12 +6,12 @@ afterEach(() => vi.unstubAllGlobals());
 const data = (doc: any) => ({ doc, publication: "Nature", displayedRankings: [], rows: [], matchBases: [] });
 const document = (writeText: any, canvas?: any) => ({ defaultView: { navigator: { clipboard: { writeText } } }, createElementNS: () => canvas || { getContext: () => null } });
 describe("sharing completion", () => {
-  it("reports text fallback only after clipboard completion", async () => {
+  it("waits for explicit text copying to complete", async () => {
     let finish!: () => void;
     const write = vi.fn(() => new Promise<void>((resolve) => {
       finish = resolve;
     }));
-    const pending = shareJournalCard(data(document(write)), { mode: "silent", silentFormat: "image" });
+    const pending = shareJournalCard(data(document(write)), { mode: "silent", silentFormat: "text" });
     for (let i = 0; i < 6; i++)
       await Promise.resolve();
     let settled = false;
@@ -21,6 +21,11 @@ describe("sharing completion", () => {
     expect(settled).toBe(false);
     finish();
     expect(await pending).toBe("text");
+  });
+  it("does not replace an image request with text when rendering fails", async () => {
+    const write = vi.fn();
+    expect(await shareJournalCard(data(document(write)), { mode: "silent", silentFormat: "image" })).toBe("failed");
+    expect(write).not.toHaveBeenCalled();
   });
   it("reports clipboard rejection as failure", async () => {
     expect(await shareJournalCard(data(document(vi.fn().mockRejectedValue(new Error("denied")))), { mode: "silent", silentFormat: "text" })).toBe("failed");

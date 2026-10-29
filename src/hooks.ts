@@ -25,6 +25,7 @@ import { clearDuplicateSearchCache } from "./utils/duplicate-search-cache";
 import { toArray } from "./utils/general";
 import { migrateGreenFrogPreferences } from "./utils/greenfrog-migration";
 import { clearRequestCache } from "./utils/http";
+import { closeJournalShareDialogs } from "./utils/journal-card-share";
 import { getJournalInsights, loadJournalInsights } from "./utils/journal-insights";
 import { canRunJournalRule, hasEnabledJournalMetrics } from "./utils/journal-permissions";
 import { flushJournalRankingIndex, loadJournalRankingIndex } from "./utils/journal-ranking-index";
@@ -109,6 +110,7 @@ async function onMainWindowUnload(win: Window): Promise<void> {
 }
 
 async function onShutdown() {
+  closeJournalShareDialogs();
   addon.data.alive = false;
   await cleanupResources([
     () => automaticItems.cancelPending(),

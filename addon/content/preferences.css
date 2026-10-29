@@ -501,3 +501,27 @@
   max-width: 100%;
   padding: 4px;
 }
+
+/* Only top level modules use cards; subsections use headings and separators. */
+#metaref .metaref-section-card .metaref-static-card {
+  border: 0;
+  border-top: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 0;
+  background: transparent;
+  margin-block: 12px;
+}
+#metaref .metaref-section-card .metaref-static-card .metaref-static-card {
+  border: 0;
+  margin-block: 8px;
+}
+#metaref .metaref-static-card > .metaref-card-heading {
+  padding: 8px 0;
+}
+#metaref #metaref-journal-share-settings hbox {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#metaref #metaref-journal-share-settings select {
+  max-width: 100%;
+  min-width: 0;
+}

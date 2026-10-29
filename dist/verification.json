@@ -1,11 +1,11 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.20",
+  "version": "12.6.21",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3486897,
-  "sha256": "f770009ff514ab8959374d2803250eade511db209b7253399d505fd6dac3509c",
-  "sha512": "71f026f978454f581996643a565f0289b45281bff4770c1572e8d97297d1c44c99445b1430a8446fb73993d2f0606fe129ec91c87b9d88e7077e74953e68f32d",
+  "bytes": 3487701,
+  "sha256": "56910b7f966697079879bc7b1d7922d9e29e06a62a47f9776e5837ef1c0cad76",
+  "sha512": "f9dcd13c1d14f61b4517f31a88d70d020c026ee4f10610494ad6bf3edde953a072fab3316627a036146e8da5b3000926f3d4e029f6d221f86857dfbe9007b6f1",
   "entries": 52,
   "zipCRC": "passed",
   "qualityChecks": {
@@ -17,23 +17,20 @@
   },
   "automatedTests": {
     "files": 87,
-    "passed": 607,
+    "passed": 608,
     "failed": 0
   },
   "nativeZotero": {
     "profile": "isolated",
-    "passed": 6,
-    "failed": 0,
-    "installedExactPackage": false,
+    "sharingSettingsPassed": 4,
+    "imageOnlyClipboardVerified": true,
+    "textFlavorsAbsentInImageMode": true,
+    "previousRegressionPassed": 6,
     "mainProfileInstalled": false
   },
   "notVerified": [
-    "automatic update",
-    "full theme and width visual matrix",
-    "cross-platform",
-    "paste into external applications"
-  ],
-  "releaseURL": "https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.20",
-  "releaseCommit": "dc6c01fa4d36dc315adbe4088247560b049de45b",
-  "independentReleaseDownload": true
+    "actual automatic update",
+    "manual save-picker selection",
+    "paste into external apps"
+  ]
 }

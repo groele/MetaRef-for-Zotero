@@ -90,8 +90,17 @@ journal-share-copy-text = 复制文本
 journal-share-copied-short = 已复制！
 
 journal-share-image-copied = 图片已复制，可粘贴分享
-journal-share-text-copied = 已复制文本卡片（图片不可用或已选择文本）
+journal-share-text-copied = 已复制文本卡片
 journal-share-failed = 复制失败，请重试或保存图片
 journal-share-busy = 正在生成并复制卡片…
 
 journal-issn-unresolved = 未查到可确认的 ISSN，或查询服务不可用；已保留空值。请核对期刊全名或 DOI 后重试。
+
+journal-share-brand = Zotero MetaFlow · 期刊索引
+journal-share-footer = 由 Zotero MetaFlow 生成 · 仅供学术参考
+journal-share-basis = 匹配依据
+journal-share-saved = 图片已保存
+journal-share-close = 关闭分享预览
+
+journal-share-preview-ready = 预览已生成，请选择复制或保存
+journal-share-save-failed = 图片保存失败，请检查保存位置后重试

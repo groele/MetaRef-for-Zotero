@@ -98,7 +98,7 @@ export function setupJournalShareSettings(pane: Element) {
         formatSelect.disabled = isModal;
       }
       if (formatRow) {
-        formatRow.style.opacity = isModal ? "0.6" : "1";
+        formatRow.hidden = isModal;
       }
     };
     updateFormatVisibility();

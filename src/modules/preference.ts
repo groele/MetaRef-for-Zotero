@@ -17,7 +17,7 @@ import { setupJournalDatabases, setupJournalShareSettings } from "./journal-data
 import { MENU_GROUPS, MENU_SECTIONS } from "./menu";
 import { Rules } from "./rules";
 import { clearSemanticScholarCache } from "./rules/tool-update-metadata/services/semantic-scholar-service";
-import { setupFunctionCards } from "./settings-cards";
+import { organizeSettingsModules, setupFunctionCards } from "./settings-cards";
 import { setupSettingsPanel } from "./settings-panel";
 import { setupToolCenter } from "./tool-center";
 import { setupWorkflowSettings } from "./workflow-settings";
@@ -103,6 +103,7 @@ export function registerPrefsScripts(_window: Window) {
   initializedPanes.add(pane);
   setupAbbreviationSettings(pane);
   setupMenuSettings(pane);
+  organizeSettingsModules(pane);
   setupEasyScholarSettings(pane);
   setupWorkflowSettings(pane);
   setupToolCenter(pane);
@@ -264,7 +265,9 @@ function setupEasyScholarSettings(pane: Element) {
       doc.l10n!.setAttributes(count, "metaref-settings-group-count", { selected: choices.filter(choice => choice.checked).length, total: choices.length });
     };
     group.before(card);
-    summary.append(heading, count);
+    summary.append(heading);
+    if (group.querySelector("input[type=checkbox]"))
+      summary.append(count);
     card.append(summary, group);
     listen(card, "change", updateCount);
     listen(card, "command", updateCount);
