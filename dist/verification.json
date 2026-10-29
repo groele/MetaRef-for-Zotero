@@ -1,11 +1,11 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.11",
+  "version": "12.6.12",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3482238,
-  "sha256": "1aae7d95d342a9ce25480aec44ac053c7f26cbe15dc6f994a25f97f2a5aa9a69",
-  "sha512": "c47c4c431ea59d668b0c90f690102fa8efc424569f2fd9525cc4fccd9003e7cf27b57e09e72cd9d8ced3ff55cf454981536465783b23d28a0d5357b9aa2409fa",
+  "bytes": 3482993,
+  "sha256": "222b54efa99f1d2b67586c3051efb834bb5adbcb020dfc389ed6b5557fea1488",
+  "sha512": "dc7eda9056f48923abfe179d20bfcab6e5706cfa1a18bf0aa558d2c81d4f6653996fb8b3ca9e127c87dbabebb9a01baddfde96a19f3fc1c2f019834bb7478088",
   "entries": 52,
   "zipCRC": "passed",
   "sourceBaseCommit": "8ca058e7ada98c776640f04e7b452a1efdb0c343",
@@ -36,7 +36,7 @@
     "automaticUpdateInstallation": "not performed",
     "finalLayoutRecheckPassed": 1
   },
-  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.11/zotero-metaflow.xpi",
+  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.12/zotero-metaflow.xpi",
   "nativeDuplicateRegressionPassed": 11,
   "nativeRecoveryRegressionPassed": 6
 }

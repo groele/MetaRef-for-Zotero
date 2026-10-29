@@ -10,6 +10,97 @@ export interface JournalCardData {
   issn?: string;
 }
 
+let activeNoticeTimer: ReturnType<typeof setTimeout> | undefined;
+
+export function showBottomLeftNotice(doc: Document, message = "Zotero Meta Flow 期刊索引图片已复制") {
+  if (!doc)
+    return;
+
+  try {
+    const existing = doc.getElementById("metaflow-bottom-left-notice");
+    if (existing) {
+      existing.remove();
+      if (activeNoticeTimer)
+        clearTimeout(activeNoticeTimer);
+    }
+
+    const toast = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
+    toast.setAttribute("id", "metaflow-bottom-left-notice");
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    toast.setAttribute("style", [
+      "position:fixed",
+      "left:24px",
+      "bottom:24px",
+      "z-index:99999999",
+      "display:inline-flex",
+      "align-items:center",
+      "gap:10px",
+      "padding:10px 18px",
+      "border-radius:8px",
+      "background:rgba(15,23,42,0.92)",
+      "color:#ffffff",
+      "font-size:13px",
+      "font-weight:500",
+      "line-height:1.4",
+      "box-shadow:0 10px 25px -5px rgba(0,0,0,0.3),0 8px 10px -6px rgba(0,0,0,0.2)",
+      "backdrop-filter:blur(8px)",
+      "pointer-events:none",
+      "transform:translateY(16px)",
+      "opacity:0",
+      "transition:transform 0.25s cubic-bezier(0.16,1,0.3,1),opacity 0.25s ease",
+      "font-family:system-ui,-apple-system,BlinkMacSystemFont,'Microsoft YaHei',sans-serif",
+    ].join(";"));
+
+    const iconSvg = doc.createElementNS("http://www.w3.org/2000/svg", "svg");
+    iconSvg.setAttribute("viewBox", "0 0 24 24");
+    iconSvg.setAttribute("width", "16");
+    iconSvg.setAttribute("height", "16");
+    iconSvg.setAttribute("fill", "none");
+    iconSvg.setAttribute("stroke", "#10b981");
+    iconSvg.setAttribute("stroke-width", "2.5");
+    iconSvg.setAttribute("stroke-linecap", "round");
+    iconSvg.setAttribute("stroke-linejoin", "round");
+    iconSvg.setAttribute("style", "width:16px;height:16px;flex-shrink:0;");
+
+    const check = doc.createElementNS("http://www.w3.org/2000/svg", "polyline");
+    check.setAttribute("points", "20 6 9 17 4 12");
+    iconSvg.append(check);
+
+    const textNode = doc.createElementNS("http://www.w3.org/1999/xhtml", "span") as HTMLElement;
+    textNode.textContent = message;
+    textNode.setAttribute("style", "letter-spacing:0.2px;");
+
+    toast.append(iconSvg, textNode);
+
+    const host = doc.getElementById("zotero-pane") || doc.documentElement || doc.body;
+    host?.append(toast);
+
+    const win = doc.defaultView;
+    if (win?.requestAnimationFrame) {
+      win.requestAnimationFrame(() => {
+        toast.style.transform = "translateY(0)";
+        toast.style.opacity = "1";
+      });
+    }
+    else {
+      setTimeout(() => {
+        toast.style.transform = "translateY(0)";
+        toast.style.opacity = "1";
+      }, 16);
+    }
+
+    activeNoticeTimer = setTimeout(() => {
+      toast.style.transform = "translateY(12px)";
+      toast.style.opacity = "0";
+      setTimeout(() => {
+        toast.remove();
+      }, 280);
+    }, 2600);
+  }
+  catch {}
+}
+
 export function shareJournalCard(data: JournalCardData) {
   const { doc, publication } = data;
   if (!doc)
@@ -20,6 +111,7 @@ export function shareJournalCard(data: JournalCardData) {
 
   // 1. Copy text to clipboard as primary/fallback text
   copyTextToClipboard(win, cardText);
+  showBottomLeftNotice(doc, "Zotero Meta Flow 期刊索引图片已复制");
 
   // 2. Render canvas card
   const canvas = renderCardCanvas(doc, data);

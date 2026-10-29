@@ -1,7 +1,7 @@
 import type { BatchResult } from "./runner";
 import { cleanupResourcesSync } from "../utils/cleanup";
 import { EASYSCHOLAR_FIELD_DEFINITIONS, isEasyScholarFieldEnabled } from "../utils/easyscholar";
-import { shareJournalCard } from "../utils/journal-card-share";
+import { shareJournalCard, showBottomLeftNotice } from "../utils/journal-card-share";
 import { isJournalFeedback } from "../utils/journal-feedback";
 import { cachedJournalInsights, clearJournalInsights, getJournalInsights, loadJournalInsights } from "../utils/journal-insights";
 import { presentJournalInsights } from "../utils/journal-insights-presentation";
@@ -326,6 +326,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
       shareBtn.setAttribute("title", getString("journal-share-card" as any) || "分享期刊卡片");
     }, 1800);
 
+    showBottomLeftNotice(doc, "Zotero Meta Flow 期刊索引图片已复制");
     shareJournalCard({
       doc,
       publication: publication || getString("journal-insights-unnamed"),

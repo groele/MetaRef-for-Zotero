@@ -1,9 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { shareJournalCard } from "./journal-card-share";
+import { shareJournalCard, showBottomLeftNotice } from "./journal-card-share";
 
 describe("journal-card-share", () => {
   it("safely handles null or headless document without throwing", () => {
     expect(() => {
+      showBottomLeftNotice(undefined as any);
       shareJournalCard({
         doc: undefined as any,
         publication: "Acta Materialia",
