@@ -1,42 +1,36 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.12",
+  "version": "12.6.20",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3482993,
-  "sha256": "222b54efa99f1d2b67586c3051efb834bb5adbcb020dfc389ed6b5557fea1488",
-  "sha512": "dc7eda9056f48923abfe179d20bfcab6e5706cfa1a18bf0aa558d2c81d4f6653996fb8b3ca9e127c87dbabebb9a01baddfde96a19f3fc1c2f019834bb7478088",
+  "bytes": 3486897,
+  "sha256": "f770009ff514ab8959374d2803250eade511db209b7253399d505fd6dac3509c",
+  "sha512": "71f026f978454f581996643a565f0289b45281bff4770c1572e8d97297d1c44c99445b1430a8446fb73993d2f0606fe129ec91c87b9d88e7077e74953e68f32d",
   "entries": 52,
   "zipCRC": "passed",
-  "sourceBaseCommit": "8ca058e7ada98c776640f04e7b452a1efdb0c343",
   "qualityChecks": {
     "productionBuild": "passed",
     "sourceTypes": "passed",
-    "releaseTagSelfTest": "passed",
-    "testTypes": "passed"
+    "testTypes": "passed",
+    "eslint": "passed",
+    "autocorrect": "passed"
   },
   "automatedTests": {
-    "files": 3,
-    "passed": 27,
+    "files": 87,
+    "passed": 607,
     "failed": 0
   },
   "nativeZotero": {
     "profile": "isolated",
-    "sourceLoaded": true,
-    "passed": 9,
+    "passed": 6,
     "failed": 0,
-    "widths": [
-      280,
-      360
-    ],
-    "theme": "light",
-    "screenshotReviewed": true,
     "installedExactPackage": false,
-    "mainProfileInstalled": false,
-    "automaticUpdateInstallation": "not performed",
-    "finalLayoutRecheckPassed": 1
+    "mainProfileInstalled": false
   },
-  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.12/zotero-metaflow.xpi",
-  "nativeDuplicateRegressionPassed": 11,
-  "nativeRecoveryRegressionPassed": 6
+  "notVerified": [
+    "automatic update",
+    "full theme and width visual matrix",
+    "cross-platform",
+    "paste into external applications"
+  ]
 }

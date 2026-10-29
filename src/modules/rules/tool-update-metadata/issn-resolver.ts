@@ -9,8 +9,8 @@ export function normalizeISSN(raw?: unknown): string | undefined {
   if (!raw || typeof raw !== "string")
     return undefined;
 
-  const cleaned = raw.trim().toUpperCase().replace(/[^0-9X]/g, "");
-  if (cleaned.length !== 8)
+  const cleaned = raw.trim().toUpperCase().replace(/-/g, "");
+  if (!/^\d{7}[\dX]$/.test(cleaned) || [...cleaned].reduce((sum, char, index) => sum + (char === "X" ? 10 : Number(char)) * (8 - index), 0) % 11 !== 0)
     return undefined;
 
   return `${cleaned.slice(0, 4)}-${cleaned.slice(4)}`;
@@ -41,7 +41,6 @@ export async function fetchISSNFromOpenAlex(opts: ResolveISSNOptions): Promise<s
       const url = `https://api.openalex.org/works/https://doi.org/${encodeURIComponent(cleanDOI)}?select=primary_location`;
       debug?.(`[OpenAlex] Fetching work by DOI: ${cleanDOI}`);
       const res = await requestCachedGET(url, {
-        headers: { "User-Agent": "Zotero MetaFlow (mailto:contact@zotero-flow.org)" },
         timeout: 10_000,
       }, signal);
       if (res && (res.status === 200 || res.status === undefined)) {
@@ -56,6 +55,7 @@ export async function fetchISSNFromOpenAlex(opts: ResolveISSNOptions): Promise<s
       }
     }
     catch (e) {
+      signal?.throwIfAborted();
       debug?.(`[OpenAlex] Work query failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
@@ -63,15 +63,14 @@ export async function fetchISSNFromOpenAlex(opts: ResolveISSNOptions): Promise<s
   // 2. Query by publicationTitle
   if (publicationTitle?.trim()) {
     try {
-      const url = `https://api.openalex.org/sources?search=${encodeURIComponent(publicationTitle.trim())}&per-page=1&select=issn_l,issn`;
+      const url = `https://api.openalex.org/sources?search=${encodeURIComponent(publicationTitle.trim())}&per-page=5&select=display_name,issn_l,issn`;
       debug?.(`[OpenAlex] Searching source by publicationTitle: ${publicationTitle}`);
       const res = await requestCachedGET(url, {
-        headers: { "User-Agent": "Zotero MetaFlow (mailto:contact@zotero-flow.org)" },
         timeout: 10_000,
       }, signal);
       if (res && (res.status === 200 || res.status === undefined)) {
         const body = JSON.parse(res.response || res.responseText || "{}");
-        const source = body.results?.[0];
+        const source = body.results?.find((entry: any) => sameJournal(entry.display_name, publicationTitle));
         const candidate = source?.issn_l || source?.issn?.[0];
         const normalized = normalizeISSN(candidate);
         if (normalized) {
@@ -81,6 +80,7 @@ export async function fetchISSNFromOpenAlex(opts: ResolveISSNOptions): Promise<s
       }
     }
     catch (e) {
+      signal?.throwIfAborted();
       debug?.(`[OpenAlex] Source search failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
@@ -98,16 +98,15 @@ export async function fetchISSNFromCrossref(opts: ResolveISSNOptions): Promise<s
   // 1. Query by DOI
   if (cleanDOI) {
     try {
-      const url = `https://api.crossref.org/works/${encodeURIComponent(cleanDOI)}?select=ISSN,issn-type`;
+      const url = `https://api.crossref.org/works/${encodeURIComponent(cleanDOI)}`;
       debug?.(`[Crossref] Fetching work by DOI: ${cleanDOI}`);
       const res = await requestCachedGET(url, {
-        headers: { "User-Agent": "Zotero MetaFlow (mailto:contact@zotero-flow.org)" },
         timeout: 10_000,
       }, signal);
       if (res && (res.status === 200 || res.status === undefined)) {
         const body = JSON.parse(res.response || res.responseText || "{}");
         const message = body.message;
-        const candidate = message?.ISSN?.[0] || message?.["issn-type"]?.[0]?.value;
+        const candidate = [...(message?.ISSN || []), ...(message?.["issn-type"] || []).map((entry: any) => entry.value)].find(value => normalizeISSN(value));
         const normalized = normalizeISSN(candidate);
         if (normalized) {
           debug?.(`[Crossref] Resolved ISSN via DOI: ${normalized}`);
@@ -116,6 +115,7 @@ export async function fetchISSNFromCrossref(opts: ResolveISSNOptions): Promise<s
       }
     }
     catch (e) {
+      signal?.throwIfAborted();
       debug?.(`[Crossref] Work query failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
@@ -123,16 +123,15 @@ export async function fetchISSNFromCrossref(opts: ResolveISSNOptions): Promise<s
   // 2. Query by publicationTitle
   if (publicationTitle?.trim()) {
     try {
-      const url = `https://api.crossref.org/journals?query=${encodeURIComponent(publicationTitle.trim())}&rows=1`;
+      const url = `https://api.crossref.org/works?query.container-title=${encodeURIComponent(publicationTitle.trim())}&filter=type:journal-article&rows=5&select=container-title,ISSN,issn-type`;
       debug?.(`[Crossref] Searching journal by title: ${publicationTitle}`);
       const res = await requestCachedGET(url, {
-        headers: { "User-Agent": "Zotero MetaFlow (mailto:contact@zotero-flow.org)" },
         timeout: 10_000,
       }, signal);
       if (res && (res.status === 200 || res.status === undefined)) {
         const body = JSON.parse(res.response || res.responseText || "{}");
-        const journal = body.message?.items?.[0];
-        const candidate = journal?.ISSN?.[0] || journal?.["issn-type"]?.[0]?.value;
+        const journal = body.message?.items?.find((entry: any) => entry["container-title"]?.some((title: string) => sameJournal(title, publicationTitle)));
+        const candidate = [...(journal?.ISSN || []), ...(journal?.["issn-type"] || []).map((entry: any) => entry.value)].find(value => normalizeISSN(value));
         const normalized = normalizeISSN(candidate);
         if (normalized) {
           debug?.(`[Crossref] Resolved ISSN via publicationTitle: ${normalized}`);
@@ -141,6 +140,7 @@ export async function fetchISSNFromCrossref(opts: ResolveISSNOptions): Promise<s
       }
     }
     catch (e) {
+      signal?.throwIfAborted();
       debug?.(`[Crossref] Journal query failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
@@ -148,21 +148,24 @@ export async function fetchISSNFromCrossref(opts: ResolveISSNOptions): Promise<s
   return undefined;
 }
 
-/**
- * Main resolver: tries OpenAlex first, falls back to Crossref.
- */
+function sameJournal(actual: unknown, expected: string | undefined) {
+  const normalize = (value: string) => value.normalize("NFKC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+  return typeof actual === "string" && Boolean(expected?.trim()) && normalize(actual) === normalize(expected!);
+}
+
+/** Prefer DOI evidence from either provider before searching journal names. */
 export async function resolveMissingISSN(opts: ResolveISSNOptions): Promise<ResolveISSNResult | null> {
-  // 1. Try OpenAlex
-  const openAlexISSN = await fetchISSNFromOpenAlex(opts);
-  if (openAlexISSN) {
-    return { issn: openAlexISSN, source: "OpenAlex" };
+  opts.signal?.throwIfAborted();
+  for (const query of [{ ...opts, publicationTitle: undefined }, { ...opts, doi: undefined }]) {
+    if (!query.doi && !query.publicationTitle?.trim())
+      continue;
+    const crossref = await fetchISSNFromCrossref(query);
+    if (crossref)
+      return { issn: crossref, source: "Crossref" };
+    opts.signal?.throwIfAborted();
+    const openalex = await fetchISSNFromOpenAlex(query);
+    if (openalex)
+      return { issn: openalex, source: "OpenAlex" };
   }
-
-  // 2. Fall back to Crossref
-  const crossrefISSN = await fetchISSNFromCrossref(opts);
-  if (crossrefISSN) {
-    return { issn: crossrefISSN, source: "Crossref" };
-  }
-
   return null;
 }

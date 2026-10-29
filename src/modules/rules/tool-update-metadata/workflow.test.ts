@@ -1,11 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ToolUpdateMetadata } from "./index";
+import { resolveMissingISSN } from "./issn-resolver";
 import { services } from "./services";
 
+vi.mock("./issn-resolver", () => ({ resolveMissingISSN: vi.fn() }));
 vi.mock("./services", () => ({ services: [] }));
 vi.mock("./identifiers", async importOriginal => ({ ...await importOriginal<typeof import("./identifiers")>(), extractIdentifiers: (item: any) => ({ DOI: item.getField("DOI") }), isPreprint: () => false }));
 vi.mock("../../../utils/locale", () => ({ getString: (id: string) => id }));
-vi.mock("../../../utils/zotero", () => ({ isFieldValidForItemType: (field: string, type: string | number) => ["title", "date", "publicationTitle", "DOI", ...type === 2 ? [] : ["volume"]].includes(field) }));
+vi.mock("../../../utils/zotero", () => ({ isFieldValidForItemType: (field: string, type: string | number) => ["ISSN", "title", "date", "publicationTitle", "DOI", ...type === 2 ? [] : ["volume"]].includes(field) }));
 
 function createItem() {
   const fields: Record<string, any> = { itemType: "journalArticle", title: "Original title", DOI: "10.1234/original", creators: [] };
@@ -27,11 +29,35 @@ function run(item: ReturnType<typeof createItem>, mode: "blank" | "all" = "blank
 }
 beforeEach(() => {
   services.splice(0);
-  vi.stubGlobal("Zotero", { CreatorTypes: { getID: () => 1, isValidForItemType: () => true }, ItemTypes: { getID: (type: string) => type === "webpage" ? 2 : 1 }, ItemFields: { getID: (field: string) => ["title", "date", "publicationTitle", "DOI", "volume"].includes(field) ? 1 : false } });
+  vi.mocked(resolveMissingISSN).mockReset().mockResolvedValue(null);
+  vi.stubGlobal("Zotero", { CreatorTypes: { getID: () => 1, isValidForItemType: () => true }, ItemTypes: { getID: (type: string) => type === "webpage" ? 2 : 1 }, ItemFields: { getID: (field: string) => ["ISSN", "title", "date", "publicationTitle", "DOI", "volume"].includes(field) ? 1 : false } });
 });
 afterEach(() => vi.unstubAllGlobals());
 
 describe("trusted metadata update workflow", () => {
+  it("fills blank ISSN even when no article metadata service succeeds", async () => {
+    const item = createItem();
+    item.setField("ISSN", "  ");
+    vi.mocked(resolveMissingISSN).mockResolvedValue({ issn: "0028-0836", source: "Crossref" });
+    await run(item).pending;
+    expect(item.getField("ISSN")).toBe("0028-0836");
+  });
+  it("preserves ISSN edited during lookup", async () => {
+    const item = createItem();
+    vi.mocked(resolveMissingISSN).mockImplementation(async () => {
+      item.setField("ISSN", "1359-6454");
+      return { issn: "0028-0836", source: "Crossref" };
+    });
+    await run(item).pending;
+    expect(item.getField("ISSN")).toBe("1359-6454");
+  });
+  it("does not query ISSN for existing values or creator-only updates", async () => {
+    const item = createItem();
+    item.setField("ISSN", "1359-6454");
+    await run(item, "all").pending;
+    await run(createItem(), "blank", { creatorsOnly: true }).pending;
+    expect(resolveMissingISSN).not.toHaveBeenCalled();
+  });
   const authors = [{ creatorType: "author", firstName: "Ada", lastName: "Lovelace" }, { creatorType: "author", firstName: "Grace", lastName: "Hopper" }];
   it.each([{ existing: [] }, { existing: [authors[0]] }, { existing: [{ creatorType: "author", lastName: "Incorrect" }] }])("repairs missing, partial and incorrect authors without overwriting ordinary fields", async ({ existing }) => {
     const item = createItem();

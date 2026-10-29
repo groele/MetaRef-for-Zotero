@@ -1,7 +1,7 @@
 import type { TransformedData } from "../rules/tool-update-metadata/services/base-service";
 import { normalizeDOI, titlesAgree } from "../rules/tool-update-metadata/policy";
 
-export const REVIEW_FIELDS = ["title", "creators", "date", "publicationTitle", "proceedingsTitle", "journalAbbreviation", "volume", "issue", "pages", "DOI", "ISBN", "publisher", "place", "edition", "language", "url", "abstractNote"] as const;
+export const REVIEW_FIELDS = ["title", "creators", "date", "publicationTitle", "proceedingsTitle", "journalAbbreviation", "volume", "issue", "pages", "DOI", "ISSN", "ISBN", "publisher", "place", "edition", "language", "url", "abstractNote"] as const;
 export type ReviewField = typeof REVIEW_FIELDS[number];
 export interface IdentifierCandidate {
   kind: "DOI" | "arXiv" | "ISBN" | "Title" | "PMID" | "PMCID";

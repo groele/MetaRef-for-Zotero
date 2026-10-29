@@ -1,3 +1,4 @@
+import { ClipboardHelper } from "zotero-plugin-toolkit";
 import { getString } from "./locale";
 import { getPref } from "./prefs";
 
@@ -39,65 +40,53 @@ export function showBottomLeftNotice(_doc?: Document, message = "期刊索引图
   showNativeNotice(message);
 }
 
-export function shareJournalCard(data: JournalCardData, options?: { mode?: "silent" | "modal"; silentFormat?: "image" | "text" }) {
+export async function shareJournalCard(data: JournalCardData, options?: { mode?: "silent" | "modal"; silentFormat?: "image" | "text" }): Promise<"image" | "text" | "failed"> {
   const { doc, publication } = data;
   if (!doc)
-    return;
-
+    return "failed";
   const mode = options?.mode || getPref("insights.shareMode" as any, "silent");
-  const silentFormat = options?.silentFormat || getPref("insights.shareSilentFormat" as any, "image");
-
+  const format = options?.silentFormat || getPref("insights.shareSilentFormat" as any, "image");
   const win = doc.defaultView;
   const cardText = generateCardText(data);
-
-  if (mode === "silent") {
-    if (silentFormat === "text") {
-      copyTextToClipboard(win, cardText);
-      showNativeNotice("期刊索引文本已复制");
-      return;
+  const canvas = mode === "modal" || format === "image" ? await renderCardCanvas(doc, data) : null;
+  const blobPromise = canvas?.toBlob ? new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/png")) : null;
+  let result: "image" | "text" | "failed" = "failed";
+  try {
+    if (format === "image" || mode === "modal") {
+      try {
+        await copyCardImage(win, canvas, blobPromise, cardText);
+        result = "image";
+      }
+      catch {
+        await copyTextToClipboard(win, cardText);
+        result = "text";
+      }
     }
-
-    copyTextToClipboard(win, cardText);
-    const canvas = renderCardCanvas(doc, data);
-    if (canvas && typeof canvas.toBlob === "function") {
-      new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/png")).then((blob) => {
-        const nav = win?.navigator as any;
-        if (blob && nav?.clipboard?.write && typeof (win as any)?.ClipboardItem !== "undefined") {
-          void nav.clipboard.write([
-            new (win as any).ClipboardItem({ "image/png": blob }),
-          ]).catch(() => {});
-        }
-      });
+    else {
+      await copyTextToClipboard(win, cardText);
+      result = "text";
     }
-    showNativeNotice("期刊索引图片已复制");
+  }
+  catch { result = "failed"; }
+  const message = getString(`journal-share-${result === "image" ? "image-copied" : result === "text" ? "text-copied" : "failed"}` as any);
+  showNativeNotice(message);
+  if (mode === "modal")
+    showShareModal({ doc, win, publication, canvas, cardText, blobPromise, message });
+  return result;
+}
+
+async function copyCardImage(win: Window | null | undefined, canvas: HTMLCanvasElement | null, blobPromise: Promise<Blob | null> | null, text: string) {
+  if (!canvas)
+    throw new Error("Canvas unavailable");
+  if (typeof Components !== "undefined") {
+    new ClipboardHelper().addText(text, "text/unicode").addImage(canvas.toDataURL("image/png")).copy();
     return;
   }
-
-  // Modal mode: copy and display preview modal
-  copyTextToClipboard(win, cardText);
-  const canvas = renderCardCanvas(doc, data);
-  let blobPromise: Promise<Blob | null> | null = null;
-  if (canvas && typeof canvas.toBlob === "function") {
-    blobPromise = new Promise(resolve => canvas.toBlob(resolve, "image/png"));
-    blobPromise.then((blob) => {
-      const nav = win?.navigator as any;
-      if (blob && nav?.clipboard?.write && typeof (win as any)?.ClipboardItem !== "undefined") {
-        void nav.clipboard.write([
-          new (win as any).ClipboardItem({ "image/png": blob }),
-        ]).catch(() => {});
-      }
-    });
-  }
-
-  showNativeNotice("期刊索引卡片已生成");
-  showShareModal({
-    doc,
-    win,
-    publication,
-    canvas,
-    cardText,
-    blobPromise,
-  });
+  const blob = await blobPromise;
+  const WindowClipboardItem = (win as any)?.ClipboardItem;
+  if (!blob || !WindowClipboardItem || !win?.navigator.clipboard?.write)
+    throw new Error("Image clipboard unavailable");
+  await win.navigator.clipboard.write([new WindowClipboardItem({ "image/png": blob })]);
 }
 
 function generateCardText(data: JournalCardData): string {
@@ -134,7 +123,7 @@ function generateCardText(data: JournalCardData): string {
   return lines.join("\n");
 }
 
-function copyTextToClipboard(win: Window | null | undefined, text: string) {
+async function copyTextToClipboard(win: Window | null | undefined, text: string) {
   try {
     if (typeof Components !== "undefined" && (Components as any)?.classes) {
       const helper = (Components.classes as any)["@mozilla.org/widget/clipboardhelper;1"].getService(
@@ -148,16 +137,34 @@ function copyTextToClipboard(win: Window | null | undefined, text: string) {
 
   const nav = win?.navigator as any;
   if (nav?.clipboard?.writeText) {
-    nav.clipboard.writeText(text).catch(() => {});
+    await nav.clipboard.writeText(text);
+    return;
   }
+  throw new Error("Text clipboard unavailable");
 }
 
-function renderCardCanvas(doc: Document, data: JournalCardData): HTMLCanvasElement | null {
+export async function renderCardCanvas(doc: Document, data: JournalCardData): Promise<HTMLCanvasElement | null> {
   try {
     const canvas = doc.createElementNS("http://www.w3.org/1999/xhtml", "canvas") as HTMLCanvasElement;
     const rawCtx = canvas.getContext("2d");
     if (!rawCtx)
       return null;
+    const logo = doc.createElementNS("http://www.w3.org/1999/xhtml", "img") as HTMLImageElement;
+    await new Promise<void>((resolve, reject) => {
+      const timer = doc.defaultView!.setTimeout(() => {
+        logo.onload = logo.onerror = null;
+        reject(new Error("Plugin icon load timed out"));
+      }, 5000);
+      logo.onload = () => {
+        doc.defaultView!.clearTimeout(timer);
+        resolve();
+      };
+      logo.onerror = () => {
+        doc.defaultView!.clearTimeout(timer);
+        reject(new Error("Plugin icon unavailable"));
+      };
+      logo.src = `${rootURI}content/icons/metaref-96.png`;
+    });
     const ctx = rawCtx as unknown as CanvasRenderingContext2D;
 
     const scale = 2; // Retina scale
@@ -217,16 +224,13 @@ function renderCardCanvas(doc: Document, data: JournalCardData): HTMLCanvasEleme
     // Header: Brand & Date
     let drawY = padding;
 
-    // Logo accent dot
-    ctx.beginPath();
-    ctx.arc(padding + 6, drawY + 8, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#3b82f6";
-    ctx.fill();
+    // Use the same packaged icon as the add-on manager, including in exported PNGs.
+    ctx.drawImage(logo, padding, drawY - 1, 18, 18);
 
     ctx.font = "600 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     ctx.fillStyle = "#2563eb";
     ctx.textAlign = "left";
-    ctx.fillText("Zotero MetaFlow · 期刊索引", padding + 16, drawY + 12);
+    ctx.fillText("Zotero MetaFlow · 期刊索引", padding + 24, drawY + 12);
 
     // Date
     const today = new Date().toISOString().slice(0, 10);
@@ -402,10 +406,12 @@ interface ModalOptions {
   canvas: HTMLCanvasElement | null;
   cardText: string;
   blobPromise: Promise<Blob | null> | null;
+  message: string;
 }
 
 function showShareModal(opts: ModalOptions) {
   const { doc, win, publication, canvas, cardText, blobPromise } = opts;
+  doc.getElementById("metaflow-share-card-modal")?.dispatchEvent(new Event("metaflow-share-close"));
   const overlay = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
   overlay.setAttribute("id", "metaflow-share-card-modal");
   overlay.setAttribute("style", [
@@ -450,13 +456,24 @@ function showShareModal(opts: ModalOptions) {
   closeBtn.textContent = "✕";
   closeBtn.setAttribute("type", "button");
   closeBtn.setAttribute("style", "border:none;background:transparent;font-size:16px;color:var(--fill-secondary,#64748b);cursor:pointer;padding:4px 8px;border-radius:4px;");
-  closeBtn.addEventListener("click", () => overlay.remove());
+  const escHandler = (e: KeyboardEvent) => {
+    if (e.key === "Escape")
+      close();
+  };
+  function close() {
+    overlay.remove();
+    doc.removeEventListener("keydown", escHandler);
+    win?.removeEventListener("unload", close);
+  }
+  overlay.addEventListener("metaflow-share-close", close);
+  closeBtn.addEventListener("click", close);
 
   topBar.append(modalTitle, closeBtn);
 
   // Toast Notice Bar
   const toastBar = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
-  toastBar.textContent = "✓ 已生成期刊卡片并复制到剪贴板，可直接粘贴！";
+  toastBar.textContent = opts.message;
+  toastBar.setAttribute("role", "status");
   toastBar.setAttribute("style", "background:#ecfdf5;color:#065f46;font-size:12px;padding:8px 16px;text-align:center;font-weight:500;border-bottom:1px solid #d1fae5;");
 
   // Preview Body
@@ -489,17 +506,11 @@ function showShareModal(opts: ModalOptions) {
   copyImgBtn.setAttribute("style", btnStyle);
   copyImgBtn.addEventListener("click", () => {
     void (async () => {
-      const nav = win?.navigator as any;
-      if (blobPromise && nav?.clipboard?.write && typeof (win as any)?.ClipboardItem !== "undefined") {
-        const blob = await blobPromise;
-        if (blob) {
-          await nav.clipboard.write([new (win as any).ClipboardItem({ "image/png": blob })]);
-          toastBar.textContent = "✓ 图片已再次复制到剪贴板！";
-          return;
-        }
+      try {
+        await copyCardImage(win, canvas, blobPromise, cardText);
+        toastBar.textContent = getString("journal-share-image-copied" as any);
       }
-      copyTextToClipboard(win, cardText);
-      toastBar.textContent = "✓ 文本卡片已复制到剪贴板！";
+      catch { toastBar.textContent = getString("journal-share-failed" as any); }
     })();
   });
 
@@ -524,9 +535,12 @@ function showShareModal(opts: ModalOptions) {
   copyTxtBtn.textContent = "📄 复制文本";
   copyTxtBtn.setAttribute("type", "button");
   copyTxtBtn.setAttribute("style", btnStyle);
-  copyTxtBtn.addEventListener("click", () => {
-    copyTextToClipboard(win, cardText);
-    toastBar.textContent = "✓ 格式化文本已复制到剪贴板！";
+  copyTxtBtn.addEventListener("click", async () => {
+    try {
+      await copyTextToClipboard(win, cardText);
+      toastBar.textContent = getString("journal-share-text-copied" as any);
+    }
+    catch { toastBar.textContent = getString("journal-share-failed" as any); }
   });
 
   footer.append(copyImgBtn, saveImgBtn, copyTxtBtn);
@@ -537,17 +551,11 @@ function showShareModal(opts: ModalOptions) {
   // Close when clicking backdrop
   overlay.addEventListener("click", (e: MouseEvent) => {
     if (e.target === overlay)
-      overlay.remove();
+      close();
   });
 
-  // Close on ESC key
-  const escHandler = (e: KeyboardEvent) => {
-    if (e.key === "Escape") {
-      overlay.remove();
-      doc.removeEventListener("keydown", escHandler);
-    }
-  };
   doc.addEventListener("keydown", escHandler);
+  win?.addEventListener("unload", close, { once: true });
 
   const host = doc.getElementById("zotero-pane") || doc.documentElement || doc.body;
   host?.append(overlay);

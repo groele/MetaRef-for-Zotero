@@ -30,7 +30,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     const originalDOI = normalizeDOI(identifiers.DOI);
     const allowRelatedDOI = isPreprint(item, identifiers);
     debug("Identifiers: ", identifiers);
-    if (Object.entries(identifiers).length === 0 && !String(item.getField("title") || "").trim()) {
+    if (Object.entries(identifiers).length === 0 && !String(item.getField("title") || "").trim() && !String(item.getField("publicationTitle") || "").trim()) {
       report({
         level: "error",
         message: getString("rule-tool-update-metadata-no-identifiers"),
@@ -153,6 +153,23 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
         const message = error instanceof Error ? error.message : String(error);
         debug(`Service ${service.name} failed: ${message}`);
         errorMessage += `${service.name}: ${message}\n`;
+      }
+    }
+
+    // Resolve independently of article metadata; merge before the shared edit guards.
+    if (!options.creatorsOnly && isFieldValidForItemType("ISSN", item.itemType)
+      && !String(original.ISSN || "").trim() && !String(data?.ISSN || "").trim()) {
+      const resolved = await resolveMissingISSN({
+        doi: originalDOI,
+        publicationTitle: String(original.publicationTitle || data?.publicationTitle || ""),
+        signal,
+        debug,
+      });
+      signal?.throwIfAborted();
+      if (resolved) {
+        data = { ...data, ISSN: resolved.issn };
+        sources.set("ISSN", resolved.source);
+        successfulServices.add(resolved.source);
       }
     }
 
@@ -285,7 +302,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
         let newFieldValue = "";
         const oldFieldValue = item.getField(field);
 
-        if (options.mode !== "all" && !!oldFieldValue)
+        if (options.mode !== "all" && !!String(oldFieldValue || "").trim())
           continue;
 
         if (!unchanged(field, oldFieldValue))
@@ -327,33 +344,6 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     const { itemType, creators, ...fields } = data;
     if (!options.creatorsOnly)
       applyItemFields(fields);
-
-    // 5. Enrich missing ISSN for journalArticle via OpenAlex / Crossref
-    if (!options.creatorsOnly && isFieldValidForItemType("ISSN", item.itemType)) {
-      const oldISSN = item.getField("ISSN");
-      if (!oldISSN || (options.mode === "all" && !data.ISSN)) {
-        try {
-          const resolved = await resolveMissingISSN({
-            doi: identifiers.DOI || (item.getField("DOI") as string),
-            publicationTitle: (item.getField("publicationTitle") as string) || (data.publicationTitle as string),
-            signal,
-            debug,
-          });
-          if (resolved) {
-            item.setField("ISSN", resolved.issn);
-            report({
-              level: "info",
-              field: "ISSN",
-              source: resolved.source,
-              message: getString("rule-tool-update-metadata-field-source", { args: { field: "ISSN", source: resolved.source } }),
-            });
-          }
-        }
-        catch (e) {
-          debug(`ISSN enrichment skipped or failed: ${e instanceof Error ? e.message : String(e)}`);
-        }
-      }
-    }
 
     // if (options.lint)
     //   addon.runner.add({ rules: "standard", items: item });

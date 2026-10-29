@@ -1,68 +1,31 @@
-import { describe, expect, it } from "vitest";
-import { shareJournalCard, showBottomLeftNotice, showNativeNotice } from "./journal-card-share";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { shareJournalCard } from "./journal-card-share";
 
-describe("journal-card-share", () => {
-  it("safely handles null or headless document without throwing", () => {
-    expect(() => {
-      showNativeNotice("测试通知");
-      showBottomLeftNotice(undefined as any);
-      shareJournalCard({
-        doc: undefined as any,
-        publication: "Acta Materialia",
-        displayedRankings: [
-          { key: "jcr", labelID: "field-jcr", value: "Q1" },
-          { key: "cas", labelID: "field-cas", value: "材料科学 TOP" },
-          { key: "impactFactor", labelID: "field-impactFactor", value: "9.3" },
-        ],
-        sciRanking: { key: "sci", labelID: "field-sci", value: "是" },
-        rows: [
-          { label: "ESI 学科", value: "材料科学", matched: true },
-          { label: "Nature Index", value: "暂无匹配记录", matched: false },
-        ],
-        matchBases: ["匹配依据·ISSN · 13596454"],
-        issn: "13596454",
-      });
-    }).not.toThrow();
-  });
-
-  it("supports silent text, silent image and modal sharing modes", () => {
-    const makeElement = () => ({
-      setAttribute: () => {},
-      append: () => {},
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      remove: () => {},
-      style: {},
-      replaceChildren: () => {},
+vi.mock("./locale", () => ({ getString: (id: string) => id }));
+afterEach(() => vi.unstubAllGlobals());
+const data = (doc: any) => ({ doc, publication: "Nature", displayedRankings: [], rows: [], matchBases: [] });
+const document = (writeText: any, canvas?: any) => ({ defaultView: { navigator: { clipboard: { writeText } } }, createElementNS: () => canvas || { getContext: () => null } });
+describe("sharing completion", () => {
+  it("reports text fallback only after clipboard completion", async () => {
+    let finish!: () => void;
+    const write = vi.fn(() => new Promise<void>((resolve) => {
+      finish = resolve;
+    }));
+    const pending = shareJournalCard(data(document(write)), { mode: "silent", silentFormat: "image" });
+    for (let i = 0; i < 6; i++)
+      await Promise.resolve();
+    let settled = false;
+    void pending.then(() => {
+      settled = true;
     });
-
-    const fakeDoc = {
-      createElementNS: () => makeElement(),
-      getElementById: () => null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-      documentElement: makeElement(),
-      defaultView: {
-        navigator: {
-          clipboard: {
-            writeText: async () => {},
-          },
-        },
-      },
-    } as unknown as Document;
-
-    const data = {
-      doc: fakeDoc,
-      publication: "Nature",
-      displayedRankings: [{ key: "jcr", labelID: "field-jcr", value: "Q1" }],
-      rows: [],
-      matchBases: [],
-    };
-
-    expect(() => {
-      shareJournalCard(data, { mode: "silent", silentFormat: "text" });
-      shareJournalCard(data, { mode: "silent", silentFormat: "image" });
-      shareJournalCard(data, { mode: "modal" });
-    }).not.toThrow();
+    expect(settled).toBe(false);
+    finish();
+    expect(await pending).toBe("text");
+  });
+  it("reports clipboard rejection as failure", async () => {
+    expect(await shareJournalCard(data(document(vi.fn().mockRejectedValue(new Error("denied")))), { mode: "silent", silentFormat: "text" })).toBe("failed");
+  });
+  it("handles unavailable document", async () => {
+    expect(await shareJournalCard(data(null))).toBe("failed");
   });
 });

@@ -88,3 +88,10 @@ journal-share-save-image = Save Image
 journal-share-copy-text = Copy Text
 
 journal-share-copied-short = Copied!
+
+journal-share-image-copied = Image copied. Ready to paste.
+journal-share-text-copied = Text card copied (image unavailable or text selected).
+journal-share-failed = Copy failed. Retry or save the image.
+journal-share-busy = Generating and copying card…
+
+journal-issn-unresolved = No verified ISSN found, or lookup services unavailable. The field remains blank. Check the full journal name or DOI and retry.

@@ -13,6 +13,9 @@ function record(id: number, overrides: Partial<DuplicateRecord["data"]> = {}, li
 }
 
 describe("review identity policy", () => {
+  it("includes an ISSN returned by metadata providers in review changes", () => {
+    expect(reviewChanges({ ISSN: "" }, { ISSN: "1530-6984" })).toContainEqual({ field: "ISSN", before: "", after: "1530-6984" });
+  });
   it("extracts contextual DOI candidates without treating a reference as verified", () => {
     const candidates = identifiersFromText("Title DOI: 10.1000/abc(x)).\nReferences: 10.2000/other; arXiv:2403.12345v2", "cached PDF");
     expect(candidates.map(candidate => candidate.value)).toEqual(["10.1000/abc(x)", "10.2000/other", "2403.12345v2"]);

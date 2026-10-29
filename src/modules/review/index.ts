@@ -1,8 +1,8 @@
 import type { TransformedData } from "../rules/tool-update-metadata/services/base-service";
 import type { BatchResult } from "../runner";
 import type { MetadataDecision, ReviewProposal } from "./policy";
-
 import { mapBatch } from "../../utils/batch-map";
+
 import { getString } from "../../utils/locale";
 import { createLogger } from "../../utils/logger";
 import { getPref } from "../../utils/prefs";
@@ -10,6 +10,7 @@ import { normalizedConcurrency } from "../../utils/rule-execution";
 import { recordRuntimeResult } from "../../utils/runtime-data-storage";
 import { updateBatchFeedback } from "../batch-feedback";
 import { defineRule } from "../rules/rule-base";
+import { CompleteMissingISSN } from "../rules/tool-update-metadata/complete-issn";
 import { applyReviewedMetadata, createRelatedVersion, selectionIssue } from "./apply";
 import { automaticIdentifier, automaticSelection, hasLocalCorroboration } from "./automatic-policy";
 import { chooseDuplicateBatch, runDuplicateBatch } from "./bulk-review";
@@ -260,7 +261,7 @@ export async function runReviewCommand(command: ReviewCommand, items: Zotero.Ite
   let approved: ReviewOptions | undefined;
   const version = command === "tool-review-preprint";
   const rule = reviewRule(version, options => approved = options, integrated, features);
-  const result = await addon.runner.add({ items: eligible, rules: [rule], silent: true, history: features.history, signal: features.signal });
+  const result = await addon.runner.add({ items: eligible, rules: [rule, ...!version && !features.creatorsOnly ? [CompleteMissingISSN] : []], silent: true, history: features.history, signal: features.signal });
   if (result && !result.cancelled && !features.signal?.aborted && approved && addon.data.alive) {
     const related = approved.selections.filter(selection => selection.action === "related" && !selectionIssue(selection));
     if (related.length) {

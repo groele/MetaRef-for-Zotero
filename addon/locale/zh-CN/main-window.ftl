@@ -88,3 +88,10 @@ journal-share-save-image = 保存图片
 journal-share-copy-text = 复制文本
 
 journal-share-copied-short = 已复制！
+
+journal-share-image-copied = 图片已复制，可粘贴分享
+journal-share-text-copied = 已复制文本卡片（图片不可用或已选择文本）
+journal-share-failed = 复制失败，请重试或保存图片
+journal-share-busy = 正在生成并复制卡片…
+
+journal-issn-unresolved = 未查到可确认的 ISSN，或查询服务不可用；已保留空值。请核对期刊全名或 DOI 后重试。

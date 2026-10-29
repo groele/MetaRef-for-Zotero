@@ -196,7 +196,7 @@ function createCheckSvgIcon(doc: Document) {
   svg.setAttribute("stroke-width", "2.5");
   svg.setAttribute("stroke-linecap", "round");
   svg.setAttribute("stroke-linejoin", "round");
-  svg.setAttribute("style", "width:15px;height:15px;display:block;pointer-events:none;color:#10b981;stroke:#10b981;");
+  svg.setAttribute("style", "width:15px;height:15px;display:block;pointer-events:none;color:inherit;stroke:currentColor;");
 
   const polyline = doc.createElementNS(svgNS, "polyline");
   polyline.setAttribute("points", "20 6 9 17 4 12");
@@ -218,34 +218,10 @@ function createShareSvgIcon(doc: Document) {
   svg.setAttribute("stroke-linejoin", "round");
   svg.setAttribute("style", "width:15px;height:15px;display:block;pointer-events:none;color:inherit;stroke:currentColor;");
 
-  const c1 = doc.createElementNS(svgNS, "circle");
-  c1.setAttribute("cx", "18");
-  c1.setAttribute("cy", "5");
-  c1.setAttribute("r", "3");
-
-  const c2 = doc.createElementNS(svgNS, "circle");
-  c2.setAttribute("cx", "6");
-  c2.setAttribute("cy", "12");
-  c2.setAttribute("r", "3");
-
-  const c3 = doc.createElementNS(svgNS, "circle");
-  c3.setAttribute("cx", "18");
-  c3.setAttribute("cy", "19");
-  c3.setAttribute("r", "3");
-
-  const l1 = doc.createElementNS(svgNS, "line");
-  l1.setAttribute("x1", "8.59");
-  l1.setAttribute("y1", "13.51");
-  l1.setAttribute("x2", "15.42");
-  l1.setAttribute("y2", "17.49");
-
-  const l2 = doc.createElementNS(svgNS, "line");
-  l2.setAttribute("x1", "15.41");
-  l2.setAttribute("y1", "6.51");
-  l2.setAttribute("x2", "8.59");
-  l2.setAttribute("y2", "10.49");
-
-  svg.append(c1, c2, c3, l1, l2);
+  const path = doc.createElementNS(svgNS, "path");
+  path.setAttribute("d", "M12 15V3m-4 4 4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6");
+  svg.setAttribute("aria-hidden", "true");
+  svg.append(path);
   return svg;
 }
 
@@ -288,53 +264,89 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   headerRow.setAttribute("style", "display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;gap:8px;");
   const journalTitle = text("h2", publication || getString("journal-insights-unnamed"), "font-size:14px;font-weight:600;margin:0;line-height:1.5;white-space:pre-wrap;flex:1;min-width:0;");
   journalTitle.setAttribute("data-journal-title", "true");
-  const shareBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLElement;
+  const shareBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLButtonElement;
   shareBtn.setAttribute("data-journal-share", "true");
-  shareBtn.setAttribute("type", "button");
-  shareBtn.setAttribute("title", getString("journal-share-card" as any) || "分享期刊卡片");
-  shareBtn.setAttribute("aria-label", "分享期刊卡片");
-  shareBtn.setAttribute("style", "display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;min-height:24px;padding:0;margin:0;border:none;border-radius:4px;background:transparent;color:var(--fill-secondary,#64748b);cursor:pointer;flex-shrink:0;transition:all 0.15s ease;");
+  shareBtn.type = "button";
+  shareBtn.title = getString("journal-share-card" as any);
+  shareBtn.setAttribute("aria-label", shareBtn.title);
+  shareBtn.style.cssText = "display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;padding:0;margin:0;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:8px;background:color-mix(in srgb,currentColor 2%,transparent);color:var(--fill-secondary);cursor:pointer;flex-shrink:0;";
+  const style = doc.createElementNS("http://www.w3.org/1999/xhtml", "style");
+  style.textContent = `
+    [data-journal-share]:hover { background:color-mix(in srgb,currentColor 8%,transparent)!important;color:var(--fill-primary)!important; }
+    [data-journal-share][data-share-success] { color:var(--accent-green,#16803c)!important; }
+    @media(prefers-color-scheme:dark) {
+      [data-journal-share][data-share-success] { color:var(--accent-green,#6ee7b7)!important; }
+    }
+    [data-journal-share]:focus-visible { outline:2px solid var(--fill-primary);outline-offset:2px; }
+    [data-journal-share]:disabled { cursor:progress;opacity:.7; }
+    @media(prefers-reduced-motion:no-preference) {
+      [data-journal-share] { transition:color 160ms ease,background-color 160ms ease,transform 160ms ease; }
+      [data-journal-share]:active { transform:scale(.94); }
+    }`;
+  headerRow.append(style);
   shareBtn.append(createShareSvgIcon(doc));
-  shareBtn.addEventListener("mouseenter", () => {
-    shareBtn.style.background = "var(--fill-quinary)";
-    shareBtn.style.color = "var(--fill-primary)";
-  });
-  shareBtn.addEventListener("mouseleave", () => {
-    shareBtn.style.background = "transparent";
-    shareBtn.style.color = "var(--fill-secondary)";
-  });
-  let resetTimer: ReturnType<typeof setTimeout> | undefined;
-  shareBtn.addEventListener("click", (e: Event) => {
+  let successAnimation: Animation | undefined;
+  let resetTimer: number | undefined;
+  const clearSuccess = () => {
+    successAnimation?.cancel();
+    doc.defaultView?.clearTimeout(resetTimer);
+    doc.defaultView?.removeEventListener("unload", clearSuccess);
+    resetTimer = undefined;
+    successAnimation = undefined;
+  };
+  shareBtn.addEventListener("click", async (e: Event) => {
     e.stopPropagation();
-
-    // Click bounce animation
-    shareBtn.style.transform = "scale(0.78)";
-    setTimeout(() => {
-      shareBtn.style.transform = "scale(1)";
-    }, 120);
-
-    // Switch to green checkmark icon
-    shareBtn.replaceChildren(createCheckSvgIcon(doc));
-    shareBtn.style.color = "#10b981";
-    shareBtn.setAttribute("title", getString("journal-share-copied-short" as any) || "已复制！");
-
-    if (resetTimer)
-      clearTimeout(resetTimer);
-    resetTimer = setTimeout(() => {
-      shareBtn.replaceChildren(createShareSvgIcon(doc));
-      shareBtn.style.color = "var(--fill-secondary,#64748b)";
-      shareBtn.setAttribute("title", getString("journal-share-card" as any) || "分享期刊卡片");
-    }, 1800);
-
-    shareJournalCard({
-      doc,
-      publication: publication || getString("journal-insights-unnamed"),
-      displayedRankings,
-      sciRanking,
-      rows,
-      matchBases,
-      issn,
-    });
+    if (shareBtn.disabled)
+      return;
+    clearSuccess();
+    shareBtn.removeAttribute("data-share-success");
+    shareBtn.replaceChildren(createShareSvgIcon(doc));
+    shareBtn.disabled = true;
+    shareBtn.setAttribute("aria-busy", "true");
+    shareBtn.title = getString("journal-share-busy" as any);
+    const reduced = doc.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    const animation = !reduced
+      ? shareBtn.firstElementChild?.animate?.([
+          { transform: "translateY(0)", opacity: 1 },
+          { transform: "translateY(-3px)", opacity: 0.5 },
+          { transform: "translateY(0)", opacity: 1 },
+        ], { duration: 700, iterations: Infinity })
+      : undefined;
+    try {
+      const result = await shareJournalCard({ doc, publication: publication || getString("journal-insights-unnamed"), displayedRankings, sciRanking, rows, matchBases, issn });
+      if (!shareBtn.isConnected)
+        return;
+      const key = result === "failed" ? "failed" : result === "image" ? "image-copied" : "text-copied";
+      shareBtn.title = getString(`journal-share-${key}` as any);
+      shareBtn.setAttribute("aria-label", shareBtn.title);
+      shareBtn.replaceChildren(result === "failed" ? createShareSvgIcon(doc) : createCheckSvgIcon(doc));
+      if (result !== "failed") {
+        shareBtn.setAttribute("data-share-success", "true");
+        const icon = shareBtn.firstElementChild!;
+        successAnimation = icon.animate(reduced
+          ? [{ opacity: 1 }, { opacity: 1 }]
+          : [
+              { opacity: 1, offset: 0 },
+              { opacity: 1, offset: 0.88 },
+              { opacity: 0, offset: 1 },
+            ], { duration: 1600 });
+        resetTimer = doc.defaultView?.setTimeout(() => {
+          clearSuccess();
+          shareBtn.removeAttribute("data-share-success");
+          shareBtn.replaceChildren(createShareSvgIcon(doc));
+          shareBtn.title = getString("journal-share-card" as any);
+          shareBtn.setAttribute("aria-label", shareBtn.title);
+        }, 1600);
+        doc.defaultView?.addEventListener("unload", clearSuccess, { once: true });
+      }
+      if (!reduced && result !== "failed")
+        shareBtn.firstElementChild?.animate?.([{ transform: "scale(.8)", opacity: 0.4 }, { transform: "scale(1)", opacity: 1 }], { duration: 180, easing: "ease-out" });
+    }
+    finally {
+      animation?.cancel();
+      shareBtn.disabled = false;
+      shareBtn.removeAttribute("aria-busy");
+    }
   });
   headerRow.append(journalTitle, shareBtn);
   body.append(headerRow);
