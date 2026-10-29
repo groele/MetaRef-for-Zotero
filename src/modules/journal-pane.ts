@@ -185,6 +185,50 @@ export function setJournalUpdateResult(itemIDs: number[], result?: BatchResult) 
     queryMessages.delete(queryMessages.keys().next().value!);
 }
 
+function createShareSvgIcon(doc: Document) {
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = doc.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "15");
+  svg.setAttribute("height", "15");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "2");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("style", "width:15px;height:15px;display:block;pointer-events:none;color:inherit;stroke:currentColor;");
+
+  const c1 = doc.createElementNS(svgNS, "circle");
+  c1.setAttribute("cx", "18");
+  c1.setAttribute("cy", "5");
+  c1.setAttribute("r", "3");
+
+  const c2 = doc.createElementNS(svgNS, "circle");
+  c2.setAttribute("cx", "6");
+  c2.setAttribute("cy", "12");
+  c2.setAttribute("r", "3");
+
+  const c3 = doc.createElementNS(svgNS, "circle");
+  c3.setAttribute("cx", "18");
+  c3.setAttribute("cy", "19");
+  c3.setAttribute("r", "3");
+
+  const l1 = doc.createElementNS(svgNS, "line");
+  l1.setAttribute("x1", "8.59");
+  l1.setAttribute("y1", "13.51");
+  l1.setAttribute("x2", "15.42");
+  l1.setAttribute("y2", "17.49");
+
+  const l2 = doc.createElementNS(svgNS, "line");
+  l2.setAttribute("x1", "15.41");
+  l2.setAttribute("y1", "6.51");
+  l2.setAttribute("x2", "8.59");
+  l2.setAttribute("y2", "10.49");
+
+  svg.append(c1, c2, c3, l1, l2);
+  return svg;
+}
+
 async function render({ item, body, doc, setSectionSummary }: Context) {
   if (!item || !supportsRankings(item) || !hasEnabledJournalMetrics() || !getPref("insights.showPane", true))
     return;
@@ -229,8 +273,8 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   shareBtn.setAttribute("type", "button");
   shareBtn.setAttribute("title", getString("journal-share-card" as any) || "分享期刊卡片");
   shareBtn.setAttribute("aria-label", "分享期刊卡片");
-  shareBtn.setAttribute("style", "display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;margin:0;border:none;border-radius:4px;background:transparent;color:var(--fill-secondary);cursor:pointer;flex-shrink:0;transition:all 0.15s ease;");
-  shareBtn.innerHTML = "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"18\" cy=\"5\" r=\"3\"></circle><circle cx=\"6\" cy=\"12\" r=\"3\"></circle><circle cx=\"18\" cy=\"19\" r=\"3\"></circle><line x1=\"8.59\" y1=\"13.51\" x2=\"15.42\" y2=\"17.49\"></line><line x1=\"15.41\" y1=\"6.51\" x2=\"8.59\" y2=\"10.49\"></line></svg>";
+  shareBtn.setAttribute("style", "display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;min-width:24px;min-height:24px;padding:0;margin:0;border:none;border-radius:4px;background:transparent;color:var(--fill-secondary,#64748b);cursor:pointer;flex-shrink:0;transition:all 0.15s ease;");
+  shareBtn.append(createShareSvgIcon(doc));
   shareBtn.addEventListener("mouseenter", () => {
     shareBtn.style.background = "var(--fill-quinary)";
     shareBtn.style.color = "var(--fill-primary)";
