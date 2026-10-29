@@ -32,5 +32,8 @@
     "full theme and width visual matrix",
     "cross-platform",
     "paste into external applications"
-  ]
+  ],
+  "releaseURL": "https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.20",
+  "releaseCommit": "dc6c01fa4d36dc315adbe4088247560b049de45b",
+  "independentReleaseDownload": true
 }
