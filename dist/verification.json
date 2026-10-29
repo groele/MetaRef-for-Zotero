@@ -1,42 +1,42 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.22",
+  "version": "12.6.23",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3487717,
-  "sha256": "8b058af7d1f7644285ec1bac8cb4303c20fdbdb14de5bf8f99fd9326b7cb2d27",
-  "sha512": "258940d680868e4c70e420dcdcab8e0268d8f2eaade41302af08897615215de38c442144d16b5d2b5b681e6b07b7291a15fbb7b6fff79766ad11fce0b2e9b40b",
+  "bytes": 3487747,
+  "sha256": "1bff9b8f31ce69d4d1bd2c36eaffc82a3e15d95acba69bf0e8cfe1042a6627f2",
+  "sha512": "b451bf3000a54c31530a164d9146dcd2a7667ca09f705d34c47f05f19e01534923e816cf067c4ce74790a632b39a3157ef3a0d2e1656cafaf9ae2c2e14367290",
   "entries": 52,
   "zipCRC": "passed",
   "qualityChecks": {
     "productionBuild": "passed",
     "sourceTypes": "passed",
+    "changedFileEslint": "passed",
+    "releaseTagSelfTest": "passed",
     "testTypes": "passed",
     "eslint": "passed",
-    "autocorrect": "passed",
-    "releaseTagSelfTest": "passed"
-  },
-  "githubCI": {
-    "run": "https://github.com/groele/Zotero-MetaFlow/actions/runs/40839278527",
-    "attempt": 2,
-    "build": "passed",
-    "nativeZotero": "217 passed"
+    "autocorrect": "passed"
   },
   "automatedTests": {
-    "files": 87,
-    "passed": 608,
+    "files": 88,
+    "passed": 611,
     "failed": 0
   },
   "nativeZotero": {
+    "host": "Windows Zotero 10.0.6 / Gecko 140",
     "profile": "isolated",
-    "sharingSettingsPassed": 4,
-    "issnAndSharingPassed": 6,
-    "selectedFormatExclusiveVerified": true,
+    "regressionPassed": 216,
+    "productionInstallationPassed": 1,
+    "separateRuns": true,
+    "setupFailures": "Initial full run omitted package path; first package-only retry used a custom output directory without the bundled script. Final default-directory package passed.",
     "mainProfileInstalled": false
   },
   "notVerified": [
-    "PowerPoint external application paste",
+    "real-library speedup percentage",
     "main profile installation",
-    "actual automatic update"
+    "actual automatic update",
+    "new Zotero 11 validation",
+    "macOS/Linux",
+    "manual theme acceptance"
   ]
 }

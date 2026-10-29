@@ -1,8 +1,8 @@
-> 当前维护版本：**12.6.22**。静默分享可在设置中选择只复制图片或只复制格式化文字。[版本说明](docs/releases/metaflow-v12.6.22.md)。
+> 当前维护版本：**12.6.23**。减少批处理中的重复快照与序列化，修复期刊索引重置竞态。[版本说明](docs/releases/metaflow-v12.6.23.md)。
 
 # Zotero MetaFlow
 
-> 当前版本 12.6.22：静默分享可在设置中选择只复制图片或只复制格式化文字。[版本说明](docs/releases/metaflow-v12.6.22.md)。
+> 当前版本 12.6.23：减少批处理中的重复快照与序列化，修复期刊索引重置竞态。[版本说明](docs/releases/metaflow-v12.6.23.md)。
 
 **Zotero Flow Series · 元数据整理**
 
@@ -12,7 +12,7 @@ _让研究的每一步衔接起来。 / Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![当前版本](https://img.shields.io/badge/version-12.6.22-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.22) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.22/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
+[![当前版本](https://img.shields.io/badge/version-12.6.23-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.23) · [下载 XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.23/zotero-metaflow.xpi) · [问题反馈](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [产品定位](#overview) · [安装与更新](#installation) · [快速开始](#quick-start) · [核心功能](#features) · [设置与使用](#settings) · [数据、同步与外部服务](#data) · [兼容性与验证范围](#compatibility) · [常见问题](#troubleshooting) · [开发与详细文档](#development) · [系列产品](#series) · [项目来源与许可](#license)
 
@@ -28,7 +28,7 @@ _让研究的每一步衔接起来。 / Connect each step of research._
 
 ## 安装与更新
 
-1. 下载 [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.22/zotero-metaflow.xpi)（插件版本 **12.6.22**），不要安装 Source code ZIP。
+1. 下载 [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.23/zotero-metaflow.xpi)（插件版本 **12.6.23**），不要安装 Source code ZIP。
 2. 在 Zotero 打开 **工具 → 插件／附加组件**，从齿轮菜单选择 **从文件安装插件**。
 3. 选择 XPI，完成安装；按提示重启 Zotero。
 
@@ -82,9 +82,9 @@ _让研究的每一步衔接起来。 / Connect each step of research._
 
 | 项目                   | 范围                                                                                           |
 | ---------------------- | ---------------------------------------------------------------------------------------------- |
-| 当前插件版本           | 12.6.22                                                                                        |
+| 当前插件版本           | 12.6.23                                                                                        |
 | 清单声明的 Zotero 范围 | `10.0` 至 `11.*`                                                                               |
-| 当前说明               | 发布验证与兼容性边界见[版本说明](docs/releases/metaflow-v12.6.22.md)。不自动安装到用户主环境。 |
+| 当前说明               | 发布验证与兼容性边界见[版本说明](docs/releases/metaflow-v12.6.23.md)。不自动安装到用户主环境。 |
 
 插件版本与 Zotero 版本分别管理。兼容声明不等于已验证所有宿主、系统和外部服务；本轮仅验证上述定向行为，未覆盖所有业务流程或主环境安装。
 

@@ -241,3 +241,18 @@ it("preserves an unrecognized journal index structure while keeping new lookups 
   expect(stored.writes).toBe(0);
   expect(index.readJournalRankingIndex(item()).get("jcr")).toBe("Q2");
 });
+
+it("ignores a stale disk read completed after an index reset", async () => {
+  const index = await setup();
+  let resolve!: (value: unknown) => void;
+  vi.stubGlobal("IOUtils", {
+    exists: async () => true,
+    readJSON: () => new Promise((done) => { resolve = done; }),
+  });
+  const pending = index.loadJournalRankingIndex();
+  await vi.waitFor(() => expect(resolve).toBeTypeOf("function"));
+  index.resetJournalRankingIndex();
+  resolve({ version: 1, entries: { "journal:title:journalqa": { updatedAt: 1, values: { jcr: "Q4" } } } });
+  await pending;
+  expect(index.readJournalRankingIndex(item()).size).toBe(0);
+});

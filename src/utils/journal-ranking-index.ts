@@ -16,6 +16,7 @@ let revision = 0;
 let dirty = false;
 let queuedRevision = -1;
 let readOnly = false;
+let generation = 0;
 
 function filePath() {
   return typeof IOUtils !== "undefined" && (Zotero as any).Profile?.dir
@@ -38,6 +39,7 @@ function keys(item: Zotero.Item) {
 
 async function load() {
   ready ||= (async () => {
+    const token = generation;
     const path = filePath();
     if (!path)
       return;
@@ -45,6 +47,8 @@ async function load() {
       if (!(await IOUtils.exists(path)))
         return;
       const store = await IOUtils.readJSON(path) as Store;
+      if (token !== generation)
+        return;
       if (store.version > 1) {
         readOnly = true;
         logger.warn("Journal ranking index uses a newer format; preserving the file without rewriting it");
@@ -74,6 +78,8 @@ async function load() {
       }
     }
     catch (error) {
+      if (token !== generation)
+        return;
       readOnly = true;
       logger.warn("Unable to load local journal rankings; preserving the file and using session-only updates", error);
     }
@@ -214,6 +220,7 @@ export async function flushJournalRankingIndex() {
 }
 
 export function resetJournalRankingIndex() {
+  generation++;
   if (timer) {
     clearTimeout(timer);
     timer = undefined;

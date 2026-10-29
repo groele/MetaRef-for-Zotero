@@ -28,6 +28,8 @@ export class ItemMutationJournal {
   };
 
   restore(): void {
+    if (!this.writes.size)
+      return;
     const current = this.item.toJSON() as Record<string, unknown>;
     const restored = { ...current };
     for (const [field, value] of this.writes) {
@@ -43,6 +45,8 @@ export class ItemMutationJournal {
   }
 
   changes(): ItemFieldChange[] {
+    if (!this.writes.size)
+      return [];
     const current = this.item.toJSON() as Record<string, unknown>;
     return [...this.writes].filter(([field, value]) => JSON.stringify(current[field]) === JSON.stringify(value.after)
       && JSON.stringify(value.before) !== JSON.stringify(value.after)).map(([field, value]) => ({ field, before: value.before ?? null, after: value.after ?? null }));

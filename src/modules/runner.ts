@@ -343,7 +343,6 @@ export class LintRunner {
     }
     const errors: any[] = [];
     const baseline = item.toJSON() as Record<string, unknown>;
-    const original = JSON.stringify(baseline);
 
     for (const rule of rules) {
       await this.checkpoint();
@@ -392,7 +391,7 @@ export class LintRunner {
       });
     }
 
-    if (!this.unsafeItems.has(item) && item.hasChanged() && JSON.stringify(item.toJSON()) !== original) {
+    if (!this.unsafeItems.has(item) && item.hasChanged() && JSON.stringify(item.toJSON()) !== JSON.stringify(baseline)) {
       this.modifiedItems.add(item);
       this.itemBaselines.set(item, baseline);
     }
