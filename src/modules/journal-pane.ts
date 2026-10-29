@@ -1,6 +1,7 @@
 import type { BatchResult } from "./runner";
 import { cleanupResourcesSync } from "../utils/cleanup";
 import { EASYSCHOLAR_FIELD_DEFINITIONS, isEasyScholarFieldEnabled } from "../utils/easyscholar";
+import { shareJournalCard } from "../utils/journal-card-share";
 import { isJournalFeedback } from "../utils/journal-feedback";
 import { cachedJournalInsights, clearJournalInsights, getJournalInsights, loadJournalInsights } from "../utils/journal-insights";
 import { presentJournalInsights } from "../utils/journal-insights-presentation";
@@ -210,9 +211,6 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     return node;
   };
   const publication = String(item.getField(item.itemType === "conferencePaper" ? "proceedingsTitle" : "publicationTitle") || "").trim();
-  const journalTitle = text("h2", publication || getString("journal-insights-unnamed"), "font-size:14px;font-weight:600;margin:0 0 12px;line-height:1.5;white-space:pre-wrap;");
-  journalTitle.setAttribute("data-journal-title", "true");
-  body.append(journalTitle);
   const rankings = journalRankingRows(String(item.getField("extra") || ""), item);
   const savedESI = rankings.find(row => row.key === "esi");
   if (isJournalIndexEnabled("esi") && rows.length && savedESI && !result.categories.length) {
@@ -222,6 +220,39 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   const sciRanking = rankings.find(row => row.key === "sci" && isEasyScholarFieldEnabled(row.key));
   const hasIndexResults = rows.length > 0 || Boolean(sciRanking);
   const displayedRankings = rankings.filter(row => row.key !== "sci" && isEasyScholarFieldEnabled(row.key) && (item.itemType !== "journalArticle" || row.key !== "esi"));
+  const headerRow = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+  headerRow.setAttribute("style", "display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;gap:8px;");
+  const journalTitle = text("h2", publication || getString("journal-insights-unnamed"), "font-size:14px;font-weight:600;margin:0;line-height:1.5;white-space:pre-wrap;flex:1;min-width:0;");
+  journalTitle.setAttribute("data-journal-title", "true");
+  const shareBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLElement;
+  shareBtn.setAttribute("data-journal-share", "true");
+  shareBtn.setAttribute("type", "button");
+  shareBtn.setAttribute("title", getString("journal-share-card" as any) || "分享期刊卡片");
+  shareBtn.setAttribute("aria-label", "分享期刊卡片");
+  shareBtn.setAttribute("style", "display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;margin:0;border:none;border-radius:4px;background:transparent;color:var(--fill-secondary);cursor:pointer;flex-shrink:0;transition:all 0.15s ease;");
+  shareBtn.innerHTML = "<svg viewBox=\"0 0 24 24\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"18\" cy=\"5\" r=\"3\"></circle><circle cx=\"6\" cy=\"12\" r=\"3\"></circle><circle cx=\"18\" cy=\"19\" r=\"3\"></circle><line x1=\"8.59\" y1=\"13.51\" x2=\"15.42\" y2=\"17.49\"></line><line x1=\"15.41\" y1=\"6.51\" x2=\"8.59\" y2=\"10.49\"></line></svg>";
+  shareBtn.addEventListener("mouseenter", () => {
+    shareBtn.style.background = "var(--fill-quinary)";
+    shareBtn.style.color = "var(--fill-primary)";
+  });
+  shareBtn.addEventListener("mouseleave", () => {
+    shareBtn.style.background = "transparent";
+    shareBtn.style.color = "var(--fill-secondary)";
+  });
+  shareBtn.addEventListener("click", (e: Event) => {
+    e.stopPropagation();
+    shareJournalCard({
+      doc,
+      publication: publication || getString("journal-insights-unnamed"),
+      displayedRankings,
+      sciRanking,
+      rows,
+      matchBases,
+      issn,
+    });
+  });
+  headerRow.append(journalTitle, shareBtn);
+  body.append(headerRow);
   const rankingSection = text("section", "", "margin:0;");
   rankingSection.setAttribute("title", getString("journal-rankings-saved-note"));
   rankingSection.setAttribute("data-journal-rankings", "true");

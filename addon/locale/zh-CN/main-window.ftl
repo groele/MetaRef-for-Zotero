@@ -81,3 +81,9 @@ field-esi-match = ESI 匹配依据
 field-nature-match = Nature Index 匹配依据
 field-esi-source = ESI 数据来源
 field-nature-source = Nature Index 数据来源
+journal-share-card = 分享期刊卡片
+journal-share-copied = 已生成期刊卡片并复制到剪贴板！
+journal-share-copy-image = 复制图片
+journal-share-save-image = 保存图片
+journal-share-copy-text = 复制文本
+

@@ -81,3 +81,9 @@ field-esi-match = ESI match basis
 field-nature-match = Nature Index match basis
 field-esi-source = ESI data source
 field-nature-source = Nature Index data source
+journal-share-card = Share Journal Card
+journal-share-copied = Journal card generated and copied to clipboard!
+journal-share-copy-image = Copy Image
+journal-share-save-image = Save Image
+journal-share-copy-text = Copy Text
+
