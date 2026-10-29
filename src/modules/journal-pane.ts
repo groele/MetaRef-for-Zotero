@@ -218,14 +218,15 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   if (isJournalIndexEnabled("esi") && rows.length && savedESI && !result.categories.length) {
     rows[0] = { ...rows[0], value: savedESI.value, matched: true, basis: "", source: getString("journal-insights-saved-source") };
   }
-  const sharedBasis = rows.length && rows.every(row => row.basis && row.basis === rows[0].basis) ? rows[0].basis : "";
+  const matchBases = [...new Set(rows.map(row => row.basis).filter(Boolean))];
   const sciRanking = rankings.find(row => row.key === "sci" && isEasyScholarFieldEnabled(row.key));
   const hasIndexResults = rows.length > 0 || Boolean(sciRanking);
   const displayedRankings = rankings.filter(row => row.key !== "sci" && isEasyScholarFieldEnabled(row.key) && (item.itemType !== "journalArticle" || row.key !== "esi"));
-  const rankingSection = text("section", "", "margin-bottom:18px;");
+  const rankingSection = text("section", "", "margin:0;");
+  rankingSection.setAttribute("title", getString("journal-rankings-saved-note"));
   rankingSection.setAttribute("data-journal-rankings", "true");
   rankingSection.append(text("h3", getString("journal-rankings-heading"), "font-size:14px;margin:0 0 12px;font-weight:600;"));
-  const messages = queryMessages.get(item.id);
+  const messages = queryMessages.get(item.id)?.filter(message => message.message !== getString("journal-rankings-query-complete"));
   if (messages?.length) {
     const status = text("div", "", "font-size:12px;margin-bottom:10px;");
     status.setAttribute("data-journal-update-status", "true");
@@ -235,10 +236,10 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     rankingSection.append(status);
   }
   if (displayedRankings.length) {
-    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px 32px;");
+    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px 24px;");
     for (const ranking of displayedRankings) {
-      const label = text("dt", getString(ranking.labelID as any), "margin:0;font-size:12px;color:var(--fill-secondary);");
-      const value = text("dd", ranking.value, "margin:0;min-width:0;font-weight:600;white-space:pre-wrap;text-align:right;");
+      const label = text("dt", getString(ranking.labelID as any), "margin:0;font-size:13px;color:var(--fill-secondary);");
+      const value = text("dd", ranking.value, "margin:0;min-width:0;font-size:14px;font-weight:600;white-space:pre-wrap;text-align:right;");
       value.setAttribute("data-journal-ranking", ranking.key);
       fields.append(label, value);
     }
@@ -247,41 +248,52 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   else {
     rankingSection.append(text("div", getString("journal-rankings-empty"), "font-size:12px;color:var(--fill-secondary);"));
   }
-  rankingSection.append(text("div", getString("journal-rankings-saved-note"), "font-size:12px;color:var(--fill-secondary);margin-top:10px;"));
   body.append(rankingSection);
-  const indexSection = text("section", "", "margin-top:18px;padding-top:14px;border-top:1px solid var(--fill-quinary);");
+  const indexSection = text("section", "", "margin-top:16px;padding-top:12px;border-top:1px solid var(--fill-quinary);");
   indexSection.setAttribute("data-journal-indexes", "true");
   if (hasIndexResults)
     indexSection.append(text("h3", getString("journal-indexing-heading"), "font-size:14px;margin:0 0 12px;font-weight:600;"));
-  const results = text("dl", "", "margin:0;display:grid;gap:18px;");
+  const results = text("dl", "", "margin:0;display:grid;gap:12px;");
   if (sciRanking) {
-    const node = text("div", "", "display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:32px;align-items:baseline;");
-    const value = text("dd", sciRanking.value, "margin:0;min-width:0;font-weight:600;text-align:right;white-space:pre-wrap;");
+    const node = text("div", "", "display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);column-gap:24px;align-items:baseline;");
+    const value = text("dd", sciRanking.value, "margin:0;min-width:0;font-size:14px;font-weight:600;text-align:right;white-space:pre-wrap;");
     value.setAttribute("data-journal-ranking", sciRanking.key);
-    node.append(text("dt", getString(sciRanking.labelID as any), "margin:0;font-size:12px;color:var(--fill-secondary);"), value);
+    node.append(text("dt", getString(sciRanking.labelID as any), "margin:0;font-size:13px;color:var(--fill-secondary);"), value);
     results.append(node);
   }
   for (const row of rows) {
     const node = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
     node.setAttribute("data-journal-result", row.label);
-    node.setAttribute("style", "display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:32px;align-items:baseline;");
+    node.setAttribute("style", "display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);column-gap:24px;align-items:baseline;");
     const value = text("dd", "", "margin:0;min-width:0;text-align:right;");
     value.append(text("div", row.value, row.matched ? "font-size:14px;font-weight:600;" : "font-size:13px;color:var(--fill-secondary);"));
-    if (row.basis && !sharedBasis)
-      value.append(text("div", row.basis, "font-size:12px;color:var(--fill-secondary);margin-top:2px;"));
+    node.append(text("dt", row.label, "margin:0;font-size:13px;color:var(--fill-secondary);"), value);
     if (row.warning)
-      value.append(text("div", row.warning, "font-size:12px;color:var(--accent-orange);margin-top:4px;"));
-    node.append(text("dt", row.label, "margin:0;font-size:12px;color:var(--fill-secondary);"), value);
+      node.append(text("div", row.warning, "grid-column:1 / -1;font-size:12px;line-height:1.6;color:var(--accent-orange);margin-top:4px;"));
     results.append(node);
   }
   if (hasIndexResults)
     indexSection.append(results);
-  if (sharedBasis) {
-    const basis = text("div", sharedBasis, "font-size:12px;color:var(--fill-secondary);margin-top:10px;");
+  if (matchBases.length) {
+    const basis = text("div", "", "font-size:12px;color:var(--fill-secondary);margin-top:12px;min-width:0;");
     basis.setAttribute("data-journal-shared-basis", "true");
+    for (const matchBasis of matchBases) {
+      const line = text("div", "", "display:flex;gap:16px;align-items:baseline;white-space:nowrap;overflow:hidden;line-height:1.6;");
+      line.setAttribute("title", matchBasis);
+      if (issn && matchBasis === getString("journal-insights-match-issn-detail", { args: { issn } })) {
+        line.append(text("span", getString("journal-insights-match-detail", { args: { basis: getString("journal-insights-basis-ISSN") } }), "flex-shrink:0;"));
+        const number = text("span", issn, "flex:1;min-width:0;text-align:right;overflow:hidden;text-overflow:ellipsis;");
+        number.setAttribute("data-journal-issn", "true");
+        line.append(number);
+      }
+      else {
+        line.append(text("span", matchBasis, "min-width:0;overflow:hidden;text-overflow:ellipsis;"));
+      }
+      basis.append(line);
+    }
     indexSection.append(basis);
   }
-  const sources = text("details", "", "margin-top:12px;padding-top:10px;font-size:12px;color:var(--fill-secondary);line-height:1.6;");
+  const sources = text("details", "", "margin-top:14px;font-size:12px;color:var(--fill-secondary);line-height:1.6;");
   sources.setAttribute("data-journal-sources", "true");
   sources.append(text("summary", getString("journal-insights-source"), "cursor:pointer;"), ...rows.map(row => text("div", row.source, "margin-top:4px;")));
   const note = text("div", getString("journal-insights-scope-note"), "margin-top:8px;");

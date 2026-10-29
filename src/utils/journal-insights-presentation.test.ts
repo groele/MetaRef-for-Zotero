@@ -20,4 +20,11 @@ describe("journal insight presentation", () => {
     expect(rows[1].warning).toContain("Unreadable file");
     expect(rows[1].source).toBe("journal-insights-nature-builtin");
   });
+  it("keeps local results without an API fallback notice", () => {
+    const rows = presentJournalInsights({ ...result, esiAPIWarning: "journal-insights-api-fallback", natureAPIWarning: "journal-insights-api-fallback" }, "zh-CN");
+    expect(rows[0].value).toBe("材料科学");
+    expect(rows[0].warning).toBe("");
+    expect(rows[1].warning).toBe("");
+    expect(rows[0].source).toBe("journal-insights-esi-builtin");
+  });
 });

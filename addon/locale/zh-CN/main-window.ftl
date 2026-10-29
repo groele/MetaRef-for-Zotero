@@ -51,8 +51,8 @@ journal-database-issue-type = type 必须为 journal 或 conference。
 journal-database-issue-nature-required = 缺少期刊名称或 ISSN。
 journal-database-issue-journals = 数据库至少需要一条期刊记录，不能只有会议。
 
-journal-insights-match-detail = 匹配依据：{ $basis }
-journal-insights-match-issn-detail = 匹配依据：ISSN · { $issn }
+journal-insights-match-detail = 匹配依据·{ $basis }
+journal-insights-match-issn-detail = 匹配依据·ISSN · { $issn }
 
 journal-insights-scope-note = 期刊层面识别，仅供参考。
 

@@ -1,25 +1,40 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.7",
+  "version": "12.6.8",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3477364,
-  "sha256": "4602caa3a7bf30d4965cf82dc46dd2f98c850d8637bef56cb7baaf91ff7a754b",
-  "sha512": "ffebb939f1b2e47ff640d2f0e73fbeb88854432c30a344b9156ab7737bd566fce8bdf77c5fabacb58ba8707c0460b6c9834d76b000bb43183a8028685f4f8406",
+  "bytes": 3477581,
+  "sha256": "0c3b04b961cf20dabe8c51dd0c59b06879153c22e4bc93ba009dbc7ae2133a60",
+  "sha512": "121d4d883c5a672b448dafbfd8da64d63cb3974c8e173616e46d6c0dc8af37cb9f3e1269b4220bc91970aaf841e90d3de1b79f2e016b69bfe15b32875d1831ab",
   "entries": 52,
   "zipCRC": "passed",
-  "sourceBaseCommit": "732d037c3c365aa7641beb785b686daaede2f6a5",
+  "sourceBaseCommit": "8ca058e7ada98c776640f04e7b452a1efdb0c343",
   "qualityChecks": {
     "productionBuild": "passed",
     "sourceTypes": "passed",
-    "releaseTagSelfTest": "passed"
+    "releaseTagSelfTest": "passed",
+    "testTypes": "passed"
   },
-  "automatedTests": "not run",
+  "automatedTests": {
+    "files": 3,
+    "passed": 27,
+    "failed": 0
+  },
   "nativeZotero": {
+    "profile": "isolated",
+    "sourceLoaded": true,
+    "passed": 9,
+    "failed": 0,
+    "widths": [
+      280,
+      360
+    ],
+    "theme": "light",
+    "screenshotReviewed": true,
     "installedExactPackage": false,
     "mainProfileInstalled": false,
     "automaticUpdateInstallation": "not performed",
-    "uiAcceptance": "not performed"
+    "finalLayoutRecheckPassed": 1
   },
-  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.7/zotero-metaflow.xpi"
+  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.8/zotero-metaflow.xpi"
 }

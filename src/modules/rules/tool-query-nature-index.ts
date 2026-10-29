@@ -17,7 +17,7 @@ export const ToolQueryNatureIndex = defineRule({
     if (error)
       report({ level: "warning", message: error === "journal-insights-api-missing" ? getString("journal-insights-api-missing") : getString("journal-database-fallback", { args: { error } }) });
     if (result.natureAPIWarning)
-      report({ level: "info", message: getString("journal-insights-api-fallback") });
+      debug("API has no usable value; using local database results.");
     debug(`Nature Index membership: ${result.natureIndex}; source: ${result.natureSource}`);
   },
 });

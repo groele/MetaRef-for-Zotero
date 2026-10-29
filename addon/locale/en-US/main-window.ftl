@@ -51,8 +51,8 @@ journal-database-issue-type = type must be journal or conference.
 journal-database-issue-nature-required = Requires a journal title or ISSN.
 journal-database-issue-journals = At least one journal is required; conference-only lists are unsupported.
 
-journal-insights-match-detail = Match basis: { $basis }
-journal-insights-match-issn-detail = Match basis: ISSN · { $issn }
+journal-insights-match-detail = Match basis · { $basis }
+journal-insights-match-issn-detail = Match basis · ISSN · { $issn }
 
 journal-insights-scope-note = Journal-level identification, for reference.
 

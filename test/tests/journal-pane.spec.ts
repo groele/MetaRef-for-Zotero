@@ -40,6 +40,37 @@ describe("independent journal insights in Zotero", function () {
     return item;
   };
 
+  it("keeps SCI under indexing with aligned results at narrow width", async function () {
+    const pref = `${prefix}.easyscholar.fields.sci`;
+    const previous = Zotero.Prefs.get(pref, true);
+    Zotero.Prefs.set(pref, true, true);
+    try {
+      const item = await create("Physical Review Letters");
+      item.setField("ISSN", "0031-9007");
+      item.setField("extra", "SCI: 是");
+      await item.saveTx();
+      const win = Zotero.getMainWindow();
+      await win.ZoteroPane.selectItem(item.id);
+      const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
+      await section._handleRefresh();
+      const body = section.querySelector("[data-type='body']") as HTMLElement;
+      assert.isNotNull(body.querySelector("[data-journal-indexes] [data-journal-ranking='sci']"));
+      assert.isNull(body.querySelector("[data-journal-rankings] [data-journal-ranking='sci']"));
+      for (const value of body.querySelectorAll("dd"))
+        assert.equal(win.getComputedStyle(value)!.textAlign, "right");
+      assert.include(body.querySelector("[data-journal-shared-basis]")?.textContent || "", "0031-9007");
+      assert.isFalse((body.querySelector("details") as HTMLDetailsElement).open);
+      body.style.width = "280px";
+      body.style.boxSizing = "border-box";
+      assert.isAtMost(body.scrollWidth, body.clientWidth + 1);
+      body.style.removeProperty("width");
+      body.style.removeProperty("box-sizing");
+    }
+    finally {
+      Zotero.Prefs.set(pref, previous as boolean, true);
+    }
+  });
+
   it("renders its own section and columns without changing item metadata", async function () {
     const item = await create("Physical Review Letters");
     item.setField("ISSN", "0031-9007");
@@ -154,7 +185,7 @@ describe("independent journal insights in Zotero", function () {
       assert.equal(body.querySelector("[data-journal-ranking='impactFactor']")?.textContent, "8.4");
       assert.equal(item.getField("extra"), "Manual note", "rankings are stored in the index when Extra output is disabled");
       assert.equal(requests, 1);
-      assert.isNotEmpty(body.querySelector("[data-journal-update-status]")?.textContent || "");
+      assert.isNull(body.querySelector("[data-journal-update-status]"), "successful refresh leaves no redundant completion banner");
       section.scrollIntoView({ block: "start" });
       await Zotero.Promise.delay(100);
       const rect = section.getBoundingClientRect();
@@ -255,7 +286,8 @@ describe("independent journal insights in Zotero", function () {
   });
 
   it("keeps not-found, disabled and unselected responses distinct from successful updates", async function () {
-    const keys = ["easyscholar.secretKey", "easyscholar.updateAbbreviation", "easyscholar.clearExtraBeforeUpdate", ...EASYSCHOLAR_FIELD_DEFINITIONS.map(field => `easyscholar.fields.${field.key}`)];
+    this.timeout(120_000);
+    const keys = ["insights.natureEnabled", "insights.natureSourcePriority", "easyscholar.secretKey", "easyscholar.updateAbbreviation", "easyscholar.clearExtraBeforeUpdate", ...EASYSCHOLAR_FIELD_DEFINITIONS.map(field => `easyscholar.fields.${field.key}`)];
     const previous = new Map(keys.map(key => [key, Zotero.Prefs.get(`${prefix}.${key}`, true)]));
     const request = Zotero.HTTP.request;
     let mode = "empty";
@@ -263,6 +295,8 @@ describe("independent journal insights in Zotero", function () {
     try {
       for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
         Zotero.Prefs.set(`${prefix}.easyscholar.fields.${field.key}`, false, true);
+      Zotero.Prefs.set(`${prefix}.insights.natureEnabled`, true, true);
+      Zotero.Prefs.set(`${prefix}.insights.natureSourcePriority`, "local-only", true);
       Zotero.Prefs.set(`${prefix}.easyscholar.secretKey`, "status-fixture-key", true);
       Zotero.Prefs.set(`${prefix}.easyscholar.updateAbbreviation`, false, true);
       Zotero.Prefs.set(`${prefix}.easyscholar.clearExtraBeforeUpdate`, false, true);

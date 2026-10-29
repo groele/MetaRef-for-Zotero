@@ -16,7 +16,7 @@ export const ToolQueryESI = defineRule({
     if (error)
       report({ level: "warning", message: error === "journal-insights-api-missing" ? getString("journal-insights-api-missing") : getString("rule-tool-query-esi-custom-data-error", { args: { error } }) });
     if (result.esiAPIWarning)
-      report({ level: "info", message: getString("journal-insights-api-fallback") });
+      debug("API has no usable value; using local database results.");
     debug(`ESI insight: ${result.esi}; source: ${result.esiSource}`);
   },
 });
