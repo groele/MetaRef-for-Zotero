@@ -225,7 +225,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     rankingSection.append(status);
   }
   if (displayedRankings.length) {
-    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:minmax(88px,1fr) minmax(0,1fr);gap:8px 12px;");
+    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:88px minmax(0,1fr);gap:8px 12px;");
     for (const ranking of displayedRankings) {
       const label = text("dt", getString(ranking.labelID as any), "margin:0;font-size:12px;color:var(--fill-secondary);");
       const value = text("dd", ranking.value, "margin:0;min-width:0;font-weight:600;white-space:pre-wrap;");
@@ -260,9 +260,9 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     basis.setAttribute("data-journal-shared-basis", "true");
     body.append(basis);
   }
-  const sources = text("div", "", "border-top:1px solid var(--fill-quinary);margin-top:12px;padding-top:10px;font-size:12px;color:var(--fill-secondary);line-height:1.6;");
+  const sources = text("details", "", "border-top:1px solid var(--fill-quinary);margin-top:12px;padding-top:10px;font-size:12px;color:var(--fill-secondary);line-height:1.6;");
   sources.setAttribute("data-journal-sources", "true");
-  sources.append(text("div", getString("journal-insights-source"), "margin-bottom:4px;"), ...rows.map(row => text("div", row.source)));
+  sources.append(text("summary", getString("journal-insights-source"), "cursor:pointer;"), ...rows.map(row => text("div", row.source, "margin-top:4px;")));
   const note = text("div", getString("journal-insights-scope-note"), "margin-top:8px;");
   note.setAttribute("title", getString("journal-insights-boundary"));
   sources.append(note);

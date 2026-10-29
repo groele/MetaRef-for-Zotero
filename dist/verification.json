@@ -1,42 +1,25 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.1",
+  "version": "12.6.3",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3477021,
-  "sha256": "2add47aa05be8d076291c394be1c363f9a0679d4075e6e527a2a0f893aca2aed",
-  "sha512": "1dd78fb366b64d64d60fb65654f12c6ae628715057279eb357b03920bd81e22d81662f88741a7786621cad8f6b71b2f88e0bccd966e03fb2d09eb41d35b6eec3",
+  "bytes": 3477023,
+  "sha256": "46ebff253f711e6901bd6651b2db5aade7abe3de85531b2cfa73fbf612dd0b05",
+  "sha512": "4da106e744d5030cfc572486cd00e9adb3b875f47ed9c294a96e41fdbea6a09118c4deba1b80aa04248b504c1d10a4aaa70adaed1b5b3029f5b5d3d1800345c1",
   "entries": 52,
   "zipCRC": "passed",
-  "buildTime": "2026-10-28 09:08:12",
-  "sourceBaseCommit": "a272281b08d624ac712b57c770f75d406df58900",
+  "sourceBaseCommit": "8d318a49f7be9691bb414087c38e2ed59bbb9379",
   "qualityChecks": {
     "productionBuild": "passed",
     "sourceTypes": "passed",
-    "testTypes": "passed",
-    "lint": "passed",
-    "autocorrect": "passed",
     "releaseTagSelfTest": "passed"
   },
-  "automatedTests": {
-    "files": 85,
-    "passed": 587,
-    "failed": 0
-  },
+  "automatedTests": "not run",
   "nativeZotero": {
-    "version": "10.0.6",
-    "platform": "140.17.0",
-    "os": "Windows",
-    "locale": "zh-CN",
-    "profile": "isolated",
-    "e2ePassed": 11,
-    "productionInitial": 0,
-    "productionRestart": 0,
-    "unreadableFileChecks": 0,
     "installedExactPackage": false,
-    "boundary": "Isolated source-loaded plugin; native confirmation, merge, cancellation, close/unload cleanup, bottom-right geometry, light/dark and normal/narrow views tested. Final XPI ZIP/manifest verified; no new production-XPI installation, Zotero 11, other OS, main-profile or automatic-update installation coverage."
+    "mainProfileInstalled": false,
+    "automaticUpdateInstallation": "not performed",
+    "uiAcceptance": "not performed"
   },
-  "mainProfileInstalled": false,
-  "automaticUpdateInstallation": "not performed",
-  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.1/zotero-metaflow.xpi"
+  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.3/zotero-metaflow.xpi"
 }
