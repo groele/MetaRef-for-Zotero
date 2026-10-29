@@ -212,7 +212,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     rows[0] = { ...rows[0], value: savedESI.value, matched: true, basis: "", source: getString("journal-insights-saved-source") };
   }
   const displayedRankings = rankings.filter(row => isEasyScholarFieldEnabled(row.key) && (item.itemType !== "journalArticle" || row.key !== "esi"));
-  const rankingSection = text("section", "", "margin-bottom:16px;");
+  const rankingSection = text("section", "", "margin-bottom:18px;");
   rankingSection.setAttribute("data-journal-rankings", "true");
   rankingSection.append(text("h3", getString("journal-rankings-heading"), "font-size:13px;margin:0 0 10px;font-weight:600;"));
   const messages = queryMessages.get(item.id);
@@ -225,7 +225,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     rankingSection.append(status);
   }
   if (displayedRankings.length) {
-    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:88px minmax(0,1fr);gap:8px 12px;");
+    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:108px minmax(0,1fr);gap:12px 16px;");
     for (const ranking of displayedRankings) {
       const label = text("dt", getString(ranking.labelID as any), "margin:0;font-size:12px;color:var(--fill-secondary);");
       const value = text("dd", ranking.value, "margin:0;min-width:0;font-weight:600;white-space:pre-wrap;");
@@ -239,11 +239,11 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
   }
   rankingSection.append(text("div", getString("journal-rankings-saved-note"), "font-size:12px;color:var(--fill-secondary);margin-top:10px;"));
   body.append(rankingSection);
-  const results = text("dl", "", "margin:0;display:grid;gap:14px;");
+  const results = text("dl", "", "margin:0;display:grid;gap:18px;");
   for (const row of rows) {
     const node = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
     node.setAttribute("data-journal-result", row.label);
-    node.setAttribute("style", "display:grid;grid-template-columns:88px minmax(0,1fr);column-gap:12px;align-items:baseline;");
+    node.setAttribute("style", "display:grid;grid-template-columns:108px minmax(0,1fr);column-gap:16px;align-items:baseline;");
     const value = text("dd", "", "margin:0;min-width:0;");
     value.append(text("div", row.value, row.matched ? "font-size:14px;font-weight:600;" : "font-size:13px;color:var(--fill-secondary);"));
     if (row.basis && !sharedBasis)

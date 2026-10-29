@@ -1,4 +1,4 @@
-> Local development candidate: **12.6.3** (not published). Stable download links and their existing validation statements below remain for **12.6.1**; this candidate expands product capability and development-origin documentation without updating an online XPI or update feed.
+> Local development candidate: **12.6.4** (not published). Stable download links and their existing validation statements below remain for **12.6.1**; this candidate expands product capability and development-origin documentation without updating an online XPI or update feed.
 
 # Zotero MetaFlow
 
