@@ -307,6 +307,9 @@ describe("native duplicate pane batch merge", function () {
         Services.prefs.setIntPref(themeKey, theme === "dark" ? 0 : 1);
         await wait(() => w.matchMedia("(prefers-color-scheme: dark)")!.matches === (theme === "dark"));
         for (const size of [1280, 860]) {
+          // Native progress windows share a tiled stack; isolate the corner-placement fixture.
+          Zotero.ProgressWindowSet.closeAll();
+          await Zotero.Promise.delay(100);
           w.moveTo(desktop.availLeft || 0, desktop.availTop || 0);
           w.resizeTo(Math.min(size, desktop.availWidth), Math.min(820, desktop.availHeight));
           await Zotero.Promise.delay(300);
