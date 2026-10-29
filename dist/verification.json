@@ -1,14 +1,14 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.6",
+  "version": "12.6.7",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3477265,
-  "sha256": "287f8b7f14852f2d4db8b02849e8efb3c49339807ef4e5adf64ec6960df892ff",
-  "sha512": "a8322f215ebe3a9edcd9b723b2e125f7dd06a7523b4935a9c91c9cacfb8a3140d4cf4fb8c44213ddcf6aef29835febfd12ea861fc9bef92a3277274d2b00d8ee",
+  "bytes": 3477364,
+  "sha256": "4602caa3a7bf30d4965cf82dc46dd2f98c850d8637bef56cb7baaf91ff7a754b",
+  "sha512": "ffebb939f1b2e47ff640d2f0e73fbeb88854432c30a344b9156ab7737bd566fce8bdf77c5fabacb58ba8707c0460b6c9834d76b000bb43183a8028685f4f8406",
   "entries": 52,
   "zipCRC": "passed",
-  "sourceBaseCommit": "5d4be1219b7b688b6cad63e50affa24408e3aeaa",
+  "sourceBaseCommit": "732d037c3c365aa7641beb785b686daaede2f6a5",
   "qualityChecks": {
     "productionBuild": "passed",
     "sourceTypes": "passed",
@@ -21,5 +21,5 @@
     "automaticUpdateInstallation": "not performed",
     "uiAcceptance": "not performed"
   },
-  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.6/zotero-metaflow.xpi"
+  "releaseAssetURL": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.7/zotero-metaflow.xpi"
 }
