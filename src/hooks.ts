@@ -73,9 +73,13 @@ async function onStartup() {
     await loadJournalRankingIndex();
     if (!addon.data.alive)
       return;
+    const mainWindows = Zotero.getMainWindows();
+    // Item pane section headers are localized when the custom section is
+    // registered. Make its Fluent resources available before registration.
+    mainWindows.forEach(registerMainWindowLocale);
     registerExtraColumns();
     registerJournalPane();
-    await Promise.all(Zotero.getMainWindows().map(onMainWindowLoad));
+    await Promise.all(mainWindows.map(onMainWindowLoad));
   }
   catch (error) {
     await onShutdown();
