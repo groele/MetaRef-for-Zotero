@@ -83,7 +83,7 @@ Version 12.6.1 restores native bottom-right notifications for batch confirmation
 | Item                   | Scope                                                                                                                                                    |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Current add-on version | 12.7.1                                                                                                                                                   |
-| Declared Zotero range  | `10.0` through `11.*`                                                                                                                                    |
+| Declared Zotero range  | `10.0` through `12.*`                                                                                                                                    |
 | Evidence boundary      | See the [release notes](docs/releases/metaflow-v12.7.1.md) for validation and compatibility boundaries. No automatic installation into the main profile. |
 
 Add-on and Zotero versions are separate. Declared compatibility does not establish testing on every host, operating system or service. This patch validates the targeted behaviors listed above, not all plugin workflows or main-profile installation.
