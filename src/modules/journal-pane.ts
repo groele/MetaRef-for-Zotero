@@ -1,3 +1,4 @@
+import type { JournalInsights } from "../utils/journal-insights";
 import type { BatchResult } from "./runner";
 import { cleanupResourcesSync } from "../utils/cleanup";
 import { EASYSCHOLAR_FIELD_DEFINITIONS, isEasyScholarFieldEnabled } from "../utils/easyscholar";
@@ -54,8 +55,17 @@ function ensureJournalPaneStyles(doc?: Document | null) {
       margin: 0 !important;
       overflow: hidden !important;
     }
-    item-pane-custom-section[data-pane*="metaref-journal-insights"] collapsible-section > .head .title-box .summary:empty {
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] .head .title-box .summary:empty,
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] collapsible-section > .head .title-box .summary:empty,
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] .summary:empty {
       display: none !important;
+    }
+    item-pane-sidenav .btn[data-pane*="metaref-journal-insights"] {
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+      padding: 4px !important;
+      box-sizing: border-box !important;
     }
     .metaref-journal-pane-wrap {
       padding: 10px 12px 12px;
@@ -98,9 +108,15 @@ export function registerJournalPane() {
     sidenav: { icon, l10nID: getLocaleID("journal-insights-heading")! },
     onInit({ body, doc, refresh, setEnabled }) {
       ensureJournalPaneStyles(doc || body.ownerDocument);
-      const summary = body.closest("collapsible-section")?.querySelector<HTMLElement>(".head .title-box .summary");
-      if (summary && !summary.textContent?.trim())
-        summary.style.display = "none";
+      const hideSummary = () => {
+        const summary = (body.closest("collapsible-section") || body.parentElement)?.querySelector<HTMLElement>(".head .title-box .summary, .summary");
+        if (summary && !summary.textContent?.trim())
+          summary.style.display = "none";
+      };
+      hideSummary();
+      const raf = (doc || body.ownerDocument)?.defaultView?.requestAnimationFrame;
+      if (typeof raf === "function")
+        raf.call((doc || body.ownerDocument)!.defaultView, hideSummary);
       if (!navigationListeners.has(doc)) {
         const listener: EventListener = (event) => {
           const mouse = event as MouseEvent;
@@ -143,16 +159,29 @@ export function registerJournalPane() {
       renders.delete(body);
       body.replaceChildren();
       body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
-      setEnabled(getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item));
+      const enabled = getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item);
+      setEnabled(enabled);
+      ensureJournalPaneStyles(body.ownerDocument);
+      const summary = (body.closest("collapsible-section") || body.parentElement)?.querySelector<HTMLElement>(".head .title-box .summary, .summary");
+      if (summary && !summary.textContent?.trim())
+        summary.style.display = "none";
     },
     onRender({ body, item, setEnabled }) {
       if (item)
         items.set(body, item);
       renders.delete(body);
-      setEnabled(getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item));
+      const enabled = getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item);
+      setEnabled(enabled);
       const doc = body.ownerDocument || Zotero.getMainWindow()?.document;
       ensureJournalPaneStyles(doc);
       body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
+      const summary = (body.closest("collapsible-section") || body.parentElement)?.querySelector<HTMLElement>(".head .title-box .summary, .summary");
+      if (summary && !summary.textContent?.trim())
+        summary.style.display = "none";
+      if (!enabled) {
+        body.replaceChildren();
+        return;
+      }
       if (doc) {
         const loading = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
         loading.className = "metaref-journal-pane-wrap";
@@ -299,11 +328,32 @@ function createShareSvgIcon(doc: Document) {
 }
 
 async function render({ item, body, doc }: Context) {
-  if (!item || !supportsRankings(item) || !hasEnabledJournalMetrics() || !getPref("insights.showPane", true))
+  if (!item || !supportsRankings(item) || !hasEnabledJournalMetrics() || !getPref("insights.showPane", true)) {
+    body.replaceChildren();
     return;
+  }
   const token = {};
   renders.set(body, token);
-  const result = cachedJournalInsights(item) ?? await getJournalInsights(item);
+  let result: JournalInsights | undefined;
+  try {
+    result = cachedJournalInsights(item) ?? await getJournalInsights(item);
+  }
+  catch (error) {
+    logger.error("Failed to load journal insights in render:", error);
+    if (!addon.data.alive || renders.get(body) !== token || !body.isConnected)
+      return;
+    body.replaceChildren();
+    body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
+    ensureJournalPaneStyles(doc || body.ownerDocument);
+    const errWrap = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    errWrap.className = "metaref-journal-pane-wrap";
+    const errNotice = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
+    errNotice.textContent = getString("journal-rankings-refresh-failed");
+    errNotice.setAttribute("style", "font-size:12px;color:var(--accent-orange);");
+    errWrap.append(errNotice);
+    body.append(errWrap);
+    return;
+  }
   if (!addon.data.alive || renders.get(body) !== token || !body.isConnected)
     return;
   body.replaceChildren();
