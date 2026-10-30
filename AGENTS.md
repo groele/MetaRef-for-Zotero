@@ -6,13 +6,13 @@ This file provides guidance to AI coding agents when working with code in this r
 
 "Zotero MetaFlow" (package name `zotero-metaflow`, add-on ID `metaflow@groele`) is a Zotero plugin that validates and formats item metadata. It is built on the [zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template) and [zotero-plugin-scaffold](https://github.com/northword/zotero-plugin-scaffold) toolchain, and bundled with esbuild into an ESM script loaded by Zotero (a Firefox/Gecko `firefox140` runtime — not Node).
 
-Target: Zotero 10.0-11.x (validated on Windows Zotero 10.0.6 and Zotero 11 development builds); build output targets Firefox 140. Package manager: **pnpm** (12.3.4, pinned in package.json). Node v22+ required for development.
+Target: Zotero 10.0-12.x (validated on Windows Zotero 10.0.6, Zotero 11 development builds, and compatible up to 12.*); build output targets Firefox 140. Package manager: **pnpm** (12.3.4, pinned in package.json). Node v22+ required for development.
 
 ## Repository source of truth
 
 The maintained MetaFlow source is the repository root, on local `main` tracking `origin/main`. `.scaffold/` contains ignored build and test artifacts, not another maintained checkout. The historical workspace and nested publishing worktree were compared, their useful HTTP regression tests were retained, and the old workspace was archived outside the project. GitHub keeps only `main` after integration and cleanup; remove temporary development branches when their useful changes are integrated. See [`docs/repository-mainline.md`](docs/repository-mainline.md) and [`docs/workspace-consolidation-2026-10-19.md`](docs/workspace-consolidation-2026-10-19.md) for the source layout and comparison evidence.
 
-Zotero 11 / Firefox 153 migration work is tracked in `docs/zotero11-compatibility.md`. The manifest and update metadata use `strict_max_version: 11.*` as requested. Zotero 11 validation is development-build coverage; rerun isolated tests after host changes. Internal `metaref` resources, `Zotero.MetaRef`, and `extensions.zotero.metaref` preferences are retained for settings continuity. Set `METAREF_TEST_PLATFORM=153` or `140` to assert the runtime platform during isolated E2E tests.
+Zotero 11 / Firefox 153 migration work is tracked in `docs/zotero11-compatibility.md`. The manifest and update metadata use `strict_max_version: 12.*` as requested. Zotero 11 and 12 compatibility is covered in development and build configurations; rerun isolated tests after host changes. Internal `metaref` resources, `Zotero.MetaRef`, and `extensions.zotero.metaref` preferences are retained for settings continuity. Set `METAREF_TEST_PLATFORM=153` or `140` to assert the runtime platform during isolated E2E tests.
 
 ## Commands
 

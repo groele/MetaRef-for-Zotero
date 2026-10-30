@@ -42,14 +42,18 @@ function ensureJournalPaneStyles(doc?: Document | null) {
   style.textContent = `
     item-pane-custom-section[data-pane*="metaref-journal-insights"],
     item-pane-custom-section[data-pane*="metaref-journal-insights"] > collapsible-section,
-    item-pane-custom-section[data-pane*="metaref-journal-insights"] [data-type="body"] {
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] [data-type="body"],
+    collapsible-section[data-pane*="metaref-journal-insights"],
+    collapsible-section[data-pane*="metaref-journal-insights"] > [data-type="body"] {
       min-width: 0;
       max-width: 100%;
       box-sizing: border-box;
       padding: 0 !important;
       margin: 0 !important;
     }
-    item-pane-custom-section[data-pane*="metaref-journal-insights"] collapsible-section:not([open]) [data-type="body"] {
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] collapsible-section:not([open]) [data-type="body"],
+    collapsible-section[data-pane*="metaref-journal-insights"]:not([open]) [data-type="body"],
+    collapsible-section:not([open]) > [data-type="body"]:has(> .metaref-journal-pane-wrap) {
       max-height: 0 !important;
       padding: 0 !important;
       margin: 0 !important;
@@ -57,7 +61,8 @@ function ensureJournalPaneStyles(doc?: Document | null) {
     }
     item-pane-custom-section[data-pane*="metaref-journal-insights"] .head .title-box .summary:empty,
     item-pane-custom-section[data-pane*="metaref-journal-insights"] collapsible-section > .head .title-box .summary:empty,
-    item-pane-custom-section[data-pane*="metaref-journal-insights"] .summary:empty {
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] .summary:empty,
+    collapsible-section[data-pane*="metaref-journal-insights"] .summary:empty {
       display: none !important;
     }
     item-pane-sidenav .btn[data-pane*="metaref-journal-insights"] {
