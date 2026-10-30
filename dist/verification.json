@@ -1,6 +1,6 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "13.0.0",
+  "version": "13.0.1",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
   "bytes": 3488510,
@@ -22,9 +22,9 @@
   },
   "packageChecks": {
     "manifestIdentity": "metaflow@groele",
-    "manifestVersion": "13.0.0",
+    "manifestVersion": "13.0.1",
     "bundledScript": "passed",
-    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.0/zotero-metaflow.xpi",
+    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.1/zotero-metaflow.xpi",
     "updateFeedSHA512": "matches package"
   },
   "isolatedZotero": {

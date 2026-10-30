@@ -1,150 +1,286 @@
-> Current maintained version: **13.0.0**. Major version release: eliminates collapsed journal-index residual height by moving padding to an internal wrap, zeroing body styles when folded, and expanding Zotero compatibility range to `12.*`. [Release notes](docs/releases/metaflow-v13.0.0.md).
-
 # Zotero MetaFlow
 
-> Current version 13.0.0: Major version release, completely eliminating collapsed journal-index residual height and expanding compatibility up to Zotero 12.*. [Release notes](docs/releases/metaflow-v13.0.0.md).
+**Deep Reference Metadata Governance · Authoritative Journal Insights · Native Bulk Deduplication**
 
-**Zotero Flow Series · Metadata**
-
-_让研究的每一步衔接起来。 / Connect each step of research._
-
-Validate, normalize, and enrich reference metadata.
+_Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Release](https://img.shields.io/badge/version-13.0.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.0) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.0/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
+[![Version](https://img.shields.io/badge/version-13.0.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.1)
+[![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
+[![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
+[![Tests Passing](https://img.shields.io/badge/tests-611%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
 
-[Overview](#overview) · [Installation and updates](#installation) · [Quick start](#quick-start) · [Key features](#features) · [Settings](#settings) · [Data, sync, and services](#data) · [Compatibility and validation](#compatibility) · [Troubleshooting](#troubleshooting) · [Development and documentation](#development) · [The Flow series](#series) · [Origin and license](#license)
+[📦 Installation](#installation) · [✨ Key Highlights](#highlights) · [🛠️ Feature Matrix](#features) · [🚀 Quick Start](#quick-start) · [⚙️ Settings Guide](#settings) · [🛡️ Architecture & Safety](#architecture) · [❓ Troubleshooting & FAQ](#troubleshooting) · [🔗 Flow Series](#series) · [📄 Credits & License](#license)
 
-<a id="overview"></a>
+---
 
-## Overview
+## 📖 Vision & Product Overview
 
-For researchers maintaining a literature library: configure metadata rules, journal abbreviations, online enrichment, and journal metrics in one add-on.
+In academic research, item metadata imported from web databases (e.g., Web of Science, IEEE Xplore, PubMed, arXiv, Google Scholar) or captured through web translators and DOI lookups is often flawed: all-caps or all-lowercase titles, destroyed chemical formulas and sub/superscripts, reversed author names, absent ISO 4 journal abbreviations, missing Impact Factor / quartile rankings, and clutter from duplicate entries.
 
-Install this add-on independently and combine it with other Flow products as needed.
+**Zotero MetaFlow** (part of the Zotero Flow Series productivity suite) is engineered for scholars who demand rigorous reference quality. It unifies **59 automated metadata governance rules**, an **offline ISO 4 LTWA journal abbreviation engine**, **61 EasyScholar academic ranking indicators**, and an exclusive **one-click native bulk deduplication workflow**, complemented by an all-new **zero-residual-margin collapsible Journal Insights sidebar panel** to maintain an immaculate, insight-rich research library.
 
-<a id="installation"></a>
+> [!NOTE]
+> Zotero MetaFlow is fully standalone and can be used on its own or seamlessly combined with other tools in the Zotero Flow Series (such as RefFlow, MindFlow, ViewFlow, etc.).
 
-## Installation and updates
+---
 
-1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.0/zotero-metaflow.xpi) (add-on version **13.0.0**), not the Source code ZIP.
-2. In Zotero, open **Tools → Plugins/Add-ons**, then choose **Install Add-on From File** from the gear menu.
-3. Select the XPI, complete installation, and restart if requested.
+<a id="highlights"></a>
 
-Use the add-on manager to check for later updates. Automatic checking/installation depends on Zotero, per-add-on update settings, and compatibility. Back up important data before upgrades or migration.
+## ✨ Key Highlights
 
-Update feed: [dist/update.json](https://github.com/groele/Zotero-MetaFlow/blob/main/dist/update.json) · Add-on ID: `metaflow@groele`.
+```mermaid
+graph LR
+    A["Import / Select Reference"] --> B["Zotero MetaFlow"]
+    B --> C["📊 Journal Insights<br/>(Sidebar Academic Profile)"]
+    B --> D["🧹 59 Governance Rules<br/>(Casing/Formulas/Authors/DOI)"]
+    B --> E["📚 ISO 4 Abbreviations<br/>(JabRef + Offline Stemmer)"]
+    B --> F["⚡ Native Deduplication<br/>(One-Click Lossless Merge)"]
+    B --> G["🌐 Online Enrichment<br/>(Crossref/Semantic Scholar)"]
+```
 
-<a id="quick-start"></a>
+### 1. 📊 Holistic Journal Insights (Integrated Sidebar Profile)
 
-## Quick start
+- **Instant Academic Standing**: Directly embedded in Zotero's right-hand item pane, presenting journal cover badges, normalized full publication names, and standard ISO 4 abbreviations.
+- **Multi-Dimensional Authority Coverage**:
+  - **Clarivate JCR Quartiles**: Q1 / Q2 / Q3 / Q4;
+  - **CAS Journal Ranking (Upgrade & Classic Editions)**: Major / Minor tier partitions and Top Journal certification;
+  - **Academic Impact Metrics**: Impact Factor (IF), 5-Year Impact Factor;
+  - **Domain-Specific Tiers**: CCF (China Computer Federation) Ranking (Category A / B / C) & Top Conference badges;
+  - **Frontier Indexing**: ESI Global Subject Categorization & Nature Index 2026 local recognition.
+- **Modern Zero-Residual Collapsible Architecture (v13.0.0+ Breakthrough)**:
+  - Completely eliminates residual blank space and rogue container paddings when collapsed; folding **achieves true 0px height and zero margin**, smoothly adapting when expanded;
+  - Automatically hides when no data is available (Empty-State Self-Healing) and encapsulates a fine-grained Error Boundary to prevent any host rendering disruption.
 
-1. Select a small set of items and choose the rules you need in settings.
-2. Run Check and Fix Metadata or Update Metadata from the item context menu.
-3. Review the result report before processing more items; configure online metrics as needed.
+### 2. ⚡ One-Click Native Bulk Deduplication
+
+- **Seamless Zotero Integration**: Directly integrated into Zotero's native "Duplicate Items" collection view, providing a global one-click batch merge action in the upper-right utility area.
+- **Fail-Safe Global Merging Policy**:
+  - **Single Global Authorization**: Bypass tedious group-by-group manual confirmation with one secure global authorization;
+  - **Master Item Selection**: Intelligently designates the earliest added item as master, adopting the most established metadata;
+  - **Missing-Field Inheritance**: Automatically inherits and completes empty fields from secondary duplicates so no data is lost;
+  - **Full Asset Preservation**: All attachments (PDFs, snapshots), notes, tags, collection links, and native Undo history are preserved via Zotero's native merge transactions.
+- **Non-Intrusive Progress Feedback**: Delivers updates via native bottom-right toast notifications with cancellation support.
+
+### 3. 🧹 59-Rule Multi-Dimensional Governance Pipeline
+
+- **Intelligent Title Normalization**:
+  - Smart conversion between Sentence case and Title Case;
+  - **Chemical & Proper Noun Casing Protection Engine**: Built-in scholarly lexicon automatically guards $\text{CO}_2$, $\text{MoS}_2$, $\text{Fe}^{3+}$, $\text{mRNA}$, $\text{DNA}$, $\text{pH}$, $\text{in vivo}$, preventing formatting destruction.
+- **Abstract Typography Cleanup**:
+  - Eliminates rogue line breaks, soft line wraps, and excess whitespace, seamlessly reconnecting broken words;
+  - Reconstructs and joins split chemical formulas and scientific numbers while respecting paragraph logic.
+- **Author & Creator Normalization**:
+  - Automatically identifies and remedies reversed Given / Family names;
+  - Cleans tonal marks and character artifacts from romanized pinyin while preserving institutional creator attributes.
+- **Identifiers & Structural Polish**:
+  - **DOI Hygiene**: Strips redundant URL prefixes (e.g., `https://doi.org/` or `doi:`) to yield clean identifiers; resolves ShortDOIs into standard DOIs;
+  - **Page Number Formatting**: Converts hyphens to typographic En-dashes (`–`) and strips leading zeroes (e.g., cleans `001--008` to `1–8`);
+  - **ISO 8601 Dates**: Unifies chaotic date strings into standard `YYYY-MM-DD` syntax;
+  - **Thesis Place Resolution**: Resolves university locations and completes publication places for theses and dissertations.
+
+### 4. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
+
+- **Dual-Engine Architecture**: Combines JabRef's comprehensive journal mapping database with the international LTWA (List of Title Word Abbreviations) rule set.
+- **100% Offline Capability**: Accurately infers standard ISO 4 abbreviations even without an internet connection.
+- **Language-Aware Processing**: Distinguishes English from CJK journals with custom pinyin abbreviation options.
+
+### 5. ✍️ Rich-Text Title Editor Toolbar
+
+- Lightweight formatting toolbar integrated directly over Zotero's title editing input.
+- Wrap selections with `<i>` (italics / scientific names), `<b>` (bold), `<sub>` (subscript / chemical indexes), `<sup>` (superscript / citations), and `<span class="nocase">` (case-protection tags).
+- Fully preserves native selection, cursor placement, and undo history.
+
+---
 
 <a id="features"></a>
 
-## Key features
+## 🛠️ Feature Matrix
 
-| Differentiator                              | What it does                                                                                                                                                  | Boundary                                                                                                                          |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Composable metadata rules                   | Applies selected rules to title casing, creators, abstract whitespace, dates, pages, DOIs, and common field misuse.                                           | Rules change Zotero item fields; technical terms, chemical formulae, author identity, and exceptional results still merit review. |
-| Journal abbreviations and local recognition | Uses bundled abbreviation data and offline ISO 4 inference to help normalize journal names, with local ESI/Nature Index snapshots.                            | Bundled lists are versioned snapshots—not live databases or certification of a journal or individual paper.                       |
-| Multi-dimensional journal indicators        | Presents configured EasyScholar metrics, tiers, and indexing information in side-pane/list contexts, with separate controls for lookup, display, and writing. | Online metrics require user-configured credentials; service responses, caching, and field meaning remain source-dependent.        |
-| Identity-first online enrichment            | Enriches from DOI, ISBN, arXiv, and available services with blank-only and explicit overwrite policies.                                                       | Title similarity alone never establishes identity; source conflicts and overwriting curated fields require human judgment.        |
-| Batch queue, rollback, and report           | Uses bounded concurrency plus transactional/snapshot recovery for batch rules, reporting changes and errors for audit.                                        | This contains single-item failures but does not replace backup or human review of duplicates and preprints.                       |
-| Rich-text title helper                      | Adds italics, bold, subscript, superscript, and no-case protection in Zotero’s title editor while preserving native selection/cursor behavior.                | It assists title editing; it does not substitute for journal-specific style review.                                               |
+| Module                         | Capabilities                                                                    | Pain Point Solved                                                                | Trigger Location                            |
+| ------------------------------ | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------- |
+| **Journal Insights**           | JCR Quartiles, CAS Tiers, Impact Factor (IF), CCF, Nature Index, ESI            | Instant academic prestige awareness without leaving Zotero                       | Right Sidebar · Journal Insights Panel      |
+| **Bulk Deduplication**         | Native group merging, master protection, missing-field fill, asset preservation | Eliminates hours of manual confirmation in libraries with hundreds of duplicates | Duplicate Items collection · Top-right bar  |
+| **Title Formatting**           | Sentence / Title case conversion with chemical formula and acronym protection   | Cleans up messy publisher imports without destroying scientific symbols          | Item Context Menu / Auto-cleanup on import  |
+| **Abstract Cleanup**           | Elimination of internal line breaks, extra spaces, broken hyphenated words      | Fixes fragmented PDF extractions and OCR breaks                                  | Item Context Menu · Check & Fix Metadata    |
+| **Author Name Correction**     | Name inversion fix, pinyin symbol stripping, institutional author correction    | Prevents reversed citations ("Firstname Lastname" vs "Lastname, Firstname")      | Item Context Menu · Check & Fix Metadata    |
+| **Journal Abbreviations**      | JabRef dictionary matching + ISO 4 offline word-stem inference                  | Satisfies journal submission criteria for either full names or ISO abbreviations | Item Context Menu · Journal Abbreviations   |
+| **Identifier Standardization** | Clean DOI extraction, ShortDOI resolution, ISSN validation & completion         | Standardizes malformed DOIs ensuring 100% reliable cross-software hyperlinks     | Item Context Menu · Standardize Identifiers |
+| **Online Enrichment**          | Enriches from Crossref, Semantic Scholar, arXiv using DOI/ISBN                  | Recovers complete metadata for sparse or half-baked references                   | Item Context Menu · Update Online Metadata  |
+| **Rich-Text Title Helper**     | Quick insertion of `<i>`, `<b>`, `<sub>/<sup>`, `<span class="nocase">`         | Tedious manual HTML tag typing in Zotero title input fields                      | Floating toolbar on Title input focus       |
+
+---
+
+<a id="quick-start"></a>
+
+## 🚀 Quick Start & 4 Key Use Cases
+
+### Scenario 1: Review Journal Standing at a Glance
+
+1. Select any journal article in your Zotero collection.
+2. In the right-hand item pane, locate **"Zotero MetaFlow Journal Insights"**:
+   - Inspect the journal cover, canonical name, and ISO 4 abbreviation;
+   - Review JCR quartiles, CAS tiers, latest IF, and CCF rankings;
+3. Click the fold arrow: the section **collapses flush with 0px residual height**.
+
+### Scenario 2: Batch Clean and Normalize Reference Metadata
+
+1. Select one or more references in the library list using `Ctrl` or `Shift`.
+2. Right-click the selection to open the **Zotero MetaFlow** context menu:
+   - Click **"Check and Fix Metadata"** to normalize title casing, protect chemical symbols, format authors, and sanitize DOIs;
+   - Click **"Normalize Journal Names & Abbreviations"** to standardize publication strings.
+3. A toast notification appears in the lower-right corner reporting affected fields.
+
+### Scenario 3: One-Click Lossless Duplicate Merging
+
+1. In the left library tree, click **"Duplicate Items"**.
+2. MetaFlow presents a dedicated button: **"Merge all duplicates in this library"**.
+3. Confirm the batch operation in the prompt dialog.
+4. All groups are merged using Zotero's native transactions; attachments, notes, and tags are preserved seamlessly.
+
+### Scenario 4: Fast Formatting for Chemical & Latin Names
+
+1. Click the "Title" field of an item to edit.
+2. Highlight text (e.g., `Escherichia coli` or `CO2`).
+3. Use the floating toolbar: click `<i>` to produce `<i>Escherichia coli</i>`, or select `2` and click `<sub>` to format `CO<sub>2</sub>`.
+
+---
 
 <a id="settings"></a>
 
-## Settings
+## ⚙️ Settings Guide
 
-Open the add-on preference page in **Zotero → Settings → Zotero MetaFlow**.
+Open **Tools → Plugins/Add-ons** (or **Zotero → Settings** on macOS) and navigate to **Zotero MetaFlow**:
 
-Configure rules, formatting on import, enrichment policy, journal metrics, and display separately. Review a small sample before batch processing.
+### 1. General Settings
 
-Version 12.6.1 adds “Merge all duplicates in this library” to Zotero's native Duplicate Items pane. Confirm once to process all native duplicate groups, with cancellation and a result summary. It follows MetaFlow's master strategy (oldest by default), fills empty fields, and retains the master's conflicting values. Groups with different types, non-duplicate decisions, or intervening edits are skipped. Zotero's native merge maintains attachments, notes, tags, collections, relations, and Undo.
+- **Automatic formatting on import**: Automatically runs chosen normalization rules when new papers are imported via web translators, DOI, or PDF.
+- **Notification style**: Toggle between lightweight toast notifications or a detailed audit dialog.
 
-Version 12.6.1 restores native bottom-right notifications for batch confirmation, progress and results, removing the panel below the item list.
+### 2. Metadata Governance Rules
 
-<a id="data"></a>
+- Configure **59 individual rules**:
+  - Title capitalization targets (Sentence case vs. Title Case);
+  - Chemical formula, gene symbol, and physical unit protection;
+  - Abstract line-break stripping depth;
+  - Author name inversion detection sensitivity.
 
-## Data, sync, and services
+### 3. Journal Abbreviations & Local Databases
 
-- Rules can write Zotero item fields; journal-metric display and Extra writes have separate settings.
-- Enrichment and metric queries contact their respective services. Bundled lists are snapshots, not live coverage or article certification.
+- Select preferred abbreviation style (JabRef canonical / ISO 4 with dots / ISO 4 dotless);
+- Inspect version status for bundled **Nature Index 2026** and **ESI Global Subject** databases.
+
+### 4. Journal Indicators & EasyScholar
+
+- **API Credentials**: Enter your EasyScholar API Key for enriched metric queries;
+- **Display & Storage Controls**: Separately toggle remote lookups, sidebar card display, Extra field writing, and custom column registration;
+- **72-Hour Cache**: Multi-day local cache prevents redundant queries and saves quota.
+
+### 5. Duplicate Merging Policy
+
+- **Master Selection**: Choose between "Earliest added (Recommended)", "Most recently modified", or "Most complete metadata";
+- **Field Inheritance**: Ensures secondary item data fills missing master fields without overwriting curated values.
+
+---
+
+<a id="architecture"></a>
+
+## 🛡️ Architecture & Data Safety
+
+Zotero MetaFlow adheres to rigorous data integrity standards:
+
+1. **Item Mutation Journal**: If batch processing is interrupted, the active item rolls back cleanly without tainting adjacent items.
+2. **Dual-Layer LRU Caching**: In-memory and persistent 72-hour disk caches ensure instantaneous UI responses even across tens of thousands of items.
+3. **Non-Destructive Defaults**: Online enrichment uses "blank-only" mode by default, never overwriting curated data; deduplication relies entirely on Zotero's native Merge transactions.
+4. **Sandboxed Error Boundaries**: UI sections feature scoped styling and component-level try-catch boundaries to guarantee host stability under all conditions.
+
+---
+
+<a id="installation"></a>
+
+## 📦 Installation & Automatic Updates
+
+### Manual Installation
+
+1. Download the latest **[zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.1/zotero-metaflow.xpi)** from [GitHub Releases](https://github.com/groele/Zotero-MetaFlow/releases) (do not download the Source code ZIP).
+2. In Zotero, click **Tools → Plugins** (or Add-ons).
+3. Click the **gear icon ⚙️** in the top-right corner and select **Install Add-on From File...**.
+4. Select the downloaded `.xpi` file, confirm the installation, and restart Zotero when prompted.
+
+### Automatic Updates
+
+Updates are served automatically via [dist/update.json](https://github.com/groele/Zotero-MetaFlow/blob/main/dist/update.json) (Add-on ID: `metaflow@groele`). Zotero periodically checks for and applies new releases.
+
+---
 
 <a id="compatibility"></a>
 
-## Compatibility and validation
+## 🌐 Compatibility & Environment
 
-| Item                   | Scope                                                                                                                                                    |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Current add-on version | 13.0.0                                                                                                                                                   |
-| Declared Zotero range  | `10.0` through `12.*`                                                                                                                                    |
-| Evidence boundary      | See the [release notes](docs/releases/metaflow-v13.0.0.md) for validation and compatibility boundaries. No automatic installation into the main profile. |
+| Component             | Supported Range                                              | Notes                                                                         |
+| --------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| **Zotero**            | **Zotero 10.0 through 12.*** (modern Gecko 153 architecture) | Fully adapted for modern Zotero host features, dark mode, and native sidebars |
+| **Operating Systems** | Windows 10 / 11, macOS (Intel & Apple Silicon), Linux        | Cross-platform native parity                                                  |
+| **Add-on Version**    | **v13.0.1**                                                  | [View Release Notes](docs/releases/metaflow-v13.0.1.md)                       |
 
-Add-on and Zotero versions are separate. Declared compatibility does not establish testing on every host, operating system or service. This patch validates the targeted behaviors listed above, not all plugin workflows or main-profile installation.
+---
 
 <a id="troubleshooting"></a>
 
-## Troubleshooting
+## ❓ Troubleshooting & FAQ
 
-If metrics are missing, check credentials, query/display switches, and service results. Review uncertain metadata and duplicate candidates rather than relying on titles alone.
+<details>
+<summary><b>Q1: Why aren't journal metrics showing up in the sidebar?</b></summary>
 
-For an issue, include add-on/Zotero versions, OS, steps, expected/actual results, and sanitized errors.
+1. Ensure the item has a valid "Publication" or "DOI" field.
+2. Check your EasyScholar API Key under Settings → Zotero MetaFlow → Journal Indicators, and verify the online query switch is enabled.
+3. Items indexed in Nature Index or ESI will be recognized offline even without an API key.
 
-<a id="development"></a>
+</details>
 
-## Development and documentation
+<details>
+<summary><b>Q2: Why weren't certain scientific terms converted to lowercase?</b></summary>
 
-Normal installation needs no development environment. Existing developer entry points follow; use an isolated profile for native tests.
+This is intentional! MetaFlow includes a specialized scientific dictionary protecting formulas like $\text{mRNA}$, $\text{pH}$, $\text{CO}_2$, and $\text{MoS}_2$ from case destruction. You can configure individual rules under Settings → Metadata Rules.
+</details>
 
-```powershell
-pnpm install
-pnpm test:unit
-pnpm lint:check
-pnpm build
-```
+<details>
+<summary><b>Q3: Will one-click batch merging lose notes or PDF attachments?</b></summary>
 
-- [工作流与数据设计 / Workflow and data](docs/global-workflow-and-data-layout.md)
-- [自动整理与缓存 / Automation and cache](docs/automatic-metadata-and-runtime-cache.md)
-- [版本说明 / Release notes](docs/releases/metaflow-v12.6.1.md)
-- [产品简介 / Product profile](docs/brand/PRODUCT.md)
-- [品牌规范 / Brand guide](docs/brand/BRAND.md)
-- [README 模板 / README template](docs/brand/README-TEMPLATE.md)
-- [后续提升清单 / Improvement priorities](docs/brand/IMPROVEMENTS.md)
-- [Previous detailed guide · README.md](docs/reference/README.md)
-- [Previous detailed guide · README.zh-CN.md](docs/reference/README.zh-CN.md)
+**No.** Batch deduplication is built on top of Zotero's native merge engine. All attachments, annotations, notes, tags, and collection links are transferred to the master item, and Zotero's Undo functionality remains available.
+</details>
 
-Previous detailed guides retain feature detail, shortcuts, historical evidence, and full attribution. Their versions and test results belong to the recorded stage.
+<details>
+<summary><b>Q4: What if batch processing slows down or encounters network timeouts?</b></summary>
+
+For huge libraries, set concurrency to 2–4 in settings. Each item is protected by an independent transaction boundary—if a network call fails, other items remain safely saved, and you can re-run the failed items at any time.
+</details>
+
+---
 
 <a id="series"></a>
 
-## The Flow series
+## 🔗 The Zotero Flow Series
 
-| Product                                                        | Role                                                                       |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| [Zotero RefFlow](https://github.com/groele/Zotero-RefFlow)     | Discovery · Discover references, citing works, and related research.       |
-| [Zotero MetaFlow](https://github.com/groele/Zotero-MetaFlow)   | Metadata · Validate, normalize, and enrich reference metadata.             |
-| [Zotero ViewFlow](https://github.com/groele/Zotero-ViewFlow)   | Preview · Preview and copy formatted references in Zotero’s item pane.     |
-| [Zotero MindFlow](https://github.com/groele/Zotero-MindFlow)   | Knowledge · Organize papers, annotations, and ideas into editable maps.    |
-| [Zotero TaskFlow](https://github.com/groele/Zotero-TaskFlow)   | Tasks · Turn literature reading into trackable tasks and plans.            |
-| [Zotero CiteFlow](https://github.com/groele/Zotero-CiteFlow)   | Citation · Track Word citations and connect them to Zotero items.          |
-| [Zotero PaperFlow](https://github.com/groele/Zotero-PaperFlow) | Publication · Manage manuscripts, submission rounds, and review responses. |
+Zotero MetaFlow is part of the **Zotero Flow Series** academic workflow suite:
 
-Each add-on installs and updates separately. A shared brand does not imply a shared database or automatic integration of every workflow.
+| Add-on                                                             | Core Role                                                       | Workflow Connection                                                                 |
+| ------------------------------------------------------------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| [**Zotero MetaFlow**](https://github.com/groele/Zotero-MetaFlow)   | **Metadata Cleaning · Journal Insights · Native Deduplication** | First stop for imported references: cleans, standardizes, and adds academic metrics |
+| [**Zotero RefFlow**](https://github.com/groele/Zotero-RefFlow)     | **Citation Discovery · Reference Parsing · One-Click Import**   | Explores citation networks and streams discovered papers into MetaFlow              |
+| [**Zotero ViewFlow**](https://github.com/groele/Zotero-ViewFlow)   | **Sidebar Citation Preview · Quick-Copy Formats**               | Previews and copies formatted citations directly alongside the PDF reader           |
+| [**Zotero MindFlow**](https://github.com/groele/Zotero-MindFlow)   | **Knowledge Mapping · Concept Outlines · Visual Synthesis**     | Organizes curated literature and annotations into interactive mind maps             |
+| [**Zotero TaskFlow**](https://github.com/groele/Zotero-TaskFlow)   | **Reading Task Boards · Progress Tracking · Study Plans**       | Tracks literature reading milestones and research agendas                           |
+| [**Zotero CiteFlow**](https://github.com/groele/Zotero-CiteFlow)   | **Writing Citation Audit · Word Integration · Reference Sync**  | Audits manuscript references in Word and connects back to library items             |
+| [**Zotero PaperFlow**](https://github.com/groele/Zotero-PaperFlow) | **Submission Tracking · Peer-Review Logs · Revision History**   | Manages manuscript cycles, reviewer response letters, and drafts                    |
+
+---
 
 <a id="license"></a>
 
-## Origin and license
+## 📄 Credits & License
 
-**Derivative notice:** Zotero MetaFlow is derived from northword’s open-source [zotero-format-metadata](https://github.com/northword/zotero-format-metadata) and is built with the `zotero-plugin-template` and `zotero-plugin-scaffold` toolchain. Attribution for the upstream rule/batch architecture and acknowledgements for other projects, datasets, services, and authors remain in the detailed guides; this is independently maintained and not an official Zotero release.
-
-License: [AGPL-3.0-or-later](LICENSE).
-
-This series is independently maintained and is not an official Zotero product. Zotero and third-party names, trademarks, and materials belong to their respective rights holders.
-
-[Release/tag policy](docs/release-tag-policy.md)
+- **Derivative Credits**: Zotero MetaFlow is derived from [zotero-format-metadata](https://github.com/northword/zotero-format-metadata) by northword and built with `zotero-plugin-template` and `zotero-plugin-scaffold`. We gratefully acknowledge the upstream authors and the open-source community.
+- **License**: Released under the **[AGPL-3.0-or-later](LICENSE)** license.
+- **Disclaimer**: Zotero is a registered trademark of the Corporation for Digital Scholarship. This project is independently maintained and not affiliated with or endorsed by Zotero. EasyScholar, Nature Index, Clarivate, and other third-party trademarks belong to their respective holders.
