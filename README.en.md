@@ -1,12 +1,12 @@
 # Zotero MetaFlow
 
-**Deep Reference Metadata Governance · Authoritative Journal Insights · Native Bulk Deduplication**
+**Deep Reference Metadata Governance · Authoritative Journal Insights · Native Bulk Deduplication · arXiv Preprint Conversion**
 
 _Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.0.2-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.2)
+[![Version](https://img.shields.io/badge/version-13.0.3-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.3)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
 [![Tests Passing](https://img.shields.io/badge/tests-611%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
@@ -38,6 +38,7 @@ graph LR
     B --> E["📚 ISO 4 Abbreviations<br/>(JabRef + Offline Stemmer)"]
     B --> F["⚡ Native Deduplication<br/>(One-Click Lossless Merge)"]
     B --> G["🌐 Online Enrichment<br/>(Crossref/Semantic Scholar)"]
+    B --> H["📄 arXiv Preprint Conversion<br/>(Discover DOI & Upgrade Paper)"]
 ```
 
 ### 1. 📊 Holistic Journal Insights (Integrated Sidebar Profile)
@@ -53,7 +54,19 @@ graph LR
   - Completely eliminates residual blank space and rogue container paddings when collapsed; folding **achieves true 0px height and zero margin**, smoothly adapting when expanded;
   - Automatically hides when no data is available (Empty-State Self-Healing) and encapsulates a fine-grained Error Boundary to prevent any host rendering disruption.
 
-### 2. ⚡ One-Click Native Bulk Deduplication
+### 2. 📄 arXiv Preprint-to-Published Workflow
+
+- **Deep Inspiration from AllanChain/zotero-arxiv-workflow**: Engineered specifically for modern research workflows where papers debut on arXiv before publication in peer-reviewed journals or conferences.
+- **Sidebar Integration & Top-Level Context Menu**:
+  - Automatically detects arXiv preprints (via `arxiv.org` URL, `archiveID`, or `arXiv:` identifiers);
+  - Displays a dedicated **arXiv Preprint Card** in the right-hand Journal Insights panel, complete with an official link and a prominent **"⚡ Check & Convert to Published Version…"** action button;
+  - Prominently placed in the primary context menu (`CORE_COMMANDS`) for instant access on single or batch selections.
+- **Dual Safe Conversion Modes**:
+  - **In-Place Seamless Upgrade**: Queries the arXiv Atom API and CrossRef for published DOIs and publication volume/issue/pages; upgrades the itemType to `journalArticle` or `conferencePaper` while **preserving 100% of PDF attachments, highlights, annotations, notes, and tags**, appending the original arXiv ID to `Extra` for auditing;
+  - **Create Related Version**: Retains the preprint item and generates a new journal entry with bidirectional native Zotero relations.
+- **Provenance Badge**: Converted papers proudly display an **"arXiv Converted"** badge in their Journal Insights header for transparent provenance.
+
+### 3. ⚡ One-Click Native Bulk Deduplication
 
 - **Seamless Zotero Integration**: Directly integrated into Zotero's native "Duplicate Items" collection view, providing a global one-click batch merge action in the upper-right utility area.
 - **Fail-Safe Global Merging Policy**:
@@ -63,7 +76,7 @@ graph LR
   - **Full Asset Preservation**: All attachments (PDFs, snapshots), notes, tags, collection links, and native Undo history are preserved via Zotero's native merge transactions.
 - **Non-Intrusive Progress Feedback**: Delivers updates via native bottom-right toast notifications with cancellation support.
 
-### 3. 🧹 59-Rule Multi-Dimensional Governance Pipeline
+### 4. 🧹 59-Rule Multi-Dimensional Governance Pipeline
 
 - **Intelligent Title Normalization**:
   - Smart conversion between Sentence case and Title Case;
@@ -80,13 +93,13 @@ graph LR
   - **ISO 8601 Dates**: Unifies chaotic date strings into standard `YYYY-MM-DD` syntax;
   - **Thesis Place Resolution**: Resolves university locations and completes publication places for theses and dissertations.
 
-### 4. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
+### 5. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
 
 - **Dual-Engine Architecture**: Combines JabRef's comprehensive journal mapping database with the international LTWA (List of Title Word Abbreviations) rule set.
 - **100% Offline Capability**: Accurately infers standard ISO 4 abbreviations even without an internet connection.
 - **Language-Aware Processing**: Distinguishes English from CJK journals with custom pinyin abbreviation options.
 
-### 5. ✍️ Rich-Text Title Editor Toolbar
+### 6. ✍️ Rich-Text Title Editor Toolbar
 
 - Lightweight formatting toolbar integrated directly over Zotero's title editing input.
 - Wrap selections with `<i>` (italics / scientific names), `<b>` (bold), `<sub>` (subscript / chemical indexes), `<sup>` (superscript / citations), and `<span class="nocase">` (case-protection tags).
@@ -98,17 +111,18 @@ graph LR
 
 ## 🛠️ Feature Matrix
 
-| Module                         | Capabilities                                                                    | Pain Point Solved                                                                | Trigger Location                            |
-| ------------------------------ | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------- |
-| **Journal Insights**           | JCR Quartiles, CAS Tiers, Impact Factor (IF), CCF, Nature Index, ESI            | Instant academic prestige awareness without leaving Zotero                       | Right Sidebar · Journal Insights Panel      |
-| **Bulk Deduplication**         | Native group merging, master protection, missing-field fill, asset preservation | Eliminates hours of manual confirmation in libraries with hundreds of duplicates | Duplicate Items collection · Top-right bar  |
-| **Title Formatting**           | Sentence / Title case conversion with chemical formula and acronym protection   | Cleans up messy publisher imports without destroying scientific symbols          | Item Context Menu / Auto-cleanup on import  |
-| **Abstract Cleanup**           | Elimination of internal line breaks, extra spaces, broken hyphenated words      | Fixes fragmented PDF extractions and OCR breaks                                  | Item Context Menu · Check & Fix Metadata    |
-| **Author Name Correction**     | Name inversion fix, pinyin symbol stripping, institutional author correction    | Prevents reversed citations ("Firstname Lastname" vs "Lastname, Firstname")      | Item Context Menu · Check & Fix Metadata    |
-| **Journal Abbreviations**      | JabRef dictionary matching + ISO 4 offline word-stem inference                  | Satisfies journal submission criteria for either full names or ISO abbreviations | Item Context Menu · Journal Abbreviations   |
-| **Identifier Standardization** | Clean DOI extraction, ShortDOI resolution, ISSN validation & completion         | Standardizes malformed DOIs ensuring 100% reliable cross-software hyperlinks     | Item Context Menu · Standardize Identifiers |
-| **Online Enrichment**          | Enriches from Crossref, Semantic Scholar, arXiv using DOI/ISBN                  | Recovers complete metadata for sparse or half-baked references                   | Item Context Menu · Update Online Metadata  |
-| **Rich-Text Title Helper**     | Quick insertion of `<i>`, `<b>`, `<sub>/<sup>`, `<span class="nocase">`         | Tedious manual HTML tag typing in Zotero title input fields                      | Floating toolbar on Title input focus       |
+| Module                         | Capabilities                                                                    | Pain Point Solved                                                                 | Trigger Location                            |
+| ------------------------------ | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------- |
+| **Journal Insights**           | JCR Quartiles, CAS Tiers, Impact Factor (IF), CCF, Nature Index, ESI            | Instant academic prestige awareness without leaving Zotero                        | Right Sidebar · Journal Insights Panel      |
+| **arXiv Preprint Conversion**  | Query official DOI, lossless upgrade to journal article, preserve notes & files | Solves obsolete preprint metadata and eliminates manual re-importing losing notes | Sidebar arXiv Card / Right-click top menu   |
+| **Bulk Deduplication**         | Native group merging, master protection, missing-field fill, asset preservation | Eliminates hours of manual confirmation in libraries with hundreds of duplicates  | Duplicate Items collection · Top-right bar  |
+| **Title Formatting**           | Sentence / Title case conversion with chemical formula and acronym protection   | Cleans up messy publisher imports without destroying scientific symbols           | Item Context Menu / Auto-cleanup on import  |
+| **Abstract Cleanup**           | Elimination of internal line breaks, extra spaces, broken hyphenated words      | Fixes fragmented PDF extractions and OCR breaks                                   | Item Context Menu · Check & Fix Metadata    |
+| **Author Name Correction**     | Name inversion fix, pinyin symbol stripping, institutional author correction    | Prevents reversed citations ("Firstname Lastname" vs "Lastname, Firstname")       | Item Context Menu · Check & Fix Metadata    |
+| **Journal Abbreviations**      | JabRef dictionary matching + ISO 4 offline word-stem inference                  | Satisfies journal submission criteria for either full names or ISO abbreviations  | Item Context Menu · Journal Abbreviations   |
+| **Identifier Standardization** | Clean DOI extraction, ShortDOI resolution, ISSN validation & completion         | Standardizes malformed DOIs ensuring 100% reliable cross-software hyperlinks      | Item Context Menu · Standardize Identifiers |
+| **Online Enrichment**          | Enriches from Crossref, Semantic Scholar, arXiv using DOI/ISBN                  | Recovers complete metadata for sparse or half-baked references                    | Item Context Menu · Update Online Metadata  |
+| **Rich-Text Title Helper**     | Quick insertion of `<i>`, `<b>`, `<sub>/<sup>`, `<span class="nocase">`         | Tedious manual HTML tag typing in Zotero title input fields                       | Floating toolbar on Title input focus       |
 
 ---
 
@@ -144,6 +158,14 @@ graph LR
 1. Click the "Title" field of an item to edit.
 2. Highlight text (e.g., `Escherichia coli` or `CO2`).
 3. Use the floating toolbar: click `<i>` to produce `<i>Escherichia coli</i>`, or select `2` and click `<sub>` to format `CO<sub>2</sub>`.
+
+### Scenario 5: Check & Convert arXiv Preprints to Published Version
+
+1. Select any preprint reference with an arXiv URL, `archiveID`, or preprint identifier.
+2. The right-hand sidebar displays a dedicated **arXiv Preprint** card with direct link and details.
+3. Click **"⚡ Check & Convert to Published Version…"** (or right-click the item and choose the primary context menu action):
+   - MetaFlow automatically queries the arXiv Atom API and CrossRef for the official publisher DOI, journal name, and volume/issue/pages;
+   - Upon confirmation, the item is upgraded to a journal article, **preserving 100% of attached PDF files, highlights, annotations, notes, and tags**, while displaying a green **"arXiv Converted"** badge in Journal Insights.
 
 ---
 
@@ -181,6 +203,11 @@ Open **Tools → Plugins/Add-ons** (or **Zotero → Settings** on macOS) and nav
 
 - **Master Selection**: Choose between "Earliest added (Recommended)", "Most recently modified", or "Most complete metadata";
 - **Field Inheritance**: Ensures secondary item data fills missing master fields without overwriting curated values.
+
+### 6. Preprint Conversion & Versions
+
+- **Conversion Strategy**: Choose between "In-place upgrade (transforms itemType seamlessly, preserving PDFs and all annotations)" or "Create related publication (maintains preprint, establishes bidirectional relations)";
+- **Auditing**: Automatically records original arXiv identifiers and URLs into `Extra` for complete provenance.
 
 ---
 
@@ -298,7 +325,7 @@ The creation, architectural evolution, and capabilities of Zotero MetaFlow rely 
 - **[bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi)** (DOI Manager by @bwiernik):
   Provided key architectural inspiration for clean DOI extraction, ShortDOI generation, and bidirectional identifier resolution.
 - **[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)** (by @AllanChain):
-  Guided the design of preprint-to-formal-publication linking and automated metadata synchronization workflows.
+  Provided outstanding inspiration and architectural guidance for automated preprint-to-published discovery, atomic metadata conversion, PDF annotation preservation, and bidirectional version networks, motivating MetaFlow's native one-click arXiv conversion highlight.
 
 ### 2. Plugin Engineering Frameworks & Toolchains
 

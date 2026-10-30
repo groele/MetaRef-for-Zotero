@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import { commandPrimary, commandVisible, REMOTE_STANDARD_RULES, ruleSupportsItems } from "./workflow-policy";
 
 describe("compact workflows", () => {
-  it("shows only the two core commands by default and restores explicit advanced placements", () => {
-    expect(["standard", "tool-update-metadata", "tool-review-preprint", "tool-clear-all-extra"].filter(key => commandVisible(key, true, true))).toEqual(["standard", "tool-update-metadata"]);
+  it("shows core commands by default and restores explicit advanced placements", () => {
+    expect(["standard", "tool-update-metadata", "tool-review-preprint", "tool-clear-all-extra"].filter(key => commandVisible(key, true, true))).toEqual(["standard", "tool-update-metadata", "tool-review-preprint"]);
     expect(commandPrimary("standard", true, false)).toBe(true);
-    expect(commandPrimary("tool-review-preprint", true, true)).toBe(false);
-    expect(commandVisible("tool-review-preprint", false, true)).toBe(true);
+    expect(commandPrimary("tool-review-preprint", true, false)).toBe(true);
+    expect(commandPrimary("tool-clear-all-extra", false, false)).toBe(false);
+    expect(commandVisible("tool-clear-all-extra", false, true)).toBe(true);
     expect(commandVisible("standard", true, false)).toBe(false);
   });
   it("keeps identifier network work out of local standard checking", () => {

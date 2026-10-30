@@ -28,7 +28,26 @@ let settingsRefreshPending = false;
 let settingsRevision = 0;
 const navigationQueryKey = (item: Zotero.Item) => JSON.stringify([settingsRevision, item.itemType, ...["publicationTitle", "conferenceName", "ISSN", "extra"].map(field => item.getField(field as _ZoteroTypes.Item.ItemField))]);
 const logger = createLogger("journal-pane");
+
+export function extractArxivID(item?: Zotero.Item): string | undefined {
+  if (!item || !item.isRegularItem())
+    return undefined;
+  const url = String(item.getField("url") || "");
+  const extra = String(item.getField("extra") || "");
+  let archiveID = "";
+  try {
+    archiveID = String(item.getField("archiveID" as any) || "");
+  }
+  catch {
+    archiveID = "";
+  }
+  const match = `${url}\n${extra}\n${archiveID}`.match(/(?:arxiv\.org\/(?:abs|pdf)\/|arxiv:\s*)(\d{4}\.\d{4,5}(?:v\d+)?|[a-z\-]+(?:\.[a-z]{2})?\/\d{7})/i);
+  return match ? match[1] : undefined;
+}
+
+const isPreprintCandidate = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && (item.itemType === "preprint" || Boolean(extractArxivID(item))));
 const supportsRankings = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && ["journalArticle", "conferencePaper"].includes(item.itemType));
+const supportsSection = (item?: Zotero.Item) => Boolean(item && getPref("insights.showPane", true) && (supportsRankings(item) ? hasEnabledJournalMetrics() : isPreprintCandidate(item)));
 type Context = _ZoteroTypes.ItemPaneManagerSection.SectionHookArgs;
 
 function ensureJournalPaneStyles(doc?: Document | null) {
@@ -140,7 +159,7 @@ export function registerJournalPane() {
         navigationListeners.set(doc, listener);
       }
       refreshers.set(body, async () => {
-        setEnabled(getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(items.get(body)));
+        setEnabled(supportsSection(items.get(body)));
         await refresh();
       });
     },
@@ -164,7 +183,7 @@ export function registerJournalPane() {
       renders.delete(body);
       body.replaceChildren();
       body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
-      const enabled = getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item);
+      const enabled = supportsSection(item);
       setEnabled(enabled);
       ensureJournalPaneStyles(body.ownerDocument);
       const summary = (body.closest("collapsible-section") || body.parentElement)?.querySelector<HTMLElement>(".head .title-box .summary, .summary");
@@ -175,7 +194,7 @@ export function registerJournalPane() {
       if (item)
         items.set(body, item);
       renders.delete(body);
-      const enabled = getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item);
+      const enabled = supportsSection(item);
       setEnabled(enabled);
       const doc = body.ownerDocument || Zotero.getMainWindow()?.document;
       ensureJournalPaneStyles(doc);
@@ -333,8 +352,77 @@ function createShareSvgIcon(doc: Document) {
 }
 
 async function render({ item, body, doc }: Context) {
-  if (!item || !supportsRankings(item) || !hasEnabledJournalMetrics() || !getPref("insights.showPane", true)) {
+  if (!item || !supportsSection(item)) {
     body.replaceChildren();
+    return;
+  }
+  if (isPreprintCandidate(item) && !supportsRankings(item)) {
+    const arxivID = extractArxivID(item);
+    body.replaceChildren();
+    body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
+    ensureJournalPaneStyles(doc || body.ownerDocument);
+
+    const wrap = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    wrap.className = "metaref-journal-pane-wrap";
+
+    const badgeRow = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    badgeRow.setAttribute("style", "display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;gap:8px;");
+
+    const badge = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    badge.textContent = "arXiv Preprint";
+    badge.setAttribute("style", "display:inline-flex;align-items:center;background:color-mix(in srgb, #b31b1b 15%, transparent);color:#b31b1b;border:1px solid color-mix(in srgb, #b31b1b 30%, transparent);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;letter-spacing:0.3px;");
+    badgeRow.append(badge);
+
+    if (arxivID) {
+      const arxivLink = doc.createElementNS("http://www.w3.org/1999/xhtml", "a") as HTMLAnchorElement;
+      arxivLink.textContent = `arXiv:${arxivID}`;
+      arxivLink.href = `https://arxiv.org/abs/${arxivID}`;
+      arxivLink.setAttribute("target", "_blank");
+      arxivLink.setAttribute("rel", "noopener noreferrer");
+      arxivLink.setAttribute("style", "font-size:12px;color:var(--accent-blue, #245ac7);text-decoration:none;font-family:ui-monospace, monospace;");
+      arxivLink.addEventListener("click", (e) => {
+        e.stopPropagation();
+        Zotero.launchURL(`https://arxiv.org/abs/${arxivID}`);
+      });
+      badgeRow.append(arxivLink);
+    }
+    wrap.append(badgeRow);
+
+    const title = String(item.getField("title") || "").trim();
+    if (title) {
+      const titleElem = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      titleElem.textContent = title;
+      titleElem.setAttribute("style", "font-size:13px;font-weight:600;line-height:1.45;margin-bottom:8px;color:var(--fill-primary);");
+      wrap.append(titleElem);
+    }
+
+    const desc = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    desc.textContent = getString("preprint-card-description") || "当前条目为 arXiv 预印本。MetaFlow 可自动检索官方出版 DOI，一键转正为期刊/会议论文并保留现有 PDF 批注与笔记。";
+    desc.setAttribute("style", "font-size:12px;line-height:1.5;color:var(--fill-secondary);margin-bottom:12px;");
+    wrap.append(desc);
+
+    const convertBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLButtonElement;
+    convertBtn.type = "button";
+    convertBtn.textContent = `⚡ ${getString("rule-tool-review-preprint-menu-item") || "检查并转为正式发表版本…"}`;
+    convertBtn.setAttribute("style", "display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;background:color-mix(in srgb, var(--accent-blue, #245ac7) 12%, transparent);border:1px solid color-mix(in srgb, var(--accent-blue, #245ac7) 30%, transparent);color:var(--accent-blue, #245ac7);cursor:pointer;");
+    convertBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (convertBtn.disabled)
+        return;
+      convertBtn.disabled = true;
+      convertBtn.textContent = `⏳ ${getString("journal-insights-loading") || "正在查询 arXiv 与 CrossRef…"}`;
+      try {
+        await addon.hooks.onLintInBatch("tool-review-preprint", [item]);
+        await refreshJournalPane([item.id]);
+      }
+      catch (err) {
+        logger.error("Preprint conversion failed:", err);
+        convertBtn.disabled = false;
+        convertBtn.textContent = `⚡ ${getString("rule-tool-review-preprint-menu-item") || "检查并转为正式发表版本…"}`;
+      }
+    });
+    wrap.append(convertBtn);
+    body.replaceChildren(wrap);
     return;
   }
   const token = {};
@@ -395,6 +483,13 @@ async function render({ item, body, doc }: Context) {
   headerRow.setAttribute("style", "display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;gap:8px;");
   const journalTitle = text("h2", publication || getString("journal-insights-unnamed"), "font-size:14px;font-weight:600;margin:0;line-height:1.5;white-space:pre-wrap;flex:1;min-width:0;");
   journalTitle.setAttribute("data-journal-title", "true");
+  const extraText = String(item.getField("extra") || "");
+  if (extraText.includes("MetaFlow preprint") || /arXiv:\s*\d{4}\.\d{4,5}/i.test(extraText)) {
+    const convertedBadge = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    convertedBadge.textContent = getString("preprint-converted-badge") || "arXiv 已转正";
+    convertedBadge.setAttribute("style", "display:inline-flex;align-items:center;margin-left:8px;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:color-mix(in srgb, #2e7d32 15%, transparent);color:#2e7d32;border:1px solid color-mix(in srgb, #2e7d32 30%, transparent);vertical-align:middle;");
+    journalTitle.append(convertedBadge);
+  }
   const shareBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLButtonElement;
   shareBtn.setAttribute("data-journal-share", "true");
   shareBtn.type = "button";

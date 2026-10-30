@@ -112,8 +112,8 @@ export function shouldShowSeparator(
 }
 
 export const MENU_SECTIONS = {
-  primary: ["standard", "tool-update-metadata"],
-  review: ["tool-review-metadata", "tool-review-preprint", "tool-review-duplicates"],
+  primary: ["standard", "tool-update-metadata", "tool-review-preprint"],
+  review: ["tool-review-metadata", "tool-review-duplicates"],
   title: ["correct-title-sentence-case", "correct-title-chemical-formula", "tool-title-guillemet", "tool-title-replace"],
   creators: ["correct-creators-case", "correct-creators-pinyin", "tool-creators-ext", "tool-creators-style", "tool-creators-swap"],
   publication: ["require-language", "tool-set-language", "correct-publication-title-alias", "correct-publication-title-case", "require-journal-abbr", "correct-conference-abbr", "require-university-place"],

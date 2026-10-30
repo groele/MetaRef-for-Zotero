@@ -417,6 +417,8 @@ export type FluentMessageId =
   | 'no-case'
   | 'notify-on-lint'
   | 'prefs-title'
+  | 'preprint-card-description'
+  | 'preprint-converted-badge'
   | 'report-export'
   | 'report-export-failed'
   | 'report-filter'
