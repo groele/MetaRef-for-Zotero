@@ -85,6 +85,9 @@ describe("independent journal insights in Zotero", function () {
     assert.isFalse(collapsedSection.open, "the journal section is collapsed for the height check");
     assert.equal(win.getComputedStyle(summary).display, "none", "an empty header summary does not reserve a line");
     assert.equal(summary.getBoundingClientRect().height, 0, "the empty summary adds no collapsed-row height");
+    const initialBody = section.querySelector("[data-type='body']") as HTMLElement;
+    assert.equal(win.getComputedStyle(initialBody).paddingTop, "0px", "the collapsed body has no top padding");
+    assert.equal(win.getComputedStyle(initialBody).paddingBottom, "0px", "the collapsed body has no bottom padding");
     const heading = section.querySelector("collapsible-section > .head .title");
     assert.notEqual(win.getComputedStyle(heading!, "::before")?.display, "none", "the journal section shows the unified brand icon");
     await section._handleRefresh();
@@ -100,6 +103,10 @@ describe("independent journal insights in Zotero", function () {
     assert.notInclude(body.textContent!, "旧版本");
     assert.notInclude(body.textContent!, "legacy");
     assert.notInclude(body.textContent!, "物理学".concat("ESI"));
+    collapsedSection.open = false;
+    assert.equal(win.getComputedStyle(body).paddingTop, "0px", "the rendered collapsed body preserves 0 top padding");
+    assert.equal(win.getComputedStyle(body).paddingBottom, "0px", "the rendered collapsed body preserves 0 bottom padding");
+    collapsedSection.open = true;
     assert.isNull(section.querySelector("[data-type='refresh']"), "no header refresh icon");
     assert.isFalse(section.hidden, "the journal section is initially visible");
     section.scrollIntoView({ block: "start" });

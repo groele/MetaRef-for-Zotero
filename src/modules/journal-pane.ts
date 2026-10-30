@@ -30,6 +30,63 @@ const logger = createLogger("journal-pane");
 const supportsRankings = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && ["journalArticle", "conferencePaper"].includes(item.itemType));
 type Context = _ZoteroTypes.ItemPaneManagerSection.SectionHookArgs;
 
+function ensureJournalPaneStyles(doc?: Document | null) {
+  if (!doc)
+    return;
+  const styleID = "metaref-journal-pane-styles";
+  if (doc.getElementById(styleID))
+    return;
+  const style = doc.createElementNS("http://www.w3.org/1999/xhtml", "style");
+  style.id = styleID;
+  style.textContent = `
+    item-pane-custom-section[data-pane*="metaref-journal-insights"],
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] > collapsible-section,
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] [data-type="body"] {
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] collapsible-section:not([open]) [data-type="body"] {
+      max-height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+    }
+    item-pane-custom-section[data-pane*="metaref-journal-insights"] collapsible-section > .head .title-box .summary:empty {
+      display: none !important;
+    }
+    .metaref-journal-pane-wrap {
+      padding: 10px 12px 12px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      color: var(--fill-primary);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .metaref-journal-pane-wrap * {
+      box-sizing: border-box;
+    }
+    [data-journal-share]:hover { background:color-mix(in srgb,currentColor 8%,transparent)!important;color:var(--fill-primary)!important; }
+    [data-journal-share][data-share-success] { color:var(--accent-green,#16803c)!important; }
+    @media(prefers-color-scheme:dark) {
+      [data-journal-share][data-share-success] { color:var(--accent-green,#6ee7b7)!important; }
+    }
+    [data-journal-share]:focus-visible { outline:2px solid var(--fill-primary);outline-offset:2px; }
+    [data-journal-share]:disabled { cursor:progress;opacity:.7; }
+    @media(prefers-reduced-motion:no-preference) {
+      [data-journal-share] { transition:color 160ms ease,background-color 160ms ease,transform 160ms ease; }
+      [data-journal-share]:active { transform:scale(.94); }
+    }
+  `;
+  (doc.head || doc.documentElement)?.append(style);
+}
+
 export function registerJournalPane() {
   if (sectionID)
     return;
@@ -40,6 +97,7 @@ export function registerJournalPane() {
     header: { icon, l10nID: getLocaleID("journal-insights-heading")! },
     sidenav: { icon, l10nID: getLocaleID("journal-insights-heading")! },
     onInit({ body, doc, refresh, setEnabled }) {
+      ensureJournalPaneStyles(doc || body.ownerDocument);
       const summary = body.closest("collapsible-section")?.querySelector<HTMLElement>(".head .title-box .summary");
       if (summary && !summary.textContent?.trim())
         summary.style.display = "none";
@@ -84,6 +142,7 @@ export function registerJournalPane() {
         items.delete(body);
       renders.delete(body);
       body.replaceChildren();
+      body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
       setEnabled(getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item));
     },
     onRender({ body, item, setEnabled }) {
@@ -91,7 +150,18 @@ export function registerJournalPane() {
         items.set(body, item);
       renders.delete(body);
       setEnabled(getPref("insights.showPane", true) && hasEnabledJournalMetrics() && supportsRankings(item));
-      body.textContent = getString("journal-insights-loading");
+      const doc = body.ownerDocument || Zotero.getMainWindow()?.document;
+      ensureJournalPaneStyles(doc);
+      body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
+      if (doc) {
+        const loading = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+        loading.className = "metaref-journal-pane-wrap";
+        loading.textContent = getString("journal-insights-loading");
+        body.replaceChildren(loading);
+      }
+      else {
+        body.textContent = getString("journal-insights-loading");
+      }
     },
     onAsyncRender: render,
   });
@@ -237,7 +307,10 @@ async function render({ item, body, doc }: Context) {
   if (!addon.data.alive || renders.get(body) !== token || !body.isConnected)
     return;
   body.replaceChildren();
-  body.style.cssText = "padding:10px 12px 12px;line-height:1.5;overflow-wrap:anywhere;color:var(--fill-primary);";
+  body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
+  ensureJournalPaneStyles(doc || body.ownerDocument);
+  const container = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+  container.className = "metaref-journal-pane-wrap";
   const issn = String(item.getField("ISSN") || "").trim();
   const rows = item.itemType === "journalArticle"
     ? presentJournalInsights(result, Zotero.locale).map((row, index) => {
@@ -273,20 +346,7 @@ async function render({ item, body, doc }: Context) {
   shareBtn.title = getString("journal-share-card" as any);
   shareBtn.setAttribute("aria-label", shareBtn.title);
   shareBtn.style.cssText = "display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;min-width:30px;padding:0;margin:0;border:1px solid color-mix(in srgb,currentColor 18%,transparent);border-radius:8px;background:color-mix(in srgb,currentColor 2%,transparent);color:var(--fill-secondary);cursor:pointer;flex-shrink:0;";
-  const style = doc.createElementNS("http://www.w3.org/1999/xhtml", "style");
-  style.textContent = `
-    [data-journal-share]:hover { background:color-mix(in srgb,currentColor 8%,transparent)!important;color:var(--fill-primary)!important; }
-    [data-journal-share][data-share-success] { color:var(--accent-green,#16803c)!important; }
-    @media(prefers-color-scheme:dark) {
-      [data-journal-share][data-share-success] { color:var(--accent-green,#6ee7b7)!important; }
-    }
-    [data-journal-share]:focus-visible { outline:2px solid var(--fill-primary);outline-offset:2px; }
-    [data-journal-share]:disabled { cursor:progress;opacity:.7; }
-    @media(prefers-reduced-motion:no-preference) {
-      [data-journal-share] { transition:color 160ms ease,background-color 160ms ease,transform 160ms ease; }
-      [data-journal-share]:active { transform:scale(.94); }
-    }`;
-  headerRow.append(style);
+
   shareBtn.append(createShareSvgIcon(doc));
   let successAnimation: Animation | undefined;
   let resetTimer: number | undefined;
@@ -352,7 +412,7 @@ async function render({ item, body, doc }: Context) {
     }
   });
   headerRow.append(journalTitle, shareBtn);
-  body.append(headerRow);
+  container.append(headerRow);
   const rankingSection = text("section", "", "margin:0;");
   rankingSection.setAttribute("title", getString("journal-rankings-saved-note"));
   rankingSection.setAttribute("data-journal-rankings", "true");
@@ -379,7 +439,7 @@ async function render({ item, body, doc }: Context) {
   else {
     rankingSection.append(text("div", getString("journal-rankings-empty"), "font-size:12px;color:var(--fill-secondary);"));
   }
-  body.append(rankingSection);
+  container.append(rankingSection);
   const indexSection = text("section", "", "margin-top:16px;padding-top:12px;border-top:1px solid var(--fill-quinary);");
   indexSection.setAttribute("data-journal-indexes", "true");
   if (hasIndexResults)
@@ -433,7 +493,8 @@ async function render({ item, body, doc }: Context) {
   if (rows.length)
     indexSection.append(sources);
   if (hasIndexResults)
-    body.append(indexSection);
+    container.append(indexSection);
+  body.append(container);
 }
 
 export function unregisterJournalPane() {

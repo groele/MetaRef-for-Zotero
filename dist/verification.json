@@ -1,11 +1,11 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.7.0",
+  "version": "12.7.1",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3487765,
-  "sha256": "d09ec52dacebab4126a75b1f575166f4dfc9e06be1f04807d32b1c63f2bff674",
-  "sha512": "4e388e4ab5ce01e815698430cb235eb71bdb5b8f49c599921eb778292612ed2d5be805db6ae064485ab25ac83abd4a9c6361f75df0cb8ff522511171dc85d75b",
+  "bytes": 3488149,
+  "sha256": "82ce9d67d80e78b200ea6bc5da8ea138a88e3ca6aa48121cf6963bf6dbd50c24",
+  "sha512": "a7471b7d4c1b7cf6a5a264ce956e0a6622417a531bfd16e18be30b1e3ccf4899d91cb55bbf9c1ef04370115bde36ef7f3c4543929af9a14270af16b432570abe",
   "entries": 52,
   "zipCRC": "passed",
   "qualityChecks": {
@@ -13,10 +13,7 @@
     "sourceTypes": "passed",
     "eslint": "passed",
     "autocorrect": "passed",
-    "releaseTagSelfTest": "passed",
-    "githubReleaseWorkflow": "passed (run 41015364338)",
-    "remoteReleaseAsset": "passed (independent download SHA-256 matches local package)",
-    "githubCI": "failed twice: initial run 215 passed/2 failed; rerun 214 passed/3 failed. Reproducible journal insight API fixture E2E failures; rerun also had an ISSN snapshot integrity timeout."
+    "releaseTagSelfTest": "passed"
   },
   "automatedTests": {
     "unitTestFiles": 88,
@@ -25,13 +22,10 @@
   },
   "packageChecks": {
     "manifestIdentity": "metaflow@groele",
-    "manifestVersion": "12.7.0",
+    "manifestVersion": "12.7.1",
     "bundledScript": "passed",
-    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.7.0/zotero-metaflow.xpi",
-    "updateFeedSHA512": "matches package",
-    "publishedRelease": "https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.7.0",
-    "releaseIsLatest": true,
-    "onlineUpdateFeed": "passed (version 12.7.0, immutable asset URL and SHA-512 verified)"
+    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.7.1/zotero-metaflow.xpi",
+    "updateFeedSHA512": "matches package"
   },
   "isolatedZotero": {
     "performed": false,
@@ -43,6 +37,7 @@
     "main profile installation",
     "Zotero 11",
     "macOS/Linux",
-    "manual theme acceptance"
+    "manual theme acceptance",
+    "GitHub Release/CI pending"
   ]
 }
