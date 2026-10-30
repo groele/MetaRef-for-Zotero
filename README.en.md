@@ -1,8 +1,8 @@
-> Current maintained version: **12.6.27**. The collapsed journal index hides its empty summary line and returns to the native single-row height. [Release notes](docs/releases/metaflow-v12.6.27.md).
+> Current maintained version: **12.7.0**. The collapsed journal index hides its empty summary line and returns to the native single-row height. [Release notes](docs/releases/metaflow-v12.7.0.md).
 
 # Zotero MetaFlow
 
-> Current version 12.6.27: The collapsed journal index hides its empty summary line and returns to the native single-row height. [Release notes](docs/releases/metaflow-v12.6.27.md).
+> Current version 12.7.0: The collapsed journal index hides its empty summary line and returns to the native single-row height. [Release notes](docs/releases/metaflow-v12.7.0.md).
 
 **Zotero Flow Series · Metadata**
 
@@ -12,7 +12,7 @@ Validate, normalize, and enrich reference metadata.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Release](https://img.shields.io/badge/version-12.6.27-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.27) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.27/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
+[![Release](https://img.shields.io/badge/version-12.7.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.7.0) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.7.0/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [Overview](#overview) · [Installation and updates](#installation) · [Quick start](#quick-start) · [Key features](#features) · [Settings](#settings) · [Data, sync, and services](#data) · [Compatibility and validation](#compatibility) · [Troubleshooting](#troubleshooting) · [Development and documentation](#development) · [The Flow series](#series) · [Origin and license](#license)
 
@@ -28,7 +28,7 @@ Install this add-on independently and combine it with other Flow products as nee
 
 ## Installation and updates
 
-1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.27/zotero-metaflow.xpi) (add-on version **12.6.27**), not the Source code ZIP.
+1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.7.0/zotero-metaflow.xpi) (add-on version **12.7.0**), not the Source code ZIP.
 2. In Zotero, open **Tools → Plugins/Add-ons**, then choose **Install Add-on From File** from the gear menu.
 3. Select the XPI, complete installation, and restart if requested.
 
@@ -80,11 +80,11 @@ Version 12.6.1 restores native bottom-right notifications for batch confirmation
 
 ## Compatibility and validation
 
-| Item                   | Scope                                                                                                                                                     |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Current add-on version | 12.6.27                                                                                                                                                   |
-| Declared Zotero range  | `10.0` through `11.*`                                                                                                                                     |
-| Evidence boundary      | See the [release notes](docs/releases/metaflow-v12.6.27.md) for validation and compatibility boundaries. No automatic installation into the main profile. |
+| Item                   | Scope                                                                                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Current add-on version | 12.7.0                                                                                                                                                   |
+| Declared Zotero range  | `10.0` through `11.*`                                                                                                                                    |
+| Evidence boundary      | See the [release notes](docs/releases/metaflow-v12.7.0.md) for validation and compatibility boundaries. No automatic installation into the main profile. |
 
 Add-on and Zotero versions are separate. Declared compatibility does not establish testing on every host, operating system or service. This patch validates the targeted behaviors listed above, not all plugin workflows or main-profile installation.
 
