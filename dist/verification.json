@@ -14,8 +14,9 @@
     "eslint": "passed",
     "autocorrect": "passed",
     "releaseTagSelfTest": "passed",
-    "githubReleaseWorkflow": "pending",
-    "remoteReleaseAsset": "pending"
+    "githubReleaseWorkflow": "passed (run 41015364338)",
+    "remoteReleaseAsset": "passed (independent download SHA-256 matches local package)",
+    "githubCI": "failed twice: initial run 215 passed/2 failed; rerun 214 passed/3 failed. Reproducible journal insight API fixture E2E failures; rerun also had an ISSN snapshot integrity timeout."
   },
   "automatedTests": {
     "unitTestFiles": 88,
@@ -28,9 +29,9 @@
     "bundledScript": "passed",
     "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.7.0/zotero-metaflow.xpi",
     "updateFeedSHA512": "matches package",
-    "publishedRelease": "pending",
-    "releaseIsLatest": "pending",
-    "onlineUpdateFeed": "pending"
+    "publishedRelease": "https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.7.0",
+    "releaseIsLatest": true,
+    "onlineUpdateFeed": "passed (version 12.7.0, immutable asset URL and SHA-512 verified)"
   },
   "isolatedZotero": {
     "performed": false,
