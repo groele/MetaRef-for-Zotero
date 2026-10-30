@@ -225,7 +225,7 @@ function createShareSvgIcon(doc: Document) {
   return svg;
 }
 
-async function render({ item, body, doc, setSectionSummary }: Context) {
+async function render({ item, body, doc }: Context) {
   if (!item || !supportsRankings(item) || !hasEnabledJournalMetrics() || !getPref("insights.showPane", true))
     return;
   const token = {};
@@ -431,7 +431,6 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     indexSection.append(sources);
   if (hasIndexResults)
     body.append(indexSection);
-  setSectionSummary("");
 }
 
 export function unregisterJournalPane() {
