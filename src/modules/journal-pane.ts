@@ -40,6 +40,9 @@ export function registerJournalPane() {
     header: { icon, l10nID: getLocaleID("journal-insights-heading")! },
     sidenav: { icon, l10nID: getLocaleID("journal-insights-heading")! },
     onInit({ body, doc, refresh, setEnabled }) {
+      const summary = body.closest("collapsible-section")?.querySelector<HTMLElement>(".head .title-box .summary");
+      if (summary && !summary.textContent?.trim())
+        summary.style.display = "none";
       if (!navigationListeners.has(doc)) {
         const listener: EventListener = (event) => {
           const mouse = event as MouseEvent;

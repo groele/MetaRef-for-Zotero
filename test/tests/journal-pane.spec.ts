@@ -79,6 +79,12 @@ describe("independent journal insights in Zotero", function () {
     await win.ZoteroPane.selectItem(item.id);
     const section = win.document.querySelector("item-pane-custom-section[data-pane*='metaref-journal-insights']") as any;
     assert.isNotNull(section);
+    const collapsedSection = section.querySelector("collapsible-section");
+    const summary = section.querySelector("collapsible-section > .head .title-box .summary") as HTMLElement;
+    collapsedSection.open = false;
+    assert.isFalse(collapsedSection.open, "the journal section is collapsed for the height check");
+    assert.equal(win.getComputedStyle(summary).display, "none", "an empty header summary does not reserve a line");
+    assert.equal(summary.getBoundingClientRect().height, 0, "the empty summary adds no collapsed-row height");
     const heading = section.querySelector("collapsible-section > .head .title");
     assert.notEqual(win.getComputedStyle(heading!, "::before")?.display, "none", "the journal section shows the unified brand icon");
     await section._handleRefresh();
