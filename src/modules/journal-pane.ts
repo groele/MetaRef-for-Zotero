@@ -13,6 +13,7 @@ import { createLogger } from "../utils/logger";
 import { NavigationQueryCache } from "../utils/navigation-query-cache";
 import { getPref } from "../utils/prefs";
 import { registerExtraColumns } from "./item-tree";
+import { normalizeArxiv } from "./review/policy";
 import { getEnabledEasyScholarFields } from "./rules/tool-update-easyscholar";
 
 let sectionID: string | undefined;
@@ -32,6 +33,7 @@ const logger = createLogger("journal-pane");
 export function extractArxivID(item?: Zotero.Item): string | undefined {
   if (!item || !item.isRegularItem())
     return undefined;
+  const doi = String(item.getField("DOI") || "");
   const url = String(item.getField("url") || "");
   const extra = String(item.getField("extra") || "");
   let archiveID = "";
@@ -41,13 +43,40 @@ export function extractArxivID(item?: Zotero.Item): string | undefined {
   catch {
     archiveID = "";
   }
-  const match = `${url}\n${extra}\n${archiveID}`.match(/(?:arxiv\.org\/(?:abs|pdf)\/|arxiv:\s*)(\d{4}\.\d{4,5}(?:v\d+)?|[a-z\-]+(?:\.[a-z]{2})?\/\d{7})/i);
-  return match ? match[1] : undefined;
+  for (const candidate of [doi, url, archiveID]) {
+    const norm = normalizeArxiv(candidate);
+    if (norm)
+      return norm;
+  }
+  const allText = `${doi}\n${url}\n${extra}\n${archiveID}`;
+  const match = allText.match(/(?:arxiv\.org\/(?:abs|pdf|html)\/|(?:doi:|https?:\/\/doi\.org\/)?10\.48550\/arxiv\.|arxiv:\s*)((?:\d{4}\.\d{4,5}|[a-z.-]+\/\d{7})(?:v\d+)?)/i);
+  if (match)
+    return match[1].toLowerCase();
+  if (archiveID && /^(?:\d{4}\.\d{4,5}|[a-z.-]+\/\d{7})(?:v\d+)?$/i.test(archiveID.trim()))
+    return archiveID.trim().toLowerCase();
+  return undefined;
 }
 
-const isPreprintCandidate = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && (item.itemType === "preprint" || Boolean(extractArxivID(item))));
+export function isUnconvertedArxivPreprint(item?: Zotero.Item): boolean {
+  if (!item || !item.isRegularItem())
+    return false;
+  const arxivID = extractArxivID(item);
+  if (!arxivID)
+    return false;
+  const extra = String(item.getField("extra") || "");
+  if (extra.includes("MetaFlow preprint"))
+    return false;
+  if (item.itemType === "preprint")
+    return true;
+  const doi = String(item.getField("DOI") || "");
+  const publication = String(item.getField(item.itemType === "conferencePaper" ? "proceedingsTitle" : "publicationTitle") || "").trim();
+  const isArxivDOI = /^10\.48550\/arxiv\./i.test(doi);
+  const isArxivPub = !publication || /^(?:arxiv|corr)(?:\.org)?$/i.test(publication) || publication.toLowerCase().includes("arxiv preprint");
+  return isArxivDOI || isArxivPub;
+}
+
 const supportsRankings = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && ["journalArticle", "conferencePaper"].includes(item.itemType));
-const supportsSection = (item?: Zotero.Item) => Boolean(item && getPref("insights.showPane", true) && (supportsRankings(item) ? hasEnabledJournalMetrics() : isPreprintCandidate(item)));
+const supportsSection = (item?: Zotero.Item) => Boolean(item && getPref("insights.showPane", true) && (isUnconvertedArxivPreprint(item) || (supportsRankings(item) && hasEnabledJournalMetrics())));
 type Context = _ZoteroTypes.ItemPaneManagerSection.SectionHookArgs;
 
 function ensureJournalPaneStyles(doc?: Document | null) {
@@ -356,7 +385,7 @@ async function render({ item, body, doc }: Context) {
     body.replaceChildren();
     return;
   }
-  if (isPreprintCandidate(item) && !supportsRankings(item)) {
+  if (isUnconvertedArxivPreprint(item)) {
     const arxivID = extractArxivID(item);
     body.replaceChildren();
     body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
@@ -412,13 +441,17 @@ async function render({ item, body, doc }: Context) {
       convertBtn.disabled = true;
       convertBtn.textContent = `⏳ ${getString("journal-insights-loading") || "正在查询 arXiv 与 CrossRef…"}`;
       try {
-        await addon.hooks.onLintInBatch("tool-review-preprint", [item]);
+        await addon.hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
         await refreshJournalPane([item.id]);
       }
       catch (err) {
         logger.error("Preprint conversion failed:", err);
-        convertBtn.disabled = false;
-        convertBtn.textContent = `⚡ ${getString("rule-tool-review-preprint-menu-item") || "检查并转为正式发表版本…"}`;
+      }
+      finally {
+        if (convertBtn.isConnected) {
+          convertBtn.disabled = false;
+          convertBtn.textContent = `⚡ ${getString("rule-tool-review-preprint-menu-item") || "检查并转为正式发表版本…"}`;
+        }
       }
     });
     wrap.append(convertBtn);
@@ -484,9 +517,9 @@ async function render({ item, body, doc }: Context) {
   const journalTitle = text("h2", publication || getString("journal-insights-unnamed"), "font-size:14px;font-weight:600;margin:0;line-height:1.5;white-space:pre-wrap;flex:1;min-width:0;");
   journalTitle.setAttribute("data-journal-title", "true");
   const extraText = String(item.getField("extra") || "");
-  if (extraText.includes("MetaFlow preprint") || /arXiv:\s*\d{4}\.\d{4,5}/i.test(extraText)) {
+  if (extraText.includes("MetaFlow preprint")) {
     const convertedBadge = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
-    convertedBadge.textContent = getString("preprint-converted-badge") || "arXiv 已转正";
+    convertedBadge.textContent = getString("preprint-converted-badge") || "已由 arXiv 转正";
     convertedBadge.setAttribute("style", "display:inline-flex;align-items:center;margin-left:8px;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:color-mix(in srgb, #2e7d32 15%, transparent);color:#2e7d32;border:1px solid color-mix(in srgb, #2e7d32 30%, transparent);vertical-align:middle;");
     journalTitle.append(convertedBadge);
   }

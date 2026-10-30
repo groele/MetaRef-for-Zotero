@@ -9,6 +9,7 @@ import { getPref } from "../../utils/prefs";
 import { normalizedConcurrency } from "../../utils/rule-execution";
 import { recordRuntimeResult } from "../../utils/runtime-data-storage";
 import { updateBatchFeedback } from "../batch-feedback";
+import { isUnconvertedArxivPreprint } from "../journal-pane";
 import { defineRule } from "../rules/rule-base";
 import { CompleteMissingISSN } from "../rules/tool-update-metadata/complete-issn";
 import { applyReviewedMetadata, createRelatedVersion, selectionIssue } from "./apply";
@@ -57,8 +58,10 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
           const allCandidates = await discoverIdentifiers(item, signal, features.scanPDF !== false);
           if (!version && features.searchTitle !== false && !allCandidates.length && original.title)
             allCandidates.push({ kind: "Title", value: original.title, source: getString("review-source-title") });
+          const isPreprintItem = isUnconvertedArxivPreprint(item);
           const arxiv = allCandidates.filter(candidate => candidate.kind === "arXiv");
-          const candidates = version || (integrated && arxiv.length) ? arxiv : allCandidates;
+          const shouldInspectPreprint = version || (integrated && isPreprintItem && arxiv.length > 0);
+          const candidates = shouldInspectPreprint ? arxiv : allCandidates;
           if (!candidates.length)
             throw new Error(getString(version ? "review-no-arxiv" : "review-no-identifier"));
           const identifier = automaticIdentifier(candidates);
@@ -69,7 +72,7 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
             failureCodes.set(item.id, "metadata-auto-evidence");
             return;
           }
-          const preprint = version || (integrated && identifier.kind === "arXiv");
+          const preprint = shouldInspectPreprint && identifier.kind === "arXiv";
           // Title translators receive the complete local item, not just its title.
           const key = `${preprint}:${identifier.kind}:${identifier.value}:${identifier.kind === "Title" ? item.id : ""}`;
           let request = evidence.get(key);

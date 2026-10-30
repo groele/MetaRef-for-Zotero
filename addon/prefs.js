@@ -301,8 +301,6 @@ pref("rule.require-journal-abbr.tagSource", false);
 pref("insights.natureEnabled", true);
 pref("menu.tool-review-metadata", true);
 pref("menu.primary.tool-review-metadata", false);
-pref("menu.tool-review-preprint", true);
-pref("menu.primary.tool-review-preprint", true);
 pref("menu.tool-review-duplicates", true);
 pref("menu.primary.tool-review-duplicates", false);
 pref("menu.compact", true);

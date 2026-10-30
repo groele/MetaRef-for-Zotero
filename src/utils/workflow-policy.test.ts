@@ -3,9 +3,9 @@ import { commandPrimary, commandVisible, REMOTE_STANDARD_RULES, ruleSupportsItem
 
 describe("compact workflows", () => {
   it("shows core commands by default and restores explicit advanced placements", () => {
-    expect(["standard", "tool-update-metadata", "tool-review-preprint", "tool-clear-all-extra"].filter(key => commandVisible(key, true, true))).toEqual(["standard", "tool-update-metadata", "tool-review-preprint"]);
+    expect(["standard", "tool-update-metadata", "tool-clear-all-extra"].filter(key => commandVisible(key, true, true))).toEqual(["standard", "tool-update-metadata"]);
     expect(commandPrimary("standard", true, false)).toBe(true);
-    expect(commandPrimary("tool-review-preprint", true, false)).toBe(true);
+    expect(commandPrimary("tool-update-metadata", true, false)).toBe(true);
     expect(commandPrimary("tool-clear-all-extra", false, false)).toBe(false);
     expect(commandVisible("tool-clear-all-extra", false, true)).toBe(true);
     expect(commandVisible("standard", true, false)).toBe(false);

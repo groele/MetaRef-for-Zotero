@@ -8,7 +8,7 @@ export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "menu.compact": true,
   "workflow.remoteAuthorsOnCheck": false,
   "workflow.updateBibliographic": true,
-  "workflow.updateVersions": false,
+  "workflow.updateVersions": true,
   "workflow.formatAfterUpdate": true,
   "workflow.scanPDF": false,
   "workflow.searchTitle": false,

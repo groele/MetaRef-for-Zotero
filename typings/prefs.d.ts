@@ -276,8 +276,6 @@ declare namespace _ZoteroTypes {
       "insights.natureEnabled": boolean;
       "menu.tool-review-metadata": boolean;
       "menu.primary.tool-review-metadata": boolean;
-      "menu.tool-review-preprint": boolean;
-      "menu.primary.tool-review-preprint": boolean;
       "menu.tool-review-duplicates": boolean;
       "menu.primary.tool-review-duplicates": boolean;
       "menu.compact": boolean;

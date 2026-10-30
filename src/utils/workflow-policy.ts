@@ -1,7 +1,7 @@
 /** Local checking must not silently perform remote enrichment. */
 export const REMOTE_STANDARD_RULES = new Set(["require-doi", "correct-doi-long"]);
 
-export const CORE_COMMANDS = new Set(["standard", "tool-update-metadata", "tool-review-preprint"]);
+export const CORE_COMMANDS = new Set(["standard", "tool-update-metadata"]);
 
 export function commandVisible(key: string, compact: boolean, enabled: boolean): boolean {
   return enabled && (!compact || CORE_COMMANDS.has(key));
