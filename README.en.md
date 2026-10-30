@@ -1,15 +1,15 @@
 # Zotero MetaFlow
 
-**Deep Reference Metadata Governance · Authoritative Journal Insights · Native Bulk Deduplication · arXiv Preprint Conversion**
+**Deep Reference Metadata Governance · Authoritative Journal Insights · Native Bulk Deduplication · arXiv Preprint Conversion · Semantic Scholar TL;DR Summaries**
 
 _Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.0.4-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.4)
+[![Version](https://img.shields.io/badge/version-13.1.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.1.0)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/tests-611%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
+[![Tests Passing](https://img.shields.io/badge/tests-629%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
 
 [📦 Installation](#installation) · [✨ Key Highlights](#highlights) · [🛠️ Feature Matrix](#features) · [🚀 Quick Start](#quick-start) · [⚙️ Settings Guide](#settings) · [🛡️ Architecture & Safety](#architecture) · [❓ Troubleshooting & FAQ](#troubleshooting) · [🔗 Flow Series](#series) · [📄 Credits & License](#license)
 
@@ -39,6 +39,7 @@ graph LR
     B --> F["⚡ Native Deduplication<br/>(One-Click Lossless Merge)"]
     B --> G["🌐 Online Enrichment<br/>(Crossref/Semantic Scholar)"]
     B --> H["📄 arXiv Preprint Conversion<br/>(Discover DOI & Upgrade Paper)"]
+    B --> I["💡 Semantic Scholar TL;DR<br/>(AI Core Takeaways Summary)"]
 ```
 
 ### 1. 📊 Holistic Journal Insights (Integrated Sidebar Profile)
@@ -77,7 +78,19 @@ graph LR
   - **Full Asset Preservation**: All attachments (PDFs, snapshots), notes, tags, collection links, and native Undo history are preserved via Zotero's native merge transactions.
 - **Non-Intrusive Progress Feedback**: Delivers updates via native bottom-right toast notifications with cancellation support.
 
-### 4. 🧹 59-Rule Multi-Dimensional Governance Pipeline
+### 4. 💡 Instant Semantic Summaries: Semantic Scholar TL;DR Core Takeaways
+
+- **Inspired by syt2/Zotero-TLDR with Deep Native Evolution**: Solves the common academic pain point of wading through dense abstracts without grasping the paper's core contribution. MetaFlow extracts 1–2 sentence AI summaries (Too Long; Didn't Read) powered by Semantic Scholar.
+- **Embedded into the "Update Metadata" Workflow**:
+  - Automatically queries and retrieves key arguments for items with DOI, arXiv ID, or PMID when running "Update Metadata";
+  - **Flexible Storage Targets (User-Configurable)**:
+    - **Dedicated Child Note (Recommended)**: Idempotently creates or updates a clean HTML child note (`💡 TL;DR Core Takeaways (Semantic Scholar)`) without cluttering publication metadata;
+    - **Extra Field**: Appends `TLDR: ...`, enabling direct display in library table columns;
+    - **Dual Mode (Child Note + Extra)**: Delivers both instant table visibility and detailed note archiving;
+    - **Abstract Self-Healing**: Fills empty `abstractNote` fields when missing.
+- **Integrated Sidebar Highlight**: Displays a dedicated `💡 Core Takeaways (TL;DR)` card in the right-hand Journal Insights panel for instant reading comprehension.
+
+### 5. 🧹 59-Rule Multi-Dimensional Governance Pipeline
 
 - **Intelligent Title Normalization**:
   - Smart conversion between Sentence case and Title Case;
@@ -94,13 +107,13 @@ graph LR
   - **ISO 8601 Dates**: Unifies chaotic date strings into standard `YYYY-MM-DD` syntax;
   - **Thesis Place Resolution**: Resolves university locations and completes publication places for theses and dissertations.
 
-### 5. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
+### 6. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
 
 - **Dual-Engine Architecture**: Combines JabRef's comprehensive journal mapping database with the international LTWA (List of Title Word Abbreviations) rule set.
 - **100% Offline Capability**: Accurately infers standard ISO 4 abbreviations even without an internet connection.
 - **Language-Aware Processing**: Distinguishes English from CJK journals with custom pinyin abbreviation options.
 
-### 6. ✍️ Rich-Text Title Editor Toolbar
+### 7. ✍️ Rich-Text Title Editor Toolbar
 
 - Lightweight formatting toolbar integrated directly over Zotero's title editing input.
 - Wrap selections with `<i>` (italics / scientific names), `<b>` (bold), `<sub>` (subscript / chemical indexes), `<sup>` (superscript / citations), and `<span class="nocase">` (case-protection tags).
@@ -116,6 +129,7 @@ graph LR
 | ------------------------------ | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------- |
 | **Journal Insights**           | JCR Quartiles, CAS Tiers, Impact Factor (IF), CCF, Nature Index, ESI            | Instant academic prestige awareness without leaving Zotero                        | Right Sidebar · Journal Insights Panel             |
 | **arXiv Preprint Conversion**  | Query official DOI, lossless upgrade to journal article, preserve notes & files | Solves obsolete preprint metadata and eliminates manual re-importing losing notes | Sidebar arXiv Card / Right-click "Update Metadata" |
+| **Semantic Summaries (TL;DR)** | 1–2 sentence AI core takeaways from Semantic Scholar backfilled to notes/Extra  | Long, dense abstracts making it hard to grasp the main breakthrough quickly       | Item Context Menu · Update Metadata / Sidebar      |
 | **Bulk Deduplication**         | Native group merging, master protection, missing-field fill, asset preservation | Eliminates hours of manual confirmation in libraries with hundreds of duplicates  | Duplicate Items collection · Top-right bar         |
 | **Title Formatting**           | Sentence / Title case conversion with chemical formula and acronym protection   | Cleans up messy publisher imports without destroying scientific symbols           | Item Context Menu / Auto-cleanup on import         |
 | **Abstract Cleanup**           | Elimination of internal line breaks, extra spaces, broken hyphenated words      | Fixes fragmented PDF extractions and OCR breaks                                   | Item Context Menu · Check & Fix Metadata           |
@@ -168,6 +182,13 @@ graph LR
    - MetaFlow automatically queries the arXiv Atom API and CrossRef for the official publisher DOI, journal name, and volume/issue/pages;
    - Upon confirmation, the item is upgraded to a journal article, **preserving 100% of attached PDF files, highlights, annotations, notes, and tags**, while displaying a green **"arXiv Converted"** badge in Journal Insights.
 
+### Scenario 6: Extract Semantic Scholar TL;DR Core Takeaways in One Click
+
+1. Select any reference containing a DOI, arXiv ID, or PMID.
+2. Right-click and choose **"Update Metadata"** (or click the update action in the sidebar).
+3. MetaFlow automatically fetches the AI-generated key takeaways from Semantic Scholar and backfills them into a dedicated child note or Extra field.
+4. Reselect the item: the right-hand sidebar immediately renders an eye-catching **"💡 Core Takeaways (TL;DR)"** card for rapid skimming.
+
 ---
 
 <a id="settings"></a>
@@ -210,6 +231,12 @@ Open **Tools → Plugins/Add-ons** (or **Zotero → Settings** on macOS) and nav
 - **Conversion Master Toggle**: Freely enable or disable "Automatically detect preprints and convert to published version" in Preferences under Pipeline Settings;
 - **Conversion Strategy**: Choose between "In-place upgrade (transforms itemType seamlessly, preserving PDFs and all annotations)" or "Create related publication (maintains preprint, establishes bidirectional relations)";
 - **Auditing**: Automatically records original arXiv identifiers and URLs into `Extra` for complete provenance.
+
+### 7. Semantic Scholar TL;DR Strategy
+
+- **Summary Master Toggle**: Freely enable or disable "Automatically extract Semantic Scholar TL;DR summary" in Preferences under Pipeline Settings;
+- **Storage Target**: Choose between "Dedicated child note (Recommended)", "Extra field (ideal for table column view)", or "Both child note and Extra";
+- **Instant Sidebar Visibility**: Whenever TL;DR data is available, the Journal Insights sidebar automatically surfaces the takeaway card.
 
 ---
 
@@ -328,6 +355,8 @@ The creation, architectural evolution, and capabilities of Zotero MetaFlow rely 
   Provided key architectural inspiration for clean DOI extraction, ShortDOI generation, and bidirectional identifier resolution.
 - **[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)** (by @AllanChain):
   Provided outstanding inspiration and architectural guidance for automated preprint-to-published discovery, atomic metadata conversion, PDF annotation preservation, and bidirectional version networks, motivating MetaFlow's native one-click arXiv conversion highlight.
+- **[syt2/Zotero-TLDR](https://github.com/syt2/Zotero-TLDR)** (by @syt2):
+  Provided foundational inspiration for extracting concise 1–2 sentence AI core takeaways (TL;DR, Too Long; Didn't Read) via Semantic Scholar API and elegantly backfilling them into child notes and extra fields in Zotero.
 
 ### 2. Plugin Engineering Frameworks & Toolchains
 

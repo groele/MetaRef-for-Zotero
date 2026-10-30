@@ -92,6 +92,7 @@ MetaFlow 将多个 Zotero 开源插件所启发的功能整合到**统一的命�
 | **元数据身份核验**       | DOI、ISBN、PMID/PMCID、arXiv 标识符校验；可选标题检索；来源对比与字段选择性采纳          | [ZotMeta](https://github.com/RoadToDream/ZotMeta)                              |
 | **DOI 与 ShortDOI 管理** | DOI 规范化、ShortDOI 解析、标识符验证，以及按需生成 ShortDOI                             | [DOI Manager](https://github.com/bwiernik/zotero-shortdoi)                     |
 | **预印本与正式版管理**   | 核验 arXiv 明确关联的正式发表 DOI，选择原位更新或创建并关联正式版记录                    | [arXiv Workflow](https://github.com/AllanChain/zotero-arxiv-workflow)          |
+| **语义摘要与核心论点**   | 提取 Semantic Scholar 1~2 句 TL;DR 论点摘要，回填至子笔记或 Extra 并在侧边栏展示          | [Zotero-TLDR](https://github.com/syt2/Zotero-TLDR)                             |
 | **期刊缩写整理**         | 期刊全称/缩写映射、离线 ISO 4 推断、期刊与会议名称规范化                                 | [Zotero Journal Abbreviation](https://github.com/zoushucai/zotero-journalabbr) |
 | **期刊评价与学术指标**   | EasyScholar 指标、分区查询、文献列表自定义列、Extra 选择性输出及期刊侧栏                 | [Update IFs / EasyScholar](https://github.com/redleafnew/zotero-updateifsE)    |
 
@@ -126,7 +127,7 @@ MetaFlow 将多个 Zotero 开源插件所启发的功能整合到**统一的命�
 
 | 项目                   | 说明                                                                                  |
 | :--------------------- | :------------------------------------------------------------------------------------ |
-| **插件版本**           | `12.1.0`                                                                              |
+| **插件版本**           | `13.1.0`                                                                              |
 | **插件 ID**            | `metaflow@groele`                                                                     |
 | **支持的 Zotero 版本** | `Zotero 10.0 – 11.*`（严格测试覆盖 Windows Zotero 10.0.6 与 Zotero 11 dev Gecko 153） |
 | **操作系统**           | Windows / macOS / Linux                                                               |
@@ -196,7 +197,7 @@ Zotero MetaFlow 的诞生与演化深度依托开源社区的智慧与成果。�
 - **[redleafnew/zotero-updateifsE](https://github.com/redleafnew/zotero-updateifsE)**：
   特别感谢 redleafnew 老师开发的 `zotero-updateifsE`！该项目在利用 EasyScholar API 获取中科院分区、影响因子、期刊评级与学术指标回写 Zotero Extra 字段等方面的开创性实践，为本项目 EasyScholar 61 项指标对接、权限主控及指标展示体系的设计提供了极其重要的参考与灵感。
 
-- **[ChenglongMa/zoplicate](https://github.com/ChenglongMa/zoplicate)**、**[RoadToDream/ZotMeta](https://github.com/RoadToDream/ZotMeta)**、**[bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi)** 和 **[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)**：为重复文献管理、身份核验、DOI 及预印本工作流提供重要参考。MetaFlow 在自己的架构中整合相关能力，不代表与上游功能完全等价或存在官方隶属关系。
+- **[ChenglongMa/zoplicate](https://github.com/ChenglongMa/zoplicate)**、**[RoadToDream/ZotMeta](https://github.com/RoadToDream/ZotMeta)**、**[bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi)**、**[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)** 和 **[syt2/Zotero-TLDR](https://github.com/syt2/Zotero-TLDR)**：为重复文献管理、身份核验、DOI、预印本工作流及 TL;DR 论点提炼提供重要参考。MetaFlow 在自己的架构中整合相关能力，不代表与上游功能完全等价或存在官方隶属关系。
 
 ### 插件工程框架与工具链
 

@@ -1525,6 +1525,29 @@
         data-l10n-id="metadata-update-journal-info-description"
         class="metaref-pref-description"
       />
+      <checkbox
+        data-l10n-id="metadata-update-tldr"
+        preference="workflow.tldrEnabled"
+        native="true"
+      />
+      <description
+        data-l10n-id="metadata-update-tldr-description"
+        class="metaref-pref-description"
+      />
+      <vbox class="indented-pref">
+        <hbox align="center">
+          <label data-l10n-id="metadata-tldr-target-label" />
+          <radiogroup
+            orient="horizontal"
+            id="metaref-tldr-target"
+            preference="workflow.tldrTarget"
+          >
+            <radio data-l10n-id="metadata-tldr-target-note" value="note" />
+            <radio data-l10n-id="metadata-tldr-target-extra" value="extra" />
+            <radio data-l10n-id="metadata-tldr-target-both" value="both" />
+          </radiogroup>
+        </hbox>
+      </vbox>
       <description
         data-l10n-id="rule-tool-update-metadata-dialog-note-rate-limit"
         class="metaref-pref-description"

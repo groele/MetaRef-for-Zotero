@@ -92,6 +92,7 @@ export function setupWorkflowSettings(pane: Element) {
   pane.querySelector("#metaref-primary-menu-controls")?.remove();
   const bibliographic = choice("update-bibliographic", "workflow.updateBibliographic", true, update);
   const versions = choice("update-versions", "workflow.updateVersions", false, update);
+  choice("update-tldr", "workflow.tldrEnabled", true, update);
   choice("update-format", "workflow.formatAfterUpdate", true, update);
   moveChoice("metadata.updateJournalInfo", update);
   choice("update-duplicates", "workflow.reviewDuplicatesOnUpdate", false, update);

@@ -5,13 +5,27 @@ import { abortableDelay } from "../../../../utils/rule-execution";
 import { defineService } from "./base-service";
 
 const paperAliases = new Map<string, { id: string; expires: number }>();
-const PAPER_FIELDS = ["paperId", "publicationTypes", "title", "authors", "abstract", "externalIds", "url", "venue", "publicationVenue", "publicationDate", "journal"];
+const PAPER_FIELDS = ["paperId", "publicationTypes", "title", "authors", "abstract", "tldr", "externalIds", "url", "venue", "publicationVenue", "publicationDate", "journal"];
 const normalizePaperID = (id: string) => /^DOI:/i.test(id.trim()) ? `DOI:${id.trim().slice(4).toLowerCase()}` : id.trim();
 const paperURL = (id: string) => `https://api.semanticscholar.org/graph/v1/paper/${encodeURIComponent(normalizePaperID(id))}?fields=${PAPER_FIELDS.join(",")}`;
 
 export function clearSemanticScholarCache() {
   paperAliases.clear();
   clearServiceRequestCache("semantic-scholar");
+}
+
+export async function fetchPaperTLDR(paperID: string, signal?: AbortSignal): Promise<string | undefined> {
+  try {
+    const res = await request(paperID, ["tldr"], signal);
+    if (res._status === 200 && res.tldr?.text) {
+      return res.tldr.text.trim();
+    }
+  }
+  catch {
+    signal?.throwIfAborted();
+    return undefined;
+  }
+  return undefined;
 }
 
 async function request(paperID: string, _fields: (keyof Result)[], signal?: AbortSignal): Promise<RequestResult> {
@@ -178,6 +192,10 @@ type RequestResult = ({ _status: 200 } & Result) | ({ _status: 400 | 404 } & Err
 interface Result {
   paperId: string;
   abstract?: string;
+  tldr?: {
+    model?: string;
+    text?: string;
+  };
   authors?: {
     name: string;
     authorId?: string;

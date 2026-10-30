@@ -7,12 +7,15 @@ import { extractIdentifiers, isPreprint } from "./identifiers";
 import { resolveMissingISSN } from "./issn-resolver";
 import { mergeMetadata, metadataIdentity, metadataMissing, metadataValuesEqual, normalizeDOI } from "./policy";
 import { services } from "./services";
+import { backfillItemTLDR } from "./tldr";
 
 interface UpdateMetadataOption {
   mode: "blank" | "all";
   allowTypeChanged: boolean;
   repairCreators?: boolean;
   creatorsOnly?: boolean;
+  tldrEnabled?: boolean;
+  tldrTarget?: "note" | "extra" | "both" | "abstract";
   // lint: boolean;
 }
 
@@ -345,6 +348,15 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     if (!options.creatorsOnly)
       applyItemFields(fields);
 
+    if (options.tldrEnabled && !options.creatorsOnly) {
+      await backfillItemTLDR(item, identifiers, {
+        target: options.tldrTarget,
+        report,
+        debug,
+        signal,
+      });
+    }
+
     // if (options.lint)
     //   addon.runner.add({ rules: "standard", items: item });
   },
@@ -354,6 +366,8 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
       mode: getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" : "blank",
       allowTypeChanged: getPref("rule.tool-update-metadata.option.allow-type-changed"),
       repairCreators: getPref("metadata.repairCreators" as any, true) === true,
+      tldrEnabled: getPref("workflow.tldrEnabled" as any, true) === true,
+      tldrTarget: getPref("workflow.tldrTarget" as any, "note") as "note" | "extra" | "both" | "abstract",
     };
   },
 });

@@ -307,6 +307,8 @@ pref("menu.compact", true);
 pref("workflow.remoteAuthorsOnCheck", false);
 pref("workflow.updateBibliographic", true);
 pref("workflow.updateVersions", true);
+pref("workflow.tldrEnabled", true);
+pref("workflow.tldrTarget", "note");
 pref("workflow.formatAfterUpdate", true);
 pref("workflow.scanPDF", false);
 pref("workflow.searchTitle", false);

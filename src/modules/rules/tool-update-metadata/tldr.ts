@@ -1,0 +1,239 @@
+import type { ApplyContext } from "../rule-base";
+import type { Identifiers } from "./identifiers";
+import { getString } from "../../../utils/locale";
+import { extractArxivID } from "../../journal-pane";
+import { fetchPaperTLDR, parsePaperID } from "./services/semantic-scholar-service";
+
+export interface TLDRBackfillOptions {
+  target?: "note" | "extra" | "both" | "abstract";
+  report?: ApplyContext["report"];
+  debug?: ApplyContext["debug"];
+  signal?: AbortSignal;
+}
+
+export function escapeHTML(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+export function extractTLDRFromExtra(extra: string): string | undefined {
+  if (!extra)
+    return undefined;
+  for (const line of extra.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (/^TL;?DR\s*:/i.test(trimmed)) {
+      const colonIndex = trimmed.indexOf(":");
+      return trimmed.slice(colonIndex + 1).trim();
+    }
+  }
+  return undefined;
+}
+
+export function extractTLDRFromNote(noteContent: string): string | undefined {
+  if (!noteContent)
+    return undefined;
+  if (!noteContent.includes("data-metaflow-tldr") && !noteContent.includes("TL;DR (Semantic Scholar)") && !noteContent.includes("TL;DR 核心论点") && !noteContent.includes("TL;DR:"))
+    return undefined;
+
+  const bqMatch = noteContent.match(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/i);
+  if (bqMatch)
+    return bqMatch[1].replace(/<[^>]+>/g, "").trim();
+
+  const pMatch = noteContent.match(/<p[^>]*>([\s\S]*?)<\/p>/gi);
+  if (pMatch && pMatch.length > 1)
+    return pMatch[pMatch.length - 1].replace(/<[^>]+>/g, "").trim();
+
+  return noteContent.replace(/<[^>]+>/g, "").replace(/💡\s*TL;?DR[^\n:]*:\s*/i, "").trim();
+}
+
+export function extractTLDRFromItem(item: Zotero.Item): string | undefined {
+  if (!item)
+    return undefined;
+  if (typeof item.getField === "function") {
+    const extra = String(item.getField("extra") || "");
+    const fromExtra = extractTLDRFromExtra(extra);
+    if (fromExtra)
+      return fromExtra;
+  }
+  if (typeof item.getNotes === "function" && typeof Zotero !== "undefined" && Zotero.Items?.get) {
+    const noteIDs = item.getNotes();
+    for (const id of noteIDs) {
+      const note = Zotero.Items.get(id);
+      if (note && !note.deleted && typeof note.getNote === "function") {
+        const fromNote = extractTLDRFromNote(note.getNote());
+        if (fromNote)
+          return fromNote;
+      }
+    }
+  }
+  return undefined;
+}
+
+export function resolvePaperIDForTLDR(item: Zotero.Item, identifiers?: Partial<Identifiers>): string | undefined {
+  if (identifiers?.SemanticScholarID)
+    return parsePaperID("SemanticScholarID", identifiers.SemanticScholarID);
+  if (identifiers?.DOI)
+    return parsePaperID("DOI", identifiers.DOI);
+  if (identifiers?.arXiv)
+    return parsePaperID("arXiv", identifiers.arXiv);
+  if (identifiers?.PMID)
+    return parsePaperID("PMID", identifiers.PMID);
+  if (identifiers?.PMCID)
+    return parsePaperID("PMCID", identifiers.PMCID);
+
+  if (item && typeof item.getField === "function") {
+    const doi = String(item.getField("DOI") || "").trim();
+    if (doi)
+      return parsePaperID("DOI", doi);
+
+    const arxiv = extractArxivID(item);
+    if (arxiv)
+      return parsePaperID("arXiv", arxiv);
+  }
+
+  return undefined;
+}
+
+export function findExistingTLDRNote(item: Zotero.Item): Zotero.Item | null {
+  if (typeof item.getNotes !== "function" || typeof Zotero === "undefined" || !Zotero.Items?.get)
+    return null;
+  const noteIDs = item.getNotes();
+  for (const id of noteIDs) {
+    const note = Zotero.Items.get(id);
+    if (note && !note.deleted && typeof note.getNote === "function") {
+      const content = String(note.getNote() || "");
+      if (content.includes("data-metaflow-tldr") || content.includes("TL;DR (Semantic Scholar)") || content.includes("TL;DR 核心论点"))
+        return note;
+    }
+  }
+  return null;
+}
+
+export async function saveTLDRToNote(item: Zotero.Item, tldr: string): Promise<boolean> {
+  if (typeof item.getNotes !== "function")
+    return false;
+
+  const noteHtml = `<div data-metaflow-tldr="true"><p><strong>💡 TL;DR 核心论点 (Semantic Scholar)</strong></p><blockquote style="margin:8px 0;padding:8px 12px;border-left:3px solid #245ac7;background:rgba(36,90,199,0.06);line-height:1.6;">${escapeHTML(tldr)}</blockquote></div>`;
+
+  const existing = findExistingTLDRNote(item);
+  if (existing) {
+    if (typeof existing.getNote === "function" && existing.getNote() === noteHtml)
+      return false;
+    if (typeof existing.setNote === "function") {
+      existing.setNote(noteHtml);
+      if (typeof existing.saveTx === "function")
+        await existing.saveTx();
+      return true;
+    }
+  }
+  else if (typeof Zotero !== "undefined" && typeof Zotero.Item === "function") {
+    const newNote = new Zotero.Item("note");
+    newNote.libraryID = item.libraryID;
+    newNote.parentID = item.id;
+    newNote.setNote(noteHtml);
+    if (typeof newNote.saveTx === "function")
+      await newNote.saveTx();
+    return true;
+  }
+  return false;
+}
+
+export function saveTLDRToExtra(item: Zotero.Item, tldr: string): boolean {
+  if (typeof item.getField !== "function" || typeof item.setField !== "function")
+    return false;
+  const currentExtra = String(item.getField("extra") || "");
+  const lines = currentExtra.split(/\r?\n/);
+  const cleanTLDR = tldr.replace(/[\r\n]+/g, " ").trim();
+  const tldrLine = `TLDR: ${cleanTLDR}`;
+  const existingIndex = lines.findIndex(line => /^TL;?DR\s*:/i.test(line.trim()));
+  let updatedExtra: string;
+  if (existingIndex >= 0) {
+    if (lines[existingIndex] === tldrLine)
+      return false;
+    lines[existingIndex] = tldrLine;
+    updatedExtra = lines.join("\n");
+  }
+  else {
+    updatedExtra = currentExtra.trim() ? `${currentExtra.trim()}\n${tldrLine}` : tldrLine;
+  }
+  item.setField("extra", updatedExtra);
+  return true;
+}
+
+export function saveTLDRToAbstract(item: Zotero.Item, tldr: string): boolean {
+  if (typeof item.getField !== "function" || typeof item.setField !== "function")
+    return false;
+  const currentAbstract = String(item.getField("abstractNote") || "").trim();
+  if (currentAbstract)
+    return false;
+  item.setField("abstractNote", tldr.trim());
+  return true;
+}
+
+export async function backfillItemTLDR(
+  item: Zotero.Item,
+  identifiers: Partial<Identifiers> = {},
+  options: TLDRBackfillOptions = {},
+): Promise<boolean> {
+  const target = options.target || "note";
+  const debug = options.debug || (() => {});
+  const report = options.report || (() => {});
+  const signal = options.signal;
+
+  const paperID = resolvePaperIDForTLDR(item, identifiers);
+  if (!paperID) {
+    debug("No valid identifier (DOI/arXiv/PMID) found for Semantic Scholar TL;DR lookup.");
+    return false;
+  }
+
+  debug(`Fetching Semantic Scholar TL;DR for paper: ${paperID}`);
+  let tldr: string | undefined;
+  try {
+    tldr = await fetchPaperTLDR(paperID, signal);
+  }
+  catch (error) {
+    signal?.throwIfAborted();
+    debug(`Semantic Scholar TL;DR lookup error: ${error}`);
+    return false;
+  }
+
+  if (!tldr) {
+    debug(`No TL;DR summary available on Semantic Scholar for ${paperID}`);
+    return false;
+  }
+
+  let saved = false;
+
+  if (target === "note" || target === "both") {
+    const noteSaved = await saveTLDRToNote(item, tldr);
+    if (noteSaved)
+      saved = true;
+  }
+
+  if (target === "extra" || target === "both") {
+    const extraSaved = saveTLDRToExtra(item, tldr);
+    if (extraSaved)
+      saved = true;
+  }
+
+  if (target === "abstract") {
+    const abstractSaved = saveTLDRToAbstract(item, tldr);
+    if (abstractSaved)
+      saved = true;
+  }
+
+  if (saved) {
+    const targetLabel = getString(`metadata-tldr-target-${target}` as any) || target;
+    report({
+      level: "info",
+      code: "metadata-tldr-extracted",
+      message: getString("rule-tool-update-metadata-tldr-saved", { args: { target: targetLabel } }) || `已提取并回填 Semantic Scholar TL;DR 核心论点（${targetLabel}）`,
+    });
+  }
+
+  return saved;
+}

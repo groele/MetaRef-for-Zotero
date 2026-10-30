@@ -12,6 +12,8 @@ import { updateBatchFeedback } from "../batch-feedback";
 import { isUnconvertedArxivPreprint } from "../journal-pane";
 import { defineRule } from "../rules/rule-base";
 import { CompleteMissingISSN } from "../rules/tool-update-metadata/complete-issn";
+import { extractIdentifiers } from "../rules/tool-update-metadata/identifiers";
+import { backfillItemTLDR } from "../rules/tool-update-metadata/tldr";
 import { applyReviewedMetadata, createRelatedVersion, selectionIssue } from "./apply";
 import { automaticIdentifier, automaticSelection, hasLocalCorroboration } from "./automatic-policy";
 import { chooseDuplicateBatch, runDuplicateBatch } from "./bulk-review";
@@ -112,7 +114,7 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
       prepared?.(options);
       return options;
     },
-    apply({ item, options, report }) {
+    async apply({ item, options, report }) {
       if (options.failures.has(item.id)) {
         report({ level: "warning", code: options.failureCodes.get(item.id), message: options.failures.get(item.id)! });
         return;
@@ -123,6 +125,14 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
         const resolved = selection.proposal.conflicts.filter(field => selection.fields.has(field));
         if (resolved.length)
           report({ level: "info", code: "metadata-cloud-priority", source: selection.proposal.source, message: getString("review-cloud-priority", { args: { fields: resolved.join(", ") } }) });
+
+        if (getPref("workflow.tldrEnabled" as any, true) === true) {
+          const identifiers = extractIdentifiers(item);
+          await backfillItemTLDR(item, identifiers, {
+            target: getPref("workflow.tldrTarget" as any, "note"),
+            report,
+          });
+        }
       }
     },
   });

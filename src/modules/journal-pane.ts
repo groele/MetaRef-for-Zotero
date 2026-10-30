@@ -15,6 +15,7 @@ import { getPref } from "../utils/prefs";
 import { registerExtraColumns } from "./item-tree";
 import { normalizeArxiv } from "./review/policy";
 import { getEnabledEasyScholarFields } from "./rules/tool-update-easyscholar";
+import { extractTLDRFromItem } from "./rules/tool-update-metadata/tldr";
 
 let sectionID: string | undefined;
 const observers: symbol[] = [];
@@ -430,6 +431,24 @@ async function render({ item, body, doc }: Context) {
     desc.setAttribute("style", "font-size:12px;line-height:1.5;color:var(--fill-secondary);margin-bottom:12px;");
     wrap.append(desc);
 
+    const tldr = extractTLDRFromItem(item);
+    if (tldr) {
+      const tldrBox = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      tldrBox.setAttribute("style", "margin:0 0 12px;padding:8px 10px;background:color-mix(in srgb, var(--accent-blue, #245ac7) 8%, transparent);border-radius:6px;border-left:3px solid var(--accent-blue, #245ac7);font-size:12px;line-height:1.5;color:var(--fill-primary);");
+      const tldrHead = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      tldrHead.setAttribute("style", "font-size:11px;font-weight:600;color:var(--accent-blue, #245ac7);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;");
+      const headTitle = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+      headTitle.textContent = `💡 ${getString("journal-insights-tldr-heading") || "核心论点 (TL;DR)"}`;
+      const headSrc = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+      headSrc.textContent = "Semantic Scholar";
+      headSrc.setAttribute("style", "font-size:10px;font-weight:400;opacity:0.75;");
+      tldrHead.append(headTitle, headSrc);
+      const tldrBody = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      tldrBody.textContent = tldr;
+      tldrBox.append(tldrHead, tldrBody);
+      wrap.append(tldrBox);
+    }
+
     const convertBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLButtonElement;
     convertBtn.type = "button";
     convertBtn.textContent = `⚡ ${getString("rule-tool-review-preprint-menu-item") || "检查并转为正式发表版本…"}`;
@@ -623,6 +642,27 @@ async function render({ item, body, doc }: Context) {
     rankingSection.append(text("div", getString("journal-rankings-empty"), "font-size:12px;color:var(--fill-secondary);"));
   }
   container.append(rankingSection);
+
+  const tldr = extractTLDRFromItem(item);
+  if (tldr) {
+    const tldrSection = doc.createElementNS("http://www.w3.org/1999/xhtml", "section");
+    tldrSection.setAttribute("data-journal-tldr", "true");
+    tldrSection.setAttribute("style", "margin-top:14px;padding:10px 12px;background:color-mix(in srgb, var(--accent-blue, #245ac7) 6%, transparent);border-radius:6px;border-left:3px solid var(--accent-blue, #245ac7);");
+    const tldrHeader = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    tldrHeader.setAttribute("style", "display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;");
+    const tldrTitle = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    tldrTitle.textContent = `💡 ${getString("journal-insights-tldr-heading") || "核心论点 (TL;DR)"}`;
+    tldrTitle.setAttribute("style", "font-size:12px;font-weight:600;color:var(--accent-blue, #245ac7);");
+    const tldrSource = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    tldrSource.textContent = "Semantic Scholar";
+    tldrSource.setAttribute("style", "font-size:10px;color:var(--fill-secondary);opacity:0.8;");
+    tldrHeader.append(tldrTitle, tldrSource);
+    const tldrBody = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
+    tldrBody.textContent = tldr;
+    tldrBody.setAttribute("style", "font-size:13px;line-height:1.55;margin:0;color:var(--fill-primary);white-space:pre-wrap;");
+    tldrSection.append(tldrHeader, tldrBody);
+    container.append(tldrSection);
+  }
   const indexSection = text("section", "", "margin-top:16px;padding-top:12px;border-top:1px solid var(--fill-quinary);");
   indexSection.setAttribute("data-journal-indexes", "true");
   if (hasIndexResults)
