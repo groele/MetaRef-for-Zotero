@@ -431,7 +431,7 @@ async function render({ item, body, doc, setSectionSummary }: Context) {
     indexSection.append(sources);
   if (hasIndexResults)
     body.append(indexSection);
-  setSectionSummary([rankings.find(row => row.key === "jcr")?.value || "", isJournalIndexEnabled("esi") && result.categories.length ? rows[0]?.value || "" : "", isJournalIndexEnabled("nature") && result.natureIndex ? "Nature Index" : ""].filter(Boolean).join(" · "));
+  setSectionSummary("");
 }
 
 export function unregisterJournalPane() {

@@ -1,11 +1,11 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "12.6.23",
+  "version": "12.6.24",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3487747,
-  "sha256": "1bff9b8f31ce69d4d1bd2c36eaffc82a3e15d95acba69bf0e8cfe1042a6627f2",
-  "sha512": "b451bf3000a54c31530a164d9146dcd2a7667ca09f705d34c47f05f19e01534923e816cf067c4ce74790a632b39a3157ef3a0d2e1656cafaf9ae2c2e14367290",
+  "bytes": 3487679,
+  "sha256": "9bc9a3030f4fb201eba2e147cf3b1535c90f5495a63edf81b52db62ca4837b0e",
+  "sha512": "92dcde2c7dec7768098de110c75ec542f09aeaeb57c110cfcc802b947f3e0831a1e592bf64830622208e31d318b8cba43589accf99a107494c24564815c81d4d",
   "entries": 52,
   "zipCRC": "passed",
   "qualityChecks": {
@@ -13,28 +13,29 @@
     "sourceTypes": "passed",
     "changedFileEslint": "passed",
     "releaseTagSelfTest": "passed",
-    "testTypes": "passed",
-    "eslint": "passed",
-    "autocorrect": "passed"
+    "autocorrectChangedDocs": "passed"
   },
   "automatedTests": {
     "files": 88,
     "passed": 611,
     "failed": 0
   },
+  "packageChecks": {
+    "manifestIdentity": "metaflow@groele",
+    "manifestVersion": "12.6.24",
+    "bundledScript": "passed",
+    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.24/zotero-metaflow.xpi",
+    "updateFeedSHA512": "matches package"
+  },
   "nativeZotero": {
-    "host": "Windows Zotero 10.0.6 / Gecko 140",
-    "profile": "isolated",
-    "regressionPassed": 216,
-    "productionInstallationPassed": 1,
-    "separateRuns": true,
-    "setupFailures": "Initial full run omitted package path; first package-only retry used a custom output directory without the bundled script. Final default-directory package passed.",
-    "mainProfileInstalled": false
+    "performed": false,
+    "reason": "Explicitly not performed per user instruction."
   },
   "notVerified": [
-    "real-library speedup percentage",
+    "live Zotero UI acceptance",
+    "production XPI installation in Zotero",
+    "actual automatic update installation",
     "main profile installation",
-    "actual automatic update",
     "new Zotero 11 validation",
     "macOS/Linux",
     "manual theme acceptance"

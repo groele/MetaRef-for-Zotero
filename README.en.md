@@ -1,8 +1,8 @@
-> Current maintained version: **12.6.23**. Reduce redundant batch snapshots and serialization, and discard stale journal-index reads after reset. [Release notes](docs/releases/metaflow-v12.6.23.md).
+> Current maintained version: **12.6.24**. The collapsed journal pane no longer shows a trailing metrics summary. [Release notes](docs/releases/metaflow-v12.6.24.md).
 
 # Zotero MetaFlow
 
-> Current version 12.6.23: Reduce redundant batch snapshots and serialization, and discard stale journal-index reads after reset. [Release notes](docs/releases/metaflow-v12.6.23.md).
+> Current version 12.6.24: The collapsed journal pane no longer shows a trailing metrics summary. [Release notes](docs/releases/metaflow-v12.6.24.md).
 
 **Zotero Flow Series · Metadata**
 
@@ -12,7 +12,7 @@ Validate, normalize, and enrich reference metadata.
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Release](https://img.shields.io/badge/version-12.6.23-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.23) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.23/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
+[![Release](https://img.shields.io/badge/version-12.6.24-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.6.24) · [Download XPI](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.24/zotero-metaflow.xpi) · [Report an issue](https://github.com/groele/Zotero-MetaFlow/issues)
 
 [Overview](#overview) · [Installation and updates](#installation) · [Quick start](#quick-start) · [Key features](#features) · [Settings](#settings) · [Data, sync, and services](#data) · [Compatibility and validation](#compatibility) · [Troubleshooting](#troubleshooting) · [Development and documentation](#development) · [The Flow series](#series) · [Origin and license](#license)
 
@@ -28,7 +28,7 @@ Install this add-on independently and combine it with other Flow products as nee
 
 ## Installation and updates
 
-1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.23/zotero-metaflow.xpi) (add-on version **12.6.23**), not the Source code ZIP.
+1. Download [zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v12.6.24/zotero-metaflow.xpi) (add-on version **12.6.24**), not the Source code ZIP.
 2. In Zotero, open **Tools → Plugins/Add-ons**, then choose **Install Add-on From File** from the gear menu.
 3. Select the XPI, complete installation, and restart if requested.
 
@@ -82,9 +82,9 @@ Version 12.6.1 restores native bottom-right notifications for batch confirmation
 
 | Item                   | Scope                                                                                                                                                     |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Current add-on version | 12.6.23                                                                                                                                                   |
+| Current add-on version | 12.6.24                                                                                                                                                   |
 | Declared Zotero range  | `10.0` through `11.*`                                                                                                                                     |
-| Evidence boundary      | See the [release notes](docs/releases/metaflow-v12.6.23.md) for validation and compatibility boundaries. No automatic installation into the main profile. |
+| Evidence boundary      | See the [release notes](docs/releases/metaflow-v12.6.24.md) for validation and compatibility boundaries. No automatic installation into the main profile. |
 
 Add-on and Zotero versions are separate. Declared compatibility does not establish testing on every host, operating system or service. This patch validates the targeted behaviors listed above, not all plugin workflows or main-profile installation.
 
