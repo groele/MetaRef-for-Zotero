@@ -6,7 +6,7 @@ _让研究的每一步衔接起来。 / Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.0.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.1)
+[![Version](https://img.shields.io/badge/version-13.0.2-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.2)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
 [![Tests Passing](https://img.shields.io/badge/tests-611%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
@@ -211,7 +211,7 @@ Zotero MetaFlow 遵循严格的企业级数据保护与容灾原则：
 
 ### 手动安装步骤
 
-1. 前往 [GitHub Releases](https://github.com/groele/Zotero-MetaFlow/releases) 下载最新发行版安装包 **[zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.1/zotero-metaflow.xpi)**（切勿下载 Source code ZIP 源码包）。
+1. 前往 [GitHub Releases](https://github.com/groele/Zotero-MetaFlow/releases) 下载最新发行版安装包 **[zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.2/zotero-metaflow.xpi)**（切勿下载 Source code ZIP 源码包）。
 2. 在 Zotero 客户端顶部菜单中打开 **工具 → 插件／附加组件**（Tools → Plugins）。
 3. 点击附加组件管理器右上角的 **设置齿轮图标 ⚙️**，选择 **从文件安装插件...（Install Add-on From File...）**。
 4. 选择刚刚下载的 `.xpi` 文件，按照提示完成安装并重启 Zotero。
@@ -230,7 +230,7 @@ Zotero MetaFlow 遵循严格的企业级数据保护与容灾原则：
 | --------------- | ------------------------------------------------------ | ------------------------------------------------------ |
 | **Zotero 版本** | **Zotero 10.0 ～ 12.***（兼容现代 Gecko 153 平台架构） | 针对现代 Zotero 内核全面重构，支持原生侧边栏与深色模式 |
 | **操作系统**    | Windows 10 / 11、macOS（Intel / Apple Silicon）、Linux | 全平台一致的高性能原生体验                             |
-| **插件版本**    | **v13.0.1**                                            | [查看历史版本说明](docs/releases/metaflow-v13.0.1.md)  |
+| **插件版本**    | **v13.0.2**                                            | [查看历史版本说明](docs/releases/metaflow-v13.0.2.md)  |
 
 ---
 
@@ -287,8 +287,52 @@ Zotero MetaFlow 属于 **Zotero Flow Series** 学术全流程加速套件的一�
 
 <a id="license"></a>
 
-## 📄 二次开发声明与开源许可
+## 📄 开源项目声明、衍生致谢与许可
 
-- **开源衍生致谢**：Zotero MetaFlow 基于开源项目 [zotero-format-metadata](https://github.com/northword/zotero-format-metadata)（原作者 northword）二次开发，采用 `zotero-plugin-template` 与 `zotero-plugin-scaffold` 工具链构建，在此向原作者及开源社区致以崇高敬意。
-- **开源协议**：本项目基于 **[AGPL-3.0-or-later](LICENSE)** 协议开源。
+Zotero MetaFlow 的诞生、设计与持续演进深度依托并受益于开源社区的卓越智慧与成果。在此特别向以下杰出的开源项目、数据资源与作者致以由衷的敬意与谢意：
+
+### 1. 核心衍生与灵感来源上游项目
+
+- **[northword/zotero-format-metadata](https://github.com/northword/zotero-format-metadata)**（Linter for Zotero by @northword）：
+  本项目最初基于 northword 老师开创的 `zotero-format-metadata` 二次开发与架构演进。其极具前瞻性的元数据清洗规则系统（Rule System）、批处理流水线与扩展机制为本项目奠定了坚实的基础。
+- **[zoushucai/zotero-journalabbr](https://github.com/zoushucai/zotero-journalabbr)**（by @zoushucai）：
+  为期刊全称规范化、中英文期刊缩写映射词表及学术数据整理提供了至关重要的设计启发与实现借鉴。
+- **[redleafnew/zotero-updateifsE](https://github.com/redleafnew/zotero-updateifsE)**（by @redleafnew）：
+  为 EasyScholar 学术期刊评价指标对接、中科院分区与影响因子检索、条目 Extra 字段回写以及侧栏卡片展示体系的设计提供了极具价值的实践指引。
+- **[ChenglongMa/zoplicate](https://github.com/ChenglongMa/zoplicate)**（by @ChenglongMa）：
+  为重复条目智能检测、重复组算法与批量安全合并工作流设计提供了重要的工程参考。
+- **[RoadToDream/ZotMeta](https://github.com/RoadToDream/ZotMeta)**（by @RoadToDream）：
+  为基于多标识符（DOI、ISBN、PMID/PMCID、arXiv）的文献身份核验与多源元数据交叉验证机制提供了设计灵感。
+- **[bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi)**（DOI Manager by @bwiernik）：
+  为标准 Clean DOI 提取、ShortDOI 转换与双向解析规则的实现提供了关键参考。
+- **[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)**（by @AllanChain）：
+  为预印本与正式发表版本（arXiv 到正式发表 Journal/Conference）的关联更新与版本维护策略提供了思路。
+
+### 2. 插件工程脚手架与工具链
+
+- **[windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)**（by @windingwind）：现代化的 Zotero 插件开发模板与 TypeScript 工程规范。
+- **[northword/zotero-plugin-scaffold](https://github.com/northword/zotero-plugin-scaffold)**（by @northword）：专业高效的 Zotero 插件构建、打包与开发脚手架。
+- **[windingwind/zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit)**（by @windingwind）：功能强大的 Zotero 运行时 API 抽象与界面交互工具库。
+
+### 3. 权威学术数据资源与开放 API 服务
+
+- **[JabRef / abbrv.jabref.org](https://github.com/JabRef/abbrv.jabref.org)**：提供了权威、全面、高质量的全球学术期刊全称与 ISO 4 缩写映射开源数据集。
+- **[marcocorvi/abbreviso](https://github.com/marcocorvi/abbreviso)**：提供了基于国际 LTWA（List of Title Word Abbreviations）规则集的期刊缩写离线词根推断算法。
+- **[EasyScholar](https://www.easyscholar.cc/)**：提供了高效便捷的学术期刊分级、中科院分区与学术影响力开放查询服务。
+- **[Nature Index](https://www.nature.com/nature-index/)**：施普林格·自然旗下权威自然科学科研产出评价体系。
+- **[Clarivate Web of Science / JCR](https://clarivate.com/)** & **中科院文献情报中心**：期刊分区与学术评价权威标准。
+- **[CrossRef API](https://api.crossref.org/)** / **[Semantic Scholar API](https://api.semanticscholar.org/)**：开放学术元数据检索与补充支持。
+- **[shortdoi.org](https://shortdoi.org/)** & **[doi.org](https://www.doi.org/)**：数字对象唯一标识符解析与短标识符生成服务。
+- **[ISO 639-3 数据映射](https://github.com/wooorm/iso-639-3)** & **教育部全国高等学校名单**：语言识别与高校学位论文出版地推断数据库。
+
+### 4. 社区规范与格式指南
+
+- **[Zotero 字段填写规范](https://github.com/l0o0/translators_CN/issues/257)**（by @zepinglee）：中文社区广泛认可的字段录入与学术格式规范指南。
+- **Zotero 法语翻译团队**：使用手册与本地化指导。
+
+---
+
+## ⚖️ 开源许可证与免责声明
+
+- **开源协议**：本项目遵循 **[AGPL-3.0-or-later](LICENSE)** 开源协议。插件所有衍生的独立修改与新增功能均保持开放，第三方组件、数据集和开源项目保留其原有版权声明与许可条款。
 - **免责声明**：Zotero 及 Zotero 徽标属于 Corporation for Digital Scholarship 的商标。本系列由独立团队维护，并非 Zotero 官方机构产品。EasyScholar、Nature Index、Clarivate 等第三方数据服务的知识产权与最终解释权归各自所有者所有。

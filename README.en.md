@@ -6,7 +6,7 @@ _Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.0.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.1)
+[![Version](https://img.shields.io/badge/version-13.0.2-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.0.2)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
 [![Tests Passing](https://img.shields.io/badge/tests-611%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
@@ -203,7 +203,7 @@ Zotero MetaFlow adheres to rigorous data integrity standards:
 
 ### Manual Installation
 
-1. Download the latest **[zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.1/zotero-metaflow.xpi)** from [GitHub Releases](https://github.com/groele/Zotero-MetaFlow/releases) (do not download the Source code ZIP).
+1. Download the latest **[zotero-metaflow.xpi](https://github.com/groele/Zotero-MetaFlow/releases/download/v13.0.2/zotero-metaflow.xpi)** from [GitHub Releases](https://github.com/groele/Zotero-MetaFlow/releases) (do not download the Source code ZIP).
 2. In Zotero, click **Tools → Plugins** (or Add-ons).
 3. Click the **gear icon ⚙️** in the top-right corner and select **Install Add-on From File...**.
 4. Select the downloaded `.xpi` file, confirm the installation, and restart Zotero when prompted.
@@ -222,7 +222,7 @@ Updates are served automatically via [dist/update.json](https://github.com/groel
 | --------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------- |
 | **Zotero**            | **Zotero 10.0 through 12.*** (modern Gecko 153 architecture) | Fully adapted for modern Zotero host features, dark mode, and native sidebars |
 | **Operating Systems** | Windows 10 / 11, macOS (Intel & Apple Silicon), Linux        | Cross-platform native parity                                                  |
-| **Add-on Version**    | **v13.0.1**                                                  | [View Release Notes](docs/releases/metaflow-v13.0.1.md)                       |
+| **Add-on Version**    | **v13.0.2**                                                  | [View Release Notes](docs/releases/metaflow-v13.0.2.md)                       |
 
 ---
 
@@ -279,8 +279,52 @@ Zotero MetaFlow is part of the **Zotero Flow Series** academic workflow suite:
 
 <a id="license"></a>
 
-## 📄 Credits & License
+## 📄 Open-Source Derivatives, Acknowledgments & License
 
-- **Derivative Credits**: Zotero MetaFlow is derived from [zotero-format-metadata](https://github.com/northword/zotero-format-metadata) by northword and built with `zotero-plugin-template` and `zotero-plugin-scaffold`. We gratefully acknowledge the upstream authors and the open-source community.
-- **License**: Released under the **[AGPL-3.0-or-later](LICENSE)** license.
+The creation, architectural evolution, and capabilities of Zotero MetaFlow rely heavily upon the collective wisdom and open-source contributions of the community. We gratefully acknowledge and credit the following projects, datasets, and creators:
+
+### 1. Upstream Foundations & Core Inspirations
+
+- **[northword/zotero-format-metadata](https://github.com/northword/zotero-format-metadata)** (Linter for Zotero by @northword):
+  Zotero MetaFlow was originally derived and evolved from `zotero-format-metadata`. Its pioneering rule abstraction system, batch processing pipeline, and extensible architecture established the foundation for this project.
+- **[zoushucai/zotero-journalabbr](https://github.com/zoushucai/zotero-journalabbr)** (by @zoushucai):
+  Provided foundational insights and reference implementations for journal name normalization, bilingual abbreviation dictionaries, and scholarly metadata cleansing.
+- **[redleafnew/zotero-updateifsE](https://github.com/redleafnew/zotero-updateifsE)** (by @redleafnew):
+  Served as an indispensable practical guide for integrating the EasyScholar API, fetching CAS tiers and Impact Factors, writing back to Zotero's Extra field, and designing sidebar metric cards.
+- **[ChenglongMa/zoplicate](https://github.com/ChenglongMa/zoplicate)** (by @ChenglongMa):
+  Offered valuable references for duplicate item clustering algorithms, candidate matching, and batch deduplication workflows.
+- **[RoadToDream/ZotMeta](https://github.com/RoadToDream/ZotMeta)** (by @RoadToDream):
+  Inspired multi-identifier (DOI, ISBN, PMID/PMCID, arXiv) verification and multi-source metadata cross-validation.
+- **[bwiernik/zotero-shortdoi](https://github.com/bwiernik/zotero-shortdoi)** (DOI Manager by @bwiernik):
+  Provided key architectural inspiration for clean DOI extraction, ShortDOI generation, and bidirectional identifier resolution.
+- **[AllanChain/zotero-arxiv-workflow](https://github.com/AllanChain/zotero-arxiv-workflow)** (by @AllanChain):
+  Guided the design of preprint-to-formal-publication linking and automated metadata synchronization workflows.
+
+### 2. Plugin Engineering Frameworks & Toolchains
+
+- **[windingwind/zotero-plugin-template](https://github.com/windingwind/zotero-plugin-template)** (by @windingwind): Modern Zotero extension template and TypeScript engineering standards.
+- **[northword/zotero-plugin-scaffold](https://github.com/northword/zotero-plugin-scaffold)** (by @northword): High-performance packaging, build, and development scaffolding toolchain.
+- **[windingwind/zotero-plugin-toolkit](https://github.com/windingwind/zotero-plugin-toolkit)** (by @windingwind): Comprehensive Zotero runtime API abstractions and UI toolkit.
+
+### 3. Authoritative Datasets & Open APIs
+
+- **[JabRef / abbrv.jabref.org](https://github.com/JabRef/abbrv.jabref.org)**: Comprehensive, authoritative open-source dataset mapping worldwide academic journals to ISO 4 abbreviations.
+- **[marcocorvi/abbreviso](https://github.com/marcocorvi/abbreviso)**: Offline word-stem inference algorithm based on the international LTWA (List of Title Word Abbreviations) rule set.
+- **[EasyScholar](https://www.easyscholar.cc/)**: Efficient academic evaluation service providing CAS journal tiers, JCR quartiles, and impact metrics.
+- **[Nature Index](https://www.nature.com/nature-index/)**: Springer Nature's benchmark evaluating high-quality natural science research outputs.
+- **[Clarivate Web of Science / JCR](https://clarivate.com/)** & **Chinese Academy of Sciences Documentation Center**: Authoritative journal evaluation and ranking standards.
+- **[CrossRef API](https://api.crossref.org/)** / **[Semantic Scholar API](https://api.semanticscholar.org/)**: Open scholarly metadata retrieval and enrichment services.
+- **[shortdoi.org](https://shortdoi.org/)** & **[doi.org](https://www.doi.org/)**: Digital Object Identifier resolution and short identifier generation services.
+- **[ISO 639-3 Language Mapping](https://github.com/wooorm/iso-639-3)** & **Ministry of Education Higher Education Directory**: Databases for language detection and thesis publication place inference.
+
+### 4. Community Guidelines & Specifications
+
+- **[Zotero Field Guidelines](https://github.com/l0o0/translators_CN/issues/257)** (by @zepinglee): Widely adopted academic bibliographic formatting specifications in the Chinese Zotero community.
+- **Zotero French Translation Team**: Documentation and localization guidelines.
+
+---
+
+## ⚖️ License & Disclaimers
+
+- **License**: Released under the **[AGPL-3.0-or-later](LICENSE)** license. Independent modifications and derived features remain open-source; third-party components, datasets, and projects retain their original copyright notices and license terms.
 - **Disclaimer**: Zotero is a registered trademark of the Corporation for Digital Scholarship. This project is independently maintained and not affiliated with or endorsed by Zotero. EasyScholar, Nature Index, Clarivate, and other third-party trademarks belong to their respective holders.
