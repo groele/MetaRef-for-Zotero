@@ -282,6 +282,7 @@ declare namespace _ZoteroTypes {
       "workflow.remoteAuthorsOnCheck": boolean;
       "workflow.updateBibliographic": boolean;
       "workflow.updateVersions": boolean;
+      "workflow.reviveSnapshots": boolean;
       "workflow.tldrEnabled": boolean;
       "workflow.tldrTarget": string;
       "workflow.formatAfterUpdate": boolean;

@@ -2,6 +2,7 @@ import type { MetadataContext, TransformedData } from "./services/base-service";
 import { getString } from "../../../utils/locale";
 import { getPref } from "../../../utils/prefs";
 import { isFieldValidForItemType } from "../../../utils/zotero";
+import { discoverSnapshotIdentifiers, isSnapshotItem, revivalExtra } from "../../review/snapshot-reviver";
 import { defineRule } from "../rule-base";
 import { extractIdentifiers, isPreprint } from "./identifiers";
 import { resolveMissingISSN } from "./issn-resolver";
@@ -16,19 +17,33 @@ interface UpdateMetadataOption {
   creatorsOnly?: boolean;
   tldrEnabled?: boolean;
   tldrTarget?: "note" | "extra" | "both" | "abstract";
+  reviveSnapshots?: boolean;
   // lint: boolean;
 }
 
 export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
   id: "tool-update-metadata",
   scope: "item",
-  targetItemTypes: ["journalArticle", "preprint", "conferencePaper", "webpage"],
+  targetItemTypes: ["journalArticle", "preprint", "conferencePaper", "webpage", "blogPost"],
   category: "tool",
   cooldown: 0,
   async apply({ item, options, report, debug, signal }) {
     const original = item.toJSON() as TransformedData;
     // 1. extract identifiers
     const identifiers = extractIdentifiers(item);
+    if (options.reviveSnapshots && isSnapshotItem(item) && !identifiers.DOI && !identifiers.arXiv && !identifiers.PMID && !identifiers.PMCID) {
+      const snapshotCandidates = await discoverSnapshotIdentifiers(item, signal);
+      for (const candidate of snapshotCandidates) {
+        if (candidate.kind === "DOI" && !identifiers.DOI)
+          identifiers.DOI = candidate.value;
+        else if (candidate.kind === "arXiv" && !identifiers.arXiv)
+          identifiers.arXiv = candidate.value;
+        else if (candidate.kind === "PMID" && !identifiers.PMID)
+          identifiers.PMID = candidate.value;
+        else if (candidate.kind === "PMCID" && !identifiers.PMCID)
+          identifiers.PMCID = candidate.value;
+      }
+    }
     const initialIdentifiers = { ...identifiers };
     const originalDOI = normalizeDOI(identifiers.DOI);
     const allowRelatedDOI = isPreprint(item, identifiers);
@@ -240,17 +255,17 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
         return;
       }
 
-      if (!options.allowTypeChanged) {
-        debug("User diasble to change itemType");
+      const isRevivingSnapshot = Boolean(options.reviveSnapshots && isSnapshotItem(item));
+      if (!options.allowTypeChanged && !isRevivingSnapshot) {
+        debug("User disable to change itemType");
         return;
       }
       if (!unchanged("itemType", item.itemType))
         return;
 
-      // Blank mode must not perform a destructive type migration. Zotero's
-      // setType() clears fields that are unavailable on the target type and
-      // may remap creator roles, which violates the promise to only fill gaps.
-      if (options.mode === "blank") {
+      // Blank mode must not perform a destructive type migration, except for
+      // verified snapshot revival upgrading webpage to a scholarly publication.
+      if (options.mode === "blank" && !isRevivingSnapshot) {
         report({ level: "warning", message: getString("rule-tool-update-metadata-type-change-loss") });
         return;
       }
@@ -266,8 +281,18 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
         return;
       }
 
-      debug(`Update ItemType from ${item.itemType} to ${data.itemType}`);
+      const prevType = item.itemType;
+      debug(`Update ItemType from ${prevType} to ${data.itemType}`);
       item.setType(newItemTypeID);
+      if (isRevivingSnapshot) {
+        const extra = revivalExtra(item, { original, candidate: data, identifier: { kind: "DOI", value: data.DOI || "", source: "" }, source: "", conflicts: [], blocked: false, changes: [], itemID: item.id }, data.itemType as _ZoteroTypes.Item.ItemType);
+        item.setField("extra", extra);
+        report({
+          level: "info",
+          code: "metadata-snapshot-revived",
+          message: getString("review-snapshot-revived", { args: { from: prevType, to: data.itemType } }),
+        });
+      }
     }
 
     function applyItemCreators(data: TransformedData) {
@@ -378,6 +403,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
       repairCreators: getPref("metadata.repairCreators" as any, true) === true,
       tldrEnabled: getPref("workflow.tldrEnabled" as any, true) === true,
       tldrTarget: getPref("workflow.tldrTarget" as any, "note") as "note" | "extra" | "both" | "abstract",
+      reviveSnapshots: getPref("workflow.reviveSnapshots" as any, true) === true,
     };
   },
 });

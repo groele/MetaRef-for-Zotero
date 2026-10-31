@@ -47,8 +47,10 @@ export function automaticSelection(proposal: ReviewProposal, overwrite = false, 
     }
   }
   const related = !!proposal.preprintURL;
+  // A revived snapshot's local title/date are capture artefacts: adopt the verified record.
+  const revived = !!proposal.revival;
   const excluded = new Set<string>(proposal.excludedFields);
   const fields = new Set(proposal.changes.filter(change => !excluded.has(change.field)
-    && (related || overwrite || (repairCreators && change.field === "creators") || (Array.isArray(change.before) ? !change.before.length : !String(change.before ?? "").trim()))).map(change => change.field));
+    && (related || revived || overwrite || (repairCreators && change.field === "creators") || (Array.isArray(change.before) ? !change.before.length : !String(change.before ?? "").trim()))).map(change => change.field));
   return { selection: { proposal, action: related ? "related" : "update", acknowledged: true, fields } };
 }

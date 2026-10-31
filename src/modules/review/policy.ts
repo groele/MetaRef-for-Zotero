@@ -25,6 +25,7 @@ export interface ReviewProposal {
   changes: ReviewChange[];
   preprintURL?: string;
   excludedFields?: ReviewField[];
+  revival?: { from: string; to: string; replaced: string[] };
 }
 
 export interface MetadataDecision {

@@ -5,6 +5,7 @@ import { getString } from "../../utils/locale";
 import { isFieldValidForItemType } from "../../utils/zotero";
 import { normalizeDOI } from "../rules/tool-update-metadata/policy";
 import { REVIEW_FIELDS } from "./policy";
+import { revivalExtra } from "./snapshot-reviver";
 
 export function selectionIssue(selection: MetadataDecision): string | undefined {
   const { proposal, action, fields, acknowledged } = selection;
@@ -66,9 +67,13 @@ export function applyReviewedMetadata(item: Zotero.Item, selection: MetadataDeci
   });
   if (!validCreators)
     throw new Error(getString("rule-tool-update-metadata-invalid-creators"));
-  if (targetType !== item.itemType && !proposal.preprintURL)
+  if (targetType !== item.itemType && !proposal.preprintURL && !proposal.revival)
     throw new Error(getString("review-invalid-type"));
-  const extra = proposal.preprintURL ? preprintExtra(item, selection, targetType) : undefined;
+  const extra = proposal.preprintURL
+    ? preprintExtra(item, selection, targetType)
+    : proposal.revival
+      ? revivalExtra(item, proposal, targetType)
+      : undefined;
   if (targetType !== item.itemType)
     item.setType(targetID);
   if (extra !== undefined)
@@ -83,6 +88,14 @@ export function applyReviewedMetadata(item: Zotero.Item, selection: MetadataDeci
     else
       continue;
     report({ level: "info", code: "metadata-field-filled", field: change.field, source: proposal.source, message: getString("review-field-applied", { args: { field: change.field } }) });
+  }
+  if (proposal.revival) {
+    report({
+      level: "info",
+      code: "metadata-snapshot-revived",
+      source: proposal.source,
+      message: getString("review-snapshot-revived", { args: { from: proposal.revival.from, to: targetType } }),
+    });
   }
 }
 

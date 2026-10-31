@@ -92,6 +92,7 @@ export function setupWorkflowSettings(pane: Element) {
   pane.querySelector("#metaref-primary-menu-controls")?.remove();
   const bibliographic = choice("update-bibliographic", "workflow.updateBibliographic", true, update);
   const versions = choice("update-versions", "workflow.updateVersions", false, update);
+  const reviver = choice("update-snapshots", "workflow.reviveSnapshots", true, update);
   const tldr = choice("update-tldr", "workflow.tldrEnabled", true, update);
   choice("update-format", "workflow.formatAfterUpdate", true, update);
   moveChoice("metadata.updateJournalInfo", update);
@@ -100,7 +101,7 @@ export function setupWorkflowSettings(pane: Element) {
   const pdf = choice("scan-pdf", "workflow.scanPDF", false, search);
   const title = choice("search-title", "workflow.searchTitle", false, search);
   const updateDependencies = () => {
-    versions.disabled = tldr.disabled = !bibliographic.checked;
+    versions.disabled = tldr.disabled = reviver.disabled = !bibliographic.checked;
     const metadata = pane.querySelector<HTMLInputElement>("#metaref-workflow-metadata")!;
     const authors = pane.querySelector<HTMLInputElement>(`input[preference='${addon.data.config.prefsPrefix}.workflow.remoteAuthorsOnCheck']`);
     pdf.disabled = title.disabled = !bibliographic.checked && !metadata.checked && !authors?.checked;

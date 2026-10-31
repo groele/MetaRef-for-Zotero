@@ -72,6 +72,7 @@ async function executeWorkflow(command: CoreCommand, items: Zotero.Item[]) {
     scanPDF: pref("workflow.scanPDF", false),
     searchTitle: pref("workflow.searchTitle", false),
     repairCreators: (command === "check" && options.checkAuthors) || pref("metadata.repairCreators", true),
+    reviveSnapshots: pref("workflow.reviveSnapshots", true),
     overwrite,
     history: false,
     signal: controller.signal,

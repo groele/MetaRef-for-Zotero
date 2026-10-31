@@ -11,8 +11,9 @@ import { services } from "../rules/tool-update-metadata/services";
 import { defineService } from "../rules/tool-update-metadata/services/base-service";
 import { IdentifiersTranslateService } from "../rules/tool-update-metadata/services/translate-service";
 import { identifiersFromText, identityConflicts, isbnEquivalent, normalizeArxiv, normalizeISBN, reviewChanges } from "./policy";
+import { discoverSnapshotIdentifiers, isSnapshotItem, reviveProposal } from "./snapshot-reviver";
 
-export async function discoverIdentifiers(item: Zotero.Item, signal?: AbortSignal, scanPDF = true): Promise<IdentifierCandidate[]> {
+export async function discoverIdentifiers(item: Zotero.Item, signal?: AbortSignal, scanPDF = true, reviveSnapshots = true): Promise<IdentifierCandidate[]> {
   const existing = extractIdentifiers(item);
   const candidates: IdentifierCandidate[] = [];
   if (existing.DOI)
@@ -29,6 +30,11 @@ export async function discoverIdentifiers(item: Zotero.Item, signal?: AbortSigna
       if (normalizeISBN(value))
         candidates.push({ kind: "ISBN", value: normalizeISBN(value), source: getString("review-source-item") });
     }
+  }
+  if (reviveSnapshots && isSnapshotItem(item)) {
+    const snapshotCandidates = await discoverSnapshotIdentifiers(item, signal);
+    if (snapshotCandidates.length)
+      candidates.push(...snapshotCandidates);
   }
   if (candidates.length || !scanPDF)
     return candidates;
@@ -124,7 +130,7 @@ async function translateIdentifier(item: Zotero.Item, identifiers: Identifiers, 
   return data;
 }
 
-export async function inspectMetadata(item: Zotero.Item, identifier: IdentifierCandidate, original: TransformedData, signal?: AbortSignal): Promise<ReviewProposal> {
+export async function inspectMetadata(item: Zotero.Item, identifier: IdentifierCandidate, original: TransformedData, signal?: AbortSignal, reviveSnapshots = true): Promise<ReviewProposal> {
   let candidate: TransformedData;
   let source: string;
   let blocked = false;
@@ -177,7 +183,8 @@ export async function inspectMetadata(item: Zotero.Item, identifier: IdentifierC
   const conflicts = identityConflicts(original, candidate);
   if (blocked)
     conflicts.unshift(identifier.kind);
-  return { itemID: item.id, original, candidate, identifier, source, conflicts, blocked, changes: reviewChanges(original, candidate) };
+  const proposal: ReviewProposal = { itemID: item.id, original, candidate, identifier, source, conflicts, blocked, changes: reviewChanges(original, candidate) };
+  return (reviveSnapshots && isSnapshotItem(item)) ? reviveProposal(proposal, item.itemType) : proposal;
 }
 
 export async function inspectPreprint(item: Zotero.Item, identifier: IdentifierCandidate, original: TransformedData, signal?: AbortSignal, allowUnpublished = false): Promise<ReviewProposal> {

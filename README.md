@@ -1,15 +1,15 @@
 # Zotero MetaFlow
 
-**文献元数据深度治理 · 权威学术期刊画像 · 全库原生智能去重 · arXiv 预印本转正 · Semantic Scholar TL;DR 论点提炼**
+**文献元数据深度治理 · 权威学术期刊画像 · 全库原生智能去重 · arXiv 预印本转正 · Semantic Scholar TL;DR 论点提炼 · 网页快照学术复活**
 
 _让研究的每一步衔接起来。 / Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.2.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.2.0)
+[![Version](https://img.shields.io/badge/version-13.3.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.3.0)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/tests-632%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
+[![Tests Passing](https://img.shields.io/badge/tests-644%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
 
 [📦 下载安装](#installation) · [✨ 核心亮点](#highlights) · [🛠️ 功能矩阵](#features) · [🚀 快速开始](#quick-start) · [⚙️ 设置详解](#settings) · [🛡️ 架构与安全](#architecture) · [❓ 常见问题](#troubleshooting) · [🔗 系列插件](#series) · [📄 致谢与许可](#license)
 
@@ -40,6 +40,7 @@ graph LR
     B --> G["🌐 在线网络补全<br/>(Crossref/Semantic Scholar)"]
     B --> H["📄 arXiv 预印本转正<br/>(检出出版DOI平滑升级期刊)"]
     B --> I["💡 语义摘要极速提炼<br/>(Semantic Scholar TL;DR)"]
+    B --> J["🌐 网页快照学术复活<br/>(残缺Webpage升级正规期刊)"]
 ```
 
 ### 1. 📊 全景学术期刊画像（Journal Insights 侧栏深度集成）
@@ -91,7 +92,23 @@ graph LR
 - **专属条目列表自定义列「撷论」**：在 Zotero 条目列表列右键菜单中直接原生注册「**撷论**」（TL;DR Takeaway）列，开启后文献的核心创新贡献在文库表格中横向直观总览，回填后即时刷新呈现！
 - **侧边栏沉浸式展示**：在右侧详情侧边栏「期刊画像」面板中直接呈现专属的「**💡 核心论点 (TL;DR)**」高亮卡片，无需展开子笔记即可一目了然获取学术要义。
 
-### 5. 🧹 59 项多维元数据治理流水线
+### 5. 🌐 网页快照与残废条目“一键复活”（Web Snapshot & Blog Reviver）
+
+- **汲取 Snapshot Reviver 与 metadata-hunter 精髓**：针对在浏览器看到优质论文、Nature News 或学术博客时随手剪藏抓取为极度简陋的“网页（Webpage）”条目（无作者、无年份、无卷期、无 DOI，仅有残破 URL 与乱码标题）的核心痛点，打造智能化学术复活流水线。
+- **三级级联学术指纹嗅探 (`discoverSnapshotIdentifiers`)**：
+  - **URL 深度解析**：识别直接 DOI、Nature/Nature News 路径（如 `10.1038/d41586-...`）、arXiv ID（如 `2403.12345`）及 PubMed PMID / PMCID 等标识；
+  - **关联 HTML 快照 `<head>` 精准探针**：自动解析条目关联快照文件或 HTML 头部中的 `<meta name="citation_doi">`、`<meta name="dc.identifier.doi">`、`<meta name="citation_arxiv_id">`、`<meta name="citation_pmid">`、`<link rel="canonical">` 等规范学术元标签，严格忽略正文参考文献 DOI 噪音；
+  - **在线网页头部探针**：按需快速嗅探页面头部的规范学术元数据标识符。
+- **学术级元数据反查与结构升级**：
+  - 调用 Crossref / Semantic Scholar 反查完整元数据，一键将残破的 `webpage` 或 `blogPost` 升级为正规的 `journalArticle`（期刊论文）或 `preprint`（预印本）；
+  - 全面补齐作者列表、出版年份/日期、期刊全称/缩写、卷号、期号、页码与 DOI 等全套学术字段。
+- **无损溯源保护 (Provenance Extra)**：
+  - 升级时完整保留网页原有快照标题与原始 URL，并在 `Extra` 中自动沉淀审计凭据（如 `MetaFlow revived from: webpage` 与 `MetaFlow snapshot title: ...`），资产零丢失。
+- **无缝嵌入「更新元数据」与用户可控开关**：
+  - 深度集成到右键核心菜单「**更新元数据**」中，与预印本转正、TL;DR 回填一气呵成；
+  - 设置面板中提供「**复活网页快照与博客条目**」开关，由用户决定是否启用。
+
+### 6. 🧹 59 项多维元数据治理流水线
 
 - **题名智能规范化**：
   - 支持句首字母大写（Sentence case）与首字母大写（Title Case）智能转换；
@@ -108,13 +125,13 @@ graph LR
   - **日期规整**：将杂乱的出版日期清洗为标准 ISO 8601（`YYYY-MM-DD`）格式；
   - **高校与学位论文出版地补全**：内置全球数百所重点高校与所在城市关联数据库，自动推导并补齐硕博论文的出版城市。
 
-### 5. 📚 权威期刊缩写与离线 ISO 4 引擎
+### 7. 📚 权威期刊缩写与离线 ISO 4 引擎
 
 - **双引擎强力驱动**：集成 JabRef 权威期刊全称/缩写映射库与国际标准 LTWA（List of Title Word Abbreviations）词根推断算法。
 - **离线无网可用**：即使在完全断网的环境下，仍能依据国际 ISO 4 规则精确推断出规范的期刊标准缩写。
 - **语言自适应处理**：智能识别中文与西文期刊，中刊支持规范拼音缩写或特定学报规范。
 
-### 6. ✍️ 题名富文本排版工具栏（Rich-Text Title Helper）
+### 8. ✍️ 题名富文本排版工具栏（Rich-Text Title Helper）
 
 - 在 Zotero 标题编辑输入框区域无缝集成轻量快捷工具条。
 - 支持一键选区包裹 `<i>`（斜体 / 生物学名）、`<b>`（粗体）、`<sub>`（下标 / 化学式）、`<sup>`（上标 / 引用）以及 `<span class="nocase">`（大小写保护标签）。
@@ -126,19 +143,20 @@ graph LR
 
 ## 🛠️ 核心功能矩阵
 
-| 功能模块                          | 具体能力                                                                         | 解决的核心痛点                                                     | 触发位置                                     |
-| --------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------- |
-| **期刊画像 (Journal Insights)**   | JCR 分区、中科院升级版大/小类分区、IF 影响因子、CCF 等级、Nature Index、ESI 标识 | 查阅文献时无需跳转外部网站，一秒获悉期刊学术声誉与分级             | 详情侧边栏 · 期刊索引面板                    |
-| **arXiv 预印本转正**              | 检出官方出版 DOI，一键无损升级为期刊论文或关联新版本，保留全部笔记与批注         | 解决先存预印本后发表期刊，元数据陈旧需手动重新抓取且丢笔记的难题   | 侧栏 arXiv 卡片 / 右键「更新元数据」动态触发 |
-| **语义摘要提炼 (TL;DR)**          | 自动提取 Semantic Scholar 1~2 句 AI 核心论点，回填至子笔记/Extra 并在侧栏呈现    | 解决海量文献摘要冗长、阅读低效、难以一眼获悉论文核心创新贡献的问题 | 右键「更新元数据」/ 侧栏期刊画像卡片         |
-| **全库去重 (Bulk Deduplication)** | 原生重复组批量合并、主条目保护、缺省字段补齐、附件笔记无损继承                   | 解决大型文献库中成百上千重复项手动逐条合并的枯燥低效               | 集合树“重复条目” · 右上角操作区              |
-| **标题格式化**                    | Sentence case / Title Case 转换，化学式、基因符号及专有名词大小写保护            | 统一各大数据库导入标题格式，保护科学符号不被粗暴抹去               | 条目右键菜单 / 设置中开启自动整理            |
-| **摘要排版**                      | 段内硬断行消除、多余空白过滤、断行化学式拼合                                     | 解决从 PDF 提取或老旧数据库导入摘要断行破碎、排版混乱问题          | 条目右键菜单 / 自动清洗流水线                |
-| **作者字段修复**                  | 姓名顺序颠倒反转、拼音多余符号过滤、机构作者属性矫正                             | 避免引文输出时出现“名当成姓”或“San, Zhang”的尴尬错乱               | 条目右键菜单 · 检查并修复元数据              |
-| **期刊缩写统一**                  | JabRef 数据库匹配 + ISO 4 离线词根推断，支持全称与缩写互转                       | 满足投稿时不同期刊要求提供“期刊全称”或“标准 ISO 缩写”的需求        | 条目右键菜单 · 期刊名称/缩写整理             |
-| **标识符标准化**                  | Clean DOI 提取、ShortDOI 解析、ISSN 自动校验与补全                               | 修复带复杂前缀的残缺 DOI，确保跨软件引文链接百分百通畅             | 条目右键菜单 · 规范标识符                    |
-| **多源在线补全**                  | 基于 DOI、ISBN、arXiv ID 向 Crossref、Semantic Scholar 请求权威元数据            | 挽救仅有标题或残缺字段的“半成品”文献条目                           | 条目右键菜单 · 更新在线元数据                |
-| **题名富文本编辑**                | 快速插入斜体 `<i>`、粗体 `<b>`、上下标 `<sub>/<sup>`、保护标签                   | 原生题名输入框编辑特殊学术字符繁琐、易输错标签                     | 题名编辑输入框浮动工具栏                     |
+| 功能模块                            | 具体能力                                                                         | 解决的核心痛点                                                     | 触发位置                                     |
+| ----------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------- |
+| **期刊画像 (Journal Insights)**     | JCR 分区、中科院升级版大/小类分区、IF 影响因子、CCF 等级、Nature Index、ESI 标识 | 查阅文献时无需跳转外部网站，一秒获悉期刊学术声誉与分级             | 详情侧边栏 · 期刊索引面板                    |
+| **arXiv 预印本转正**                | 检出官方出版 DOI，一键无损升级为期刊论文或关联新版本，保留全部笔记与批注         | 解决先存预印本后发表期刊，元数据陈旧需手动重新抓取且丢笔记的难题   | 侧栏 arXiv 卡片 / 右键「更新元数据」动态触发 |
+| **语义摘要提炼 (TL;DR)**            | 自动提取 Semantic Scholar 1~2 句 AI 核心论点，回填至子笔记/Extra 并在侧栏呈现    | 解决海量文献摘要冗长、阅读低效、难以一眼获悉论文核心创新贡献的问题 | 右键「更新元数据」/ 侧栏期刊画像卡片         |
+| **网页快照复活 (Snapshot Reviver)** | 深度嗅探 URL / 快照 HTML 头部学术指纹，反查 Crossref/S2 一键升级正规期刊或预印本 | 彻底解决网页随手剪藏抓取为无作者、无卷期、无 DOI 的残缺死数据问题  | 右键「更新元数据」（支持偏好设置开关）       |
+| **全库去重 (Bulk Deduplication)**   | 原生重复组批量合并、主条目保护、缺省字段补齐、附件笔记无损继承                   | 解决大型文献库中成百上千重复项手动逐条合并的枯燥低效               | 集合树“重复条目” · 右上角操作区              |
+| **标题格式化**                      | Sentence case / Title Case 转换，化学式、基因符号及专有名词大小写保护            | 统一各大数据库导入标题格式，保护科学符号不被粗暴抹去               | 条目右键菜单 / 设置中开启自动整理            |
+| **摘要排版**                        | 段内硬断行消除、多余空白过滤、断行化学式拼合                                     | 解决从 PDF 提取或老旧数据库导入摘要断行破碎、排版混乱问题          | 条目右键菜单 / 自动清洗流水线                |
+| **作者字段修复**                    | 姓名顺序颠倒反转、拼音多余符号过滤、机构作者属性矫正                             | 避免引文输出时出现“名当成姓”或“San, Zhang”的尴尬错乱               | 条目右键菜单 · 检查并修复元数据              |
+| **期刊缩写统一**                    | JabRef 数据库匹配 + ISO 4 离线词根推断，支持全称与缩写互转                       | 满足投稿时不同期刊要求提供“期刊全称”或“标准 ISO 缩写”的需求        | 条目右键菜单 · 期刊名称/缩写整理             |
+| **标识符标准化**                    | Clean DOI 提取、ShortDOI 解析、ISSN 自动校验与补全                               | 修复带复杂前缀的残缺 DOI，确保跨软件引文链接百分百通畅             | 条目右键菜单 · 规范标识符                    |
+| **多源在线补全**                    | 基于 DOI、ISBN、arXiv ID 向 Crossref、Semantic Scholar 请求权威元数据            | 挽救仅有标题或残缺字段的“半成品”文献条目                           | 条目右键菜单 · 更新在线元数据                |
+| **题名富文本编辑**                  | 快速插入斜体 `<i>`、粗体 `<b>`、上下标 `<sub>/<sup>`、保护标签                   | 原生题名输入框编辑特殊学术字符繁琐、易输错标签                     | 题名编辑输入框浮动工具栏                     |
 
 ---
 

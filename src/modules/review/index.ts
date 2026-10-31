@@ -38,6 +38,7 @@ interface ReviewFeatures {
   creatorsOnly?: boolean;
   repairCreators?: boolean;
   overwrite?: boolean;
+  reviveSnapshots?: boolean;
 }
 
 function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => void, integrated = false, features: ReviewFeatures = {}) {
@@ -45,19 +46,20 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
     id: version ? "tool-review-preprint" : "tool-review-metadata",
     category: "tool",
     scope: "item",
-    targetItemTypes: version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "book", "bookSection"],
+    targetItemTypes: version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "blogPost", "book", "bookSection"],
     async prepare({ items, signal }) {
       const repairCreators = features.repairCreators ?? (getPref("metadata.repairCreators", true) === true);
       const overwrite = features.overwrite ?? (getPref("rule.tool-update-metadata.option.mode") === "all");
+      const reviveSnapshots = features.reviveSnapshots ?? (getPref("workflow.reviveSnapshots" as any, true) === true);
       const evidence = new Map<string, Promise<ReviewProposal>>();
       const failures = new Map<number, string>();
       const failureCodes = new Map<number, string>();
-      const supported = version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "book", "bookSection"];
+      const supported = version ? ["preprint", "journalArticle", "conferencePaper"] : ["journalArticle", "preprint", "conferencePaper", "webpage", "blogPost", "book", "bookSection"];
       const inspected = await mapBatch(items.filter(item => supported.includes(item.itemType)), Math.min(4, normalizedConcurrency(getPref("lint.numConcurrent"))), async (item): Promise<ReviewProposal | undefined> => {
         signal?.throwIfAborted();
         const original = JSON.parse(JSON.stringify(item.toJSON())) as TransformedData;
         try {
-          const allCandidates = await discoverIdentifiers(item, signal, features.scanPDF !== false);
+          const allCandidates = await discoverIdentifiers(item, signal, features.scanPDF !== false, reviveSnapshots);
           if (!version && features.searchTitle !== false && !allCandidates.length && original.title)
             allCandidates.push({ kind: "Title", value: original.title, source: getString("review-source-title") });
           const isPreprintItem = isUnconvertedArxivPreprint(item);
@@ -81,11 +83,13 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
           if (!request) {
             request = preprint
               ? inspectPreprint(item, identifier, original, signal, integrated)
-              : inspectMetadata(item, identifier, original, signal);
+              : inspectMetadata(item, identifier, original, signal, reviveSnapshots);
             evidence.set(key, request);
           }
           const proposal = await request;
-          return { ...proposal, itemID: item.id, original, identifier, conflicts: identityConflicts(original, proposal.candidate, preprint || !!proposal.preprintURL), changes: reviewChanges(original, proposal.candidate, !!proposal.preprintURL) };
+          const conflicts = proposal.revival ? [] : identityConflicts(original, proposal.candidate, preprint || !!proposal.preprintURL);
+          const changes = reviewChanges(original, proposal.candidate, !!proposal.preprintURL || !!proposal.revival);
+          return { ...proposal, itemID: item.id, original, identifier, conflicts, changes };
         }
         catch (error) {
           signal?.throwIfAborted();

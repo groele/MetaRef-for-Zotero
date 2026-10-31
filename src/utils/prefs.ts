@@ -9,6 +9,7 @@ export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "workflow.remoteAuthorsOnCheck": false,
   "workflow.updateBibliographic": true,
   "workflow.updateVersions": true,
+  "workflow.reviveSnapshots": true,
   "workflow.tldrEnabled": true,
   "workflow.tldrTarget": "note",
   "workflow.formatAfterUpdate": true,

@@ -1,15 +1,15 @@
 # Zotero MetaFlow
 
-**Deep Reference Metadata Governance · Authoritative Journal Insights · Native Bulk Deduplication · arXiv Preprint Conversion · Semantic Scholar TL;DR Summaries**
+**Deep Reference Metadata Governance · Authoritative Journal Insights · Native Bulk Deduplication · arXiv Preprint Conversion · Semantic Scholar TL;DR Summaries · Web Snapshot Reviver**
 
 _Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.2.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.2.0)
+[![Version](https://img.shields.io/badge/version-13.3.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.3.0)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/tests-632%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
+[![Tests Passing](https://img.shields.io/badge/tests-644%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
 
 [📦 Installation](#installation) · [✨ Key Highlights](#highlights) · [🛠️ Feature Matrix](#features) · [🚀 Quick Start](#quick-start) · [⚙️ Settings Guide](#settings) · [🛡️ Architecture & Safety](#architecture) · [❓ Troubleshooting & FAQ](#troubleshooting) · [🔗 Flow Series](#series) · [📄 Credits & License](#license)
 
@@ -40,6 +40,7 @@ graph LR
     B --> G["🌐 Online Enrichment<br/>(Crossref/Semantic Scholar)"]
     B --> H["📄 arXiv Preprint Conversion<br/>(Discover DOI & Upgrade Paper)"]
     B --> I["💡 Semantic Scholar TL;DR<br/>(AI Core Takeaways Summary)"]
+    B --> J["🌐 Web Snapshot Reviver<br/>(Upgrade Bare Webpage to Journal)"]
 ```
 
 ### 1. 📊 Holistic Journal Insights (Integrated Sidebar Profile)
@@ -91,7 +92,23 @@ graph LR
 - **Dedicated Library Column "TL;DR Takeaway (撷论)"**: Directly registers a custom column in Zotero's library list view header menu (`ItemTreeManager`), displaying the distilled core contribution inline across library entries with instant real-time refresh!
 - **Integrated Sidebar Highlight**: Displays a dedicated `💡 Core Takeaways (TL;DR)` card in the right-hand Journal Insights panel for instant reading comprehension.
 
-### 5. 🧹 59-Rule Multi-Dimensional Governance Pipeline
+### 5. 🌐 Web Snapshot & Blog Reviver ("One-Click Revive")
+
+- **Inspired by Snapshot Reviver & Metadata Hunter**: Solves the core frustration where browser clippings of journal papers, Nature News articles, or academic blogs are captured as bare `webpage` items—lacking authors, publication years, volume, issue, pages, or DOIs, with only an empty URL and truncated title.
+- **Three-Tier Scholarly Fingerprint Sniffing (`discoverSnapshotIdentifiers`)**:
+  - **Deep URL Parsing**: Extracts clean DOIs, Nature/Nature News paths (`10.1038/d41586-...`), arXiv IDs (`2403.12345`), and PubMed PMIDs/PMCIDs;
+  - **Snapshot HTML `<head>` Probing**: Automatically parses `<meta name="citation_doi">`, `<meta name="dc.identifier.doi">`, `<meta name="citation_arxiv_id">`, `<meta name="citation_pmid">`, and `<link rel="canonical">` from downloaded snapshot heads while strictly filtering out body reference DOIs;
+  - **Live Page Head Fallback**: Sniffs online page heads when local snapshots are absent.
+- **Scholarly Lookup & Item Upgrade**:
+  - Queries Crossref and Semantic Scholar to retrieve complete bibliographic metadata;
+  - Promotes bare `webpage` or `blogPost` items to standard `journalArticle` or `preprint` with all authors, publication details, and volume/issue/pages populated.
+- **Provenance Preservation**:
+  - Retains original webpage titles and URLs while writing provenance details (`MetaFlow revived from: ...`) into the `Extra` field.
+- **Seamless Pipeline Integration & User-Configurable**:
+  - Embedded into the primary "Update Metadata" workflow;
+  - Configurable via Preferences under Workflow Settings ("Revive Web Snapshots & Blog Posts").
+
+### 6. 🧹 59-Rule Multi-Dimensional Governance Pipeline
 
 - **Intelligent Title Normalization**:
   - Smart conversion between Sentence case and Title Case;
@@ -108,13 +125,13 @@ graph LR
   - **ISO 8601 Dates**: Unifies chaotic date strings into standard `YYYY-MM-DD` syntax;
   - **Thesis Place Resolution**: Resolves university locations and completes publication places for theses and dissertations.
 
-### 6. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
+### 7. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
 
 - **Dual-Engine Architecture**: Combines JabRef's comprehensive journal mapping database with the international LTWA (List of Title Word Abbreviations) rule set.
 - **100% Offline Capability**: Accurately infers standard ISO 4 abbreviations even without an internet connection.
 - **Language-Aware Processing**: Distinguishes English from CJK journals with custom pinyin abbreviation options.
 
-### 7. ✍️ Rich-Text Title Editor Toolbar
+### 8. ✍️ Rich-Text Title Editor Toolbar
 
 - Lightweight formatting toolbar integrated directly over Zotero's title editing input.
 - Wrap selections with `<i>` (italics / scientific names), `<b>` (bold), `<sub>` (subscript / chemical indexes), `<sup>` (superscript / citations), and `<span class="nocase">` (case-protection tags).
@@ -131,6 +148,7 @@ graph LR
 | **Journal Insights**           | JCR Quartiles, CAS Tiers, Impact Factor (IF), CCF, Nature Index, ESI            | Instant academic prestige awareness without leaving Zotero                        | Right Sidebar · Journal Insights Panel             |
 | **arXiv Preprint Conversion**  | Query official DOI, lossless upgrade to journal article, preserve notes & files | Solves obsolete preprint metadata and eliminates manual re-importing losing notes | Sidebar arXiv Card / Right-click "Update Metadata" |
 | **Semantic Summaries (TL;DR)** | 1–2 sentence AI core takeaways from Semantic Scholar backfilled to notes/Extra  | Long, dense abstracts making it hard to grasp the main breakthrough quickly       | Item Context Menu · Update Metadata / Sidebar      |
+| **Web Snapshot Reviver**       | Sniff URL / HTML head academic fingerprints, query Crossref/S2 to revive item   | Revives bare web clippings missing author, year, volume, and DOI into real papers | Item Context Menu · Update Metadata (Pref Toggle)  |
 | **Bulk Deduplication**         | Native group merging, master protection, missing-field fill, asset preservation | Eliminates hours of manual confirmation in libraries with hundreds of duplicates  | Duplicate Items collection · Top-right bar         |
 | **Title Formatting**           | Sentence / Title case conversion with chemical formula and acronym protection   | Cleans up messy publisher imports without destroying scientific symbols           | Item Context Menu / Auto-cleanup on import         |
 | **Abstract Cleanup**           | Elimination of internal line breaks, extra spaces, broken hyphenated words      | Fixes fragmented PDF extractions and OCR breaks                                   | Item Context Menu · Check & Fix Metadata           |
