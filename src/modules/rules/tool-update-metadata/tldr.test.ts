@@ -170,6 +170,33 @@ describe("tldr extraction and manipulation", () => {
     expect(saved4).toBe(true);
     expect(extraValue).toContain("remark: Back to remark");
     expect(extraValue).not.toContain("TLDR:");
+
+    // Deduplicates multiple existing lines (e.g. historical TLDR and remark)
+    extraValue = "Citation Key: test\nTLDR: Stale summary\nremark: Another old remark\nOther: field";
+    const saved5 = saveTLDRToExtra(item, "Consolidated summary", "remark");
+    expect(saved5).toBe(true);
+    expect(extraValue).toBe("Citation Key: test\nremark: Consolidated summary\nOther: field");
+  });
+
+  it("prioritizes data-metaflow-tldr child notes over generic notes with keywords", () => {
+    (globalThis as any).Zotero = {
+      Items: {
+        get: (id: number) => {
+          if (id === 101)
+            return { deleted: false, getNote: () => "<p>简记：用户阅读第1章笔记</p>" };
+          if (id === 102)
+            return { deleted: false, getNote: () => "<div data-metaflow-tldr=\"true\"><blockquote>ML summary of paper.</blockquote></div>" };
+          return null;
+        },
+      },
+    };
+
+    const item = {
+      getField: () => "",
+      getNotes: () => [101, 102],
+    } as unknown as Zotero.Item;
+
+    expect(extractTLDRFromItem(item)).toBe("ML summary of paper.");
   });
 
   it("saves TLDR to abstractNote only when empty", () => {

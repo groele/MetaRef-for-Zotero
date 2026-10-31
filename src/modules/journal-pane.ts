@@ -521,24 +521,27 @@ async function render({ item, body, doc }: Context) {
 
     const badge = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
     badge.textContent = `🌐 ${getString("snapshot-card-badge") || "网页快照 / 剪藏条目"}`;
-    badge.setAttribute("style", "display:inline-flex;align-items:center;background:color-mix(in srgb, #0284c7 15%, transparent);color:#0284c7;border:1px solid color-mix(in srgb, #0284c7 30%, transparent);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;letter-spacing:0.3px;");
+    badge.setAttribute("style", "display:inline-flex;align-items:center;background:color-mix(in srgb, var(--accent-blue, #0284c7) 15%, transparent);color:var(--accent-blue, #0284c7);border:1px solid color-mix(in srgb, var(--accent-blue, #0284c7) 30%, transparent);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;letter-spacing:0.3px;");
     badgeRow.append(badge);
 
     const url = String(item.getField("url") || "").trim();
     if (url) {
       try {
-        const host = new URL(url).hostname;
-        const link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a") as HTMLAnchorElement;
-        link.textContent = host;
-        link.href = url;
-        link.setAttribute("target", "_blank");
-        link.setAttribute("rel", "noopener noreferrer");
-        link.setAttribute("style", "font-size:12px;color:var(--accent-blue, #245ac7);text-decoration:none;font-family:ui-monospace, monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;");
-        link.addEventListener("click", (e) => {
-          e.stopPropagation();
-          Zotero.launchURL(url);
-        });
-        badgeRow.append(link);
+        const parsed = new URL(url);
+        if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+          const host = parsed.hostname;
+          const link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a") as HTMLAnchorElement;
+          link.textContent = host;
+          link.href = url;
+          link.setAttribute("target", "_blank");
+          link.setAttribute("rel", "noopener noreferrer");
+          link.setAttribute("style", "font-size:12px;color:var(--accent-blue, #245ac7);text-decoration:none;font-family:ui-monospace, monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;");
+          link.addEventListener("click", (e) => {
+            e.stopPropagation();
+            Zotero.launchURL(url);
+          });
+          badgeRow.append(link);
+        }
       }
       catch {
         // invalid URL string, skip host link
@@ -580,7 +583,7 @@ async function render({ item, body, doc }: Context) {
     const reviveBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLButtonElement;
     reviveBtn.type = "button";
     reviveBtn.textContent = `🌐 ${getString("snapshot-card-button") || "一键嗅探并复活为学术论文…"}`;
-    reviveBtn.setAttribute("style", "display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;background:color-mix(in srgb, #0284c7 12%, transparent);border:1px solid color-mix(in srgb, #0284c7 30%, transparent);color:#0284c7;cursor:pointer;");
+    reviveBtn.setAttribute("style", "display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;background:color-mix(in srgb, var(--accent-blue, #0284c7) 12%, transparent);border:1px solid color-mix(in srgb, var(--accent-blue, #0284c7) 30%, transparent);color:var(--accent-blue, #0284c7);cursor:pointer;");
     reviveBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       if (reviveBtn.disabled)
@@ -661,7 +664,9 @@ async function render({ item, body, doc }: Context) {
   const displayedRankings = rankings.filter(row => row.key !== "sci" && isEasyScholarFieldEnabled(row.key) && (item.itemType !== "journalArticle" || row.key !== "esi"));
   const headerRow = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
   headerRow.setAttribute("style", "display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;gap:8px;");
-  const journalTitle = text("h2", publication || getString("journal-insights-unnamed"), "font-size:14px;font-weight:600;margin:0;line-height:1.5;white-space:pre-wrap;flex:1;min-width:0;");
+  const itemTitle = String(item.getField("title") || "").trim();
+  const headingText = publication || itemTitle || getString("journal-insights-unnamed");
+  const journalTitle = text("h2", headingText, "font-size:14px;font-weight:600;margin:0;line-height:1.5;white-space:pre-wrap;flex:1;min-width:0;");
   journalTitle.setAttribute("data-journal-title", "true");
   const extraText = String(item.getField("extra") || "");
   if (extraText.includes("MetaFlow preprint")) {
@@ -673,7 +678,7 @@ async function render({ item, body, doc }: Context) {
   else if (extraText.includes("MetaFlow revived from")) {
     const revivedBadge = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
     revivedBadge.textContent = getString("snapshot-revived-badge") || "已由网页快照复活";
-    revivedBadge.setAttribute("style", "display:inline-flex;align-items:center;margin-left:8px;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:color-mix(in srgb, #0284c7 15%, transparent);color:#0284c7;border:1px solid color-mix(in srgb, #0284c7 30%, transparent);vertical-align:middle;");
+    revivedBadge.setAttribute("style", "display:inline-flex;align-items:center;margin-left:8px;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:color-mix(in srgb, var(--accent-blue, #0284c7) 15%, transparent);color:var(--accent-blue, #0284c7);border:1px solid color-mix(in srgb, var(--accent-blue, #0284c7) 30%, transparent);vertical-align:middle;");
     journalTitle.append(revivedBadge);
   }
   const shareBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLButtonElement;
@@ -749,39 +754,42 @@ async function render({ item, body, doc }: Context) {
   });
   headerRow.append(journalTitle, shareBtn);
   container.append(headerRow);
-  const rankingSection = text("section", "", "margin:0;");
-  rankingSection.setAttribute("title", getString("journal-rankings-saved-note"));
-  rankingSection.setAttribute("data-journal-rankings", "true");
-  rankingSection.append(text("h3", getString("journal-rankings-heading"), "font-size:14px;margin:0 0 12px;font-weight:600;"));
-  const messages = queryMessages.get(item.id)?.filter(message => message.message !== getString("journal-rankings-query-complete"));
-  if (messages?.length) {
-    const status = text("div", "", "font-size:12px;margin-bottom:10px;");
-    status.setAttribute("data-journal-update-status", "true");
-    status.setAttribute("role", "status");
-    for (const message of messages)
-      status.append(text("div", message.message, `color:${message.level === "warning" || message.level === "error" ? "var(--accent-orange)" : "var(--fill-secondary)"};`));
-    rankingSection.append(status);
-  }
-  if (displayedRankings.length) {
-    const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px 24px;");
-    for (const ranking of displayedRankings) {
-      const label = text("dt", getString(ranking.labelID as any), "margin:0;font-size:13px;color:var(--fill-secondary);");
-      const value = text("dd", ranking.value, "margin:0;min-width:0;font-size:14px;font-weight:600;white-space:pre-wrap;text-align:right;");
-      value.setAttribute("data-journal-ranking", ranking.key);
-      fields.append(label, value);
+  if (supportsRankings(item) || hasIndexResults) {
+    const rankingSection = text("section", "", "margin:0;");
+    rankingSection.setAttribute("title", getString("journal-rankings-saved-note"));
+    rankingSection.setAttribute("data-journal-rankings", "true");
+    rankingSection.append(text("h3", getString("journal-rankings-heading"), "font-size:14px;margin:0 0 12px;font-weight:600;"));
+    const messages = queryMessages.get(item.id)?.filter(message => message.message !== getString("journal-rankings-query-complete"));
+    if (messages?.length) {
+      const status = text("div", "", "font-size:12px;margin-bottom:10px;");
+      status.setAttribute("data-journal-update-status", "true");
+      status.setAttribute("role", "status");
+      for (const message of messages)
+        status.append(text("div", message.message, `color:${message.level === "warning" || message.level === "error" ? "var(--accent-orange)" : "var(--fill-secondary)"};`));
+      rankingSection.append(status);
     }
-    rankingSection.append(fields);
+    if (displayedRankings.length) {
+      const fields = text("dl", "", "margin:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:12px 24px;");
+      for (const ranking of displayedRankings) {
+        const label = text("dt", getString(ranking.labelID as any), "margin:0;font-size:13px;color:var(--fill-secondary);");
+        const value = text("dd", ranking.value, "margin:0;min-width:0;font-size:14px;font-weight:600;white-space:pre-wrap;text-align:right;");
+        value.setAttribute("data-journal-ranking", ranking.key);
+        fields.append(label, value);
+      }
+      rankingSection.append(fields);
+    }
+    else {
+      rankingSection.append(text("div", getString("journal-rankings-empty"), "font-size:12px;color:var(--fill-secondary);"));
+    }
+    container.append(rankingSection);
   }
-  else {
-    rankingSection.append(text("div", getString("journal-rankings-empty"), "font-size:12px;color:var(--fill-secondary);"));
-  }
-  container.append(rankingSection);
 
   const tldr = extractTLDRFromItem(item);
   if (tldr) {
     const tldrSection = doc.createElementNS("http://www.w3.org/1999/xhtml", "section");
     tldrSection.setAttribute("data-journal-tldr", "true");
-    tldrSection.setAttribute("style", "margin-top:14px;padding:10px 12px;background:color-mix(in srgb, var(--accent-blue, #245ac7) 6%, transparent);border-radius:6px;border-left:3px solid var(--accent-blue, #245ac7);");
+    const tldrMargin = (supportsRankings(item) || hasIndexResults) ? "margin-top:14px;" : "margin-top:4px;";
+    tldrSection.setAttribute("style", `${tldrMargin}padding:10px 12px;background:color-mix(in srgb, var(--accent-blue, #245ac7) 6%, transparent);border-radius:6px;border-left:3px solid var(--accent-blue, #245ac7);`);
     const tldrHeader = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
     tldrHeader.setAttribute("style", "display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;");
     const tldrTitle = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");

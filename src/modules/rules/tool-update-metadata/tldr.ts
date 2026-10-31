@@ -98,14 +98,25 @@ export function extractTLDRFromItem(item: Zotero.Item): string | undefined {
   }
   if (typeof item.getNotes === "function" && typeof Zotero !== "undefined" && Zotero.Items?.get) {
     const noteIDs = item.getNotes();
+    let fallbackNote: string | undefined;
     for (const id of noteIDs) {
       const note = Zotero.Items.get(id);
       if (note && !note.deleted && typeof note.getNote === "function") {
-        const fromNote = extractTLDRFromNote(note.getNote());
-        if (fromNote)
-          return fromNote;
+        const rawNote = note.getNote();
+        if (rawNote.includes("data-metaflow-tldr") || rawNote.includes("Semantic Scholar")) {
+          const fromNote = extractTLDRFromNote(rawNote);
+          if (fromNote)
+            return fromNote;
+        }
+        else if (!fallbackNote) {
+          const fromNote = extractTLDRFromNote(rawNote);
+          if (fromNote)
+            fallbackNote = fromNote;
+        }
       }
     }
+    if (fallbackNote)
+      return fallbackNote;
   }
   return undefined;
 }
@@ -210,18 +221,22 @@ export async function saveTLDRToNote(item: Zotero.Item, tldr: string): Promise<b
 export function saveTLDRToExtra(item: Zotero.Item, tldr: string, format?: "remark" | "tldr"): boolean {
   if (typeof item.getField !== "function" || typeof item.setField !== "function")
     return false;
+  const cleanTLDR = tldr.replace(/[\r\n]+/g, " ").trim();
+  if (!cleanTLDR)
+    return false;
   const currentExtra = String(item.getField("extra") || "");
   const lines = currentExtra.split(/\r?\n/);
-  const cleanTLDR = tldr.replace(/[\r\n]+/g, " ").trim();
   const chosenFormat = format || (typeof getPref === "function" ? getPref("workflow.tldrExtraFormat" as any, "remark") : "remark");
   const tldrLine = chosenFormat === "tldr" ? `TLDR: ${cleanTLDR}` : `remark: ${cleanTLDR}`;
-  const existingIndex = lines.findIndex(line => /^(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim()));
+  const isMatch = (line: string) => /^(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
+  const existingIndex = lines.findIndex(isMatch);
   let updatedExtra: string;
   if (existingIndex >= 0) {
-    if (lines[existingIndex] === tldrLine)
+    if (lines[existingIndex] === tldrLine && !lines.slice(existingIndex + 1).some(isMatch))
       return false;
     lines[existingIndex] = tldrLine;
-    updatedExtra = lines.join("\n");
+    const deduplicated = lines.filter((line, idx) => idx === existingIndex || !isMatch(line));
+    updatedExtra = deduplicated.join("\n");
   }
   else {
     updatedExtra = currentExtra.trim() ? `${currentExtra.trim()}\n${tldrLine}` : tldrLine;
@@ -235,10 +250,13 @@ export function saveTLDRToAbstract(item: Zotero.Item, tldr: string): boolean {
     return false;
   if (typeof item.isRegularItem === "function" && !item.isRegularItem())
     return false;
+  const cleanTLDR = tldr.trim();
+  if (!cleanTLDR)
+    return false;
   const currentAbstract = String(item.getField("abstractNote") || "").trim();
   if (currentAbstract)
     return false;
-  item.setField("abstractNote", tldr.trim());
+  item.setField("abstractNote", cleanTLDR);
   return true;
 }
 
