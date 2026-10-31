@@ -33,10 +33,15 @@ export async function findDuplicates(items: Zotero.Item[], signal?: AbortSignal,
       const item = library[index];
       if (item.isRegularItem() && !item.deleted) {
         const creator = item.getCreators()[0];
+        let isPrep: boolean | undefined;
         records.push({
           id: item.id,
           libraryID: item.libraryID,
-          preprint: isPreprint(item, extractIdentifiers(item)),
+          get preprint() {
+            if (isPrep === undefined)
+              isPrep = isPreprint(item, extractIdentifiers(item));
+            return isPrep;
+          },
           data: { itemType: item.itemType, DOI: String(item.getField("DOI") || ""), title: String(item.getField("title") || ""), date: String(item.getField("date") || ""), url: String(item.getField("url") || ""), creators: creator ? [{ creatorType: "author", ...creator.fieldMode === 1 ? { name: creator.lastName } : { lastName: creator.lastName, firstName: creator.firstName } }] : [] },
         });
       }

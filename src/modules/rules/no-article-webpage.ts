@@ -107,7 +107,7 @@ export const NoArticleWebPage = defineRule({
           callback: async () => {
             const currentItem = Zotero.Items.get(item.id);
             if (currentItem && !currentItem.deleted)
-              await addon.hooks.onLintInBatch(["tool-update-metadata"], [currentItem]);
+              await addon.hooks.onLintInBatch(["tool-update-metadata"], [currentItem], { review: true });
           },
         },
       });

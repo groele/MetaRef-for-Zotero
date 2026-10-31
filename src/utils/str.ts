@@ -62,8 +62,7 @@ export function capitalizeFirstLetter(str: string): string {
 
 /**
  * 将字符串转换为正则表达式
- * @author GPT
- * @param str
+ * @param str 正则字符串或常规字符串
  * @returns RegExp
  */
 export function convertToRegex(str: string) {
@@ -100,26 +99,15 @@ export function parseXML(xml: string) {
 /**
  * Gets text language
  * @param text
- * @returns  ISO 639-1 code
+ * @returns ISO 639-1 code
  */
 export function getTextLanguage(text: string) {
-  // 替换 title 中的 HTML 标签以降低 franc 识别错误
+  // 替换 title 中的 HTML 标签以降低语言识别错误
   text = removeHtmlTag(text);
 
   const options = {
     only: [] as string[],
-    // minLength: 10,
   };
-
-  // 文本是否少于 10 字符
-  // if (text.length < 10) {
-  //     options.minLength = 2;
-  //     // 对于短字符串内容，如果不全为英文，则替换掉英文字母以提高识别准确度
-  //     const textReplaceEN = text.replace(/[a-z]*[A-Z]*/g, "");
-  //     if (textReplaceEN.length > 1) {
-  //         text = textReplaceEN;
-  //     }
-  // }
 
   // 限制常用语言
   if (getPref("rule.require-language.only")) {
@@ -142,5 +130,3 @@ export function getTextLanguage(text: string) {
     return /[\u4E00-\u9FA5]/.test(text) ? "zh" : "en";
   }
 }
-
-export * as StringUtil from "./str";
