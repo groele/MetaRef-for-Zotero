@@ -28,6 +28,10 @@ declare namespace _ZoteroTypes {
       "rule.no-journal-preprint": boolean;
       "rule.no-value-nullish": boolean;
       "rule.no-field-misuse": boolean;
+      "rule.correct-attachment-roles": boolean;
+      "rule.correct-attachment-roles.renamePdf": boolean;
+      "rule.correct-attachment-roles.syncTitle": boolean;
+      "rule.correct-attachment-roles.template": string;
       "rule.no-title-trailing-dot": boolean;
       "rule.no-doi-prefix": boolean;
       "rule.no-issue-extra-zeros": boolean;

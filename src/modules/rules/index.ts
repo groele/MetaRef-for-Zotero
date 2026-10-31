@@ -2,6 +2,7 @@ import type { Rule, RuleForRegularItemScopeItem, RuleForRegularScopeField } from
 import { getPref } from "../../utils/prefs";
 import { ToolReviewDuplicates, ToolReviewMetadata, ToolReviewPreprint } from "../review";
 import { CorrectAbstractFormat } from "./correct-abstract-format";
+import { CorrectAttachmentRoles } from "./correct-attachment-roles";
 import { CorrectCreatorsCase } from "./correct-creators-case";
 import { CorrectCreatorsPinyin } from "./correct-creators-pinyin";
 import { CorrectDateFormat, CorrectFilingDateFormat, CorrectIssueDateFormat, CorrectPriorityDateFormat } from "./correct-date-format";
@@ -50,6 +51,7 @@ const register: Rule<any>[] = [
   NoJournalPreprint,
   NoValueNullish,
   NoFieldMisuse,
+  CorrectAttachmentRoles,
 
   // Language
   RequireLanguage,

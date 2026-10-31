@@ -29,6 +29,21 @@ rule-no-field-misuse =
   .label = 清理被滥用的标准字段
 
 
+## correct-attachment-roles
+rule-correct-attachment-roles =
+  .label = 正文与补充材料（SI）角色解耦与规范命名
+rule-correct-attachment-roles-option-rename-pdf =
+  .label = 按照正文与补充材料角色自动规范重命名 PDF 文件
+rule-correct-attachment-roles-option-sync-title =
+  .label = 同步更新附件条目标题（明确标注 [正文] 与 [补充材料]）
+rule-correct-attachment-roles-description =
+  自动识别文献挂载的多个附件，将其智能归类为“主手稿（Manuscript）”与“补充材料（SI）”，分别套用安全命名并更新标题，避免 Nature/Science 等顶级刊物的关键实验细节混淆。
+rule-correct-attachment-roles-report-message =
+  已识别并解耦附件角色：{ $summary }
+rule-correct-attachment-roles-report-action =
+  查看附件
+
+
 ## require-language
 rule-require-language =
   .label = 语言字段应填写 ISO 639-1 语言代码

@@ -6,6 +6,7 @@ type ID =
   | "no-journal-preprint"
   | "no-value-nullish"
   | "no-field-misuse"
+  | "correct-attachment-roles"
   | "require-language"
   | "no-title-trailing-dot"
   | "correct-title-punctuation"
