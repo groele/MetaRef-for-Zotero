@@ -109,6 +109,23 @@ export function placeTLDRBeforeExtra(doc?: Document) {
 
   for (const d of docs) {
     try {
+      const tables = d.querySelectorAll<HTMLElement>("#info-table");
+      for (const table of Array.from<HTMLElement>(tables)) {
+        if (!observedTables.has(table) && typeof MutationObserver !== "undefined") {
+          try {
+            const observer = new MutationObserver(() => {
+              placeTLDRBeforeExtra(d);
+            });
+            observer.observe(table, { childList: true });
+            activeObservers.add(observer);
+            observedTables.add(table);
+          }
+          catch (err) {
+            logger.error("Failed to observe infoTable mutations:", err);
+          }
+        }
+      }
+
       const tldrRows = d.querySelectorAll<HTMLElement>(".meta-row[data-custom-row-id=\"tldr\"]");
       for (const tldrRow of Array.from<HTMLElement>(tldrRows)) {
         const infoTable = tldrRow.parentElement;
@@ -129,11 +146,27 @@ export function placeTLDRBeforeExtra(doc?: Document) {
           }
         }
 
+        const labelElem = tldrRow.querySelector?.(".meta-label");
+        if (labelElem && labelElem.classList) {
+          if (!labelElem.classList.contains("meta-label-tldr"))
+            labelElem.classList.add("meta-label-tldr");
+          if (typeof labelElem.hasAttribute === "function" && !labelElem.hasAttribute("fieldname"))
+            labelElem.setAttribute("fieldname", "tldr");
+        }
+        if (tldrRow.classList && !tldrRow.classList.contains("meta-row-tldr")) {
+          tldrRow.classList.add("meta-row-tldr");
+        }
+
         const extraLabel = infoTable.querySelector(".meta-label-extra");
-        const extraRow = extraLabel?.closest(".meta-row") || (extraLabel?.parentElement as HTMLElement | null);
-        if (extraRow && extraRow.parentElement === infoTable) {
-          if (tldrRow.nextElementSibling !== extraRow) {
-            infoTable.insertBefore(tldrRow, extraRow);
+        const dateAddedLabel = infoTable.querySelector(".meta-label-dateAdded");
+        const anchorRow = extraLabel?.closest(".meta-row")
+          || (extraLabel?.parentElement as HTMLElement | null)
+          || dateAddedLabel?.closest(".meta-row")
+          || (dateAddedLabel?.parentElement as HTMLElement | null);
+
+        if (anchorRow && anchorRow.parentElement === infoTable) {
+          if (tldrRow.nextElementSibling !== anchorRow) {
+            infoTable.insertBefore(tldrRow, anchorRow);
           }
         }
       }

@@ -46,6 +46,9 @@ describe("snapshot-reviver", () => {
 
       const pmc = identifiersFromURL("https://pmc.ncbi.nlm.nih.gov/articles/PMC7608976/", "URL");
       expect(pmc).toEqual([{ kind: "PMCID", value: "PMC7608976", source: "URL" }]);
+
+      const ar5iv = identifiersFromURL("https://ar5iv.labs.arxiv.org/html/2301.00001", "URL");
+      expect(ar5iv).toEqual([{ kind: "arXiv", value: "2301.00001", source: "URL" }]);
     });
 
     it("returns empty array for non-academic or malformed URLs", () => {
@@ -117,6 +120,9 @@ describe("snapshot-reviver", () => {
         .toBe("journalArticle");
 
       expect(revivalTarget("webpage", { publicationTitle: "Nature", volume: "600", pages: "1-10" }, { kind: "DOI", value: "10.1000/1", source: "" }))
+        .toBe("journalArticle");
+
+      expect(revivalTarget("webpage", { publicationTitle: "Nature Communications", DOI: "10.1038/s41467-024-00001-1" }, { kind: "DOI", value: "10.1038/s41467-024-00001-1", source: "" }))
         .toBe("journalArticle");
 
       expect(revivalTarget("webpage", {}, { kind: "arXiv", value: "2301.00001", source: "" }))

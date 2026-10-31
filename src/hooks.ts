@@ -175,6 +175,7 @@ async function onNotify(
 
   if (event === "modify" && type === "item") {
     await refreshJournalPane(ids.map(Number));
+    refreshTLDRInfoRow();
     return;
   }
 

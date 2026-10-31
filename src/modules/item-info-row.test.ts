@@ -309,8 +309,25 @@ describe("item-info-row module", () => {
     };
     extraLabel.parentElement = extraRow;
 
+    const tldrClasses = new Set<string>();
+    const labelClasses = new Set<string>();
+    const labelAttrs = new Map<string, string>();
+    const mockLabelElem = {
+      classList: {
+        contains: (c: string) => labelClasses.has(c),
+        add: (c: string) => labelClasses.add(c),
+      },
+      hasAttribute: (a: string) => labelAttrs.has(a),
+      setAttribute: (a: string, v: string) => labelAttrs.set(a, v),
+    };
+
     const tldrRow: any = {
       parentElement: parent,
+      classList: {
+        contains: (c: string) => tldrClasses.has(c),
+        add: (c: string) => tldrClasses.add(c),
+      },
+      querySelector: (sel: string) => sel.includes("meta-label") ? mockLabelElem : null,
       get nextElementSibling() {
         const idx = children.indexOf(tldrRow);
         return idx !== -1 && idx + 1 < children.length ? children[idx + 1] : null;
@@ -321,12 +338,80 @@ describe("item-info-row module", () => {
     children.push(extraRow, dateAddedRow, tldrRow);
 
     const mockDoc = {
-      querySelectorAll: (sel: string) => sel.includes("data-custom-row-id=\"tldr\"") ? [tldrRow] : [],
+      querySelectorAll: (sel: string) => {
+        if (sel.includes("data-custom-row-id=\"tldr\""))
+          return [tldrRow];
+        return [];
+      },
     } as unknown as Document;
 
     placeTLDRBeforeExtra(mockDoc);
 
     expect(parent.insertBefore).toHaveBeenCalledWith(tldrRow, extraRow);
     expect(tldrRow.nextElementSibling).toBe(extraRow);
+    expect(tldrClasses.has("meta-row-tldr")).toBe(true);
+    expect(labelClasses.has("meta-label-tldr")).toBe(true);
+    expect(labelAttrs.get("fieldname")).toBe("tldr");
+  });
+
+  it("falls back to placing TLDR before dateAdded when extra row is not found", () => {
+    const children: any[] = [];
+    let dateAddedLabel: any;
+    let dateAddedRow: any;
+
+    const parent: any = {
+      children,
+      insertBefore: vi.fn((newChild: any, refChild: any) => {
+        const oldIndex = children.indexOf(newChild);
+        if (oldIndex !== -1)
+          children.splice(oldIndex, 1);
+        const refIndex = children.indexOf(refChild);
+        if (refIndex !== -1)
+          children.splice(refIndex, 0, newChild);
+        else
+          children.push(newChild);
+      }),
+      querySelector: vi.fn((sel: string) => {
+        if (sel.includes("meta-label-dateAdded"))
+          return dateAddedLabel;
+        return null;
+      }),
+    };
+
+    dateAddedLabel = {
+      closest: vi.fn((sel: string) => sel.includes("meta-row") ? dateAddedRow : null),
+      parentElement: null,
+    };
+    dateAddedRow = {
+      parentElement: parent,
+      get nextElementSibling() {
+        const idx = children.indexOf(dateAddedRow);
+        return idx !== -1 && idx + 1 < children.length ? children[idx + 1] : null;
+      },
+    };
+    dateAddedLabel.parentElement = dateAddedRow;
+
+    const tldrRow: any = {
+      parentElement: parent,
+      classList: { contains: () => false, add: vi.fn() },
+      querySelector: () => null,
+      get nextElementSibling() {
+        const idx = children.indexOf(tldrRow);
+        return idx !== -1 && idx + 1 < children.length ? children[idx + 1] : null;
+      },
+    };
+
+    // DOM: titleRow, dateAddedRow, tldrRow (no extra row)
+    const titleRow: any = { parentElement: parent };
+    children.push(titleRow, dateAddedRow, tldrRow);
+
+    const mockDoc = {
+      querySelectorAll: (sel: string) => sel.includes("data-custom-row-id=\"tldr\"") ? [tldrRow] : [],
+    } as unknown as Document;
+
+    placeTLDRBeforeExtra(mockDoc);
+
+    expect(parent.insertBefore).toHaveBeenCalledWith(tldrRow, dateAddedRow);
+    expect(tldrRow.nextElementSibling).toBe(dateAddedRow);
   });
 });

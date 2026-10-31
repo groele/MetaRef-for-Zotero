@@ -57,7 +57,7 @@ export function identifiersFromURL(value: string, source: string): IdentifierCan
   const doi = cleanDOI(url.href);
   if (doi)
     result.push({ kind: "DOI", value: doi, source });
-  const arxiv = host.endsWith("arxiv.org") ? normalizeArxiv(url.href.replace(/^http:/, "https:")) : "";
+  const arxiv = (host.endsWith("arxiv.org") || host.endsWith("ar5iv.org")) ? normalizeArxiv(url.href.replace(/^http:/, "https:")) : "";
   if (arxiv)
     result.push({ kind: "arXiv", value: arxiv, source });
   const pmid = (host === "pubmed.ncbi.nlm.nih.gov" ? path.match(/^\/(\d{1,9})\/?$/) : host === "ncbi.nlm.nih.gov" ? path.match(/^\/pubmed\/(\d{1,9})\/?$/) : null)?.[1];
@@ -202,7 +202,7 @@ export function revivalTarget(itemType: string, candidate: TransformedData, iden
   if (!type || isSnapshotItem({ itemType: type })) {
     if (identifier.kind === "arXiv")
       type = "preprint";
-    else if (candidate.publicationTitle && (candidate.volume || candidate.issue || candidate.pages || candidate.ISSN))
+    else if (candidate.publicationTitle && (candidate.volume || candidate.issue || candidate.pages || candidate.ISSN || candidate.DOI))
       type = "journalArticle";
     else
       return undefined;
