@@ -205,14 +205,37 @@ export function placeTLDRBeforeExtra(doc?: Document) {
 
         const extraLabel = infoTable.querySelector(".meta-label-extra");
         const dateAddedLabel = infoTable.querySelector(".meta-label-dateAdded");
-        const anchorRow = extraLabel?.closest(".meta-row")
+        const extraRow = (extraLabel?.closest?.(".meta-row") as HTMLElement | null)
           || (extraLabel?.parentElement as HTMLElement | null)
-          || dateAddedLabel?.closest(".meta-row")
+          || null;
+        const anchorRow = extraRow
+          || dateAddedLabel?.closest?.(".meta-row")
           || (dateAddedLabel?.parentElement as HTMLElement | null);
 
         if (anchorRow && anchorRow.parentElement === infoTable) {
           if (tldrRow.nextElementSibling !== anchorRow) {
             infoTable.insertBefore(tldrRow, anchorRow);
+          }
+        }
+
+        // 消除信息面板上下两行重复：当常驻「撷论」行显示时，检查紧邻的原生「其他」行
+        if (extraRow && extraRow.style && tldrRow.style.display !== "none" && !tldrRow.hidden) {
+          const extraValElem = (extraRow.querySelector(".meta-data > .value") || extraRow.querySelector(".value")) as HTMLElement | null;
+          const extraText = extraValElem?.textContent?.trim() || "";
+          if (/^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(extraText)) {
+            const lines = extraText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+            const nonTLDRLines = lines.filter(l => !/^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(l));
+            if (nonTLDRLines.length === 0) {
+              // Extra 仅包含 TLDR，且此时信息面板已有独立的「撷论」行，隐藏原生「其他」行，彻底消除重复显示
+              extraRow.style.display = "none";
+            }
+            else if (extraValElem && extraValElem.textContent !== nonTLDRLines.join("\n")) {
+              extraRow.style.display = "";
+              extraValElem.textContent = nonTLDRLines.join("\n");
+            }
+          }
+          else if (extraRow.style.display === "none") {
+            extraRow.style.display = "";
           }
         }
       }
