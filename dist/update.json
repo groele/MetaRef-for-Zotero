@@ -1,19 +1,19 @@
 {
   "addons": {
-  "metaflow@groele": {
-    "updates": [
-      {
-        "version": "13.4.0",
-        "update_link": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.4.0/zotero-metaflow.xpi",
-        "update_hash": "sha512:95df5fe22caa9ca52adb33c220f86beb816232dd42fde008c988e4ccffedf8e8d13ec542d55ef23ee6532a11e34abf6a5baef8dd3af0acc6f1e6b33b46c4516d",
-        "applications": {
-          "zotero": {
-            "strict_min_version": "10.0",
-            "strict_max_version": "12.*"
+    "metaflow@groele": {
+      "updates": [
+        {
+          "version": "13.4.3",
+          "update_link": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.4.3/zotero-metaflow.xpi",
+          "update_hash": "sha512:b61e87ce3e8a6c39fbb30d76cb9581baa9fdb18bb430c4af008ee03741eb1704d958e53c00abc8558db37d2a4f49b382ba6a56f42bdfa83ba6471a4b0ce80f8d",
+          "applications": {
+            "zotero": {
+              "strict_min_version": "10.0",
+              "strict_max_version": "12.*"
+            }
           }
         }
-      }
-    ]
+      ]
+    }
   }
-}
 }
