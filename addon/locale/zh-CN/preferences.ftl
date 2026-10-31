@@ -325,35 +325,38 @@ integration-state-skipped = 已跳过
 
 settings-group-count = 已选 { $selected } / { $total } 项
 
-workflow-heading = 检查并修复元数据：执行步骤
-workflow-description = 本流水线严格遵循 100% 纯本地离线执行原则，绝对不发起任何外部网络通信，在物理断网或严格内网沙箱中瞬时完成。下面的本地格式模块与详细规则共享同一组开关（半选表示仅启用部分规则）。可一键清洗题名格式、排版化学式下标、规整作者与拼音、执行本地 ISO 4 刊名缩写推断以及正文与补充材料 (SI) 角色解耦重命名。所有联网更新功能统一收敛在下方「更新元数据」中配置。
+workflow-heading = 检查并修复元数据（纯本地离线）
+workflow-description = 纯本地瞬时清洗，零网络通信。标准化标题大小写与化学式、规范作者拼音、推断 ISO 4 刊名缩写及附件 (SI) 角色解耦。
 workflow-metadata = 先联网核验并自动补全书目信息（包含作者核验）
 workflow-rankings = 最后更新期刊分区与评级
-workflow-title = 标题及短标题的全部检查与格式功能
-workflow-creators = 作者信息的全部检查与格式功能
-workflow-identifiers = DOI 的本地检查与格式功能（联网补全位于更新元数据）
-workflow-pagination = 卷、期、页码的全部格式功能
-workflow-publication = 期刊与会议名称、缩写的全部格式功能
-workflow-attachments = 正文与补充材料（SI）角色解耦与规范命名
-workflow-other = 其他条目、语言、日期与类型规则
+workflow-title = 标题与短标题格式化（大小写、化学式、标点）
+workflow-creators = 作者信息规范化（拼音校正、大小写）
+workflow-identifiers = DOI 本地格式规范化
+workflow-pagination = 卷、期、页码格式规范化
+workflow-publication = 期刊与会议名称格式化及 ISO 4 缩写推断
+workflow-attachments = 附件资产治理（正文与补充材料 SI 角色解耦重命名）
+workflow-other = 其他日期与条目基础字段规范化
 menu-placement =
     .aria-label = 菜单显示位置
 menu-placement-primary = 右键一级菜单
 menu-placement-nested = MetaFlow 子菜单
 
-metadata-update-saved-description = 此项为“更新元数据”时的字段采纳策略，默认本地优先（仅补齐空缺字段）；云端优先在官方核验通过时可更新标题、年份等差异字段。来源空值不清除本地已有内容。
+metadata-update-saved-description = 本地优先仅填补空白字段；云端优先在官方核验一致时更新差异字段。来源空值不清除本地数据。
 metadata-repair-creators =
-    .label = 按核验后的文献来源修复作者名单（含缺失、删除部分和已有错误）
-metadata-repair-creators-description = 控制书目信息在线补全时是否修复作者。Crossref 身份核验通过且开关开启时，自动补全不完整或被截断的作者名单；关闭时元数据补全不修改作者，关联正式版也保留原有作者。本地作者格式化规则（大小写、拼音校正）在「检查并修复元数据」中独立执行。
+    .label = 在线修复作者名单（补齐缺失与截断）
+metadata-repair-creators =
+    .label = 在线修复作者名单（补齐缺失与截断）
 metadata-update-snapshots =
-    .label = 网页快照与残缺条目学术复活（Web Snapshot Reviver）
-metadata-update-snapshots-description = 当条目类型为网页（Webpage）或博客时，自动嗅探页面 URL、HTML 快照及页面头部的 DOI、arXiv ID、PMID 等学术指纹，反查补全卷期、页码与作者，一键升级为正规文献（Journal Article 或 Preprint）。
+    .label = 网页快照学术复活 (Snapshot Reviver)
+metadata-update-snapshots =
+    .label = 网页快照学术复活 (Snapshot Reviver)
 
 metadata-update-tldr =
-    .label = 自动提炼并回填 Semantic Scholar TL;DR 核心论点摘要（撷论）
-metadata-update-tldr-description = 在更新元数据时，若文献包含 DOI、arXiv 或 PMID 等标识符，自动向 Semantic Scholar 请求该文献由 AI 提炼的 1~2 句核心贡献摘要（Too Long; Didn't Read），快速获悉论文要义。条目列表可开启「撷论」列直观呈现，右侧侧边栏「信息」面板亦常驻显示并支持编辑，无缝联动主流「简记」生态。
-metadata-update-tldr-info-pane =
-    .label = 在右侧侧边栏「信息」面板常驻显示「撷论」并支持直接编辑
+    .label = 提取 Semantic Scholar TL;DR 核心论点（撷论）
+metadata-update-tldr =
+    .label = 提取 Semantic Scholar TL;DR 核心论点（撷论）
+metadata-update-tldr =
+    .label = 提取 Semantic Scholar TL;DR 核心论点（撷论）
 metadata-tldr-target-label = 回填目标位置：
 metadata-tldr-target-note =
     .label = 独立子笔记 (推荐，列表「撷论」列同步可读)
@@ -438,8 +441,9 @@ api-cache-clearing = 正在清除 API 查询缓存…
 api-cache-clear-failed = 未能清除磁盘缓存。请检查配置目录权限或插件版本后重试；已写入文献的数据不受影响。
 
 metadata-update-journal-info =
-    .label = 更新元数据时同时更新期刊分区、影响因子与期刊索引
-metadata-update-journal-info-description = 此项是“更新元数据”的独立步骤；书目未变或关闭书目核验时仍可查询。遵循补空／覆盖偏好、字段选择与数据源优先级，复用有效缓存。
+    .label = 同步更新期刊分区与影响因子 (EasyScholar)
+metadata-update-journal-info =
+    .label = 同步更新期刊分区与影响因子 (EasyScholar)
 
 menu-group-review = 文献核验、版本与去重
 workflow-execution-overview = 自动导入：按独立开关后台处理，默认本地校验、保留全部条目。手动命令的显示、执行步骤及耗时选项统一在“右键菜单与核心功能”中配置。
@@ -515,19 +519,19 @@ duplicates-select-one-library = 请先选中一个文库，再执行此去重操
 
 core-workflows-heading = 右键菜单与核心功能
 core-workflows-description = 统一配置命令是否显示、执行步骤及耗时选项。隐藏菜单只影响入口，自动导入仍由一般设置中的独立开关控制；同一轮不会重复查询作者或重复扫描去重。
-workflow-update-heading = 更新元数据：执行步骤与策略
-workflow-update-description = 集中收敛所有在线学术增强与自动补全功能。在文献具备 DOI、arXiv 标识符或残缺快照时，向官方学术数据库请求最新元数据、转正预印本、自动补全作者、提取 AI 核心论点（撷论）并更新期刊权威指标。
-workflow-update-bibliographic = 联网核验书目信息并按判据自动填充
-workflow-update-versions = 自动检测预印本并转为正式发表版本（检测到 arXiv 预印本时自动查询正式发表 DOI 及期刊并转正）
-workflow-update-snapshots = 网页快照学术复活（嗅探残缺网页快照的学术指纹并自动升级为正式文献）
-metaref-workflow-update-snapshots = 网页快照学术复活（嗅探残缺网页快照的学术指纹并自动升级为正式文献）
-workflow-update-tldr = 自动提炼 Semantic Scholar TL;DR 核心论点（文献含 DOI/arXiv 时自动提取 1~2 句极速摘要）
-metaref-workflow-update-tldr = 自动提炼 Semantic Scholar TL;DR 核心论点（文献含 DOI/arXiv 时自动提取 1~2 句极速摘要）
+workflow-update-heading = 更新元数据（在线增强与智能补全）
+workflow-update-description = 在线检索学术数据库，补全书目元数据、转正预印本、修复作者、提炼 AI 核心论点（撷论）及同步期刊指标。
+workflow-update-bibliographic = 在线核验并补全书目元数据
+workflow-update-versions = arXiv 预印本在线转正
+workflow-update-snapshots = 网页快照学术复活 (Snapshot Reviver)
+metaref-workflow-update-snapshots = 网页快照学术复活 (Snapshot Reviver)
+workflow-update-tldr = 提取 Semantic Scholar TL;DR 核心论点（撷论）
+metaref-workflow-update-tldr = 提取 Semantic Scholar TL;DR 核心论点（撷论）
 journal-insights-tldr-heading = 撷论 (TL;DR 核心论点)
 rule-tool-update-metadata-tldr-saved = 已提取并回填 Semantic Scholar TL;DR 核心论点（{ $target }）
-workflow-update-format = 采纳后运行已启用的本地格式规则（不扫描重复、不额外补全）
+workflow-update-format = 更新完成后自动整理本地格式
 workflow-check-duplicates = 检查完成后交互核对重复候选（代替重复提醒扫描）
-workflow-update-duplicates = 更新完成后交互核对重复候选（大文库可能耗时）
+workflow-update-duplicates = 更新完成后核对重复候选条目
 workflow-search-heading = 联网核验的补充检索（低频，默认关闭）
 workflow-search-description = 以下设置同时适用于两个核心命令中的联网核验。先使用条目已有标识符；缺少时才启用已勾选的候选扫描或标题检索。PDF 只读取已有缓存，不上传文件。独立高级核验工具仍保留完整检索能力。
 workflow-scan-pdf = 缺少标识符时读取 PDF 缓存中的 DOI/arXiv 候选（自动核验证据）
@@ -574,10 +578,32 @@ core-task-stopped = 已停止
 core-task-no-stages = 未启用执行步骤
 
 metadata-source-priority = 元数据来源优先级
-metadata-source-local =
-  .label = 优先本地数据（保留已有字段，补齐空缺）
-metadata-source-cloud =
-  .label = 优先云端数据（核验通过后更新已有字段）
+metadata-source-local = 优先本地数据（保留已有字段，补齐空白）
+metadata-source-cloud = 优先云端数据（核验通过后更新差异字段）
 review-cloud-priority = DOI 已核验一致，按照云端优先设置采用来源字段；差异字段：{ $fields }。
 
 feedback-performance-heading = 通知与执行性能
+
+metaref-workflow-update-bibliographic = 在线核验并补全书目元数据
+
+metaref-workflow-update-versions = arXiv 预印本在线转正
+
+metaref-workflow-update-format = 更新完成后自动整理本地格式
+
+metaref-workflow-update-duplicates = 更新完成后核对重复候选条目
+
+metadata-repair-creators-description = 官方核验一致时补全不完整或被截断的作者；本地拼音与大小写规范请在「检查并修复元数据」中设置。
+
+metadata-update-snapshots-description = 网页或博客条目自动嗅探 DOI / arXiv / PMID 学术指纹，反查并升级为正式期刊文献。
+
+metadata-update-tldr-description = 自动获取 AI 提炼的 1~2 句论文核心论点，支持在条目列表列展示及右侧信息面板直接编辑。
+
+metadata-update-tldr-info-pane =
+    .label = 在右侧「信息」面板常驻显示并支持直接编辑
+
+metadata-update-journal-info-description = 在线查询 JCR、中科院分区及影响因子等权威指标，支持独立于书目信息单独更新。
+
+metaref-workflow-heading = 检查并修复元数据（纯本地离线）
+metaref-workflow-description = 纯本地瞬时清洗，零网络通信。标准化标题大小写与化学式、规范作者拼音、推断 ISO 4 刊名缩写及附件 (SI) 角色解耦。
+metaref-workflow-update-heading = 更新元数据（在线增强与智能补全）
+metaref-workflow-update-description = 在线检索学术数据库，补全书目元数据、转正预印本、修复作者、提炼 AI 核心论点（撷论）及同步期刊指标。

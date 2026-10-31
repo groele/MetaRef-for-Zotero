@@ -531,24 +531,28 @@
   border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
   border-radius: 9px;
   background-color: color-mix(in srgb, currentColor 2%, transparent);
-  margin-block: 10px;
+  margin-block: 12px;
+  padding-inline: 16px;
   box-sizing: border-box;
 }
 
 #metaref .metaref-section-card .metaref-collapsible-card:not(.is-collapsed) {
-  padding-bottom: 12px;
+  padding-bottom: 16px;
 }
 
 #metaref .metaref-collapsible-card > .metaref-card-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 11px 13px;
+  margin-inline: -16px;
+  padding: 12px 16px;
   cursor: pointer;
   user-select: none;
   font-size: 14px;
   font-weight: 600;
   border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  margin-bottom: 12px;
   transition: background-color 0.15s ease;
 }
 
@@ -572,6 +576,8 @@
 
 #metaref .metaref-collapsible-card.is-collapsed > .metaref-card-heading {
   border-radius: 8px;
+  border-bottom: 0;
+  margin-bottom: 0;
 }
 
 #metaref .metaref-collapsible-card.is-collapsed > .metaref-card-heading::after {
@@ -580,4 +586,70 @@
 
 #metaref .metaref-collapsible-card.is-collapsed > :not(.metaref-card-heading) {
   display: none !important;
+}
+
+/* Card inner layout breathing room & label indentation */
+#metaref .metaref-collapsible-card > p {
+  margin-inline: 0;
+  margin-block: 0 10px;
+  color: var(--fill-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#metaref .metaref-collapsible-card > .metaref-check-option {
+  margin-inline: 0;
+}
+
+#metaref .metaref-collapsible-card > description,
+#metaref .metaref-collapsible-card > .metaref-pref-description {
+  display: block;
+  margin-inline: 0;
+  margin-inline-start: 24px;
+  margin-block: 2px 10px;
+  color: var(--fill-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#metaref .metaref-collapsible-card > #metaref-metadata-source-priority-row {
+  margin-inline: 0;
+  margin-block: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+#metaref .metaref-collapsible-card > #metaref-metadata-source-priority-row > label {
+  font-weight: 600;
+  font-size: 13px;
+  color: inherit;
+}
+
+#metaref .metaref-collapsible-card > #metaref-metadata-source-priority-row > radiogroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-inline-start: 24px;
+}
+
+#metaref .metaref-collapsible-card > #metaref-metadata-source-priority-row > radiogroup radio {
+  margin: 0;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#metaref .metaref-collapsible-card > #metaref-tldr-options {
+  margin-inline-start: 24px;
+  margin-block: 2px 8px;
+}
+
+#metaref .metaref-collapsible-card > #metaref-metadata-provider-options {
+  margin-inline: 0;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 6px;
+  background-color: color-mix(in srgb, currentColor 1%, transparent);
 }

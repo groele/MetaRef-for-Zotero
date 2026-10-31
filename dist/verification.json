@@ -1,44 +1,11 @@
 {
-  "product": "Zotero MetaFlow",
-  "version": "13.4.5",
-  "addonID": "metaflow@groele",
-  "file": "zotero-metaflow.xpi",
-  "bytes": 3508684,
-  "sha256": "eccd1cf815febb5115adc786a18a94ded98eca003740d42af0feaed6381d3313",
-  "sha512": "689e26c088b010ddb46620d4ff3eae963fad46a6729f24d6e0fc9711d09cae8b1644ab800c8ea00e33b31981b30c18f114e4d63d3c240b99ce297ce333c4a184",
-  "entries": 52,
-  "zipCRC": "passed",
-  "qualityChecks": {
-    "productionBuild": "passed",
-    "sourceTypes": "passed",
-    "eslint": "passed",
-    "autocorrect": "passed",
-    "releaseTagSelfTest": "passed"
-  },
-  "automatedTests": {
-    "unitTestFiles": 93,
-    "passed": 674,
-    "failed": 0
-  },
-  "packageChecks": {
-    "manifestIdentity": "metaflow@groele",
-    "manifestVersion": "13.4.5",
-    "bundledScript": "passed",
-    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.4.5/zotero-metaflow.xpi",
-    "updateFeedSHA512": "matches package"
-  },
-  "isolatedZotero": {
-    "performed": false,
-    "reason": "Host target is Zotero 10+ (Gecko 153+ Web Components architecture)."
-  },
-  "notVerified": [
-    "live Zotero UI regression",
-    "actual automatic update installation",
-    "main profile installation",
-    "Zotero 11",
-    "Zotero 12",
-    "macOS/Linux",
-    "manual theme acceptance",
-    "GitHub Release/CI pending"
-  ]
+  "addon_id": "metaflow@groele",
+  "name": "Zotero MetaFlow",
+  "version": "13.4.6",
+  "archive": "zotero-metaflow.xpi",
+  "bytes": 3507792,
+  "sha256": "2d051b128c8353a6846137557dc66c812bf23c8c9ae884bbd2a0d88174004462",
+  "sha512": "f4be522d40d6a46f53d951946c93ccb3278960fa7f83649b1522d8f74d87723561bb3b8870d35d4c3de2b3b63408675e563ce4013de1cdc8e33c98afc1d30bce",
+  "strict_min_version": "10.0",
+  "strict_max_version": "12.*"
 }

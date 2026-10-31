@@ -326,35 +326,38 @@ integration-state-skipped = Skipped
 
 settings-group-count = { $selected } / { $total } selected
 
-workflow-heading = Check and Repair: execution stages
-workflow-description = Formatting modules share their switches with detailed rules; a mixed state indicates partial selection. Optional verification runs first, then local formatting, journal metrics and duplicate review. Full metadata verification includes authors, so it does not query authors twice. Destructive maintenance is excluded.
+workflow-heading = Check & Repair Metadata (100% Offline)
+workflow-description = 100% offline local processing without network requests. Normalizes title casing, chemical formulas, author pinyin, ISO 4 journal abbreviations, and attachment (SI) roles.
 workflow-metadata = Verify and automatically fill bibliographic metadata first (includes authors)
 workflow-rankings = Update journal quartiles and rankings last
-workflow-title = All title and short-title checks and formatters
-workflow-creators = All creator checks and formatters
-workflow-identifiers = Local DOI checks and formatting (remote enrichment is in Update Metadata)
-workflow-pagination = All volume, issue and page formatters
-workflow-publication = All publication and conference name formatters
-workflow-attachments = Manuscript & Supplementary (SI) Role Decoupling
-workflow-other = Other item, language, date and type rules
+workflow-title = Title and short title formatting (casing, formulas, punctuation)
+workflow-creators = Author normalization (pinyin corrections, casing)
+workflow-identifiers = DOI local format normalization
+workflow-pagination = Volume, issue, and pages normalization
+workflow-publication = Publication title formatting and ISO 4 abbreviation inference
+workflow-attachments = Attachment asset governance (SI role decoupling and renaming)
+workflow-other = Other dates and basic field normalization
 menu-placement =
     .aria-label = Menu placement
 menu-placement-primary = Top-level context menu
 menu-placement-nested = MetaFlow submenu
 
-metadata-update-saved-description = Shared by enabled online metadata steps in both core commands and standalone verification; this does not enable online steps. Local priority is the default; author completion follows its separate switch. Cloud priority may resolve field differences after verifying an exact DOI match. Conflicting DOIs and insufficient evidence are still rejected; empty source values never erase local fields. Import, abbreviation and ranking source policies stay independent; preprints remain linked to their published versions.
+metadata-update-saved-description = Local priority only fills empty fields. Cloud priority updates differing fields when verified by official identifiers. Empty source fields never clear local data.
 metadata-repair-creators =
-    .label = Repair authors from verified metadata, including missing, partial and incorrect lists
-metadata-repair-creators-description = Includes authors in automatic bibliographic filling. After identity verification, enabling this option repairs incomplete existing author lists. Disabling it preserves authors during metadata filling and in related publications. Explicit author verification during Check and local author formatting follow their own switches.
+    .label = Online author repair (fill missing and truncated lists)
+metadata-repair-creators =
+    .label = Online author repair (fill missing and truncated lists)
 metadata-update-snapshots =
-    .label = Revive Web Snapshots and Bare Webpages (Snapshot Reviver)
-metadata-update-snapshots-description = When an item is a webpage or blog post, automatically sniffs academic identifiers (DOI, arXiv, PMID) from its URL, HTML snapshot head, and transforms bare clippings into full journal articles or preprints with complete authors and pagination.
+    .label = Revive web snapshots (Snapshot Reviver)
+metadata-update-snapshots =
+    .label = Revive web snapshots (Snapshot Reviver)
 
 metadata-update-tldr =
-    .label = Automatically extract and backfill Semantic Scholar TL;DR summary (撷论)
-metadata-update-tldr-description = During metadata update, if an item contains a DOI, arXiv ID, or PMID, automatically fetches a 1-2 sentence AI summary (Too Long; Didn't Read) from Semantic Scholar to capture the core takeaway. Can be displayed in the "TL;DR Takeaway (撷论)" library column and Item Info pane with inline editing, seamlessly interoperable with the "Remark" ecosystem.
-metadata-update-tldr-info-pane =
-    .label = Display "TL;DR Takeaway" in right sidebar Item Info pane with inline editing
+    .label = Extract Semantic Scholar TL;DR takeaway (撷论)
+metadata-update-tldr =
+    .label = Extract Semantic Scholar TL;DR takeaway (撷论)
+metadata-update-tldr =
+    .label = Extract Semantic Scholar TL;DR takeaway (撷论)
 metadata-tldr-target-label = Backfill Target:
 metadata-tldr-target-note =
     .label = Standalone Child Note (Recommended, readable by "TL;DR Takeaway" column)
@@ -439,8 +442,9 @@ api-cache-clearing = Clearing API lookup cache…
 api-cache-clear-failed = Could not clear the disk cache. Check profile directory permissions or the plugin version and retry. Saved item fields are preserved.
 
 metadata-update-journal-info =
-    .label = Include journal rankings, impact factors and indexes in metadata updates
-metadata-update-journal-info-description = An independent Update stage: runs even when bibliographic metadata is unchanged or its review is disabled. Respects blank/overwrite preferences, selected fields and source priorities, and reuses valid cached responses.
+    .label = Sync journal rankings and impact factors (EasyScholar)
+metadata-update-journal-info =
+    .label = Sync journal rankings and impact factors (EasyScholar)
 
 menu-group-review = Verification, Versions and Duplicates
 workflow-execution-overview = Imports use independent background switches and default to local checking while retaining all items. Configure manual command visibility, execution steps and optional searches under Context menus and core commands.
@@ -516,19 +520,19 @@ duplicates-select-one-library = Select one library before running this duplicate
 
 core-workflows-heading = Context menus and core commands
 core-workflows-description = Configure command visibility, execution steps and optional searches in one place. Hiding an entry affects the menu only; automatic imports use their independent switches in General. Author lookup and duplicate scanning run at most once per workflow.
-workflow-update-heading = Update Metadata: execution stages
-workflow-update-description = Run enabled bibliographic review, formatting, journal metrics and duplicate review in order. Journal metrics can run with bibliographic review disabled. Cancellation stops later stages; earlier saves remain.
-workflow-update-bibliographic = Verify bibliographic metadata online and fill automatically
-workflow-update-versions = Automatically detect preprints and convert to published version (look up official DOI and journal info for arXiv preprints)
-workflow-update-snapshots = Revive web snapshots (sniff scholarly identifiers from bare webpage snapshots and upgrade to journal articles or preprints)
-metaref-workflow-update-snapshots = Revive web snapshots (sniff scholarly identifiers from bare webpage snapshots and upgrade to journal articles or preprints)
-workflow-update-tldr = Automatically extract Semantic Scholar TL;DR summary (fetch 1-2 sentence AI core argument)
-metaref-workflow-update-tldr = Automatically extract Semantic Scholar TL;DR summary (fetch 1-2 sentence AI core argument)
+workflow-update-heading = Update Metadata (Online Enrichment)
+workflow-update-description = Enriches metadata via online academic databases: fills bibliographic fields, converts preprints, repairs authors, extracts AI TL;DR takeaways, and syncs journal metrics.
+workflow-update-bibliographic = Verify online and enrich bibliographic metadata
+workflow-update-versions = Online arXiv preprint conversion
+workflow-update-snapshots = Revive web snapshots (Snapshot Reviver)
+metaref-workflow-update-snapshots = Revive web snapshots (Snapshot Reviver)
+workflow-update-tldr = Extract Semantic Scholar TL;DR takeaway (撷论)
+metaref-workflow-update-tldr = Extract Semantic Scholar TL;DR takeaway (撷论)
 journal-insights-tldr-heading = Core Takeaway (TL;DR)
 rule-tool-update-metadata-tldr-saved = Extracted and saved Semantic Scholar TL;DR ({ $target })
-workflow-update-format = Apply enabled local format rules afterward (no duplicate scan or extra enrichment)
+workflow-update-format = Apply enabled local formatting rules afterward
 workflow-check-duplicates = Review duplicates interactively after checking (replaces the duplicate warning scan)
-workflow-update-duplicates = Review duplicates interactively after updating (may be slow in a large library)
+workflow-update-duplicates = Review duplicate candidates interactively afterward
 workflow-search-heading = Fallback searches for online verification (off by default)
 workflow-search-description = These options apply to online verification in both core commands. Existing identifiers take priority. Only enabled fallback searches run when identifiers are missing. PDF content stays local and only existing caches are read. Standalone advanced review tools retain full searches.
 workflow-scan-pdf = Read DOI/arXiv candidates from PDF caches when identifiers are missing (automatic evidence checks)
@@ -575,10 +579,32 @@ core-task-stopped = Stopped
 core-task-no-stages = No Steps Enabled
 
 metadata-source-priority = Metadata source priority
-metadata-source-local =
-  .label = Prefer local data (keep existing fields and fill blanks)
-metadata-source-cloud =
-  .label = Prefer cloud data (update existing fields after verification)
+metadata-source-local = Prioritize local (keep existing fields, fill blanks)
+metadata-source-cloud = Prioritize cloud (update differences after verification)
 review-cloud-priority = Verified matching DOI; applied cloud priority to source fields. Differing fields: { $fields }.
 
 feedback-performance-heading = Notifications and execution performance
+
+metaref-workflow-update-bibliographic = Verify online and enrich bibliographic metadata
+
+metaref-workflow-update-versions = Online arXiv preprint conversion
+
+metaref-workflow-update-format = Apply enabled local formatting rules afterward
+
+metaref-workflow-update-duplicates = Review duplicate candidates interactively afterward
+
+metadata-repair-creators-description = Fills incomplete or truncated authors upon exact Crossref verification. Local author formatting is handled in Check & Repair.
+
+metadata-update-snapshots-description = Sniffs academic identifiers (DOI, arXiv, PMID) from webpage or blog clippings, upgrading them to full journal articles.
+
+metadata-update-tldr-description = Fetches 1-2 sentence AI key takeaways. Supports display in library columns and direct editing in the right-hand Item Info pane.
+
+metadata-update-tldr-info-pane =
+    .label = Display in right-hand Item Info pane with inline editing
+
+metadata-update-journal-info-description = Queries JCR, CAS partitions, and impact factors independently of bibliographic metadata.
+
+metaref-workflow-heading = Check & Repair Metadata (100% Offline)
+metaref-workflow-description = 100% offline local processing without network requests. Normalizes title casing, chemical formulas, author pinyin, ISO 4 journal abbreviations, and attachment (SI) roles.
+metaref-workflow-update-heading = Update Metadata (Online Enrichment)
+metaref-workflow-update-description = Enriches metadata via online academic databases: fills bibliographic fields, converts preprints, repairs authors, extracts AI TL;DR takeaways, and syncs journal metrics.
