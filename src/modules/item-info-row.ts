@@ -136,6 +136,94 @@ function getAllItemDocuments(doc?: Document): Document[] {
   return [...docs];
 }
 
+function findExtraRow(infoTable: HTMLElement | Element): HTMLElement | null {
+  const candidates = [
+    ".meta-row[data-fieldname='extra']",
+    ".meta-row-extra",
+    ".meta-label-extra",
+    ".meta-label[fieldname='extra']",
+    "[fieldname='extra']",
+    "#itembox-field-value-extra",
+    "#itembox-field-extra-label",
+  ];
+  for (const selector of candidates) {
+    const elem = infoTable.querySelector?.(selector) as HTMLElement | null;
+    if (elem) {
+      if (elem.parentElement === infoTable)
+        return elem;
+      const row = (elem.closest?.(".meta-row") || elem.parentElement) as HTMLElement | null;
+      if (row && (row.parentElement === infoTable || !row.parentElement))
+        return row;
+      return elem;
+    }
+  }
+
+  if (infoTable.children) {
+    for (const child of Array.from(infoTable.children) as HTMLElement[]) {
+      if (child.classList?.contains?.("meta-row")) {
+        if (child.querySelector?.(".meta-label-extra, [fieldname='extra'], #itembox-field-value-extra"))
+          return child;
+      }
+    }
+  }
+  return null;
+}
+
+function getExtraFieldValue(extraRow: HTMLElement, infoTable: HTMLElement | Element): {
+  extraText: string;
+  valElem: any;
+  inputElem: HTMLTextAreaElement | HTMLInputElement | null;
+} {
+  const valElem = extraRow.querySelector(".meta-data > .value, .value, editable-text, [fieldname='extra'].value") as any;
+  const inputElem = extraRow.querySelector("textarea, input") as HTMLTextAreaElement | HTMLInputElement | null;
+  let extraText = "";
+
+  // 1. 优先从 info-box 宿主元素绑定的 Zotero Item 实体直接读取权威 Extra 字段
+  try {
+    const infoBox = infoTable.closest("info-box") as any;
+    const item = infoBox?.item
+      || (typeof Zotero !== "undefined" && Zotero.getActiveZoteroPane?.()?.getSelectedItems?.()?.[0])
+      || (typeof Zotero !== "undefined" && (Zotero as any).Pane?.item);
+    if (item && typeof item.getField === "function") {
+      const fieldVal = item.getField("extra");
+      if (typeof fieldVal === "string" && fieldVal.trim()) {
+        extraText = fieldVal.trim();
+      }
+    }
+  }
+  catch {
+    // ignore
+  }
+
+  // 2. 从 editable-text 组件的 value 属性或 DOM attribute 读取
+  if (!extraText && valElem) {
+    if (typeof valElem.value === "string" && valElem.value.trim()) {
+      extraText = valElem.value.trim();
+    }
+    else {
+      const attrVal = valElem.getAttribute?.("value");
+      if (attrVal && attrVal.trim()) {
+        extraText = attrVal.trim();
+      }
+    }
+  }
+
+  // 3. 从 textarea / input 原生表单元素的 value 读取
+  if (!extraText && inputElem && typeof inputElem.value === "string" && inputElem.value.trim()) {
+    extraText = inputElem.value.trim();
+  }
+
+  // 4. 回退至 DOM textContent
+  if (!extraText && valElem?.textContent?.trim()) {
+    extraText = valElem.textContent.trim();
+  }
+  if (!extraText && extraRow.textContent?.trim()) {
+    extraText = extraRow.textContent.trim();
+  }
+
+  return { extraText, valElem, inputElem };
+}
+
 export function placeTLDRBeforeExtra(doc?: Document) {
   if (typeof Zotero === "undefined")
     return;
@@ -205,12 +293,7 @@ export function placeTLDRBeforeExtra(doc?: Document) {
             valueElem.setAttribute("data-fieldname", "tldr");
         }
 
-        const extraRow = (infoTable.querySelector(".meta-row[data-fieldname='extra']") as HTMLElement | null)
-          || (infoTable.querySelector(".meta-row-extra") as HTMLElement | null)
-          || (infoTable.querySelector("[fieldname='extra']")?.closest?.(".meta-row") as HTMLElement | null)
-          || (infoTable.querySelector(".meta-label-extra")?.closest?.(".meta-row") as HTMLElement | null)
-          || (infoTable.querySelector(".meta-label-extra")?.parentElement as HTMLElement | null)
-          || null;
+        const extraRow = findExtraRow(infoTable);
 
         const dateAddedRow = (infoTable.querySelector(".meta-row[data-fieldname='dateAdded']") as HTMLElement | null)
           || (infoTable.querySelector(".meta-row-dateAdded") as HTMLElement | null)
@@ -228,28 +311,58 @@ export function placeTLDRBeforeExtra(doc?: Document) {
         }
 
         // 彻底消除“其他”与“撷论”两行重复：当常驻「撷论」行显示时，检查原生「其他」行
-        if (extraRow && extraRow.style && tldrRow.style.display !== "none" && !tldrRow.hidden) {
-          const extraValElem = (extraRow.querySelector(".meta-data > .value")
-            || extraRow.querySelector(".value")
-            || extraRow.querySelector(".meta-data")
-            || extraRow.querySelector("textarea")
-            || extraRow.querySelector("input")) as HTMLElement | null;
-          const extraText = (extraValElem?.textContent || extraRow.textContent || "").trim();
-          const hasTLDR = /(?:^|\n)\s*(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(extraText);
-          const isTLDRLine = (line: string) => /^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
-          if (hasTLDR) {
-            const lines = extraText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-            const nonTLDRLines = lines.filter(l => !isTLDRLine(l));
-            if (nonTLDRLines.length === 0) {
-              // Extra 仅包含 TLDR，且信息面板已有独立「撷论」行，隐藏原生「其他」行，彻底消除重复显示
-              extraRow.style.display = "none";
+        const isTLDRVisible = Boolean(
+          tldrRow
+          && tldrRow.style.display !== "none"
+          && !tldrRow.hidden
+          && (tldrRow as any).style?.visibility !== "hidden",
+        );
+
+        if (extraRow && extraRow.style) {
+          if (isTLDRVisible) {
+            const { extraText, valElem: extraValElem, inputElem: extraInputElem } = getExtraFieldValue(extraRow, infoTable);
+            const isTLDRLine = (line: string) => /^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
+            const hasTLDR = /(?:^|\n)\s*(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(extraText);
+
+            if (hasTLDR) {
+              const lines = extraText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+              const nonTLDRLines = lines.filter(l => !isTLDRLine(l));
+              if (nonTLDRLines.length === 0) {
+                // Extra 仅包含 TLDR/remark，且信息面板已有独立「撷论」行，隐藏原生「其他」行，彻底消除重复显示
+                extraRow.hidden = true;
+                extraRow.style.setProperty("display", "none", "important");
+              }
+              else {
+                // Extra 还包含其他元数据（如 Citation Key 等），保留「其他」行，但在 DOM 视图中过滤掉 TLDR，避免重复显示
+                extraRow.hidden = false;
+                extraRow.style.display = "";
+                const filteredText = nonTLDRLines.join("\n");
+                if (extraValElem) {
+                  if ("value" in extraValElem)
+                    extraValElem.value = filteredText;
+                  extraValElem.setAttribute?.("value", filteredText);
+                  if (typeof extraValElem.render === "function") {
+                    try {
+                      extraValElem.render();
+                    }
+                    catch {
+                      // ignore
+                    }
+                  }
+                }
+                if (extraInputElem) {
+                  extraInputElem.value = filteredText;
+                }
+              }
             }
-            else if (extraValElem) {
+            else if (extraRow.hidden || extraRow.style.display === "none") {
+              extraRow.hidden = false;
               extraRow.style.display = "";
-              extraValElem.textContent = nonTLDRLines.join("\n");
             }
           }
-          else if (extraRow.style.display === "none") {
+          else if (extraRow.hidden || extraRow.style.display === "none") {
+            // 当「撷论」行不可见时，确保原生 Extra 行恢复显示
+            extraRow.hidden = false;
             extraRow.style.display = "";
           }
         }
