@@ -177,6 +177,16 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     }
 
     if (!data) {
+      if (options.tldrEnabled && !options.creatorsOnly) {
+        const tldrSuccess = await backfillItemTLDR(item, identifiers, {
+          target: options.tldrTarget,
+          report,
+          debug,
+          signal,
+        });
+        if (tldrSuccess)
+          return;
+      }
       report({
         level: "error",
         message: getString("rule-tool-update-metadata-no-data", { args: { errors: errorMessage } }),

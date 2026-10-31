@@ -5,10 +5,12 @@ import {
   extractTLDRFromExtra,
   extractTLDRFromItem,
   extractTLDRFromNote,
+  findExistingTLDRNote,
   resolvePaperIDForTLDR,
   saveTLDRToAbstract,
   saveTLDRToExtra,
   saveTLDRToNote,
+  unescapeHTML,
 } from "./tldr";
 
 vi.mock("./services/semantic-scholar-service", () => ({
@@ -29,28 +31,65 @@ vi.mock("../../../utils/locale", () => ({
 }));
 
 describe("tldr extraction and manipulation", () => {
-  it("escapes HTML special characters", () => {
-    expect(escapeHTML("<script>alert('xss') & \"safe\"</script>"))
-      .toBe("&lt;script&gt;alert(&#039;xss&#039;) &amp; &quot;safe&quot;&lt;/script&gt;");
+  it("escapes and unescapes HTML special characters", () => {
+    const escaped = escapeHTML("<script>alert('xss') & \"safe\"</script>");
+    expect(escaped).toBe("&lt;script&gt;alert(&#039;xss&#039;) &amp; &quot;safe&quot;&lt;/script&gt;");
+    expect(unescapeHTML(escaped)).toBe("<script>alert('xss') & \"safe\"</script>");
   });
 
   it("extracts TLDR from extra field", () => {
     expect(extractTLDRFromExtra("")).toBeUndefined();
+    expect(extractTLDRFromExtra("TLDR:   ")).toBeUndefined();
     expect(extractTLDRFromExtra("PMID: 123456\nTLDR: A concise paper summary.\nDOI: 10.1234/test"))
       .toBe("A concise paper summary.");
     expect(extractTLDRFromExtra("TL;DR: Another format supported."))
       .toBe("Another format supported.");
   });
 
-  it("extracts TLDR from HTML note formats", () => {
-    const html1 = "<div data-metaflow-tldr=\"true\"><p><strong>💡 TL;DR 核心论点 (Semantic Scholar)</strong></p><blockquote style=\"...\">A key finding discovered.</blockquote></div>";
-    expect(extractTLDRFromNote(html1)).toBe("A key finding discovered.");
+  it("extracts TLDR from HTML note formats and decodes entities", () => {
+    const html1 = "<div data-metaflow-tldr=\"true\"><p><strong>💡 TL;DR 核心论点 (Semantic Scholar)</strong></p><blockquote style=\"...\">A key finding &amp; discovery.</blockquote></div>";
+    expect(extractTLDRFromNote(html1)).toBe("A key finding & discovery.");
 
     const html2 = "<p><strong>💡 TL;DR (Semantic Scholar)</strong></p><p>Summary in second paragraph.</p>";
     expect(extractTLDRFromNote(html2)).toBe("Summary in second paragraph.");
 
+    // syt2/Zotero-TLDR single paragraph format
+    const htmlSyt2 = "<p><b>TL;DR:</b> Models &lt;A&gt; outperform Models &lt;B&gt;.</p>";
+    expect(extractTLDRFromNote(htmlSyt2)).toBe("Models <A> outperform Models <B>.");
+
     const html3 = "<p>Unrelated regular note</p>";
     expect(extractTLDRFromNote(html3)).toBeUndefined();
+  });
+
+  it("finds existing notes from MetaFlow or syt2/Zotero-TLDR", () => {
+    const makeItem = (_noteText?: string) => ({
+      getNotes: () => [1],
+    } as unknown as Zotero.Item);
+
+    (globalThis as any).Zotero = {
+      Items: {
+        get: () => ({
+          deleted: false,
+          getNote: () => "<p><strong>TL;DR:</strong> Old summary</p>",
+        }),
+      },
+    };
+
+    expect(findExistingTLDRNote(makeItem("<p><strong>TL;DR:</strong> Old summary</p>"))).toBeTruthy();
+  });
+
+  it("guards non-regular items from note and extra mutation", async () => {
+    const attachmentItem = {
+      isRegularItem: () => false,
+      getField: () => "",
+      setField: vi.fn(),
+      getNotes: () => [],
+    } as unknown as Zotero.Item;
+
+    expect(extractTLDRFromItem(attachmentItem)).toBeUndefined();
+    expect(await saveTLDRToNote(attachmentItem, "Test")).toBe(false);
+    expect(saveTLDRToAbstract(attachmentItem, "Test")).toBe(false);
+    expect(await backfillItemTLDR(attachmentItem, { DOI: "10.1000/182" })).toBe(false);
   });
 
   it("extracts TLDR from item via extra or notes", () => {
@@ -146,10 +185,14 @@ describe("tldr extraction and manipulation", () => {
       saveTx: vi.fn(),
     };
 
-    (globalThis as any).Zotero = {
-      Item() {
+    class MockItem {
+      constructor() {
         return mockNote;
-      },
+      }
+    }
+
+    (globalThis as any).Zotero = {
+      Item: MockItem,
       Items: {
         get: (id: number) => (id === 200 ? mockNote : null),
       },

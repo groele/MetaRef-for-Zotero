@@ -6,10 +6,10 @@ _Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.1.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.1.0)
+[![Version](https://img.shields.io/badge/version-13.1.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.1.1)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/tests-629%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
+[![Tests Passing](https://img.shields.io/badge/tests-631%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
 
 [📦 Installation](#installation) · [✨ Key Highlights](#highlights) · [🛠️ Feature Matrix](#features) · [🚀 Quick Start](#quick-start) · [⚙️ Settings Guide](#settings) · [🛡️ Architecture & Safety](#architecture) · [❓ Troubleshooting & FAQ](#troubleshooting) · [🔗 Flow Series](#series) · [📄 Credits & License](#license)
 

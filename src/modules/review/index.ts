@@ -126,7 +126,7 @@ function reviewRule(version: boolean, prepared?: (options: ReviewOptions) => voi
         if (resolved.length)
           report({ level: "info", code: "metadata-cloud-priority", source: selection.proposal.source, message: getString("review-cloud-priority", { args: { fields: resolved.join(", ") } }) });
 
-        if (getPref("workflow.tldrEnabled" as any, true) === true) {
+        if (!features.creatorsOnly && getPref("workflow.tldrEnabled" as any, true) === true) {
           const identifiers = extractIdentifiers(item);
           await backfillItemTLDR(item, identifiers, {
             target: getPref("workflow.tldrTarget" as any, "note"),

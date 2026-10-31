@@ -2,6 +2,7 @@ import type { ApplyContext } from "../rule-base";
 import type { Identifiers } from "./identifiers";
 import { getString } from "../../../utils/locale";
 import { extractArxivID } from "../../journal-pane";
+import { extractIdentifiers } from "./identifiers";
 import { fetchPaperTLDR, parsePaperID } from "./services/semantic-scholar-service";
 
 export interface TLDRBackfillOptions {
@@ -20,6 +21,15 @@ export function escapeHTML(str: string): string {
     .replace(/'/g, "&#039;");
 }
 
+export function unescapeHTML(str: string): string {
+  return str
+    .replace(/&quot;/g, "\"")
+    .replace(/&#039;|&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
 export function extractTLDRFromExtra(extra: string): string | undefined {
   if (!extra)
     return undefined;
@@ -27,7 +37,9 @@ export function extractTLDRFromExtra(extra: string): string | undefined {
     const trimmed = line.trim();
     if (/^TL;?DR\s*:/i.test(trimmed)) {
       const colonIndex = trimmed.indexOf(":");
-      return trimmed.slice(colonIndex + 1).trim();
+      const val = trimmed.slice(colonIndex + 1).trim();
+      if (val)
+        return val;
     }
   }
   return undefined;
@@ -36,22 +48,32 @@ export function extractTLDRFromExtra(extra: string): string | undefined {
 export function extractTLDRFromNote(noteContent: string): string | undefined {
   if (!noteContent)
     return undefined;
-  if (!noteContent.includes("data-metaflow-tldr") && !noteContent.includes("TL;DR (Semantic Scholar)") && !noteContent.includes("TL;DR 核心论点") && !noteContent.includes("TL;DR:"))
+  if (
+    !noteContent.includes("data-metaflow-tldr")
+    && !noteContent.includes("TL;DR (Semantic Scholar)")
+    && !noteContent.includes("TL;DR 核心论点")
+    && !/<(?:h[1-6]|strong|b|p)[^>]*>\s*(?:💡\s*)?TL;?DR/i.test(noteContent)
+    && !/^(?:💡\s*)?TL;?DR\s*:/i.test(noteContent.trim())
+  ) {
     return undefined;
+  }
 
   const bqMatch = noteContent.match(/<blockquote[^>]*>([\s\S]*?)<\/blockquote>/i);
   if (bqMatch)
-    return bqMatch[1].replace(/<[^>]+>/g, "").trim();
+    return unescapeHTML(bqMatch[1].replace(/<[^>]+>/g, "").trim());
 
   const pMatch = noteContent.match(/<p[^>]*>([\s\S]*?)<\/p>/gi);
   if (pMatch && pMatch.length > 1)
-    return pMatch[pMatch.length - 1].replace(/<[^>]+>/g, "").trim();
+    return unescapeHTML(pMatch[pMatch.length - 1].replace(/<[^>]+>/g, "").trim());
 
-  return noteContent.replace(/<[^>]+>/g, "").replace(/💡\s*TL;?DR[^\n:]*:\s*/i, "").trim();
+  const plain = noteContent.replace(/<[^>]+>/g, "").replace(/(?:💡\s*)?TL;?DR[^\n:]*[:：]\s*/i, "").trim();
+  return unescapeHTML(plain);
 }
 
 export function extractTLDRFromItem(item: Zotero.Item): string | undefined {
   if (!item)
+    return undefined;
+  if (typeof item.isRegularItem === "function" && !item.isRegularItem())
     return undefined;
   if (typeof item.getField === "function") {
     const extra = String(item.getField("extra") || "");
@@ -86,6 +108,23 @@ export function resolvePaperIDForTLDR(item: Zotero.Item, identifiers?: Partial<I
     return parsePaperID("PMCID", identifiers.PMCID);
 
   if (item && typeof item.getField === "function") {
+    try {
+      const extracted = extractIdentifiers(item);
+      if (extracted.SemanticScholarID)
+        return parsePaperID("SemanticScholarID", extracted.SemanticScholarID);
+      if (extracted.DOI)
+        return parsePaperID("DOI", extracted.DOI);
+      if (extracted.arXiv)
+        return parsePaperID("arXiv", extracted.arXiv);
+      if (extracted.PMID)
+        return parsePaperID("PMID", extracted.PMID);
+      if (extracted.PMCID)
+        return parsePaperID("PMCID", extracted.PMCID);
+    }
+    catch {
+      // Fallback to basic field access if extractIdentifiers throws
+    }
+
     const doi = String(item.getField("DOI") || "").trim();
     if (doi)
       return parsePaperID("DOI", doi);
@@ -106,8 +145,14 @@ export function findExistingTLDRNote(item: Zotero.Item): Zotero.Item | null {
     const note = Zotero.Items.get(id);
     if (note && !note.deleted && typeof note.getNote === "function") {
       const content = String(note.getNote() || "");
-      if (content.includes("data-metaflow-tldr") || content.includes("TL;DR (Semantic Scholar)") || content.includes("TL;DR 核心论点"))
+      if (
+        content.includes("data-metaflow-tldr")
+        || content.includes("TL;DR (Semantic Scholar)")
+        || content.includes("TL;DR 核心论点")
+        || /<(?:h[1-6]|strong|b|p)[^>]*>\s*(?:💡\s*)?TL;?DR(?:\s*\([^)]*\))?\s*[:：<]/i.test(content)
+      ) {
         return note;
+      }
     }
   }
   return null;
@@ -115,6 +160,8 @@ export function findExistingTLDRNote(item: Zotero.Item): Zotero.Item | null {
 
 export async function saveTLDRToNote(item: Zotero.Item, tldr: string): Promise<boolean> {
   if (typeof item.getNotes !== "function")
+    return false;
+  if (typeof item.isRegularItem === "function" && !item.isRegularItem())
     return false;
 
   const noteHtml = `<div data-metaflow-tldr="true"><p><strong>💡 TL;DR 核心论点 (Semantic Scholar)</strong></p><blockquote style="margin:8px 0;padding:8px 12px;border-left:3px solid #245ac7;background:rgba(36,90,199,0.06);line-height:1.6;">${escapeHTML(tldr)}</blockquote></div>`;
@@ -132,8 +179,10 @@ export async function saveTLDRToNote(item: Zotero.Item, tldr: string): Promise<b
   }
   else if (typeof Zotero !== "undefined" && typeof Zotero.Item === "function") {
     const newNote = new Zotero.Item("note");
-    newNote.libraryID = item.libraryID;
+    newNote.libraryID = typeof item.libraryID === "number" ? item.libraryID : (Zotero.Libraries?.userLibraryID || 1);
     newNote.parentID = item.id;
+    if ("parentItemID" in newNote)
+      (newNote as any).parentItemID = item.id;
     newNote.setNote(noteHtml);
     if (typeof newNote.saveTx === "function")
       await newNote.saveTx();
@@ -167,6 +216,8 @@ export function saveTLDRToExtra(item: Zotero.Item, tldr: string): boolean {
 export function saveTLDRToAbstract(item: Zotero.Item, tldr: string): boolean {
   if (typeof item.getField !== "function" || typeof item.setField !== "function")
     return false;
+  if (typeof item.isRegularItem === "function" && !item.isRegularItem())
+    return false;
   const currentAbstract = String(item.getField("abstractNote") || "").trim();
   if (currentAbstract)
     return false;
@@ -179,6 +230,8 @@ export async function backfillItemTLDR(
   identifiers: Partial<Identifiers> = {},
   options: TLDRBackfillOptions = {},
 ): Promise<boolean> {
+  if (typeof item.isRegularItem === "function" && !item.isRegularItem())
+    return false;
   const target = options.target || "note";
   const debug = options.debug || (() => {});
   const report = options.report || (() => {});

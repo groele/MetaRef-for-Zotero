@@ -77,7 +77,15 @@ export function isUnconvertedArxivPreprint(item?: Zotero.Item): boolean {
 }
 
 const supportsRankings = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && ["journalArticle", "conferencePaper"].includes(item.itemType));
-const supportsSection = (item?: Zotero.Item) => Boolean(item && getPref("insights.showPane", true) && (isUnconvertedArxivPreprint(item) || (supportsRankings(item) && hasEnabledJournalMetrics())));
+function supportsSection(item?: Zotero.Item): boolean {
+  return Boolean(
+    item && getPref("insights.showPane", true) && (
+      isUnconvertedArxivPreprint(item)
+      || Boolean(extractTLDRFromItem(item))
+      || (supportsRankings(item) && hasEnabledJournalMetrics())
+    ),
+  );
+}
 type Context = _ZoteroTypes.ItemPaneManagerSection.SectionHookArgs;
 
 function ensureJournalPaneStyles(doc?: Document | null) {
