@@ -344,15 +344,15 @@ metadata-repair-creators =
 metadata-repair-creators-description = 控制书目信息自动填充是否包含作者。身份核验通过且开关开启时，会补全已有但不完整的作者名单；关闭时元数据补全不改作者，关联正式版也保留原有作者；单独启用的“检查时联网核验作者”和本地作者格式规则按各自开关执行。
 
 metadata-update-tldr =
-    .label = 自动提炼并回填 Semantic Scholar TL;DR 核心论点摘要
-metadata-update-tldr-description = 在更新元数据时，若文献包含 DOI、arXiv 或 PMID 等标识符，自动向 Semantic Scholar 请求该文献由 AI 提炼的 1~2 句核心贡献摘要（Too Long; Didn't Read），快速获悉论文要义。
+    .label = 自动提炼并回填 Semantic Scholar TL;DR 核心论点摘要（撷论）
+metadata-update-tldr-description = 在更新元数据时，若文献包含 DOI、arXiv 或 PMID 等标识符，自动向 Semantic Scholar 请求该文献由 AI 提炼的 1~2 句核心贡献摘要（Too Long; Didn't Read），快速获悉论文要义。条目列表可开启「撷论」列直观呈现。
 metadata-tldr-target-label = 回填目标位置：
 metadata-tldr-target-note =
-    .label = 独立子笔记 (推荐)
+    .label = 独立子笔记 (推荐，列表「撷论」列同步可读)
 metadata-tldr-target-extra =
-    .label = Extra 附加字段
+    .label = Extra 附加字段 (同步回填「撷论」列)
 metadata-tldr-target-both =
-    .label = 子笔记 + Extra
+    .label = 子笔记 + Extra 字段 (双重沉淀与「撷论」列直观呈现)
 
 menu-placement-none = 无（隐藏）
 batch-feedback-heading = 运行反馈与报告

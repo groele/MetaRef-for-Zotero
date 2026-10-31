@@ -35,11 +35,13 @@ export function extractTLDRFromExtra(extra: string): string | undefined {
     return undefined;
   for (const line of extra.split(/\r?\n/)) {
     const trimmed = line.trim();
-    if (/^TL;?DR\s*:/i.test(trimmed)) {
-      const colonIndex = trimmed.indexOf(":");
-      const val = trimmed.slice(colonIndex + 1).trim();
-      if (val)
-        return val;
+    if (/^(?:TL;?DR|撷论)\s*[:：]/i.test(trimmed)) {
+      const colonMatch = trimmed.match(/[:：]/);
+      if (colonMatch && typeof colonMatch.index === "number") {
+        const val = trimmed.slice(colonMatch.index + 1).trim();
+        if (val)
+          return val;
+      }
     }
   }
   return undefined;
@@ -52,8 +54,9 @@ export function extractTLDRFromNote(noteContent: string): string | undefined {
     !noteContent.includes("data-metaflow-tldr")
     && !noteContent.includes("TL;DR (Semantic Scholar)")
     && !noteContent.includes("TL;DR 核心论点")
-    && !/<(?:h[1-6]|strong|b|p)[^>]*>\s*(?:💡\s*)?TL;?DR/i.test(noteContent)
-    && !/^(?:💡\s*)?TL;?DR\s*:/i.test(noteContent.trim())
+    && !noteContent.includes("撷论")
+    && !/<(?:h[1-6]|strong|b|p)[^>]*>\s*(?:💡\s*)?(?:TL;?DR|撷论)/i.test(noteContent)
+    && !/^(?:💡\s*)?(?:TL;?DR|撷论)\s*[:：]/i.test(noteContent.trim())
   ) {
     return undefined;
   }
@@ -66,7 +69,7 @@ export function extractTLDRFromNote(noteContent: string): string | undefined {
   if (pMatch && pMatch.length > 1)
     return unescapeHTML(pMatch[pMatch.length - 1].replace(/<[^>]+>/g, "").trim());
 
-  const plain = noteContent.replace(/<[^>]+>/g, "").replace(/(?:💡\s*)?TL;?DR[^\n:]*[:：]\s*/i, "").trim();
+  const plain = noteContent.replace(/<[^>]+>/g, "").replace(/(?:💡\s*)?(?:TL;?DR|撷论)[^\n:：]*[:：]\s*/i, "").trim();
   return unescapeHTML(plain);
 }
 
@@ -149,7 +152,8 @@ export function findExistingTLDRNote(item: Zotero.Item): Zotero.Item | null {
         content.includes("data-metaflow-tldr")
         || content.includes("TL;DR (Semantic Scholar)")
         || content.includes("TL;DR 核心论点")
-        || /<(?:h[1-6]|strong|b|p)[^>]*>\s*(?:💡\s*)?TL;?DR(?:\s*\([^)]*\))?\s*[:：<]/i.test(content)
+        || content.includes("撷论")
+        || /<(?:h[1-6]|strong|b|p)[^>]*>\s*(?:💡\s*)?(?:TL;?DR|撷论)(?:\s*\([^)]*\))?\s*[:：<]/i.test(content)
       ) {
         return note;
       }
@@ -164,7 +168,7 @@ export async function saveTLDRToNote(item: Zotero.Item, tldr: string): Promise<b
   if (typeof item.isRegularItem === "function" && !item.isRegularItem())
     return false;
 
-  const noteHtml = `<div data-metaflow-tldr="true"><p><strong>💡 TL;DR 核心论点 (Semantic Scholar)</strong></p><blockquote style="margin:8px 0;padding:8px 12px;border-left:3px solid #245ac7;background:rgba(36,90,199,0.06);line-height:1.6;">${escapeHTML(tldr)}</blockquote></div>`;
+  const noteHtml = `<div data-metaflow-tldr="true"><p><strong>💡 撷论 (Semantic Scholar TL;DR)</strong></p><blockquote style="margin:8px 0;padding:8px 12px;border-left:3px solid #245ac7;background:rgba(36,90,199,0.06);line-height:1.6;">${escapeHTML(tldr)}</blockquote></div>`;
 
   const existing = findExistingTLDRNote(item);
   if (existing) {
@@ -198,7 +202,7 @@ export function saveTLDRToExtra(item: Zotero.Item, tldr: string): boolean {
   const lines = currentExtra.split(/\r?\n/);
   const cleanTLDR = tldr.replace(/[\r\n]+/g, " ").trim();
   const tldrLine = `TLDR: ${cleanTLDR}`;
-  const existingIndex = lines.findIndex(line => /^TL;?DR\s*:/i.test(line.trim()));
+  const existingIndex = lines.findIndex(line => /^(?:TL;?DR|撷论)\s*[:：]/i.test(line.trim()));
   let updatedExtra: string;
   if (existingIndex >= 0) {
     if (lines[existingIndex] === tldrLine)
@@ -280,6 +284,13 @@ export async function backfillItemTLDR(
   }
 
   if (saved) {
+    try {
+      if (typeof Zotero !== "undefined" && Zotero.ItemTreeManager?.refreshColumns)
+        Zotero.ItemTreeManager.refreshColumns();
+    }
+    catch {
+      // Ignore in headless test contexts
+    }
     const targetLabel = getString(`metadata-tldr-target-${target}` as any) || target;
     report({
       level: "info",

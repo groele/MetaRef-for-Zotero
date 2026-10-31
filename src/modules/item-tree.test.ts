@@ -35,13 +35,13 @@ it("makes all 61 ranking fields available without enabling writes or making API 
   for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
     mocks.preferences.set(`easyscholar.fields.${field.key}`, true);
   registerExtraColumns();
-  expect(columns.size).toBe(67);
+  expect(columns.size).toBe(68);
   for (const field of EASYSCHOLAR_FIELD_DEFINITIONS)
     expect(columns.has(field.key === "esi" ? "esiDiscipline" : `easyScholar-${field.key}`), field.key).toBe(true);
   expect(columns.get("easyScholar-impactFactor").columnPickerSubMenu).toBe(true);
   mocks.preferences.set("easyscholar.columns.impactFactor", true);
   registerEasyScholarColumns();
-  expect(columns.size).toBe(67);
+  expect(columns.size).toBe(68);
   expect(columns.get("easyScholar-impactFactor").columnPickerSubMenu).toBe(false);
   mocks.preferences.set("easyscholar.columns.impactFactor", false);
   registerEasyScholarColumns();
@@ -88,4 +88,23 @@ it("does not revive a removed SCI membership from Extra while preserving unrelat
   expect(columns.get("easyScholar-sci").dataProvider(item)).toBe("");
   expect(columns.get("easyScholar-ccf").dataProvider(item)).toBe("B");
   expect(item.getField("extra")).toBe(extra);
+});
+
+it("registers tldr (撷论) column and provides extracted TL;DR takeaway", () => {
+  registerExtraColumns();
+  expect(columns.has("tldr")).toBe(true);
+  const tldrCol = columns.get("tldr");
+  expect(tldrCol.label).toBe("field-tldr");
+  expect(tldrCol.columnPickerSubMenu).toBeUndefined();
+  const itemWithExtra = {
+    isRegularItem: () => true,
+    getField: (key: string) => key === "extra" ? "TLDR: Key insight discovered." : "",
+  } as unknown as Zotero.Item;
+  expect(tldrCol.dataProvider(itemWithExtra)).toBe("Key insight discovered.");
+
+  const itemWithXielun = {
+    isRegularItem: () => true,
+    getField: (key: string) => key === "extra" ? "撷论：中文前缀核心论点" : "",
+  } as unknown as Zotero.Item;
+  expect(tldrCol.dataProvider(itemWithXielun)).toBe("中文前缀核心论点");
 });

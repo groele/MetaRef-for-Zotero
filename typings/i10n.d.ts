@@ -228,6 +228,7 @@ export type FluentMessageId =
   | 'field-nature-index'
   | 'field-nature-match'
   | 'field-nature-source'
+  | 'field-tldr'
   | 'help-version'
   | 'index-source-api-first'
   | 'index-source-api-only'

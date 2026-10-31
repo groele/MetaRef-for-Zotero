@@ -345,15 +345,15 @@ metadata-repair-creators =
 metadata-repair-creators-description = Includes authors in automatic bibliographic filling. After identity verification, enabling this option repairs incomplete existing author lists. Disabling it preserves authors during metadata filling and in related publications. Explicit author verification during Check and local author formatting follow their own switches.
 
 metadata-update-tldr =
-    .label = Automatically extract and backfill Semantic Scholar TL;DR summary
-metadata-update-tldr-description = During metadata update, if an item contains a DOI, arXiv ID, or PMID, automatically fetches a 1-2 sentence AI summary (Too Long; Didn't Read) from Semantic Scholar to capture the core takeaway.
+    .label = Automatically extract and backfill Semantic Scholar TL;DR summary (撷论)
+metadata-update-tldr-description = During metadata update, if an item contains a DOI, arXiv ID, or PMID, automatically fetches a 1-2 sentence AI summary (Too Long; Didn't Read) from Semantic Scholar to capture the core takeaway. Can be displayed in the "TL;DR Takeaway (撷论)" library column.
 metadata-tldr-target-label = Backfill Target:
 metadata-tldr-target-note =
-    .label = Standalone Child Note (Recommended)
+    .label = Standalone Child Note (Recommended, readable by "TL;DR Takeaway" column)
 metadata-tldr-target-extra =
-    .label = Extra Field
+    .label = Extra Field (Syncs to "TL;DR Takeaway" column)
 metadata-tldr-target-both =
-    .label = Child Note + Extra
+    .label = Child Note + Extra Field (Both)
 
 menu-placement-none = None (hidden)
 batch-feedback-heading = Run feedback and reports

@@ -1,3 +1,4 @@
+// autocorrect-disable
 import { describe, expect, it, vi } from "vitest";
 import {
   backfillItemTLDR,
@@ -44,10 +45,14 @@ describe("tldr extraction and manipulation", () => {
       .toBe("A concise paper summary.");
     expect(extractTLDRFromExtra("TL;DR: Another format supported."))
       .toBe("Another format supported.");
+    expect(extractTLDRFromExtra("撷论: 中文冒号与前缀测试"))
+      .toBe("中文冒号与前缀测试");
+    expect(extractTLDRFromExtra("撷论：全角冒号测试"))
+      .toBe("全角冒号测试");
   });
 
   it("extracts TLDR from HTML note formats and decodes entities", () => {
-    const html1 = "<div data-metaflow-tldr=\"true\"><p><strong>💡 TL;DR 核心论点 (Semantic Scholar)</strong></p><blockquote style=\"...\">A key finding &amp; discovery.</blockquote></div>";
+    const html1 = "<div data-metaflow-tldr=\"true\"><p><strong>💡 撷论 (Semantic Scholar TL;DR)</strong></p><blockquote style=\"...\">A key finding &amp; discovery.</blockquote></div>";
     expect(extractTLDRFromNote(html1)).toBe("A key finding & discovery.");
 
     const html2 = "<p><strong>💡 TL;DR (Semantic Scholar)</strong></p><p>Summary in second paragraph.</p>";

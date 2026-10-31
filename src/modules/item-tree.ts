@@ -9,6 +9,7 @@ import { readJournalRankingValues } from "../utils/journal-ranking-rows";
 import { getString } from "../utils/locale";
 import { logger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
+import { extractTLDRFromItem } from "./rules/tool-update-metadata/tldr";
 
 const registeredColumns: string[] = [];
 const indexColumns = new Map<string, string>();
@@ -53,6 +54,19 @@ export function registerExtraColumns() {
   });
   if (abbreviationColumn)
     registeredColumns.push(abbreviationColumn);
+  const tldrColumn = Zotero.ItemTreeManager.registerColumn({
+    dataKey: "tldr",
+    label: getString("field-tldr") || "撷论",
+    dataProvider: (item, _dataKey) => {
+      if (!addon?.data?.alive || !item)
+        return "";
+      return extractTLDRFromItem(item) || "";
+    },
+    pluginID: addon.data.config.addonID,
+    zoteroPersist: ["width", "hidden", "sortDirection"],
+  });
+  if (tldrColumn)
+    registeredColumns.push(tldrColumn);
 }
 
 function registerIndexColumns() {

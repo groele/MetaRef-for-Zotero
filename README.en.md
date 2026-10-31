@@ -6,10 +6,10 @@ _Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.1.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.1.1)
+[![Version](https://img.shields.io/badge/version-13.2.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.2.0)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
-[![Tests Passing](https://img.shields.io/badge/tests-631%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
+[![Tests Passing](https://img.shields.io/badge/tests-632%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
 
 [📦 Installation](#installation) · [✨ Key Highlights](#highlights) · [🛠️ Feature Matrix](#features) · [🚀 Quick Start](#quick-start) · [⚙️ Settings Guide](#settings) · [🛡️ Architecture & Safety](#architecture) · [❓ Troubleshooting & FAQ](#troubleshooting) · [🔗 Flow Series](#series) · [📄 Credits & License](#license)
 
@@ -88,6 +88,7 @@ graph LR
     - **Extra Field**: Appends `TLDR: ...`, enabling direct display in library table columns;
     - **Dual Mode (Child Note + Extra)**: Delivers both instant table visibility and detailed note archiving;
     - **Abstract Self-Healing**: Fills empty `abstractNote` fields when missing.
+- **Dedicated Library Column "TL;DR Takeaway (撷论)"**: Directly registers a custom column in Zotero's library list view header menu (`ItemTreeManager`), displaying the distilled core contribution inline across library entries with instant real-time refresh!
 - **Integrated Sidebar Highlight**: Displays a dedicated `💡 Core Takeaways (TL;DR)` card in the right-hand Journal Insights panel for instant reading comprehension.
 
 ### 5. 🧹 59-Rule Multi-Dimensional Governance Pipeline
