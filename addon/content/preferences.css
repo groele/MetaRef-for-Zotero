@@ -525,3 +525,59 @@
   max-width: 100%;
   min-width: 0;
 }
+
+/* Nested Collapsible Workflow Cards */
+#metaref .metaref-section-card .metaref-collapsible-card {
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 9px;
+  background-color: color-mix(in srgb, currentColor 2%, transparent);
+  margin-block: 10px;
+  box-sizing: border-box;
+}
+
+#metaref .metaref-section-card .metaref-collapsible-card:not(.is-collapsed) {
+  padding-bottom: 12px;
+}
+
+#metaref .metaref-collapsible-card > .metaref-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 13px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px 8px 0 0;
+  transition: background-color 0.15s ease;
+}
+
+#metaref .metaref-collapsible-card > .metaref-card-heading:hover {
+  background-color: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+#metaref .metaref-collapsible-card > .metaref-card-heading:focus-visible {
+  outline: 2px solid Highlight;
+  outline-offset: -2px;
+}
+
+#metaref .metaref-collapsible-card > .metaref-card-heading::after {
+  content: "›";
+  font-size: 18px;
+  color: var(--fill-secondary);
+  transition: transform 0.2s ease;
+  transform: rotate(90deg);
+  margin-left: auto;
+}
+
+#metaref .metaref-collapsible-card.is-collapsed > .metaref-card-heading {
+  border-radius: 8px;
+}
+
+#metaref .metaref-collapsible-card.is-collapsed > .metaref-card-heading::after {
+  transform: rotate(0deg);
+}
+
+#metaref .metaref-collapsible-card.is-collapsed > :not(.metaref-card-heading) {
+  display: none !important;
+}

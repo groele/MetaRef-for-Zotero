@@ -29,13 +29,30 @@ export function setupWorkflowSettings(pane: Element) {
     const row = pane.querySelector(`[data-core-menu-command='${id}']`)!;
     target.insertBefore(row, target.children[2] || null);
   };
-  const makeCard = (id: string, heading: string, description: string) => {
+  const makeCard = (id: string, heading: string, description: string, collapsed = false) => {
     const section = doc.createElementNS("http://www.w3.org/1999/xhtml", "section");
     section.id = id;
-    section.className = "metaref-setting-card metaref-static-card";
+    section.className = `metaref-setting-card metaref-static-card metaref-collapsible-card${collapsed ? " is-collapsed" : ""}`;
     const title = doc.createElementNS("http://www.w3.org/1999/xhtml", "header");
     title.className = "metaref-card-heading";
+    title.setAttribute("role", "button");
+    title.setAttribute("tabindex", "0");
+    title.setAttribute("aria-expanded", String(!collapsed));
     doc.l10n!.setAttributes(title, heading);
+
+    const toggle = () => {
+      const isNowCollapsed = section.classList.toggle("is-collapsed");
+      title.setAttribute("aria-expanded", String(!isNowCollapsed));
+    };
+    listen(title, "click", toggle);
+    listen(title, "keydown", (e: Event) => {
+      const key = (e as KeyboardEvent).key;
+      if (key === "Enter" || key === " ") {
+        e.preventDefault();
+        toggle();
+      }
+    });
+
     const note = doc.createElementNS("http://www.w3.org/1999/xhtml", "p");
     doc.l10n!.setAttributes(note, description);
     section.append(title, note);
