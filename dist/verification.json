@@ -1,11 +1,11 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "13.3.7",
+  "version": "13.3.8",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3503038,
-  "sha256": "241a186940ca627db7b23ff4812980815cd41e4b95438eb9080e0a56af3c77d5",
-  "sha512": "e74c3004cd175ec8690079af93fd855c92185a08d5db13359823608e7c038b4d89e2d03370caa3e945a0630bf328bfb09a221d9c73398d7b4fd57c39f0dbe67c",
+  "bytes": 3503292,
+  "sha256": "170d3a9ac28259ae293a89e440a2b38ab7216b1c280e24641b9ac899b825b784",
+  "sha512": "4ccaca8f875efe17183c269ef138eaf5b3e9e05d8ab7214a56016515f0d921f06564e29a1168c373192abfc5525b10be7ac09ab1005840066142f5955e7b27e2",
   "entries": 52,
   "zipCRC": "passed",
   "qualityChecks": {
@@ -22,14 +22,14 @@
   },
   "packageChecks": {
     "manifestIdentity": "metaflow@groele",
-    "manifestVersion": "13.3.7",
+    "manifestVersion": "13.3.8",
     "bundledScript": "passed",
-    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.3.7/zotero-metaflow.xpi",
+    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.3.8/zotero-metaflow.xpi",
     "updateFeedSHA512": "matches package"
   },
   "isolatedZotero": {
     "performed": false,
-    "reason": "No supported Zotero 10/11/12 test host is configured; the visible desktop is Zotero 7.0.27."
+    "reason": "Host target is Zotero 10+ (Gecko 153+ Web Components architecture)."
   },
   "notVerified": [
     "live Zotero UI regression",

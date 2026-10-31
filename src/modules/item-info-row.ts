@@ -59,13 +59,14 @@ export function registerInfoRows() {
             return;
           }
           const isRegular = typeof item.isRegularItem === "function" ? item.isRegularItem() : true;
+          const isEditable = isRegular && (typeof item.isEditable === "function" ? item.isEditable() : true);
           const isTLDREnabled = getPref("workflow.tldrEnabled" as any, true);
           const showPref = isTLDREnabled && getPref("workflow.tldrShowInInfoPane" as any, true);
           const hasTLDR = Boolean(extractTLDRFromItem(item));
           const enabled = Boolean(isRegular && (showPref || hasTLDR));
           setEnabled(enabled);
           if (typeof setEditable === "function") {
-            setEditable(Boolean(isRegular));
+            setEditable(Boolean(isEditable));
           }
           placeTLDRBeforeExtra();
           if (typeof setTimeout === "function") {
@@ -99,13 +100,45 @@ export function registerInfoRows() {
   }
 }
 
+function getAllItemDocuments(doc?: Document): Document[] {
+  if (doc)
+    return [doc];
+  if (typeof Zotero === "undefined")
+    return [];
+
+  const docs = new Set<Document>();
+  if (typeof Zotero.getMainWindows === "function") {
+    for (const win of Zotero.getMainWindows()) {
+      if (win?.document)
+        docs.add(win.document);
+    }
+  }
+
+  if (typeof Services !== "undefined" && Services.wm?.getEnumerator) {
+    try {
+      const enumerator = Services.wm.getEnumerator("");
+      while (enumerator.hasMoreElements()) {
+        const win = enumerator.getNext() as any;
+        if (win?.document && !docs.has(win.document)) {
+          if (win.document.querySelector?.("info-box, #info-table, .item-box")) {
+            docs.add(win.document);
+          }
+        }
+      }
+    }
+    catch {
+      // Ignore if Services is not available
+    }
+  }
+
+  return [...docs];
+}
+
 export function placeTLDRBeforeExtra(doc?: Document) {
   if (typeof Zotero === "undefined")
     return;
 
-  const docs = doc
-    ? [doc]
-    : (typeof Zotero.getMainWindows === "function" ? Zotero.getMainWindows().map(w => w?.document).filter(Boolean) : []);
+  const docs = getAllItemDocuments(doc);
 
   for (const d of docs) {
     try {
@@ -155,6 +188,14 @@ export function placeTLDRBeforeExtra(doc?: Document) {
         }
         if (tldrRow.classList && !tldrRow.classList.contains("meta-row-tldr")) {
           tldrRow.classList.add("meta-row-tldr");
+        }
+
+        const valueElem = tldrRow.querySelector?.(".meta-data > .value");
+        if (valueElem && valueElem.classList) {
+          if (!valueElem.classList.contains("meta-value-tldr"))
+            valueElem.classList.add("meta-value-tldr");
+          if (typeof valueElem.setAttribute === "function" && !valueElem.hasAttribute("data-fieldname"))
+            valueElem.setAttribute("data-fieldname", "tldr");
         }
 
         const extraLabel = infoTable.querySelector(".meta-label-extra");

@@ -312,6 +312,8 @@ describe("item-info-row module", () => {
     const tldrClasses = new Set<string>();
     const labelClasses = new Set<string>();
     const labelAttrs = new Map<string, string>();
+    const valueClasses = new Set<string>();
+    const valueAttrs = new Map<string, string>();
     const mockLabelElem = {
       classList: {
         contains: (c: string) => labelClasses.has(c),
@@ -320,6 +322,14 @@ describe("item-info-row module", () => {
       hasAttribute: (a: string) => labelAttrs.has(a),
       setAttribute: (a: string, v: string) => labelAttrs.set(a, v),
     };
+    const mockValueElem = {
+      classList: {
+        contains: (c: string) => valueClasses.has(c),
+        add: (c: string) => valueClasses.add(c),
+      },
+      hasAttribute: (a: string) => valueAttrs.has(a),
+      setAttribute: (a: string, v: string) => valueAttrs.set(a, v),
+    };
 
     const tldrRow: any = {
       parentElement: parent,
@@ -327,7 +337,13 @@ describe("item-info-row module", () => {
         contains: (c: string) => tldrClasses.has(c),
         add: (c: string) => tldrClasses.add(c),
       },
-      querySelector: (sel: string) => sel.includes("meta-label") ? mockLabelElem : null,
+      querySelector: (sel: string) => {
+        if (sel.includes("meta-label"))
+          return mockLabelElem;
+        if (sel.includes(".value"))
+          return mockValueElem;
+        return null;
+      },
       get nextElementSibling() {
         const idx = children.indexOf(tldrRow);
         return idx !== -1 && idx + 1 < children.length ? children[idx + 1] : null;
@@ -352,6 +368,8 @@ describe("item-info-row module", () => {
     expect(tldrClasses.has("meta-row-tldr")).toBe(true);
     expect(labelClasses.has("meta-label-tldr")).toBe(true);
     expect(labelAttrs.get("fieldname")).toBe("tldr");
+    expect(valueClasses.has("meta-value-tldr")).toBe(true);
+    expect(valueAttrs.get("data-fieldname")).toBe("tldr");
   });
 
   it("falls back to placing TLDR before dateAdded when extra row is not found", () => {
