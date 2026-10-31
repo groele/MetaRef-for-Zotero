@@ -18,7 +18,7 @@ function setupInputLabels(pane: Element) {
       label.setAttribute("control", input.id);
       input.setAttribute("aria-labelledby", label.id);
     }
-    const description = input.closest("hbox")?.querySelector("description") || input.closest("hbox")?.nextElementSibling;
+    const description = input.closest("hbox, vbox")?.querySelector("description") || input.closest("hbox, vbox")?.nextElementSibling;
     if (description?.localName === "description") {
       description.id ||= `${input.id}-description`;
       input.setAttribute("aria-describedby", [input.getAttribute("aria-describedby"), description.id].filter(Boolean).join(" "));

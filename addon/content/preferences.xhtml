@@ -1543,17 +1543,22 @@
 
   <!-- 在线元数据更新组件暂存区（由 setupWorkflowSettings 统一编排并归纳至高等级选项“更新元数据”） -->
   <vbox id="metaref-update-staging" hidden="true">
-    <hbox align="center" id="metaref-metadata-source-priority-row">
+    <vbox id="metaref-metadata-source-priority-row">
       <label data-l10n-id="metadata-source-priority" />
       <radiogroup
-        orient="horizontal"
+        native="true"
+        orient="vertical"
         id="metaref-metadata-source-priority"
         preference="rule.tool-update-metadata.option.mode"
       >
-        <radio data-l10n-id="metadata-source-local" value="blank" />
-        <radio data-l10n-id="metadata-source-cloud" value="all" />
+        <radio
+          data-l10n-id="metadata-source-local"
+          value="blank"
+          native="true"
+        />
+        <radio data-l10n-id="metadata-source-cloud" value="all" native="true" />
       </radiogroup>
-    </hbox>
+    </vbox>
 
     <description
       id="metaref-metadata-source-priority-description"
