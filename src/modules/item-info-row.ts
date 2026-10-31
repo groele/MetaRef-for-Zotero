@@ -71,6 +71,8 @@ export function registerInfoRows() {
           placeTLDRBeforeExtra();
           if (typeof setTimeout === "function") {
             setTimeout(placeTLDRBeforeExtra, 0);
+            setTimeout(placeTLDRBeforeExtra, 50);
+            setTimeout(placeTLDRBeforeExtra, 200);
           }
         }
         catch (err) {
@@ -149,7 +151,7 @@ export function placeTLDRBeforeExtra(doc?: Document) {
             const observer = new MutationObserver(() => {
               placeTLDRBeforeExtra(d);
             });
-            observer.observe(table, { childList: true });
+            observer.observe(table, { childList: true, subtree: true });
             activeObservers.add(observer);
             observedTables.add(table);
           }
@@ -170,7 +172,7 @@ export function placeTLDRBeforeExtra(doc?: Document) {
             const observer = new MutationObserver(() => {
               placeTLDRBeforeExtra(d);
             });
-            observer.observe(infoTable, { childList: true });
+            observer.observe(infoTable, { childList: true, subtree: true });
             activeObservers.add(observer);
             observedTables.add(infoTable);
           }
@@ -203,14 +205,21 @@ export function placeTLDRBeforeExtra(doc?: Document) {
             valueElem.setAttribute("data-fieldname", "tldr");
         }
 
-        const extraLabel = infoTable.querySelector(".meta-label-extra");
-        const dateAddedLabel = infoTable.querySelector(".meta-label-dateAdded");
-        const extraRow = (extraLabel?.closest?.(".meta-row") as HTMLElement | null)
-          || (extraLabel?.parentElement as HTMLElement | null)
+        const extraRow = (infoTable.querySelector(".meta-row[data-fieldname='extra']") as HTMLElement | null)
+          || (infoTable.querySelector(".meta-row-extra") as HTMLElement | null)
+          || (infoTable.querySelector("[fieldname='extra']")?.closest?.(".meta-row") as HTMLElement | null)
+          || (infoTable.querySelector(".meta-label-extra")?.closest?.(".meta-row") as HTMLElement | null)
+          || (infoTable.querySelector(".meta-label-extra")?.parentElement as HTMLElement | null)
           || null;
-        const anchorRow = extraRow
-          || dateAddedLabel?.closest?.(".meta-row")
-          || (dateAddedLabel?.parentElement as HTMLElement | null);
+
+        const dateAddedRow = (infoTable.querySelector(".meta-row[data-fieldname='dateAdded']") as HTMLElement | null)
+          || (infoTable.querySelector(".meta-row-dateAdded") as HTMLElement | null)
+          || (infoTable.querySelector("[fieldname='dateAdded']")?.closest?.(".meta-row") as HTMLElement | null)
+          || (infoTable.querySelector(".meta-label-dateAdded")?.closest?.(".meta-row") as HTMLElement | null)
+          || (infoTable.querySelector(".meta-label-dateAdded")?.parentElement as HTMLElement | null)
+          || null;
+
+        const anchorRow = extraRow || dateAddedRow;
 
         if (anchorRow && anchorRow.parentElement === infoTable) {
           if (tldrRow.nextElementSibling !== anchorRow) {
@@ -218,18 +227,24 @@ export function placeTLDRBeforeExtra(doc?: Document) {
           }
         }
 
-        // 消除信息面板上下两行重复：当常驻「撷论」行显示时，检查紧邻的原生「其他」行
+        // 彻底消除“其他”与“撷论”两行重复：当常驻「撷论」行显示时，检查原生「其他」行
         if (extraRow && extraRow.style && tldrRow.style.display !== "none" && !tldrRow.hidden) {
-          const extraValElem = (extraRow.querySelector(".meta-data > .value") || extraRow.querySelector(".value")) as HTMLElement | null;
-          const extraText = extraValElem?.textContent?.trim() || "";
-          if (/^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(extraText)) {
+          const extraValElem = (extraRow.querySelector(".meta-data > .value")
+            || extraRow.querySelector(".value")
+            || extraRow.querySelector(".meta-data")
+            || extraRow.querySelector("textarea")
+            || extraRow.querySelector("input")) as HTMLElement | null;
+          const extraText = (extraValElem?.textContent || extraRow.textContent || "").trim();
+          const hasTLDR = /(?:^|\n)\s*(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(extraText);
+          const isTLDRLine = (line: string) => /^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
+          if (hasTLDR) {
             const lines = extraText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-            const nonTLDRLines = lines.filter(l => !/^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(l));
+            const nonTLDRLines = lines.filter(l => !isTLDRLine(l));
             if (nonTLDRLines.length === 0) {
-              // Extra 仅包含 TLDR，且此时信息面板已有独立的「撷论」行，隐藏原生「其他」行，彻底消除重复显示
+              // Extra 仅包含 TLDR，且信息面板已有独立「撷论」行，隐藏原生「其他」行，彻底消除重复显示
               extraRow.style.display = "none";
             }
-            else if (extraValElem && extraValElem.textContent !== nonTLDRLines.join("\n")) {
+            else if (extraValElem) {
               extraRow.style.display = "";
               extraValElem.textContent = nonTLDRLines.join("\n");
             }
@@ -254,6 +269,8 @@ export function refreshTLDRInfoRow(rowID = "tldr") {
     placeTLDRBeforeExtra();
     if (typeof setTimeout === "function") {
       setTimeout(placeTLDRBeforeExtra, 0);
+      setTimeout(placeTLDRBeforeExtra, 50);
+      setTimeout(placeTLDRBeforeExtra, 200);
     }
   }
   catch (error) {

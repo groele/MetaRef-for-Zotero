@@ -437,4 +437,46 @@ describe("item-info-row module", () => {
     expect(parent.insertBefore).toHaveBeenCalledWith(tldrRow, dateAddedRow);
     expect(tldrRow.nextElementSibling).toBe(dateAddedRow);
   });
+
+  it("hides extra row when it only contains TLDR and tldrRow is visible", () => {
+    let extraRow: any;
+    const parent: any = {
+      children: [],
+      insertBefore: vi.fn(),
+      querySelector: vi.fn((sel: string) => {
+        if (sel.includes("data-fieldname='extra'") || sel.includes("meta-label-extra"))
+          return extraRow;
+        return null;
+      }),
+    };
+
+    extraRow = {
+      parentElement: parent,
+      style: { display: "" },
+      querySelector: vi.fn((sel: string) => {
+        if (sel.includes(".value"))
+          return { textContent: "TLDR: The gate-tunable interband resonant four-wave mixing" };
+        return null;
+      }),
+    };
+
+    const tldrRow: any = {
+      parentElement: parent,
+      style: { display: "" },
+      hidden: false,
+      classList: { contains: () => false, add: vi.fn() },
+      querySelector: () => null,
+      get nextElementSibling() { return extraRow; },
+    };
+
+    parent.children.push(tldrRow, extraRow);
+
+    const mockDoc = {
+      querySelectorAll: (sel: string) => sel.includes("data-custom-row-id=\"tldr\"") ? [tldrRow] : [],
+    } as unknown as Document;
+
+    placeTLDRBeforeExtra(mockDoc);
+
+    expect(extraRow.style.display).toBe("none");
+  });
 });

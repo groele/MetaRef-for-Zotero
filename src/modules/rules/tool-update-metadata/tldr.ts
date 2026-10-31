@@ -221,6 +221,20 @@ export async function saveTLDRToNote(item: Zotero.Item, tldr: string): Promise<b
   return false;
 }
 
+export function cleanseTLDRFromExtra(item: Zotero.Item): boolean {
+  if (!item || typeof item.getField !== "function" || typeof item.setField !== "function")
+    return false;
+  const currentExtra = String(item.getField("extra") || "");
+  const lines = currentExtra.split(/\r?\n/);
+  const isMatch = (line: string) => /^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
+  if (lines.some(isMatch)) {
+    const filtered = lines.filter(line => !isMatch(line));
+    item.setField("extra", filtered.join("\n"));
+    return true;
+  }
+  return false;
+}
+
 export function saveTLDRToExtra(item: Zotero.Item, tldr: string, format?: "remark" | "tldr"): boolean {
   if (typeof item.getField !== "function" || typeof item.setField !== "function")
     return false;
