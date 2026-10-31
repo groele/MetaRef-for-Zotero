@@ -1,6 +1,6 @@
 // autocorrect-disable
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { refreshTLDRInfoRow, registerInfoRows, unregisterInfoRows } from "./item-info-row";
+import { placeTLDRBeforeExtra, refreshTLDRInfoRow, registerInfoRows, unregisterInfoRows } from "./item-info-row";
 
 const mocks = vi.hoisted(() => ({
   preferences: new Map<string, unknown>(),
@@ -75,7 +75,7 @@ describe("item-info-row module", () => {
     vi.unstubAllGlobals();
   });
 
-  it("registers info row with position start, multiline true, and editable true", () => {
+  it("registers info row with position end, multiline true, and editable true", () => {
     registerInfoRows();
     expect(mocks.infoRows.has("tldr")).toBe(true);
 
@@ -85,7 +85,7 @@ describe("item-info-row module", () => {
     expect(row.label.l10nID).toBe("metaref-info-row-tldr");
     expect(row.label.value).toBe("field-tldr");
     expect(row.label.text).toBe("field-tldr");
-    expect(row.position).toBe("start");
+    expect(row.position).toBe("end");
     expect(row.multiline).toBe(true);
     expect(row.editable).toBe(true);
     expect(row.nowrap).toBe(false);
@@ -270,5 +270,63 @@ describe("item-info-row module", () => {
   it("refreshTLDRInfoRow calls ItemPaneManager.refreshInfoRow", () => {
     refreshTLDRInfoRow("tldr");
     expect(Zotero.ItemPaneManager.refreshInfoRow).toHaveBeenCalledWith("tldr");
+  });
+
+  it("places TLDR row directly before extra row in the itembox DOM", () => {
+    const children: any[] = [];
+    let extraLabel: any;
+    let extraRow: any;
+
+    const parent: any = {
+      children,
+      insertBefore: vi.fn((newChild: any, refChild: any) => {
+        const oldIndex = children.indexOf(newChild);
+        if (oldIndex !== -1)
+          children.splice(oldIndex, 1);
+        const refIndex = children.indexOf(refChild);
+        if (refIndex !== -1)
+          children.splice(refIndex, 0, newChild);
+        else
+          children.push(newChild);
+      }),
+      querySelector: vi.fn((sel: string) => {
+        if (sel.includes("meta-label-extra"))
+          return extraLabel;
+        return null;
+      }),
+    };
+
+    extraLabel = {
+      closest: vi.fn((sel: string) => sel.includes("meta-row") ? extraRow : null),
+      parentElement: null,
+    };
+    extraRow = {
+      parentElement: parent,
+      get nextElementSibling() {
+        const idx = children.indexOf(extraRow);
+        return idx !== -1 && idx + 1 < children.length ? children[idx + 1] : null;
+      },
+    };
+    extraLabel.parentElement = extraRow;
+
+    const tldrRow: any = {
+      parentElement: parent,
+      get nextElementSibling() {
+        const idx = children.indexOf(tldrRow);
+        return idx !== -1 && idx + 1 < children.length ? children[idx + 1] : null;
+      },
+    };
+
+    const dateAddedRow: any = { parentElement: parent };
+    children.push(extraRow, dateAddedRow, tldrRow);
+
+    const mockDoc = {
+      querySelectorAll: (sel: string) => sel.includes("data-custom-row-id=\"tldr\"") ? [tldrRow] : [],
+    } as unknown as Document;
+
+    placeTLDRBeforeExtra(mockDoc);
+
+    expect(parent.insertBefore).toHaveBeenCalledWith(tldrRow, extraRow);
+    expect(tldrRow.nextElementSibling).toBe(extraRow);
   });
 });

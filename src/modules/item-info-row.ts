@@ -9,6 +9,8 @@ const logger = createLogger("item-info-row");
 
 let registeredRowID: string | false | undefined;
 const prefObserverIDs: symbol[] = [];
+const activeObservers = new Set<MutationObserver>();
+const observedTables = new WeakSet<Node>();
 
 export function registerInfoRows() {
   if (registeredRowID)
@@ -25,7 +27,7 @@ export function registerInfoRows() {
         text: getString("field-tldr") || "撷论",
         value: getString("field-tldr") || "撷论",
       } as any,
-      position: "start",
+      position: "end",
       multiline: true,
       nowrap: false,
       editable: true,
@@ -65,6 +67,10 @@ export function registerInfoRows() {
           if (typeof setEditable === "function") {
             setEditable(Boolean(isRegular));
           }
+          placeTLDRBeforeExtra();
+          if (typeof setTimeout === "function") {
+            setTimeout(placeTLDRBeforeExtra, 0);
+          }
         }
         catch (err) {
           logger.error("Error in onItemChange for TLDR info row:", err);
@@ -93,10 +99,59 @@ export function registerInfoRows() {
   }
 }
 
+export function placeTLDRBeforeExtra(doc?: Document) {
+  if (typeof Zotero === "undefined")
+    return;
+
+  const docs = doc
+    ? [doc]
+    : (typeof Zotero.getMainWindows === "function" ? Zotero.getMainWindows().map(w => w?.document).filter(Boolean) : []);
+
+  for (const d of docs) {
+    try {
+      const tldrRows = d.querySelectorAll<HTMLElement>(".meta-row[data-custom-row-id=\"tldr\"]");
+      for (const tldrRow of Array.from<HTMLElement>(tldrRows)) {
+        const infoTable = tldrRow.parentElement;
+        if (!infoTable)
+          continue;
+
+        if (!observedTables.has(infoTable) && typeof MutationObserver !== "undefined") {
+          try {
+            const observer = new MutationObserver(() => {
+              placeTLDRBeforeExtra(d);
+            });
+            observer.observe(infoTable, { childList: true });
+            activeObservers.add(observer);
+            observedTables.add(infoTable);
+          }
+          catch (err) {
+            logger.error("Failed to observe infoTable mutations:", err);
+          }
+        }
+
+        const extraLabel = infoTable.querySelector(".meta-label-extra");
+        const extraRow = extraLabel?.closest(".meta-row") || (extraLabel?.parentElement as HTMLElement | null);
+        if (extraRow && extraRow.parentElement === infoTable) {
+          if (tldrRow.nextElementSibling !== extraRow) {
+            infoTable.insertBefore(tldrRow, extraRow);
+          }
+        }
+      }
+    }
+    catch (err) {
+      logger.error("Failed to position TLDR before extra row:", err);
+    }
+  }
+}
+
 export function refreshTLDRInfoRow(rowID = "tldr") {
   try {
     if (typeof Zotero !== "undefined" && typeof Zotero.ItemPaneManager?.refreshInfoRow === "function") {
       Zotero.ItemPaneManager.refreshInfoRow(rowID);
+    }
+    placeTLDRBeforeExtra();
+    if (typeof setTimeout === "function") {
+      setTimeout(placeTLDRBeforeExtra, 0);
     }
   }
   catch (error) {
@@ -108,6 +163,17 @@ export function unregisterInfoRows() {
   const id = registeredRowID;
   registeredRowID = undefined;
   cleanupResourcesSync([
+    () => {
+      for (const obs of activeObservers) {
+        try {
+          obs.disconnect();
+        }
+        catch {
+          // ignore
+        }
+      }
+      activeObservers.clear();
+    },
     () => {
       if (typeof Zotero.Prefs?.unregisterObserver === "function") {
         while (prefObserverIDs.length) {
