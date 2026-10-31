@@ -1,12 +1,14 @@
 import type { ApplyContext } from "../rule-base";
 import type { Identifiers } from "./identifiers";
 import { getString } from "../../../utils/locale";
+import { getPref } from "../../../utils/prefs";
 import { extractArxivID } from "../../journal-pane";
 import { extractIdentifiers } from "./identifiers";
 import { fetchPaperTLDR, parsePaperID } from "./services/semantic-scholar-service";
 
 export interface TLDRBackfillOptions {
   target?: "note" | "extra" | "both" | "abstract";
+  extraFormat?: "remark" | "tldr";
   report?: ApplyContext["report"];
   debug?: ApplyContext["debug"];
   signal?: AbortSignal;
@@ -33,6 +35,7 @@ export function unescapeHTML(str: string): string {
 export function extractTLDRFromExtra(extra: string): string | undefined {
   if (!extra)
     return undefined;
+  let fallbackRemark: string | undefined;
   for (const line of extra.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (/^(?:TL;?DR|撷论)\s*[:：]/i.test(trimmed)) {
@@ -43,8 +46,16 @@ export function extractTLDRFromExtra(extra: string): string | undefined {
           return val;
       }
     }
+    else if (!fallbackRemark && /^(?:remark|简记)\s*[:：]/i.test(trimmed)) {
+      const colonMatch = trimmed.match(/[:：]/);
+      if (colonMatch && typeof colonMatch.index === "number") {
+        const val = trimmed.slice(colonMatch.index + 1).trim();
+        if (val)
+          fallbackRemark = val;
+      }
+    }
   }
-  return undefined;
+  return fallbackRemark;
 }
 
 export function extractTLDRFromNote(noteContent: string): string | undefined {
@@ -55,8 +66,9 @@ export function extractTLDRFromNote(noteContent: string): string | undefined {
     && !noteContent.includes("TL;DR (Semantic Scholar)")
     && !noteContent.includes("TL;DR 核心论点")
     && !noteContent.includes("撷论")
-    && !/<(?:h[1-6]|strong|b|p)[^>]*>\s*(?:💡\s*)?(?:TL;?DR|撷论)/i.test(noteContent)
-    && !/^(?:💡\s*)?(?:TL;?DR|撷论)\s*[:：]/i.test(noteContent.trim())
+    && !noteContent.includes("简记")
+    && !/<(?:h[1-6]|strong|b|p)[^>]*>\s*(?:💡\s*)?(?:TL;?DR|撷论|简记|remark)/i.test(noteContent)
+    && !/^(?:💡\s*)?(?:TL;?DR|撷论|简记|remark)\s*[:：]/i.test(noteContent.trim())
   ) {
     return undefined;
   }
@@ -69,7 +81,7 @@ export function extractTLDRFromNote(noteContent: string): string | undefined {
   if (pMatch && pMatch.length > 1)
     return unescapeHTML(pMatch[pMatch.length - 1].replace(/<[^>]+>/g, "").trim());
 
-  const plain = noteContent.replace(/<[^>]+>/g, "").replace(/(?:💡\s*)?(?:TL;?DR|撷论)[^\n:：]*[:：]\s*/i, "").trim();
+  const plain = noteContent.replace(/<[^>]+>/g, "").replace(/(?:💡\s*)?(?:TL;?DR|撷论|简记|remark)[^\n:：]*[:：]\s*/i, "").trim();
   return unescapeHTML(plain);
 }
 
@@ -195,14 +207,15 @@ export async function saveTLDRToNote(item: Zotero.Item, tldr: string): Promise<b
   return false;
 }
 
-export function saveTLDRToExtra(item: Zotero.Item, tldr: string): boolean {
+export function saveTLDRToExtra(item: Zotero.Item, tldr: string, format?: "remark" | "tldr"): boolean {
   if (typeof item.getField !== "function" || typeof item.setField !== "function")
     return false;
   const currentExtra = String(item.getField("extra") || "");
   const lines = currentExtra.split(/\r?\n/);
   const cleanTLDR = tldr.replace(/[\r\n]+/g, " ").trim();
-  const tldrLine = `TLDR: ${cleanTLDR}`;
-  const existingIndex = lines.findIndex(line => /^(?:TL;?DR|撷论)\s*[:：]/i.test(line.trim()));
+  const chosenFormat = format || (typeof getPref === "function" ? getPref("workflow.tldrExtraFormat" as any, "remark") : "remark");
+  const tldrLine = chosenFormat === "tldr" ? `TLDR: ${cleanTLDR}` : `remark: ${cleanTLDR}`;
+  const existingIndex = lines.findIndex(line => /^(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim()));
   let updatedExtra: string;
   if (existingIndex >= 0) {
     if (lines[existingIndex] === tldrLine)
@@ -272,7 +285,7 @@ export async function backfillItemTLDR(
   }
 
   if (target === "extra" || target === "both") {
-    const extraSaved = saveTLDRToExtra(item, tldr);
+    const extraSaved = saveTLDRToExtra(item, tldr, options.extraFormat);
     if (extraSaved)
       saved = true;
   }

@@ -49,6 +49,10 @@ describe("tldr extraction and manipulation", () => {
       .toBe("中文冒号与前缀测试");
     expect(extractTLDRFromExtra("撷论：全角冒号测试"))
       .toBe("全角冒号测试");
+    expect(extractTLDRFromExtra("remark: Ethereal Style 简记测试"))
+      .toBe("Ethereal Style 简记测试");
+    expect(extractTLDRFromExtra("简记: 中文简记列测试"))
+      .toBe("中文简记列测试");
   });
 
   it("extracts TLDR from HTML note formats and decodes entities", () => {
@@ -135,7 +139,7 @@ describe("tldr extraction and manipulation", () => {
     expect(resolvePaperIDForTLDR(item, {})).toBe("DOI:10.1000/182");
   });
 
-  it("saves TLDR to Extra field idempotently", () => {
+  it("saves TLDR to Extra field idempotently with remark and tldr formats", () => {
     let extraValue = "Citation Key: test";
     const item = {
       getField: (f: string) => f === "extra" ? extraValue : "",
@@ -145,20 +149,27 @@ describe("tldr extraction and manipulation", () => {
       },
     } as unknown as Zotero.Item;
 
-    // First write appends
+    // First write appends default remark: format
     const saved1 = saveTLDRToExtra(item, "First summary");
     expect(saved1).toBe(true);
-    expect(extraValue).toContain("TLDR: First summary");
+    expect(extraValue).toContain("remark: First summary");
 
     // Second write with same content is no-op
     const saved2 = saveTLDRToExtra(item, "First summary");
     expect(saved2).toBe(false);
 
-    // Updating summary replaces the existing TLDR line
-    const saved3 = saveTLDRToExtra(item, "Updated summary");
+    // Updating summary replaces the existing remark line with tldr format when specified
+    const saved3 = saveTLDRToExtra(item, "Updated summary", "tldr");
     expect(saved3).toBe(true);
     expect(extraValue).toContain("TLDR: Updated summary");
     expect(extraValue).not.toContain("First summary");
+    expect(extraValue).not.toContain("remark:");
+
+    // Replaces TLDR line with remark line
+    const saved4 = saveTLDRToExtra(item, "Back to remark", "remark");
+    expect(saved4).toBe(true);
+    expect(extraValue).toContain("remark: Back to remark");
+    expect(extraValue).not.toContain("TLDR:");
   });
 
   it("saves TLDR to abstractNote only when empty", () => {
@@ -242,10 +253,19 @@ describe("tldr extraction and manipulation", () => {
     });
 
     expect(result).toBe(true);
-    expect(extraValue).toContain("TLDR: This paper presents a scalable method");
+    expect(extraValue).toContain("remark: This paper presents a scalable method");
     expect(report).toHaveBeenCalledWith(expect.objectContaining({
       level: "info",
       code: "metadata-tldr-extracted",
     }));
+
+    // With explicit tldr extraFormat
+    const resultTLDR = await backfillItemTLDR(item, { DOI: "10.1038/s41586" }, {
+      target: "extra",
+      extraFormat: "tldr",
+      report,
+    });
+    expect(resultTLDR).toBe(true);
+    expect(extraValue).toContain("TLDR: This paper presents a scalable method");
   });
 });

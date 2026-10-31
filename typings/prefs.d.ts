@@ -285,6 +285,7 @@ declare namespace _ZoteroTypes {
       "workflow.reviveSnapshots": boolean;
       "workflow.tldrEnabled": boolean;
       "workflow.tldrTarget": string;
+      "workflow.tldrExtraFormat": string;
       "workflow.formatAfterUpdate": boolean;
       "workflow.scanPDF": boolean;
       "workflow.searchTitle": boolean;

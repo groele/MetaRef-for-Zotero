@@ -14,6 +14,7 @@ import { NavigationQueryCache } from "../utils/navigation-query-cache";
 import { getPref } from "../utils/prefs";
 import { registerExtraColumns } from "./item-tree";
 import { normalizeArxiv } from "./review/policy";
+import { isSnapshotItem } from "./review/snapshot-reviver";
 import { getEnabledEasyScholarFields } from "./rules/tool-update-easyscholar";
 import { extractTLDRFromItem } from "./rules/tool-update-metadata/tldr";
 
@@ -76,11 +77,33 @@ export function isUnconvertedArxivPreprint(item?: Zotero.Item): boolean {
   return isArxivDOI || isArxivPub;
 }
 
+export function isUnrevivedSnapshot(item?: Zotero.Item): boolean {
+  if (!item || !isSnapshotItem(item))
+    return false;
+  if (!getPref("workflow.reviveSnapshots" as any, true))
+    return false;
+  if (typeof item.getField === "function") {
+    const extra = String(item.getField("extra") || "");
+    if (extra.includes("MetaFlow revived from"))
+      return false;
+    const url = String(item.getField("url") || "").trim();
+    if (url)
+      return true;
+  }
+  if (typeof item.getAttachments === "function") {
+    const atts = item.getAttachments();
+    if (Array.isArray(atts) && atts.length > 0)
+      return true;
+  }
+  return false;
+}
+
 const supportsRankings = (item?: Zotero.Item) => Boolean(item?.isRegularItem() && ["journalArticle", "conferencePaper"].includes(item.itemType));
 function supportsSection(item?: Zotero.Item): boolean {
   return Boolean(
     item && getPref("insights.showPane", true) && (
       isUnconvertedArxivPreprint(item)
+      || isUnrevivedSnapshot(item)
       || Boolean(extractTLDRFromItem(item))
       || (supportsRankings(item) && hasEnabledJournalMetrics())
     ),
@@ -485,6 +508,103 @@ async function render({ item, body, doc }: Context) {
     body.replaceChildren(wrap);
     return;
   }
+  if (isUnrevivedSnapshot(item)) {
+    body.replaceChildren();
+    body.style.cssText = "padding:0;margin:0;box-sizing:border-box;";
+    ensureJournalPaneStyles(doc || body.ownerDocument);
+
+    const wrap = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    wrap.className = "metaref-journal-pane-wrap";
+
+    const badgeRow = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    badgeRow.setAttribute("style", "display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;gap:8px;");
+
+    const badge = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    badge.textContent = `🌐 ${getString("snapshot-card-badge") || "网页快照 / 剪藏条目"}`;
+    badge.setAttribute("style", "display:inline-flex;align-items:center;background:color-mix(in srgb, #0284c7 15%, transparent);color:#0284c7;border:1px solid color-mix(in srgb, #0284c7 30%, transparent);padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;letter-spacing:0.3px;");
+    badgeRow.append(badge);
+
+    const url = String(item.getField("url") || "").trim();
+    if (url) {
+      try {
+        const host = new URL(url).hostname;
+        const link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a") as HTMLAnchorElement;
+        link.textContent = host;
+        link.href = url;
+        link.setAttribute("target", "_blank");
+        link.setAttribute("rel", "noopener noreferrer");
+        link.setAttribute("style", "font-size:12px;color:var(--accent-blue, #245ac7);text-decoration:none;font-family:ui-monospace, monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;");
+        link.addEventListener("click", (e) => {
+          e.stopPropagation();
+          Zotero.launchURL(url);
+        });
+        badgeRow.append(link);
+      }
+      catch {
+        // invalid URL string, skip host link
+      }
+    }
+    wrap.append(badgeRow);
+
+    const title = String(item.getField("title") || "").trim();
+    if (title) {
+      const titleElem = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      titleElem.textContent = title;
+      titleElem.setAttribute("style", "font-size:13px;font-weight:600;line-height:1.45;margin-bottom:8px;color:var(--fill-primary);");
+      wrap.append(titleElem);
+    }
+
+    const desc = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+    desc.textContent = getString("snapshot-card-description") || "当前条目为剪藏网页快照。MetaFlow 可自动从本地 HTML 快照或原始网页中嗅探学术标识（DOI / arXiv ID / PMID），一键升级为正式学术文献条目并补齐元数据。";
+    desc.setAttribute("style", "font-size:12px;line-height:1.5;color:var(--fill-secondary);margin-bottom:12px;");
+    wrap.append(desc);
+
+    const tldr = extractTLDRFromItem(item);
+    if (tldr) {
+      const tldrBox = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      tldrBox.setAttribute("style", "margin:0 0 12px;padding:8px 10px;background:color-mix(in srgb, var(--accent-blue, #245ac7) 8%, transparent);border-radius:6px;border-left:3px solid var(--accent-blue, #245ac7);font-size:12px;line-height:1.5;color:var(--fill-primary);");
+      const tldrHead = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      tldrHead.setAttribute("style", "font-size:11px;font-weight:600;color:var(--accent-blue, #245ac7);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;");
+      const headTitle = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+      headTitle.textContent = `💡 ${getString("journal-insights-tldr-heading") || "核心论点 (TL;DR)"}`;
+      const headSrc = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+      headSrc.textContent = "Semantic Scholar";
+      headSrc.setAttribute("style", "font-size:10px;font-weight:400;opacity:0.75;");
+      tldrHead.append(headTitle, headSrc);
+      const tldrBody = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
+      tldrBody.textContent = tldr;
+      tldrBox.append(tldrHead, tldrBody);
+      wrap.append(tldrBox);
+    }
+
+    const reviveBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLButtonElement;
+    reviveBtn.type = "button";
+    reviveBtn.textContent = `🌐 ${getString("snapshot-card-button") || "一键嗅探并复活为学术论文…"}`;
+    reviveBtn.setAttribute("style", "display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:8px 12px;font-size:13px;font-weight:600;border-radius:6px;background:color-mix(in srgb, #0284c7 12%, transparent);border:1px solid color-mix(in srgb, #0284c7 30%, transparent);color:#0284c7;cursor:pointer;");
+    reviveBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (reviveBtn.disabled)
+        return;
+      reviveBtn.disabled = true;
+      reviveBtn.textContent = `⏳ ${getString("journal-insights-loading") || "正在嗅探快照元数据…"}`;
+      try {
+        await addon.hooks.onLintInBatch("tool-update-metadata", [item], { review: true });
+        await refreshJournalPane([item.id]);
+      }
+      catch (err) {
+        logger.error("Snapshot revival failed:", err);
+      }
+      finally {
+        if (reviveBtn.isConnected) {
+          reviveBtn.disabled = false;
+          reviveBtn.textContent = `🌐 ${getString("snapshot-card-button") || "一键嗅探并复活为学术论文…"}`;
+        }
+      }
+    });
+    wrap.append(reviveBtn);
+    body.replaceChildren(wrap);
+    return;
+  }
   const token = {};
   renders.set(body, token);
   let result: JournalInsights | undefined;
@@ -549,6 +669,12 @@ async function render({ item, body, doc }: Context) {
     convertedBadge.textContent = getString("preprint-converted-badge") || "已由 arXiv 转正";
     convertedBadge.setAttribute("style", "display:inline-flex;align-items:center;margin-left:8px;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:color-mix(in srgb, #2e7d32 15%, transparent);color:#2e7d32;border:1px solid color-mix(in srgb, #2e7d32 30%, transparent);vertical-align:middle;");
     journalTitle.append(convertedBadge);
+  }
+  else if (extraText.includes("MetaFlow revived from")) {
+    const revivedBadge = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    revivedBadge.textContent = getString("snapshot-revived-badge") || "已由网页快照复活";
+    revivedBadge.setAttribute("style", "display:inline-flex;align-items:center;margin-left:8px;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:color-mix(in srgb, #0284c7 15%, transparent);color:#0284c7;border:1px solid color-mix(in srgb, #0284c7 30%, transparent);vertical-align:middle;");
+    journalTitle.append(revivedBadge);
   }
   const shareBtn = doc.createElementNS("http://www.w3.org/1999/xhtml", "button") as HTMLButtonElement;
   shareBtn.setAttribute("data-journal-share", "true");

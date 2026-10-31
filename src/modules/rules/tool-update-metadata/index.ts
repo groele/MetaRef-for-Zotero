@@ -17,6 +17,7 @@ interface UpdateMetadataOption {
   creatorsOnly?: boolean;
   tldrEnabled?: boolean;
   tldrTarget?: "note" | "extra" | "both" | "abstract";
+  tldrExtraFormat?: "remark" | "tldr";
   reviveSnapshots?: boolean;
   // lint: boolean;
 }
@@ -195,6 +196,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
       if (options.tldrEnabled && !options.creatorsOnly) {
         const tldrSuccess = await backfillItemTLDR(item, identifiers, {
           target: options.tldrTarget,
+          extraFormat: options.tldrExtraFormat,
           report,
           debug,
           signal,
@@ -386,6 +388,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
     if (options.tldrEnabled && !options.creatorsOnly) {
       await backfillItemTLDR(item, identifiers, {
         target: options.tldrTarget,
+        extraFormat: options.tldrExtraFormat,
         report,
         debug,
         signal,
@@ -403,6 +406,7 @@ export const ToolUpdateMetadata = defineRule<UpdateMetadataOption>({
       repairCreators: getPref("metadata.repairCreators" as any, true) === true,
       tldrEnabled: getPref("workflow.tldrEnabled" as any, true) === true,
       tldrTarget: getPref("workflow.tldrTarget" as any, "note") as "note" | "extra" | "both" | "abstract",
+      tldrExtraFormat: getPref("workflow.tldrExtraFormat" as any, "remark") as "remark" | "tldr",
       reviveSnapshots: getPref("workflow.reviveSnapshots" as any, true) === true,
     };
   },

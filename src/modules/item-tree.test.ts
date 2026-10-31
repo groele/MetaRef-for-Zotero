@@ -107,4 +107,10 @@ it("registers tldr (撷论) column and provides extracted TL;DR takeaway", () =>
     getField: (key: string) => key === "extra" ? "撷论：中文前缀核心论点" : "",
   } as unknown as Zotero.Item;
   expect(tldrCol.dataProvider(itemWithXielun)).toBe("中文前缀核心论点");
+
+  const itemWithRemark = {
+    isRegularItem: () => true,
+    getField: (key: string) => key === "extra" ? "remark: 简记与Ethereal Style联动论点" : "",
+  } as unknown as Zotero.Item;
+  expect(tldrCol.dataProvider(itemWithRemark)).toBe("简记与Ethereal Style联动论点");
 });

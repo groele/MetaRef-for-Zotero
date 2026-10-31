@@ -6,7 +6,7 @@ _Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.3.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.3.1)
+[![Version](https://img.shields.io/badge/version-13.3.2-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.3.2)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
 [![Tests Passing](https://img.shields.io/badge/tests-644%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)

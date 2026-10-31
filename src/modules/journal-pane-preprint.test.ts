@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractArxivID, isUnconvertedArxivPreprint } from "./journal-pane";
+import { extractArxivID, isUnconvertedArxivPreprint, isUnrevivedSnapshot } from "./journal-pane";
 
 function mockItem(fields: Record<string, string>, itemType = "preprint", regular = true): Zotero.Item {
   return {
@@ -68,5 +68,40 @@ describe("isUnconvertedArxivPreprint", () => {
       extra: "MetaFlow preprint identifier: 2401.12345\nMetaFlow preprint URL: https://arxiv.org/abs/2401.12345",
     }, "journalArticle");
     expect(isUnconvertedArxivPreprint(convertedItem)).toBe(false);
+  });
+});
+
+describe("isUnrevivedSnapshot", () => {
+  it("recognizes webpage snapshots with URL", () => {
+    const item = mockItem({ url: "https://www.nature.com/articles/d41586-024-00000-0" }, "webpage");
+    expect(isUnrevivedSnapshot(item)).toBe(true);
+  });
+
+  it("recognizes blogPost snapshots", () => {
+    const item = mockItem({ url: "https://example.com/blog/post-1" }, "blogPost");
+    expect(isUnrevivedSnapshot(item)).toBe(true);
+  });
+
+  it("ignores regular journal articles", () => {
+    const item = mockItem({ DOI: "10.1038/s41586", url: "https://nature.com" }, "journalArticle");
+    expect(isUnrevivedSnapshot(item)).toBe(false);
+  });
+
+  it("ignores already revived snapshots", () => {
+    const item = mockItem({
+      url: "https://nature.com",
+      extra: "MetaFlow revived from: webpage\nMetaFlow revival identifier: DOI 10.1038/s41586",
+    }, "webpage");
+    expect(isUnrevivedSnapshot(item)).toBe(false);
+  });
+
+  it("recognizes snapshot with attachments even without URL", () => {
+    const item = {
+      itemType: "webpage",
+      isRegularItem: () => true,
+      getField: () => "",
+      getAttachments: () => [123],
+    } as unknown as Zotero.Item;
+    expect(isUnrevivedSnapshot(item)).toBe(true);
   });
 });
