@@ -1,10 +1,13 @@
 import type { ApplyContext } from "../rule-base";
 import type { Identifiers } from "./identifiers";
 import { getString } from "../../../utils/locale";
+import { createLogger } from "../../../utils/logger";
 import { getPref } from "../../../utils/prefs";
 import { extractArxivID } from "../../journal-pane";
 import { extractIdentifiers } from "./identifiers";
 import { fetchPaperTLDR, parsePaperID } from "./services/semantic-scholar-service";
+
+const logger = createLogger("tldr");
 
 export interface TLDRBackfillOptions {
   target?: "note" | "extra" | "both" | "abstract";
@@ -38,7 +41,7 @@ export function extractTLDRFromExtra(extra: string): string | undefined {
   let fallbackRemark: string | undefined;
   for (const line of extra.split(/\r?\n/)) {
     const trimmed = line.trim();
-    if (/^(?:TL;?DR|撷论)\s*[:：]/i.test(trimmed)) {
+    if (/^(?:💡\s*)?(?:TL;?DR|撷论)\s*[:：]/i.test(trimmed)) {
       const colonMatch = trimmed.match(/[:：]/);
       if (colonMatch && typeof colonMatch.index === "number") {
         const val = trimmed.slice(colonMatch.index + 1).trim();
@@ -46,7 +49,7 @@ export function extractTLDRFromExtra(extra: string): string | undefined {
           return val;
       }
     }
-    else if (!fallbackRemark && /^(?:remark|简记)\s*[:：]/i.test(trimmed)) {
+    else if (!fallbackRemark && /^(?:💡\s*)?(?:remark|简记)\s*[:：]/i.test(trimmed)) {
       const colonMatch = trimmed.match(/[:：]/);
       if (colonMatch && typeof colonMatch.index === "number") {
         const val = trimmed.slice(colonMatch.index + 1).trim();
@@ -221,14 +224,14 @@ export async function saveTLDRToNote(item: Zotero.Item, tldr: string): Promise<b
 export function saveTLDRToExtra(item: Zotero.Item, tldr: string, format?: "remark" | "tldr"): boolean {
   if (typeof item.getField !== "function" || typeof item.setField !== "function")
     return false;
-  const cleanTLDR = tldr.replace(/[\r\n]+/g, " ").trim();
+  const cleanTLDR = tldr.replace(/<[^>]+>/g, "").replace(/[\r\n]+/g, " ").trim();
   if (!cleanTLDR)
     return false;
   const currentExtra = String(item.getField("extra") || "");
   const lines = currentExtra.split(/\r?\n/);
   const chosenFormat = format || (typeof getPref === "function" ? getPref("workflow.tldrExtraFormat" as any, "remark") : "remark");
   const tldrLine = chosenFormat === "tldr" ? `TLDR: ${cleanTLDR}` : `remark: ${cleanTLDR}`;
-  const isMatch = (line: string) => /^(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
+  const isMatch = (line: string) => /^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
   const existingIndex = lines.findIndex(isMatch);
   let updatedExtra: string;
   if (existingIndex >= 0) {
@@ -239,7 +242,7 @@ export function saveTLDRToExtra(item: Zotero.Item, tldr: string, format?: "remar
     updatedExtra = deduplicated.join("\n");
   }
   else {
-    updatedExtra = currentExtra.trim() ? `${currentExtra.trim()}\n${tldrLine}` : tldrLine;
+    updatedExtra = currentExtra.trim() ? `${tldrLine}\n${currentExtra.trim()}` : tldrLine;
   }
   item.setField("extra", updatedExtra);
   return true;
@@ -250,7 +253,7 @@ export function saveTLDRToAbstract(item: Zotero.Item, tldr: string): boolean {
     return false;
   if (typeof item.isRegularItem === "function" && !item.isRegularItem())
     return false;
-  const cleanTLDR = tldr.trim();
+  const cleanTLDR = tldr.replace(/<[^>]+>/g, "").trim();
   if (!cleanTLDR)
     return false;
   const currentAbstract = String(item.getField("abstractNote") || "").trim();
@@ -263,14 +266,14 @@ export function saveTLDRToAbstract(item: Zotero.Item, tldr: string): boolean {
 export async function saveTLDRToItem(item: Zotero.Item, value: string): Promise<boolean> {
   if (!item || (typeof item.isRegularItem === "function" && !item.isRegularItem()))
     return false;
-  const cleanTLDR = value.trim();
+  const cleanTLDR = value.replace(/<[^>]+>/g, "").replace(/[\r\n]+/g, " ").trim();
   let changed = false;
 
   if (!cleanTLDR) {
     if (typeof item.getField === "function" && typeof item.setField === "function") {
       const currentExtra = String(item.getField("extra") || "");
       const lines = currentExtra.split(/\r?\n/);
-      const isMatch = (line: string) => /^(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
+      const isMatch = (line: string) => /^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
       if (lines.some(isMatch)) {
         const filtered = lines.filter(line => !isMatch(line));
         item.setField("extra", filtered.join("\n"));
@@ -279,28 +282,53 @@ export async function saveTLDRToItem(item: Zotero.Item, value: string): Promise<
     }
     const note = findExistingTLDRNote(item);
     if (note && typeof note.eraseTx === "function") {
-      await note.eraseTx();
-      changed = true;
+      try {
+        await note.eraseTx();
+        changed = true;
+      }
+      catch (err) {
+        logger.error("Failed to erase TLDR note:", err);
+      }
     }
   }
   else {
+    const target = typeof getPref === "function" ? getPref("workflow.tldrTarget" as any, "both") : "both";
     const extraSaved = saveTLDRToExtra(item, cleanTLDR);
     if (extraSaved)
       changed = true;
-    const existingNote = findExistingTLDRNote(item);
-    if (existingNote && typeof existingNote.setNote === "function") {
-      const noteHtml = `<div data-metaflow-tldr="true"><p><strong>💡 撷论 (Semantic Scholar TL;DR)</strong></p><blockquote style="margin:8px 0;padding:8px 12px;border-left:3px solid #245ac7;background:rgba(36,90,199,0.06);line-height:1.6;">${escapeHTML(cleanTLDR)}</blockquote></div>`;
-      if (typeof existingNote.getNote !== "function" || existingNote.getNote() !== noteHtml) {
-        existingNote.setNote(noteHtml);
-        if (typeof existingNote.saveTx === "function")
-          await existingNote.saveTx();
+
+    if (target === "note" || target === "both") {
+      const noteSaved = await saveTLDRToNote(item, cleanTLDR);
+      if (noteSaved)
         changed = true;
+    }
+    else {
+      const existingNote = findExistingTLDRNote(item);
+      if (existingNote && typeof existingNote.setNote === "function") {
+        const noteHtml = `<div data-metaflow-tldr="true"><p><strong>💡 撷论 (Semantic Scholar TL;DR)</strong></p><blockquote style="margin:8px 0;padding:8px 12px;border-left:3px solid #245ac7;background:rgba(36,90,199,0.06);line-height:1.6;">${escapeHTML(cleanTLDR)}</blockquote></div>`;
+        if (typeof existingNote.getNote !== "function" || existingNote.getNote() !== noteHtml) {
+          existingNote.setNote(noteHtml);
+          if (typeof existingNote.saveTx === "function") {
+            try {
+              await existingNote.saveTx();
+              changed = true;
+            }
+            catch (err) {
+              logger.error("Failed to save existing TLDR note:", err);
+            }
+          }
+        }
       }
     }
   }
 
   if (changed && typeof item.saveTx === "function") {
-    await item.saveTx();
+    try {
+      await item.saveTx();
+    }
+    catch (err) {
+      logger.error("Failed to saveTx in saveTLDRToItem:", err);
+    }
   }
 
   if (changed) {

@@ -54,6 +54,10 @@ describe("tldr extraction and manipulation", () => {
       .toBe("Ethereal Style 简记测试");
     expect(extractTLDRFromExtra("简记: 中文简记列测试"))
       .toBe("中文简记列测试");
+    expect(extractTLDRFromExtra("💡 撷论: 带灯泡图标的前缀"))
+      .toBe("带灯泡图标的前缀");
+    expect(extractTLDRFromExtra("💡 remark: 带灯泡的简记测试"))
+      .toBe("带灯泡的简记测试");
   });
 
   it("extracts TLDR from HTML note formats and decodes entities", () => {

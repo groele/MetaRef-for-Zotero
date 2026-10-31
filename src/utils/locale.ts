@@ -8,6 +8,7 @@ const localeFilesForJS = [
 ];
 
 const localeFilesForMainWindow = [
+  "addon.ftl",
   "main-window.ftl",
   "rules.ftl",
 ];
@@ -40,14 +41,14 @@ export function initLocale() {
     current: l10n,
   };
 
-  // Register addon.ftl with Zotero.ftl so UndoHistory can resolve undo action labels.
+  // Register addon.ftl and main-window.ftl with Zotero.ftl so UndoHistory and ItemPaneManager can resolve labels.
   // @ts-expect-error - Zotero.ftl not yet typed in zotero-types
-  Zotero.ftl.addResourceIds(["metaref-addon.ftl"]);
+  Zotero.ftl.addResourceIds(["metaref-addon.ftl", "metaref-main-window.ftl"]);
 }
 
 export function unloadLocale() {
   // @ts-expect-error - Zotero.ftl not yet typed in zotero-types
-  Zotero.ftl.removeResourceIds(["metaref-addon.ftl"]);
+  Zotero.ftl.removeResourceIds(["metaref-addon.ftl", "metaref-main-window.ftl"]);
 }
 
 interface GetStringOptions {

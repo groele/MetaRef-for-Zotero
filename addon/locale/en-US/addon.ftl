@@ -3,8 +3,13 @@ prefs-title = Zotero MetaFlow
 
 ## Item tree
 field-abbr = Abbr
+    .value = Abbr
+    .label = Abbr
 field-tldr = TL;DR Takeaway
+    .value = TL;DR Takeaway
+    .label = TL;DR Takeaway
 info-row-tldr = TL;DR Takeaway
+    .value = TL;DR Takeaway
     .label = TL;DR Takeaway
 
 ## batch

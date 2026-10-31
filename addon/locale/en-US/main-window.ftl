@@ -6,8 +6,10 @@ menuitem-stdFormatFlow =
   .label = Zotero MetaFlow: Check and Fix Metadata
 field-nature-index = Nature Index
 info-row-tldr = TL;DR Takeaway
+    .value = TL;DR Takeaway
     .label = TL;DR Takeaway
 field-tldr = TL;DR Takeaway
+    .value = TL;DR Takeaway
     .label = TL;DR Takeaway
 
 menu-group-primary = Common actions

@@ -83,6 +83,8 @@ describe("item-info-row module", () => {
     expect(row.rowID).toBe("tldr");
     expect(row.pluginID).toBe("metaflow@groele");
     expect(row.label.l10nID).toBe("metaref-info-row-tldr");
+    expect(row.label.value).toBe("field-tldr");
+    expect(row.label.text).toBe("field-tldr");
     expect(row.position).toBe("start");
     expect(row.multiline).toBe(true);
     expect(row.editable).toBe(true);
@@ -243,11 +245,26 @@ describe("item-info-row module", () => {
   it("unregisters cleanly and clears preference observers", () => {
     registerInfoRows();
     expect(mocks.infoRows.has("tldr")).toBe(true);
-    expect(mocks.prefsObservers.size).toBe(1);
+    expect(mocks.prefsObservers.size).toBe(2);
 
     unregisterInfoRows();
     expect(mocks.infoRows.has("tldr")).toBe(false);
     expect(mocks.prefsObservers.size).toBe(0);
+  });
+
+  it("handles onItemChange safely when setEditable is not provided by Zotero", () => {
+    registerInfoRows();
+    const row = mocks.infoRows.get("tldr");
+    let enabled = false;
+    expect(() => {
+      row.onItemChange({
+        item: { isRegularItem: () => true, getField: () => "", getNotes: () => [] } as any,
+        setEnabled: (val: boolean) => {
+          enabled = val;
+        },
+      });
+    }).not.toThrow();
+    expect(enabled).toBe(true);
   });
 
   it("refreshTLDRInfoRow calls ItemPaneManager.refreshInfoRow", () => {

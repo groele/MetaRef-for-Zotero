@@ -3,7 +3,7 @@ import { closeCoreFeedback } from "./modules/batch-feedback";
 import { closeCompletionNotices } from "./modules/completion-notice";
 import { localDOICheck, runCoreWorkflow, stopCoreWorkflows } from "./modules/core-workflow";
 import { invalidateDuplicateStats, registerDuplicateStats, unregisterDuplicateStats } from "./modules/duplicate-stats";
-import { registerInfoRows, unregisterInfoRows } from "./modules/item-info-row";
+import { refreshTLDRInfoRow, registerInfoRows, unregisterInfoRows } from "./modules/item-info-row";
 import { registerExtraColumns, unregisterExtraColumns } from "./modules/item-tree";
 import { refreshJournalPane, registerJournalPane, setJournalUpdateResult, unregisterJournalPane } from "./modules/journal-pane";
 import { registerMenu, unregisterMenu } from "./modules/menu";
@@ -100,6 +100,8 @@ async function onMainWindowLoad(win: Window): Promise<void> {
   const toolbar = new RichTextToolBar(win);
   toolbar.init();
   toolbars.set(win, toolbar);
+  registerInfoRows();
+  refreshTLDRInfoRow();
 }
 
 async function onMainWindowUnload(win: Window): Promise<void> {

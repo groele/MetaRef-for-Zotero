@@ -1,5 +1,5 @@
 import { cleanupResourcesSync } from "../utils/cleanup";
-import { getLocaleID } from "../utils/locale";
+import { getLocaleID, getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
 import { refreshJournalPane } from "./journal-pane";
@@ -8,7 +8,7 @@ import { extractTLDRFromItem, saveTLDRToItem } from "./rules/tool-update-metadat
 const logger = createLogger("item-info-row");
 
 let registeredRowID: string | false | undefined;
-let prefObserverID: symbol | undefined;
+const prefObserverIDs: symbol[] = [];
 
 export function registerInfoRows() {
   if (registeredRowID)
@@ -22,7 +22,9 @@ export function registerInfoRows() {
       pluginID: addon.data.config.addonID,
       label: {
         l10nID: getLocaleID("info-row-tldr") || "metaref-info-row-tldr",
-      },
+        text: getString("field-tldr") || "撷论",
+        value: getString("field-tldr") || "撷论",
+      } as any,
       position: "start",
       multiline: true,
       nowrap: false,
@@ -45,29 +47,46 @@ export function registerInfoRows() {
           .catch(err => logger.error("Failed to save edited TLDR:", err));
       },
       onItemChange({ item, setEnabled, setEditable }) {
-        if (!addon?.data?.alive || !item) {
-          setEnabled(false);
-          setEditable(false);
-          return;
+        try {
+          if (typeof setEnabled !== "function")
+            return;
+          if (!addon?.data?.alive || !item) {
+            setEnabled(false);
+            if (typeof setEditable === "function")
+              setEditable(false);
+            return;
+          }
+          const isRegular = typeof item.isRegularItem === "function" ? item.isRegularItem() : true;
+          const isTLDREnabled = getPref("workflow.tldrEnabled" as any, true);
+          const showPref = isTLDREnabled && getPref("workflow.tldrShowInInfoPane" as any, true);
+          const hasTLDR = Boolean(extractTLDRFromItem(item));
+          const enabled = Boolean(isRegular && (showPref || hasTLDR));
+          setEnabled(enabled);
+          if (typeof setEditable === "function") {
+            setEditable(Boolean(isRegular));
+          }
         }
-        const isRegular = typeof item.isRegularItem === "function" ? item.isRegularItem() : true;
-        const showPref = getPref("workflow.tldrShowInInfoPane" as any, true);
-        const hasTLDR = Boolean(extractTLDRFromItem(item));
-        const enabled = isRegular && (showPref || hasTLDR);
-        setEnabled(enabled);
-        setEditable(isRegular);
+        catch (err) {
+          logger.error("Error in onItemChange for TLDR info row:", err);
+        }
       },
     });
 
-    if (!prefObserverID && typeof Zotero.Prefs?.registerObserver === "function") {
-      prefObserverID = Zotero.Prefs.registerObserver(
-        `${addon.data.config.prefsPrefix}.workflow.tldrShowInInfoPane`,
-        () => {
-          refreshTLDRInfoRow();
-        },
-        true,
-      );
+    if (prefObserverIDs.length === 0 && typeof Zotero.Prefs?.registerObserver === "function") {
+      for (const pref of ["workflow.tldrShowInInfoPane", "workflow.tldrEnabled"]) {
+        const id = Zotero.Prefs.registerObserver(
+          `${addon.data.config.prefsPrefix}.${pref}`,
+          () => {
+            refreshTLDRInfoRow();
+          },
+          true,
+        );
+        if (id)
+          prefObserverIDs.push(id);
+      }
     }
+
+    refreshTLDRInfoRow();
   }
   catch (error) {
     logger.error("Failed to register item info row:", error);
@@ -90,9 +109,12 @@ export function unregisterInfoRows() {
   registeredRowID = undefined;
   cleanupResourcesSync([
     () => {
-      if (prefObserverID && typeof Zotero.Prefs?.unregisterObserver === "function") {
-        Zotero.Prefs.unregisterObserver(prefObserverID);
-        prefObserverID = undefined;
+      if (typeof Zotero.Prefs?.unregisterObserver === "function") {
+        while (prefObserverIDs.length) {
+          const obsId = prefObserverIDs.pop();
+          if (obsId)
+            Zotero.Prefs.unregisterObserver(obsId);
+        }
       }
     },
     () => {

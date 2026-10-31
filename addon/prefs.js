@@ -309,7 +309,7 @@ pref("workflow.updateBibliographic", true);
 pref("workflow.updateVersions", true);
 pref("workflow.reviveSnapshots", true);
 pref("workflow.tldrEnabled", true);
-pref("workflow.tldrTarget", "note");
+pref("workflow.tldrTarget", "both");
 pref("workflow.tldrExtraFormat", "remark");
 pref("workflow.tldrShowInInfoPane", true);
 pref("workflow.formatAfterUpdate", true);

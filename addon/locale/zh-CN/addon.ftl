@@ -3,8 +3,13 @@ prefs-title = Zotero MetaFlow
 
 ## Item tree
 field-abbr = 缩写
+    .value = 缩写
+    .label = 缩写
 field-tldr = 撷论
+    .value = 撷论
+    .label = 撷论
 info-row-tldr = 撷论
+    .value = 撷论
     .label = 撷论
 
 ## batch
