@@ -85,6 +85,24 @@ Rule IDs are the source of truth for the `ID` type: `zotero-plugin.config.ts`'s 
 
 Entry points into a batch run go through `addon.hooks.onLintInBatch(ruleIDs, items)` in `hooks.ts`.
 
+### Dual-pipeline architecture: Local offline check & repair vs. Online metadata update
+
+MetaFlow strictly decouples its core processing into two independent pipelines with zero cross-contamination:
+
+1. **「检查并修复元数据」（Check & Repair Metadata / Local Pipeline）**:
+   - **Zero-Network Guarantee**: 100% offline execution using local algorithms, regex, and built-in dictionary databases. Absolutely no HTTP/HTTPS, DNS lookups, or external API calls are allowed. Must execute instantly and reliably in offline environments or air-gapped networks.
+   - **Included Capabilities**: Title case/sentence case normalization, punctuation and trailing period cleaning, chemical/molecular subscript formatting, author name & pinyin validation, publication/journal ISO 4 offline abbreviation deduction (via built-in `data/` assets), date parsing, extra field sorting, local duplicate detection, and attachment role decoupling with safe renaming (ZotAssets: Manuscript vs. SI).
+   - **Implementation**: Managed via `addon.hooks.onLintInBatch("standard", items)` and `runCoreWorkflow("check")`. Any rule historically carrying remote network branches (e.g. `require-doi`, `correct-doi-long` defined in `REMOTE_STANDARD_RULES`) is strictly filtered out of local execution and replaced with pure local regex guards (`localDOICheck`).
+
+2. **「更新元数据」（Update Metadata / Online Pipeline）**:
+   - **Centralized Network Hub**: All external network requests, online API calls, and remote academic data enhancements must reside exclusively in this pipeline.
+   - **Included Capabilities**: Official Crossref bibliographic synchronization, arXiv preprint publication status detection & formal journal migration, Semantic Scholar TL;DR (撷论) & citation count retrieval, EasyScholar 61-dimension journal ranking & impact factor fetching, web snapshot academic revival, and ShortDOI remote resolution.
+   - **Implementation**: Governed via `tool-update-metadata` / `tool-update-easyscholar` and `runCoreWorkflow("update")`. Uses `MetadataService` (`services/base-service.ts`) with strict `AbortSignal` timeout limits, retry backoff, persistent local caching, and cooperative batch cancellation. Fails gracefully without corrupting or deleting existing local metadata.
+
+3. **User Preference Controls**:
+   - Both pipelines and all individual atomic rules/services must provide independent, explicit toggle switches in the preferences window (`addon/content/preferences.xhtml`).
+   - The plugin must never perform silent or unsolicited network requests without explicit user activation.
+
 ### Metadata update services
 
 `src/modules/rules/tool-update-metadata/` implements metadata fetching from external APIs (CrossRef via translate, Semantic Scholar, arXiv). Each API is a `MetadataService` (`services/base-service.ts`, defined with `defineService`) with `shouldApply` / `updateIdentifiers` / `fetch` / `transform` methods. This is a mini-plugin architecture nested inside the rule system.

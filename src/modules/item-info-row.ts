@@ -185,9 +185,14 @@ export function placeTLDRBeforeExtra(doc?: Document) {
             labelElem.classList.add("meta-label-tldr");
           if (typeof labelElem.hasAttribute === "function" && !labelElem.hasAttribute("fieldname"))
             labelElem.setAttribute("fieldname", "tldr");
+          if (typeof labelElem.setAttribute === "function" && !labelElem.hasAttribute("data-fieldname"))
+            labelElem.setAttribute("data-fieldname", "tldr");
         }
         if (tldrRow.classList && !tldrRow.classList.contains("meta-row-tldr")) {
           tldrRow.classList.add("meta-row-tldr");
+        }
+        if (typeof tldrRow.setAttribute === "function" && !tldrRow.hasAttribute("data-fieldname")) {
+          tldrRow.setAttribute("data-fieldname", "tldr");
         }
 
         const valueElem = tldrRow.querySelector?.(".meta-data > .value");

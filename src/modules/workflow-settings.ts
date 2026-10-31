@@ -5,6 +5,8 @@ import { Rules } from "./rules";
 
 export function workflowGroup(id: string) {
   id = id.toLowerCase();
+  if (/attachment/.test(id))
+    return "attachments";
   if (/creators/.test(id))
     return "creators";
   if (/title/.test(id) && !/publication/.test(id))
@@ -92,8 +94,8 @@ export function setupWorkflowSettings(pane: Element) {
   pane.querySelector("#metaref-primary-menu-controls")?.remove();
   const bibliographic = choice("update-bibliographic", "workflow.updateBibliographic", true, update);
   const versions = choice("update-versions", "workflow.updateVersions", false, update);
-  const reviver = choice("update-snapshots", "workflow.reviveSnapshots", true, update);
-  const tldr = choice("update-tldr", "workflow.tldrEnabled", true, update);
+  choice("update-snapshots", "workflow.reviveSnapshots", true, update);
+  choice("update-tldr", "workflow.tldrEnabled", true, update);
   choice("update-format", "workflow.formatAfterUpdate", true, update);
   moveChoice("metadata.updateJournalInfo", update);
   choice("update-duplicates", "workflow.reviewDuplicatesOnUpdate", false, update);
@@ -101,7 +103,7 @@ export function setupWorkflowSettings(pane: Element) {
   const pdf = choice("scan-pdf", "workflow.scanPDF", false, search);
   const title = choice("search-title", "workflow.searchTitle", false, search);
   const updateDependencies = () => {
-    versions.disabled = tldr.disabled = reviver.disabled = !bibliographic.checked;
+    versions.disabled = !bibliographic.checked;
     const metadata = pane.querySelector<HTMLInputElement>("#metaref-workflow-metadata")!;
     const authors = pane.querySelector<HTMLInputElement>(`input[preference='${addon.data.config.prefsPrefix}.workflow.remoteAuthorsOnCheck']`);
     pdf.disabled = title.disabled = !bibliographic.checked && !metadata.checked && !authors?.checked;
@@ -109,7 +111,7 @@ export function setupWorkflowSettings(pane: Element) {
   listen(pane, "change", updateDependencies);
   listen(pane, "command", updateDependencies);
   updateDependencies();
-  for (const group of ["title", "creators", "identifiers", "pagination", "publication", "other"]) {
+  for (const group of ["title", "creators", "identifiers", "pagination", "publication", "attachments", "other"]) {
     const rules = Rules.getStandard().filter(rule => rule.id !== "correct-doi-long" && workflowGroup(rule.id) === group);
     const input = makeChoice(group);
     const update = () => {

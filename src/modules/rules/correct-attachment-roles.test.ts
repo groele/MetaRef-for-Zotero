@@ -114,6 +114,9 @@ describe("correct-attachment-roles module", () => {
 
       const siFn2 = formatAttachmentFilename(parentMeta, "supplement", 2);
       expect(siFn2).toBe("Sun_2017_Vacuum level dependent photoluminescence in CVD MoS2_Supplement__2.pdf");
+
+      const customFn = formatAttachmentFilename(parentMeta, "supplement", 1, "{year}_{author}_{role}");
+      expect(customFn).toBe("2017_Sun_Supplement.pdf");
     });
 
     it("formats attachment titles and avoids compounding tags", () => {

@@ -261,6 +261,7 @@ export function formatAttachmentFilename(
   parentMeta: ParentItemMetadata,
   role: AttachmentRole,
   index = 1,
+  template = "{author}_{year}_{title}_{role}",
 ): string {
   const author = sanitizeComponent(parentMeta.firstAuthorLastName, "Unknown", 40);
   const year = sanitizeComponent(parentMeta.year, "0000", 10);
@@ -272,7 +273,14 @@ export function formatAttachmentFilename(
   else if (role === "supplement")
     roleTag = index > 1 ? `Supplement__${index}` : "Supplement";
 
-  const stem = `${author}_${year}_${title}_${roleTag}`;
+  let stem = (template || "{author}_{year}_{title}_{role}")
+    .replace(/\{author\}/gi, author)
+    .replace(/\{year\}/gi, year)
+    .replace(/\{title\}/gi, title)
+    .replace(/\{role\}/gi, roleTag);
+
+  stem = sanitizeComponent(stem, `${author}_${year}_${title}_${roleTag}`, 180);
+
   const ext = ".pdf";
   const budget = Math.max(1, MAX_FILENAME_BYTES - utf8ByteLength(ext));
   const fitted = truncateUtf8(stem, budget).replace(/[.\s]+$/, "");
@@ -456,10 +464,12 @@ export const CorrectAttachmentRoles = defineRule({
       // 2. Rename PDF file safely
       if (renamePdf) {
         try {
+          const template = getPref("rule.correct-attachment-roles.template" as any, "{author}_{year}_{title}_{role}");
           const newFilename = formatAttachmentFilename(
             parentMeta,
             classification.role,
             supplementIndex,
+            template,
           );
           if (newFilename && newFilename !== filename && typeof (att as any).renameAttachmentFile === "function") {
             const renameOk = await (att as any).renameAttachmentFile(newFilename);

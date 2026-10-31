@@ -32,10 +32,14 @@ rule-no-field-misuse =
 ## correct-attachment-roles
 rule-correct-attachment-roles =
   .label = Decouple main manuscript and supplementary information (SI) roles
+rule-correct-attachment-roles-menu-item =
+  .label = Decouple Manuscript & SI Roles
 rule-correct-attachment-roles-option-rename-pdf =
   .label = Automatically rename PDF files by main and supplementary roles
 rule-correct-attachment-roles-option-sync-title =
   .label = Sync attachment item titles (marked with [Main] and [Supplement])
+rule-correct-attachment-roles-option-template = PDF safe rename template:
+rule-correct-attachment-roles-option-template-description = Available placeholders: { "{" }author{ "}" }, { "{" }year{ "}" }, { "{" }title{ "}" }, { "{" }role{ "}" } (Main / Supplement). Default: { "{" }author{ "}" }_{ "{" }year{ "}" }_{ "{" }title{ "}" }_{ "{" }role{ "}" }.
 rule-correct-attachment-roles-description =
   Automatically identify multiple attachments, classifying them into Manuscript and Supplementary Information (SI) with safe renaming and title synchronization.
 rule-correct-attachment-roles-report-message =

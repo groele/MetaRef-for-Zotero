@@ -310,6 +310,7 @@ describe("item-info-row module", () => {
     extraLabel.parentElement = extraRow;
 
     const tldrClasses = new Set<string>();
+    const rowAttrs = new Map<string, string>();
     const labelClasses = new Set<string>();
     const labelAttrs = new Map<string, string>();
     const valueClasses = new Set<string>();
@@ -337,6 +338,8 @@ describe("item-info-row module", () => {
         contains: (c: string) => tldrClasses.has(c),
         add: (c: string) => tldrClasses.add(c),
       },
+      hasAttribute: (a: string) => rowAttrs.has(a),
+      setAttribute: (a: string, v: string) => rowAttrs.set(a, v),
       querySelector: (sel: string) => {
         if (sel.includes("meta-label"))
           return mockLabelElem;
@@ -366,8 +369,10 @@ describe("item-info-row module", () => {
     expect(parent.insertBefore).toHaveBeenCalledWith(tldrRow, extraRow);
     expect(tldrRow.nextElementSibling).toBe(extraRow);
     expect(tldrClasses.has("meta-row-tldr")).toBe(true);
+    expect(rowAttrs.get("data-fieldname")).toBe("tldr");
     expect(labelClasses.has("meta-label-tldr")).toBe(true);
     expect(labelAttrs.get("fieldname")).toBe("tldr");
+    expect(labelAttrs.get("data-fieldname")).toBe("tldr");
     expect(valueClasses.has("meta-value-tldr")).toBe(true);
     expect(valueAttrs.get("data-fieldname")).toBe("tldr");
   });

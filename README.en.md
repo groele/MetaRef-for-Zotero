@@ -6,7 +6,7 @@ _Connect each step of research._
 
 [简体中文](README.md) · [English](README.en.md)
 
-[![Version](https://img.shields.io/badge/version-13.4.0-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.4.0)
+[![Version](https://img.shields.io/badge/version-13.4.1-245ac7?style=flat-square)](https://github.com/groele/Zotero-MetaFlow/releases/tag/v13.4.2)
 [![Zotero Compatibility](https://img.shields.io/badge/Zotero-10.0--12.*-brightgreen?style=flat-square)](https://www.zotero.org/)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-orange?style=flat-square)](LICENSE)
 [![Tests Passing](https://img.shields.io/badge/tests-674%20passed-success?style=flat-square)](https://github.com/groele/Zotero-MetaFlow)
@@ -41,6 +41,7 @@ graph LR
     B --> H["📄 arXiv Preprint Conversion<br/>(Discover DOI & Upgrade Paper)"]
     B --> I["💡 Semantic Scholar TL;DR<br/>(AI Core Takeaways Summary)"]
     B --> J["🌐 Web Snapshot Reviver<br/>(Upgrade Bare Webpage to Journal)"]
+    B --> K["📑 Attachment Decoupling<br/>(ZotAssets: Manuscript vs SI)"]
 ```
 
 ### 1. 📊 Holistic Journal Insights (Integrated Sidebar Profile)
@@ -108,7 +109,29 @@ graph LR
   - Embedded into the primary "Update Metadata" workflow;
   - Configurable via Preferences under Workflow Settings ("Revive Web Snapshots & Blog Posts").
 
-### 6. 🧹 59-Rule Multi-Dimensional Governance Pipeline
+### 6. 📑 Manuscript & Supplementary Information (SI) Role Decoupling & Safe Renaming (ZotAssets Engine)
+
+- **Solving the Multi-Attachment Pain Point of Top Journals**:
+  - In premier scientific journals (such as _Nature_, _Science_, _Cell_, _JACS_, _Angewandte Chemie_), crucial experimental procedures, characterization spectra (NMR, XRD, HRMS), synthetic routes, and raw datasets are housed inside multi-hundred-page **Supplementary Information (SI)** files;
+  - Standard Zotero importing or web grabbing frequently labels all PDFs with nondescript random hashes (e.g. `41586_2023_Article_BF_moesm1_ESM.pdf`) and generic "Full Text PDF" titles in the item tree, making locating critical experimental details confusing and error-prone.
+- **Intelligent Dual-Engine Role Classification**:
+  - **Publisher Filename Pattern Matching**: Built-in comprehensive heuristics covering major publishers (Nature, Science, Wiley, ACS, RSC, Springer, Elsevier) for SI filename patterns (`suppinfo`, `moesm`, `esi`, `sm`, `appendix`, `supporting information`, etc.);
+  - **PDF First-Two-Pages Structure Probing**: Leverages modern Gecko / PDFWorker engines to inspect text on opening pages, capturing structural markers such as `Figure S1`, `Table S2`, `Scheme S1`, and `Supplementary Information`;
+  - **Parent Item Cross-Validation**: Cross-validates DOI, title, and publication metadata to identify the true primary **Manuscript**.
+- **Cross-Platform Safe Renaming & Custom Templates**:
+  - **Custom Rename Template**: Provides an accessible template input in preferences, supporting `{author}` (first author), `{year}` (publication year), `{title}` (item title), and `{role}` (role tag: Main / Supplement) formatting;
+  - **Rigorous Filesystem Sanitization**: Strips illegal path characters (`: / \ < > * ?`) across Windows/macOS/Linux, guards against Windows reserved device names (`CON`, `PRN`, `AUX`, etc.);
+  - **UTF-8 Character Boundary Truncation**: Enforces strict adherence to filesystem filename byte limits (`MAX_FILENAME_BYTES`), preventing multibyte CJK splitting and eliminating sync failures caused by path length overflow.
+- **Visual Item Tree Synchronization**:
+  - Automatically updates Zotero attachment titles with clean, standardized prefixes: `[Main] Paper Title` and `[Supplement 1] Paper Title`.
+- **100% Offline Local Pipeline**:
+  - Complies strictly with the Dual-Pipeline Architecture; all decoupling and renaming algorithms run 100% locally with zero external network overhead, functioning flawlessly in air-gapped environments.
+- **Multi-Level User Autonomy**:
+  - Top-level workflow step card provides a first-class master toggle with indeterminate state synchronization;
+  - Detailed rules offer atomic toggles for PDF renaming, item title sync, and customizable naming templates;
+  - Context menu provides an on-demand "Decouple Manuscript & Supplementary (SI) Roles" action.
+
+### 7. 🧹 59-Rule Multi-Dimensional Governance Pipeline
 
 - **Intelligent Title Normalization**:
   - Smart conversion between Sentence case and Title Case;
@@ -125,13 +148,13 @@ graph LR
   - **ISO 8601 Dates**: Unifies chaotic date strings into standard `YYYY-MM-DD` syntax;
   - **Thesis Place Resolution**: Resolves university locations and completes publication places for theses and dissertations.
 
-### 7. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
+### 8. 📚 Authoritative Journal Abbreviations & Offline ISO 4 Engine
 
 - **Dual-Engine Architecture**: Combines JabRef's comprehensive journal mapping database with the international LTWA (List of Title Word Abbreviations) rule set.
 - **100% Offline Capability**: Accurately infers standard ISO 4 abbreviations even without an internet connection.
 - **Language-Aware Processing**: Distinguishes English from CJK journals with custom pinyin abbreviation options.
 
-### 8. ✍️ Rich-Text Title Editor Toolbar
+### 9. ✍️ Rich-Text Title Editor Toolbar
 
 - Lightweight formatting toolbar integrated directly over Zotero's title editing input.
 - Wrap selections with `<i>` (italics / scientific names), `<b>` (bold), `<sub>` (subscript / chemical indexes), `<sup>` (superscript / citations), and `<span class="nocase">` (case-protection tags).
@@ -143,26 +166,27 @@ graph LR
 
 ## 🛠️ Feature Matrix
 
-| Module                         | Capabilities                                                                    | Pain Point Solved                                                                 | Trigger Location                                   |
-| ------------------------------ | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------- |
-| **Journal Insights**           | JCR Quartiles, CAS Tiers, Impact Factor (IF), CCF, Nature Index, ESI            | Instant academic prestige awareness without leaving Zotero                        | Right Sidebar · Journal Insights Panel             |
-| **arXiv Preprint Conversion**  | Query official DOI, lossless upgrade to journal article, preserve notes & files | Solves obsolete preprint metadata and eliminates manual re-importing losing notes | Sidebar arXiv Card / Right-click "Update Metadata" |
-| **Semantic Summaries (TL;DR)** | 1–2 sentence AI core takeaways from Semantic Scholar backfilled to notes/Extra  | Long, dense abstracts making it hard to grasp the main breakthrough quickly       | Item Context Menu · Update Metadata / Sidebar      |
-| **Web Snapshot Reviver**       | Sniff URL / HTML head academic fingerprints, query Crossref/S2 to revive item   | Revives bare web clippings missing author, year, volume, and DOI into real papers | Item Context Menu · Update Metadata (Pref Toggle)  |
-| **Bulk Deduplication**         | Native group merging, master protection, missing-field fill, asset preservation | Eliminates hours of manual confirmation in libraries with hundreds of duplicates  | Duplicate Items collection · Top-right bar         |
-| **Title Formatting**           | Sentence / Title case conversion with chemical formula and acronym protection   | Cleans up messy publisher imports without destroying scientific symbols           | Item Context Menu / Auto-cleanup on import         |
-| **Abstract Cleanup**           | Elimination of internal line breaks, extra spaces, broken hyphenated words      | Fixes fragmented PDF extractions and OCR breaks                                   | Item Context Menu · Check & Fix Metadata           |
-| **Author Name Correction**     | Name inversion fix, pinyin symbol stripping, institutional author correction    | Prevents reversed citations ("Firstname Lastname" vs "Lastname, Firstname")       | Item Context Menu · Check & Fix Metadata           |
-| **Journal Abbreviations**      | JabRef dictionary matching + ISO 4 offline word-stem inference                  | Satisfies journal submission criteria for either full names or ISO abbreviations  | Item Context Menu · Journal Abbreviations          |
-| **Identifier Standardization** | Clean DOI extraction, ShortDOI resolution, ISSN validation & completion         | Standardizes malformed DOIs ensuring 100% reliable cross-software hyperlinks      | Item Context Menu · Standardize Identifiers        |
-| **Online Enrichment**          | Enriches from Crossref, Semantic Scholar, arXiv using DOI/ISBN                  | Recovers complete metadata for sparse or half-baked references                    | Item Context Menu · Update Online Metadata         |
-| **Rich-Text Title Helper**     | Quick insertion of `<i>`, `<b>`, `<sub>/<sup>`, `<span class="nocase">`         | Tedious manual HTML tag typing in Zotero title input fields                       | Floating toolbar on Title input focus              |
+| Module                                | Capabilities                                                                                | Pain Point Solved                                                                         | Trigger Location                                      |
+| ------------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **Journal Insights**                  | JCR Quartiles, CAS Tiers, Impact Factor (IF), CCF, Nature Index, ESI                        | Instant academic prestige awareness without leaving Zotero                                | Right Sidebar · Journal Insights Panel                |
+| **arXiv Preprint Conversion**         | Query official DOI, lossless upgrade to journal article, preserve notes & files             | Solves obsolete preprint metadata and eliminates manual re-importing losing notes         | Sidebar arXiv Card / Right-click "Update Metadata"    |
+| **Semantic Summaries (TL;DR)**        | 1–2 sentence AI core takeaways from Semantic Scholar backfilled to notes/Extra              | Long, dense abstracts making it hard to grasp the main breakthrough quickly               | Item Context Menu · Update Metadata / Sidebar         |
+| **Web Snapshot Reviver**              | Sniff URL / HTML head academic fingerprints, query Crossref/S2 to revive item               | Revives bare web clippings missing author, year, volume, and DOI into real papers         | Item Context Menu · Update Metadata (Pref Toggle)     |
+| **Bulk Deduplication**                | Native group merging, master protection, missing-field fill, asset preservation             | Eliminates hours of manual confirmation in libraries with hundreds of duplicates          | Duplicate Items collection · Top-right bar            |
+| **Title Formatting**                  | Sentence / Title case conversion with chemical formula and acronym protection               | Cleans up messy publisher imports without destroying scientific symbols                   | Item Context Menu / Auto-cleanup on import            |
+| **Abstract Cleanup**                  | Elimination of internal line breaks, extra spaces, broken hyphenated words                  | Fixes fragmented PDF extractions and OCR breaks                                           | Item Context Menu · Check & Fix Metadata              |
+| **Author Name Correction**            | Name inversion fix, pinyin symbol stripping, institutional author correction                | Prevents reversed citations ("Firstname Lastname" vs "Lastname, Firstname")               | Item Context Menu · Check & Fix Metadata              |
+| **Journal Abbreviations**             | JabRef dictionary matching + ISO 4 offline word-stem inference                              | Satisfies journal submission criteria for either full names or ISO abbreviations          | Item Context Menu · Journal Abbreviations             |
+| **Identifier Standardization**        | Clean DOI extraction, ShortDOI resolution, ISSN validation & completion                     | Standardizes malformed DOIs ensuring 100% reliable cross-software hyperlinks              | Item Context Menu · Standardize Identifiers           |
+| **Online Enrichment**                 | Enriches from Crossref, Semantic Scholar, arXiv using DOI/ISBN                              | Recovers complete metadata for sparse or half-baked references                            | Item Context Menu · Update Online Metadata            |
+| **Rich-Text Title Helper**            | Quick insertion of `<i>`, `<b>`, `<sub>/<sup>`, `<span class="nocase">`                     | Tedious manual HTML tag typing in Zotero title input fields                               | Floating toolbar on Title input focus                 |
+| **Attachment Decoupling (ZotAssets)** | Classify Manuscript vs SI, sanitize filenames, and sync `[Main]`/`[Supplement]` item titles | Solves top journal (Nature/Science) experimental details buried in confusingly named PDFs | Context Menu · Decouple Manuscript & SI / Check & Fix |
 
 ---
 
 <a id="quick-start"></a>
 
-## 🚀 Quick Start & 4 Key Use Cases
+## 🚀 Quick Start & 7 Key Use Cases
 
 ### Scenario 1: Review Journal Standing at a Glance
 
@@ -208,54 +232,91 @@ graph LR
 3. MetaFlow automatically fetches the AI-generated key takeaways from Semantic Scholar and backfills them into a dedicated child note or Extra field.
 4. Reselect the item: the right-hand sidebar immediately renders an eye-catching **"💡 Core Takeaways (TL;DR)"** card for rapid skimming.
 
+### Scenario 7: One-Click Decoupling & Safe Renaming of Manuscript & Supplementary (SI) Files
+
+1. Select any high-impact journal reference (e.g. _Nature_ or _Science_) with both main manuscript and Supplementary Information PDFs attached.
+2. Right-click the item and choose **Zotero MetaFlow ➔ Decouple Manuscript & Supplementary (SI) Roles** (or run "Check & Fix Metadata" with the attachments module enabled).
+3. Observe the item tree and files:
+   - Attachment titles update cleanly to: `[Main] Paper Title` and `[Supplement 1] Paper Title`;
+   - Physical PDF files are sanitized and renamed to: `Author_Year_Title_Main.pdf` and `Author_Year_Title_Supplement.pdf` (or your customized template);
+   - Experimental details and primary manuscript are clearly delineated with zero confusion.
+
 ---
 
 <a id="settings"></a>
 
 ## ⚙️ Settings Guide
 
-Open **Tools → Plugins/Add-ons** (or **Zotero → Settings** on macOS) and navigate to **Zotero MetaFlow**:
+Open **Edit ➔ Preferences** (or **Zotero ➔ Settings** on macOS) and navigate to the **Zotero MetaFlow** configuration panel. Designed in strict compliance with **Zotero 10 Web Components standards** and the **Dual-Pipeline Decoupling Architecture**, the settings panel is organized into 7 top-level cards:
 
-### 1. General Settings
+### 1. General & Automation Settings (`section-general`)
 
-- **Automatic formatting on import**: Automatically runs chosen normalization rules when new papers are imported via web translators, DOI, or PDF.
-- **Notification style**: Toggle between lightweight toast notifications or a detailed audit dialog.
+- **Auto-Formatting on Import (`lint.onAdded`)**: Runs enabled local normalization rules in the background whenever new references are added via web translators, DOI lookups, or PDF ingestion;
+- **Group Library Safety Guard (`lint.onGroup`)**: Disabled by default to protect read-only group collections and shared team libraries against unintended sync modifications;
+- **Import Lint Delay (`lint.delayOnAdded`)**: Adjustable from 100ms to 5000ms (default 500ms) to provide adequate buffering while external files and metadata download;
+- **Concurrency & Notifications (`lint.numConcurrent`, `lint.notify`)**: Configures batch processing concurrency (1–16) and unobtrusive native toast summaries.
 
-### 2. Metadata Governance Rules
+### 2. Core Workflows & Context Menu (`metaref-core-workflows` ── Dual-Pipeline Hub)
 
-- Configure **59 individual rules**:
-  - Title capitalization targets (Sentence case vs. Title Case);
-  - Chemical formula, gene symbol, and physical unit protection;
-  - Abstract line-break stripping depth;
-  - Author name inversion detection sensitivity.
+- **Pipeline A: "Check & Fix Metadata: Execution Steps" 【100% Offline Local Execution】**:
+  - Emits zero external network calls; fully functional in airplane mode and air-gapped networks;
+  - Houses 7 master step checkboxes with bidirectional indeterminate (`-`) state synchronization:
+    1. `All title and short-title checks and formatters`
+    2. `All creator checks and formatters`
+    3. `Local DOI checks and formatting`
+    4. `All volume, issue and page formatters`
+    5. `All publication and conference name formatters`
+    6. `Manuscript & Supplementary (SI) Role Decoupling` (ZotAssets Engine)
+    7. `Other item, language, date and type rules`
+  - Optional post-check interactive duplicate review.
+- **Pipeline B: "Update Metadata: Execution Steps" 【Centralized Online Enrichment】**:
+  - Gathers all external academic network queries behind individual user toggles with `AbortController` timeout protection:
+    - `Online bibliographic verification & auto-completion` (Crossref);
+    - `Preprint publication status detection & formal journal migration` (arXiv);
+    - `Web snapshot academic revival` (sniff academic fingerprints & upgrade to formal reference);
+    - `Semantic Scholar TL;DR extraction` (write to Extra, note, and item info pane Web Component);
+    - `Journal ranking and impact metrics update` (EasyScholar 61 dimensions);
+    - `Run local formatting rules after adoption`.
+- **Supplementary Search Card**: Optional low-frequency PDF cache scanning and title search fallback;
+- **Context Menu Customization Card**: Custom placement for all 33 commands (Top-level menu, MetaFlow submenu, or Hidden).
 
-### 3. Journal Abbreviations & Local Databases
+### 3. Detailed Formatting Rules (`section-rules` ── 7 Collapsible Subcards)
 
-- Select preferred abbreviation style (JabRef canonical / ISO 4 with dots / ISO 4 dotless);
-- Inspect version status for bundled **Nature Index 2026** and **ESI Global Subject** databases.
+- **Item & Attachments Rules**:
+  - Master switch for Manuscript & SI role decoupling (`rule.correct-attachment-roles`);
+  - PDF file safe renaming (`renamePdf`) and item title synchronization (`syncTitle`);
+  - **PDF Safe Renaming Template (`template`)**: Customizable with `{author}_{year}_{title}_{role}`;
+  - Webpage type misuse cleanup, preprint type misuse cleanup, nullish value cleanup, and field misuse guards.
+- **Language Rules**: Language code normalization (zh-CN, en-US) and allowed language filtering.
+- **Title Rules**: Sentence case conversion, chemical formula and molecular subscript preservation (e.g. $\text{MoS}_2$), trailing period removal, short-title generation.
+- **Creator Rules**: Author name casing, Chinese pinyin romanization validation (Zhang, San), punctuation cleanup, missing creator recovery.
+- **Identifier Rules**: Clean DOI extraction, removal of redundant `https://doi.org/` prefixes, ShortDOI validation.
+- **Publication & Journal Rules**: Publication alias mapping, ISO 4 offline inference (56,000+ local dictionary), 19 disciplinary profiles, dot retention, and custom dictionary paths.
+- **Pagination & General Rules**: Typography En-dash (`–`), abbreviated page range expansion (`123-28` ➔ `123-128`), leading zero cleanup, Extra alphabetical sorting, and abstract formatting.
 
-### 4. Journal Indicators & EasyScholar
+### 4. On-Demand Tool Center (`metaref-tool-center`)
 
-- **API Credentials**: Enter your EasyScholar API Key for enriched metric queries;
-- **Display & Storage Controls**: Separately toggle remote lookups, sidebar card display, Extra field writing, and custom column registration;
-- **72-Hour Cache**: Multi-day local cache prevents redundant queries and saves quota.
+- Instant execution dropdown for 17 standalone maintenance utilities (e.g., author name swapping, title quotation brackets, Extra wiping, ShortDOI lookup, ESI/Nature Index queries).
 
-### 5. Duplicate Merging Policy
+### 5. Duplicate Review & Merging (`metaref-duplicate-settings`)
 
-- **Master Selection**: Choose between "Earliest added (Recommended)", "Most recently modified", or "Most complete metadata";
-- **Field Inheritance**: Ensures secondary item data fills missing master fields without overwriting curated values.
+- **Default Action**: Cancel, Keep, Discard, or Ask every time;
+- **Master Strategy**: Earliest added (`oldest`), Latest added (`newest`), Recently modified (`modified`), or Most detailed (`detailed`);
+- **Cross-Type Merging Guard**: Enable/disable merging across preprint and journal article types;
+- **Non-Duplicate Pairs Memory**: One-click JSON export/import of verified non-duplicate pairs.
 
-### 6. Preprint Conversion & Versions
+### 6. Journal Rankings & EasyScholar (`metaref-easyscholar-settings`)
 
-- **Conversion Master Toggle**: Freely enable or disable "Automatically detect preprints and convert to published version" in Preferences under Pipeline Settings;
-- **Conversion Strategy**: Choose between "In-place upgrade (transforms itemType seamlessly, preserving PDFs and all annotations)" or "Create related publication (maintains preprint, establishes bidirectional relations)";
-- **Auditing**: Automatically records original arXiv identifiers and URLs into `Extra` for complete provenance.
+- EasyScholar API Key credentials;
+- 61-dimension evaluation indicator grid & list column configuration;
+- Extra field persistence and journal abbreviation sync toggles.
 
-### 7. Semantic Scholar TL;DR Strategy
+### 7. Data Policy, Academic Insights & Shortcuts (`metaref-data-settings`)
 
-- **Summary Master Toggle**: Freely enable or disable "Automatically extract Semantic Scholar TL;DR summary" in Preferences under Pipeline Settings;
-- **Storage Target**: Choose between "Dedicated child note (Recommended)", "Extra field (ideal for table column view)", or "Both child note and Extra";
-- **Instant Sidebar Visibility**: Whenever TL;DR data is available, the Journal Insights sidebar automatically surfaces the takeaway card.
+- ESI / Nature Index data source priority (local-only, api-first, local-first) and custom JSON/CSV paths;
+- Journal card sharing format (image / text / silent copy);
+- 200MB / 30-day cache governance policy;
+- Rich-text title helper and complete keyboard shortcut customization.
 
 ---
 
@@ -376,6 +437,8 @@ The creation, architectural evolution, and capabilities of Zotero MetaFlow rely 
   Provided outstanding inspiration and architectural guidance for automated preprint-to-published discovery, atomic metadata conversion, PDF annotation preservation, and bidirectional version networks, motivating MetaFlow's native one-click arXiv conversion highlight.
 - **[syt2/Zotero-TLDR](https://github.com/syt2/Zotero-TLDR)** (by @syt2):
   Provided foundational inspiration for extracting concise 1–2 sentence AI core takeaways (TL;DR, Too Long; Didn't Read) via Semantic Scholar API and elegantly backfilling them into child notes and extra fields in Zotero.
+- **[Lyz-623/ZotAssets](https://github.com/Lyz-623/ZotAssets)** (by @Lyz-623):
+  Provided ingenious design patterns and engineering reference for decoupling Manuscript vs. Supplementary Information (SI) attachment roles, cross-platform filesystem sanitization (illegal character removal & device name protection), byte-accurate UTF-8 truncation, and Zotero item tree title synchronization, inspiring MetaFlow's deep integration of the ZotAssets engine into its offline governance pipeline.
 
 ### 2. Plugin Engineering Frameworks & Toolchains
 

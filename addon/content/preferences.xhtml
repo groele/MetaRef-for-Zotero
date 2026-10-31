@@ -143,6 +143,25 @@
           class="metaref-pref-description"
         />
       </hbox>
+      <!-- lint.delayOnAdded -->
+      <hbox align="center" style="margin-top: 6px">
+        <label
+          id="__addonRef__-delayOnAdded-label"
+          data-l10n-id="lint-delayOnAdded"
+        />
+        <html:input
+          type="number"
+          min="100"
+          max="5000"
+          step="100"
+          preference="lint.delayOnAdded"
+          aria-labelledby="__addonRef__-delayOnAdded-label"
+        />
+        <description
+          data-l10n-id="lint-delayOnAdded-description"
+          class="metaref-pref-description"
+        />
+      </hbox>
     </groupbox>
     <groupbox>
       <label><html:h3 data-l10n-id="batch-feedback-heading" /></label>
@@ -427,6 +446,23 @@
           data-l10n-id="rule-correct-attachment-roles-option-sync-title"
           preference="rule.correct-attachment-roles.syncTitle"
           native="true"
+        />
+        <hbox align="center" class="metaref-pref-row" style="margin-top: 4px">
+          <label
+            id="__addonRef__-attachment-roles-template-label"
+            data-l10n-id="rule-correct-attachment-roles-option-template"
+          />
+          <html:input
+            type="text"
+            preference="rule.correct-attachment-roles.template"
+            class="metaref-input"
+            size="36"
+            aria-labelledby="__addonRef__-attachment-roles-template-label"
+          />
+        </hbox>
+        <description
+          data-l10n-id="rule-correct-attachment-roles-option-template-description"
+          class="metaref-pref-description"
         />
         <description
           data-l10n-id="rule-correct-attachment-roles-description"

@@ -240,6 +240,7 @@ pref("menu.tool-title-guillemet", true);
 pref("menu.no-doi-prefix", true);
 pref("menu.tool-get-short-doi", true);
 pref("menu.correct-date-format", true);
+pref("menu.correct-attachment-roles", true);
 pref("menu.tool-clean-extra", true);
 pref("menu.tool-csl-helper", true);
 pref("menu.tool-creators-ext", true);

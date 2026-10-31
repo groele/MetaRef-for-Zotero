@@ -228,6 +228,7 @@ declare namespace _ZoteroTypes {
       "menu.no-doi-prefix": boolean;
       "menu.tool-get-short-doi": boolean;
       "menu.correct-date-format": boolean;
+      "menu.correct-attachment-roles": boolean;
       "menu.tool-clean-extra": boolean;
       "menu.tool-csl-helper": boolean;
       "menu.tool-creators-ext": boolean;

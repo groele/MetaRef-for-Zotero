@@ -9,5 +9,6 @@ it("assigns each formatter to a single workflow module", () => {
   expect(workflowGroup("correct-creators-case")).toBe("creators");
   expect(workflowGroup("require-doi")).toBe("identifiers");
   expect(workflowGroup("correct-pages-range")).toBe("pagination");
+  expect(workflowGroup("correct-attachment-roles")).toBe("attachments");
   expect(workflowGroup("correct-date-format")).toBe("other");
 });

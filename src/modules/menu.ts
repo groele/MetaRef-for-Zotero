@@ -118,7 +118,7 @@ export const MENU_SECTIONS = {
   creators: ["correct-creators-case", "correct-creators-pinyin", "tool-creators-ext", "tool-creators-style", "tool-creators-swap"],
   publication: ["require-language", "tool-set-language", "correct-publication-title-alias", "correct-publication-title-case", "require-journal-abbr", "correct-conference-abbr", "require-university-place"],
   indexing: ["tool-query-esi", "tool-query-nature-index", "tool-update-easyscholar"],
-  maintenance: ["correct-date-format", "no-doi-prefix", "tool-get-short-doi", "tool-csl-helper", "tool-clean-extra", "tool-clear-all-extra", "tool-publication-replace", "show-data-directory", "show-profile-directory"],
+  maintenance: ["correct-date-format", "no-doi-prefix", "tool-get-short-doi", "correct-attachment-roles", "tool-csl-helper", "tool-clean-extra", "tool-clear-all-extra", "tool-publication-replace", "show-data-directory", "show-profile-directory"],
 } satisfies Record<string, string[]>;
 
 export const MENU_GROUPS = Object.entries(MENU_SECTIONS).filter(([key]) => key !== "primary") as [Exclude<keyof typeof MENU_SECTIONS, "primary">, string[]][];
