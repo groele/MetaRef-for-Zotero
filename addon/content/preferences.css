@@ -331,13 +331,19 @@
   cursor: pointer;
 }
 
-#metaref .metaref-check-option input[type="checkbox"] {
+#metaref .metaref-check-option input[type="checkbox"],
+#metaref .metaref-check-option input[type="radio"] {
   appearance: auto;
   flex: 0 0 16px;
   width: 16px;
   height: 16px;
   margin: 2px 0 0;
   accent-color: var(--flow-pref-accent);
+  cursor: pointer;
+}
+
+#metaref .metaref-radio-option {
+  cursor: pointer;
 }
 
 #metaref-easyscholar-test {

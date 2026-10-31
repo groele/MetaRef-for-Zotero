@@ -135,8 +135,75 @@ export function setupWorkflowSettings(pane: Element) {
   // (1) 在线书目核验与自动补全
   const bibliographic = choice("update-bibliographic", "workflow.updateBibliographic", true, update);
 
-  // (2) 元数据来源优先级策略
-  moveElement("#metaref-metadata-source-priority-row", update);
+  // (2) 元数据来源优先级策略（HTML5 健壮原生单选组件，确保原生圆圈与点击勾选 100% 渲染可用）
+  const priorityGroup = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
+  priorityGroup.id = "metaref-metadata-source-priority-container";
+  priorityGroup.style.cssText = "margin-inline: 0; margin-block: 6px 10px;";
+
+  const priorityHeading = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
+  priorityHeading.id = "metaref-metadata-source-priority-label";
+  priorityHeading.style.cssText = "font-weight: 600; font-size: 13px; margin-block-end: 6px; color: inherit;";
+  priorityHeading.textContent = getString("metadata-source-priority") || "元数据来源优先级";
+  doc.l10n!.setAttributes(priorityHeading, "metaref-metadata-source-priority");
+  priorityGroup.append(priorityHeading);
+
+  const priorityOptions = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
+  priorityOptions.setAttribute("role", "radiogroup");
+  priorityOptions.setAttribute("aria-labelledby", priorityHeading.id);
+  priorityOptions.style.cssText = "margin-inline-start: 24px; display: flex; flex-direction: column; gap: 4px;";
+
+  const makeRadio = (value: string, l10nId: string, fallbackText: string) => {
+    const label = doc.createElementNS("http://www.w3.org/1999/xhtml", "label");
+    label.className = "metaref-check-option metaref-radio-option";
+    const input = doc.createElementNS("http://www.w3.org/1999/xhtml", "input") as HTMLInputElement;
+    input.type = "radio";
+    input.name = "metaref-metadata-source-priority-choice";
+    input.value = value;
+    input.id = `metaref-source-priority-${value}`;
+    const caption = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
+    caption.id = `${input.id}-label`;
+    caption.textContent = getString(l10nId.replace(/^metaref-/, "") as any) || fallbackText;
+    input.setAttribute("aria-labelledby", caption.id);
+    doc.l10n!.setAttributes(caption, l10nId);
+    label.append(input, caption);
+    priorityOptions.append(label);
+    return input;
+  };
+
+  const radioLocal = makeRadio("blank", "metaref-metadata-source-local", "优先本地数据（保留已有字段，补齐空白）");
+  const radioCloud = makeRadio("all", "metaref-metadata-source-cloud", "优先云端数据（核验通过后更新差异字段）");
+
+  priorityGroup.append(priorityOptions);
+
+  const syncRadioUI = () => {
+    const currentMode = getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" : "blank";
+    radioCloud.checked = currentMode === "all";
+    radioLocal.checked = currentMode === "blank";
+  };
+  syncRadioUI();
+
+  const handlePriorityChange = (mode: "all" | "blank") => {
+    setPref("rule.tool-update-metadata.option.mode" as any, mode);
+    syncRadioUI();
+    const xulGroup = pane.querySelector("#metaref-metadata-source-priority") as any;
+    if (xulGroup) {
+      xulGroup.value = mode;
+      xulGroup.dispatchEvent(new (doc.defaultView! as Window & typeof globalThis).Event("change", { bubbles: true }));
+    }
+  };
+
+  listen(radioLocal, "change", () => {
+    if (radioLocal.checked)
+      handlePriorityChange("blank");
+  });
+  listen(radioCloud, "change", () => {
+    if (radioCloud.checked)
+      handlePriorityChange("all");
+  });
+  listen(pane, "change", syncRadioUI);
+  listen(pane, "command", syncRadioUI);
+
+  update.append(priorityGroup);
 
   // (3) 重点归纳项 1：按核验后的文献来源修复作者名单
   moveChoice("metadata.repairCreators", update);
@@ -169,6 +236,8 @@ export function setupWorkflowSettings(pane: Element) {
   const updateDependencies = () => {
     versions.disabled = !bibliographic.checked;
     pdf.disabled = title.disabled = !bibliographic.checked;
+    radioLocal.disabled = radioCloud.disabled = !bibliographic.checked;
+    priorityGroup.style.opacity = bibliographic.checked ? "1" : "0.55";
   };
   listen(pane, "change", updateDependencies);
   listen(pane, "command", updateDependencies);
