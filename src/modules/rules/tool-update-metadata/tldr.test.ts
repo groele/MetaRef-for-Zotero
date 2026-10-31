@@ -260,10 +260,34 @@ describe("tldr extraction and manipulation", () => {
   });
 
   it("runs backfillItemTLDR end-to-end", async () => {
-    let extraValue = "";
+    let extraValue = "DOI: 10.1038/s41586\nremark: 旧的论点需要清洗";
+    let noteContent = "";
+    const mockNote = {
+      deleted: false,
+      getNote: () => noteContent,
+      setNote: (content: string) => {
+        noteContent = content;
+      },
+      saveTx: vi.fn(),
+    };
+
+    class MockItem {
+      constructor() {
+        return mockNote;
+      }
+    }
+
+    (globalThis as any).Zotero = {
+      Item: MockItem,
+      Items: {
+        get: (id: number) => (id === 999 ? mockNote : null),
+      },
+    };
+
     const item = {
       libraryID: 1,
       id: 99,
+      isRegularItem: () => true,
       getField: (f: string) => {
         if (f === "DOI")
           return "10.1038/s41586";
@@ -275,30 +299,26 @@ describe("tldr extraction and manipulation", () => {
         if (f === "extra")
           extraValue = v;
       },
-      getNotes: () => [],
+      getNotes: () => [999],
+      saveTx: vi.fn().mockResolvedValue(true),
     } as unknown as Zotero.Item;
 
     const report = vi.fn();
     const result = await backfillItemTLDR(item, { DOI: "10.1038/s41586" }, {
-      target: "extra",
       report,
     });
 
     expect(result).toBe(true);
-    expect(extraValue).toContain("remark: This paper presents a scalable method");
+    // 沉淀至专属子笔记
+    expect(noteContent).toContain("This paper presents a scalable method");
+    // 从 Extra 字段中彻底清洗旧的 remark/TLDR，杜绝重复填充
+    expect(extraValue).not.toContain("remark:");
+    expect(extraValue).not.toContain("TLDR:");
+    expect(extraValue).toContain("DOI: 10.1038/s41586");
     expect(report).toHaveBeenCalledWith(expect.objectContaining({
       level: "info",
       code: "metadata-tldr-extracted",
     }));
-
-    // With explicit tldr extraFormat
-    const resultTLDR = await backfillItemTLDR(item, { DOI: "10.1038/s41586" }, {
-      target: "extra",
-      extraFormat: "tldr",
-      report,
-    });
-    expect(resultTLDR).toBe(true);
-    expect(extraValue).toContain("TLDR: This paper presents a scalable method");
   });
 
   it("handles saveTLDRToItem for inline updates and clears", async () => {
@@ -317,10 +337,13 @@ describe("tldr extraction and manipulation", () => {
 
     const saved = await saveTLDRToItem(item, "更新后的撷论论点");
     expect(saved).toBe(true);
-    expect(extra).toContain("remark: 更新后的撷论论点");
+    // 默认 note 模式下，更新论点会从 Extra 中清洗掉历史 remark，杜绝「其他」与「撷论」双重填充
+    expect(extra).not.toContain("remark:");
+    expect(extra).toContain("DOI: 10.1038/s41586");
     expect(saveTx).toHaveBeenCalled();
 
     // Clearing
+    extra = "DOI: 10.1038/s41586\nremark: 待清除论点";
     const cleared = await saveTLDRToItem(item, "");
     expect(cleared).toBe(true);
     expect(extra).not.toContain("remark:");

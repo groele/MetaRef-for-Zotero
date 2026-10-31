@@ -319,12 +319,6 @@
   line-height: 1.6;
 }
 
-#metaref radio {
-  appearance: auto;
-  -moz-appearance: radio;
-  cursor: pointer;
-}
-
 #metaref .metaref-check-option {
   display: flex;
   align-items: flex-start;

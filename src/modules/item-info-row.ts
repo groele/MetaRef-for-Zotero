@@ -3,7 +3,13 @@ import { getLocaleID, getString } from "../utils/locale";
 import { createLogger } from "../utils/logger";
 import { getPref } from "../utils/prefs";
 import { refreshJournalPane } from "./journal-pane";
-import { extractTLDRFromItem, saveTLDRToItem } from "./rules/tool-update-metadata/tldr";
+import {
+  cleanseTLDRFromExtra,
+  extractTLDRFromExtra,
+  extractTLDRFromItem,
+  saveTLDRToItem,
+  saveTLDRToNote,
+} from "./rules/tool-update-metadata/tldr";
 
 const logger = createLogger("item-info-row");
 
@@ -68,6 +74,34 @@ export function registerInfoRows() {
           if (typeof setEditable === "function") {
             setEditable(Boolean(isEditable));
           }
+
+          // 自动清洗历史条目 Extra 字段中残留的 TLDR，根治「两个都填充了」：
+          // 若当前启用了「撷论」常驻行，且条目 Extra 字段仍残留有历史 TLDR 文本，
+          // 自动将论点沉淀至专属子笔记，并从 Extra 字段彻底移除保存，
+          // 使「其他」字段恢复纯净（不再填充 TLDR），仅在专属的「撷论」行展示！
+          if (isTLDREnabled && item && typeof item.getField === "function") {
+            const currentExtra = String(item.getField("extra") || "");
+            const fromExtra = extractTLDRFromExtra(currentExtra);
+            const canEdit = typeof item.isEditable === "function" ? item.isEditable() : true;
+            if (fromExtra && canEdit) {
+              void (async () => {
+                try {
+                  const noteSaved = await saveTLDRToNote(item, fromExtra);
+                  const cleansed = cleanseTLDRFromExtra(item);
+                  if ((noteSaved || cleansed) && typeof item.saveTx === "function") {
+                    await item.saveTx();
+                    if (typeof Zotero !== "undefined" && Zotero.ItemPaneManager?.refreshInfoRow) {
+                      Zotero.ItemPaneManager.refreshInfoRow("tldr");
+                    }
+                  }
+                }
+                catch (err) {
+                  logger.error("Failed to auto-cleanse TLDR from extra:", err);
+                }
+              })();
+            }
+          }
+
           placeTLDRBeforeExtra();
           if (typeof setTimeout === "function") {
             setTimeout(placeTLDRBeforeExtra, 0);
@@ -143,8 +177,10 @@ function findExtraRow(infoTable: HTMLElement | Element): HTMLElement | null {
     ".meta-label-extra",
     ".meta-label[fieldname='extra']",
     "[fieldname='extra']",
+    "[data-fieldname='extra']",
     "#itembox-field-value-extra",
     "#itembox-field-extra-label",
+    "[data-l10n-id*='extra']",
   ];
   for (const selector of candidates) {
     const elem = infoTable.querySelector?.(selector) as HTMLElement | null;
@@ -160,10 +196,14 @@ function findExtraRow(infoTable: HTMLElement | Element): HTMLElement | null {
 
   if (infoTable.children) {
     for (const child of Array.from(infoTable.children) as HTMLElement[]) {
-      if (child.classList?.contains?.("meta-row")) {
-        if (child.querySelector?.(".meta-label-extra, [fieldname='extra'], #itembox-field-value-extra"))
-          return child;
-      }
+      if (child.classList?.contains("meta-row-tldr") || child.getAttribute?.("data-fieldname") === "tldr" || child.getAttribute?.("data-custom-row-id") === "tldr")
+        continue;
+      if (child.querySelector?.(".meta-label-extra, [fieldname='extra'], [data-fieldname='extra'], #itembox-field-value-extra, [data-l10n-id*='extra']"))
+        return child;
+      const label = child.querySelector?.(".meta-label, label, .label");
+      const labelText = (label?.textContent || "").trim();
+      if (labelText === "其他" || labelText.toLowerCase() === "extra")
+        return child;
     }
   }
   return null;
@@ -174,7 +214,9 @@ function getExtraFieldValue(extraRow: HTMLElement, infoTable: HTMLElement | Elem
   valElem: any;
   inputElem: HTMLTextAreaElement | HTMLInputElement | null;
 } {
-  const valElem = extraRow.querySelector(".meta-data > .value, .value, editable-text, [fieldname='extra'].value") as any;
+  const valElem = (extraRow.querySelector(".meta-data > .value, .value, editable-text, [fieldname='extra'].value")
+    || extraRow.querySelector(".meta-data")
+    || extraRow) as any;
   const inputElem = extraRow.querySelector("textarea, input") as HTMLTextAreaElement | HTMLInputElement | null;
   let extraText = "";
 
@@ -213,12 +255,13 @@ function getExtraFieldValue(extraRow: HTMLElement, infoTable: HTMLElement | Elem
     extraText = inputElem.value.trim();
   }
 
-  // 4. 回退至 DOM textContent
+  // 4. 回退至 DOM textContent（去除开头的行标签“其他”或“Extra”）
   if (!extraText && valElem?.textContent?.trim()) {
     extraText = valElem.textContent.trim();
   }
   if (!extraText && extraRow.textContent?.trim()) {
-    extraText = extraRow.textContent.trim();
+    const raw = extraRow.textContent.trim();
+    extraText = raw.replace(/^(?:其他|Extra)[:：\s]*/i, "").trim();
   }
 
   return { extraText, valElem, inputElem };
@@ -321,8 +364,8 @@ export function placeTLDRBeforeExtra(doc?: Document) {
         if (extraRow && extraRow.style) {
           if (isTLDRVisible) {
             const { extraText, valElem: extraValElem, inputElem: extraInputElem } = getExtraFieldValue(extraRow, infoTable);
-            const isTLDRLine = (line: string) => /^(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
-            const hasTLDR = /(?:^|\n)\s*(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(extraText);
+            const isTLDRLine = (line: string) => /(?:^|[:：\s])(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim()) || /^(?:其他|Extra)?[:：\s]*(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
+            const hasTLDR = /(?:💡\s*)?(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(extraText);
 
             if (hasTLDR) {
               const lines = extraText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);

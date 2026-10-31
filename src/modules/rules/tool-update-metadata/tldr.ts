@@ -93,12 +93,6 @@ export function extractTLDRFromItem(item: Zotero.Item): string | undefined {
     return undefined;
   if (typeof item.isRegularItem === "function" && !item.isRegularItem())
     return undefined;
-  if (typeof item.getField === "function") {
-    const extra = String(item.getField("extra") || "");
-    const fromExtra = extractTLDRFromExtra(extra);
-    if (fromExtra)
-      return fromExtra;
-  }
   if (typeof item.getNotes === "function" && typeof Zotero !== "undefined" && Zotero.Items?.get) {
     const noteIDs = item.getNotes();
     let fallbackNote: string | undefined;
@@ -120,6 +114,12 @@ export function extractTLDRFromItem(item: Zotero.Item): string | undefined {
     }
     if (fallbackNote)
       return fallbackNote;
+  }
+  if (typeof item.getField === "function") {
+    const extra = String(item.getField("extra") || "");
+    const fromExtra = extractTLDRFromExtra(extra);
+    if (fromExtra)
+      return fromExtra;
   }
   return undefined;
 }
@@ -306,34 +306,15 @@ export async function saveTLDRToItem(item: Zotero.Item, value: string): Promise<
     }
   }
   else {
-    const target = typeof getPref === "function" ? getPref("workflow.tldrTarget" as any, "both") : "both";
-    const extraSaved = saveTLDRToExtra(item, cleanTLDR);
-    if (extraSaved)
+    // 统一专属「撷论」架构（终结向 Extra 写入的历史遗留包袱）：
+    // 1. 严格将论点沉淀至独立专属子笔记，供列表「撷论」列及侧边栏「撷论」行/面板读取；
+    // 2. 无论历史偏好为何，彻底停止向 Extra 字段写入，并主动从 Extra 中清洗清除历史残留的 TLDR/remark，彻底根治「其他」与「撷论」双重填充！
+    const noteSaved = await saveTLDRToNote(item, cleanTLDR);
+    if (noteSaved)
       changed = true;
-
-    if (target === "note" || target === "both") {
-      const noteSaved = await saveTLDRToNote(item, cleanTLDR);
-      if (noteSaved)
-        changed = true;
-    }
-    else {
-      const existingNote = findExistingTLDRNote(item);
-      if (existingNote && typeof existingNote.setNote === "function") {
-        const noteHtml = `<div data-metaflow-tldr="true"><p><strong>💡 撷论 (Semantic Scholar TL;DR)</strong></p><blockquote style="margin:8px 0;padding:8px 12px;border-left:3px solid #245ac7;background:rgba(36,90,199,0.06);line-height:1.6;">${escapeHTML(cleanTLDR)}</blockquote></div>`;
-        if (typeof existingNote.getNote !== "function" || existingNote.getNote() !== noteHtml) {
-          existingNote.setNote(noteHtml);
-          if (typeof existingNote.saveTx === "function") {
-            try {
-              await existingNote.saveTx();
-              changed = true;
-            }
-            catch (err) {
-              logger.error("Failed to save existing TLDR note:", err);
-            }
-          }
-        }
-      }
-    }
+    const cleansed = cleanseTLDRFromExtra(item);
+    if (cleansed)
+      changed = true;
   }
 
   if (changed && typeof item.saveTx === "function") {
@@ -396,17 +377,16 @@ export async function backfillItemTLDR(
 
   let saved = false;
 
-  if (target === "note" || target === "both") {
-    const noteSaved = await saveTLDRToNote(item, tldr);
-    if (noteSaved)
-      saved = true;
-  }
-
-  if (target === "extra" || target === "both") {
-    const extraSaved = saveTLDRToExtra(item, tldr, options.extraFormat);
-    if (extraSaved)
-      saved = true;
-  }
+  // 统一专属「撷论」架构：
+  // 无论历史偏好配置为何，绝对禁止向 Extra 字段填充 TLDR！
+  // 1. 严格回填至专属子笔记；
+  // 2. 主动彻底清洗清除 Extra 字段中可能残留的历史 TLDR/remark，杜绝双重填充！
+  const noteSaved = await saveTLDRToNote(item, tldr);
+  if (noteSaved)
+    saved = true;
+  const cleansed = cleanseTLDRFromExtra(item);
+  if (cleansed)
+    saved = true;
 
   if (target === "abstract") {
     const abstractSaved = saveTLDRToAbstract(item, tldr);

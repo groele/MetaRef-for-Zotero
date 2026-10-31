@@ -11,7 +11,7 @@ export const DEFAULT_PREFS: Partial<PluginPrefsMap> = {
   "workflow.updateVersions": true,
   "workflow.reviveSnapshots": true,
   "workflow.tldrEnabled": true,
-  "workflow.tldrTarget": "both",
+  "workflow.tldrTarget": "note",
   "workflow.tldrExtraFormat": "remark",
   "workflow.tldrShowInInfoPane": true,
   "workflow.formatAfterUpdate": true,

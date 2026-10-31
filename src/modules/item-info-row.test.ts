@@ -41,7 +41,29 @@ describe("item-info-row module", () => {
       },
     });
 
+    const mockNotes = new Map<number, any>();
+    class MockItem {
+      libraryID?: number;
+      parentID?: number;
+      parentItemID?: number;
+      private noteContent = "";
+      constructor(public itemType: string) {}
+      getNote() {
+        return this.noteContent;
+      }
+
+      setNote(val: string) {
+        this.noteContent = val;
+      }
+
+      saveTx = vi.fn().mockResolvedValue(true);
+    }
+
     vi.stubGlobal("Zotero", {
+      Item: MockItem,
+      Items: {
+        get: (id: number) => mockNotes.get(id) || null,
+      },
       ItemPaneManager: {
         registerInfoRow: (options: any) => {
           mocks.infoRows.set(options.rowID, options);
@@ -213,7 +235,8 @@ describe("item-info-row module", () => {
     // Wait for async save to resolve
     await vi.waitFor(() => expect(mocks.refreshJournalPane).toHaveBeenCalledWith([1234]));
     expect(saveTxMock).toHaveBeenCalled();
-    expect(extraValue).toContain("remark: 用户手动编辑的撷论总结");
+    // 默认 note 模式下，保存时不污染 Extra 字段，杜绝重复填充
+    expect(extraValue).not.toContain("remark:");
   });
 
   it("handles onSetData clearing TLDR by removing remark line from Extra", async () => {
