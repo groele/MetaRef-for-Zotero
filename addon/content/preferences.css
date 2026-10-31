@@ -344,6 +344,7 @@
 
 #metaref .metaref-radio-option {
   cursor: pointer;
+  user-select: none;
 }
 
 #metaref-easyscholar-test {

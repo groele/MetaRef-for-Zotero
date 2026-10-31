@@ -160,6 +160,7 @@ export function setupWorkflowSettings(pane: Element) {
     input.name = "metaref-metadata-source-priority-choice";
     input.value = value;
     input.id = `metaref-source-priority-${value}`;
+    label.setAttribute("for", input.id);
     const caption = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
     caption.id = `${input.id}-label`;
     caption.textContent = getString(l10nId.replace(/^metaref-/, "") as any) || fallbackText;
@@ -167,18 +168,22 @@ export function setupWorkflowSettings(pane: Element) {
     doc.l10n!.setAttributes(caption, l10nId);
     label.append(input, caption);
     priorityOptions.append(label);
-    return input;
+    return { input, label };
   };
 
-  const radioLocal = makeRadio("blank", "metaref-metadata-source-local", "优先本地数据（保留已有字段，补齐空白）");
-  const radioCloud = makeRadio("all", "metaref-metadata-source-cloud", "优先云端数据（核验通过后更新差异字段）");
+  const { input: radioLocal, label: labelLocal } = makeRadio("blank", "metaref-metadata-source-local", "优先本地数据（保留已有字段，补齐空白）");
+  const { input: radioCloud, label: labelCloud } = makeRadio("all", "metaref-metadata-source-cloud", "优先云端数据（核验通过后更新差异字段）");
 
   priorityGroup.append(priorityOptions);
 
   const syncRadioUI = () => {
-    const currentMode = getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" : "blank";
+    const xulGroup = pane.querySelector("#metaref-metadata-source-priority") as any;
+    const prefMode = getPref("rule.tool-update-metadata.option.mode");
+    const currentMode = prefMode === "all" || (prefMode === undefined && xulGroup?.value === "all") ? "all" : "blank";
     radioCloud.checked = currentMode === "all";
     radioLocal.checked = currentMode === "blank";
+    if (xulGroup && xulGroup.value !== currentMode)
+      xulGroup.value = currentMode;
   };
   syncRadioUI();
 
@@ -189,6 +194,7 @@ export function setupWorkflowSettings(pane: Element) {
     if (xulGroup) {
       xulGroup.value = mode;
       xulGroup.dispatchEvent(new (doc.defaultView! as Window & typeof globalThis).Event("change", { bubbles: true }));
+      xulGroup.dispatchEvent(new (doc.defaultView! as Window & typeof globalThis).Event("command", { bubbles: true }));
     }
   };
 
@@ -196,10 +202,26 @@ export function setupWorkflowSettings(pane: Element) {
     if (radioLocal.checked)
       handlePriorityChange("blank");
   });
+  listen(radioLocal, "click", () => handlePriorityChange("blank"));
+  listen(labelLocal, "click", (e: Event) => {
+    if (e.target !== radioLocal) {
+      radioLocal.checked = true;
+      handlePriorityChange("blank");
+    }
+  });
+
   listen(radioCloud, "change", () => {
     if (radioCloud.checked)
       handlePriorityChange("all");
   });
+  listen(radioCloud, "click", () => handlePriorityChange("all"));
+  listen(labelCloud, "click", (e: Event) => {
+    if (e.target !== radioCloud) {
+      radioCloud.checked = true;
+      handlePriorityChange("all");
+    }
+  });
+
   listen(pane, "change", syncRadioUI);
   listen(pane, "command", syncRadioUI);
 

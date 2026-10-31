@@ -580,6 +580,9 @@ core-task-no-stages = 未启用执行步骤
 metadata-source-priority = 元数据来源优先级
 metadata-source-local = 优先本地数据（保留已有字段，补齐空白）
 metadata-source-cloud = 优先云端数据（核验通过后更新差异字段）
+metaref-metadata-source-priority = 元数据来源优先级
+metaref-metadata-source-local = 优先本地数据（保留已有字段，补齐空白）
+metaref-metadata-source-cloud = 优先云端数据（核验通过后更新差异字段）
 review-cloud-priority = DOI 已核验一致，按照云端优先设置采用来源字段；差异字段：{ $fields }。
 
 feedback-performance-heading = 通知与执行性能

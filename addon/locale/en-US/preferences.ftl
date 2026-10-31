@@ -581,6 +581,9 @@ core-task-no-stages = No Steps Enabled
 metadata-source-priority = Metadata source priority
 metadata-source-local = Prioritize local (keep existing fields, fill blanks)
 metadata-source-cloud = Prioritize cloud (update differences after verification)
+metaref-metadata-source-priority = Metadata source priority
+metaref-metadata-source-local = Prioritize local data (keep existing fields, fill blanks)
+metaref-metadata-source-cloud = Prioritize cloud data (update differences after verification)
 review-cloud-priority = Verified matching DOI; applied cloud priority to source fields. Differing fields: { $fields }.
 
 feedback-performance-heading = Notifications and execution performance

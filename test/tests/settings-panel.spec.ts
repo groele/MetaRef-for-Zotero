@@ -51,6 +51,19 @@ describe("settings panel layout and validation in Zotero", function () {
         assert.isNotEmpty(radio.getAttribute("label") || radio.textContent || "");
         radio.click();
         assert.equal(Zotero.Prefs.get(key, true), value);
+
+        const htmlRadio = pane.querySelector<HTMLInputElement>(`#metaref-source-priority-${value}`);
+        if (htmlRadio)
+          assert.isTrue(htmlRadio.checked);
+      }
+
+      for (const value of ["all", "blank"]) {
+        const htmlRadio = pane.querySelector<HTMLInputElement>(`#metaref-source-priority-${value}`);
+        if (htmlRadio) {
+          htmlRadio.click();
+          assert.equal(Zotero.Prefs.get(key, true), value);
+          assert.isTrue(htmlRadio.checked);
+        }
       }
     }
     finally {

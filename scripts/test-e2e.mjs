@@ -6,13 +6,15 @@ import { fileURLToPath } from "node:url";
 import { stripVTControlCharacters } from "node:util";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const defaultManager = process.env.npm_execpath && existsSync(process.env.npm_execpath) ? process.env.npm_execpath : "pnpm";
 async function run(args, env = process.env, requireTests = false) {
   // Reuse the manager selected by the parent instead of re-entering a global
   // version-manager wrapper, which can require another registry verification.
-  const manager = env.npm_execpath && existsSync(env.npm_execpath) ? env.npm_execpath : "pnpm";
+  const manager = env.npm_execpath && existsSync(env.npm_execpath) ? env.npm_execpath : defaultManager;
   const script = /\.[cm]?js$/i.test(manager);
+  const actualArgs = args[0] === "build" && !/pnpm/i.test(manager) ? ["run", "build"] : args;
   await new Promise((resolve, reject) => {
-    const child = spawn(script ? process.execPath : manager, script ? [manager, ...args] : args, { cwd: projectRoot, stdio: requireTests ? ["inherit", "pipe", "pipe"] : "inherit", shell: process.platform === "win32" && !script && !/\.exe$/i.test(manager), env });
+    const child = spawn(script ? process.execPath : manager, script ? [manager, ...actualArgs] : actualArgs, { cwd: projectRoot, stdio: requireTests ? ["inherit", "pipe", "pipe"] : "inherit", shell: process.platform === "win32" && !script && !/\.exe$/i.test(manager), env });
     let output = "";
     for (const [stream, target] of [[child.stdout, process.stdout], [child.stderr, process.stderr]]) {
       stream?.setEncoding("utf8");
