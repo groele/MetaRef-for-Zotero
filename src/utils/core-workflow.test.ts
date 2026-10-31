@@ -4,13 +4,13 @@ import { coreWorkflowPlan, executeCorePlan } from "./core-workflow";
 const defaults = { checkMetadata: false, checkAuthors: false, checkJournal: false, checkDuplicates: false, updateMetadata: true, updateFormat: true, updateJournal: true, updateDuplicates: false };
 
 describe("core workflow scheduling", () => {
-  it("keeps default checking offline and gives updating its own local formatting step", () => {
+  it("keeps checking strictly offline and gives updating its own local formatting step", () => {
     expect(coreWorkflowPlan("check", defaults)).toEqual(["format"]);
     expect(coreWorkflowPlan("update", defaults)).toEqual(["metadata", "format", "journal"]);
   });
-  it("queries authors once when full metadata verification is also enabled", () => {
-    expect(coreWorkflowPlan("check", { ...defaults, checkMetadata: true, checkAuthors: true, checkJournal: true, checkDuplicates: true })).toEqual(["metadata", "format", "journal", "duplicates"]);
-    expect(coreWorkflowPlan("check", { ...defaults, checkAuthors: true })).toEqual(["authors", "format"]);
+  it("enforces strict offline execution for check and repair", () => {
+    expect(coreWorkflowPlan("check", { ...defaults, checkMetadata: true, checkAuthors: true, checkJournal: true, checkDuplicates: true })).toEqual(["format", "duplicates"]);
+    expect(coreWorkflowPlan("check", { ...defaults, checkAuthors: true })).toEqual(["format"]);
   });
   it("can run journal metrics alone and keeps expensive duplicate review opt-in", () => {
     expect(coreWorkflowPlan("update", { ...defaults, updateMetadata: false, updateFormat: false })).toEqual(["journal"]);

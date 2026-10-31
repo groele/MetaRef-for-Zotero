@@ -13,16 +13,21 @@ export interface CoreOptions {
 
 export function coreWorkflowPlan(command: CoreCommand, options: CoreOptions): CoreStage[] {
   const stages: CoreStage[] = [];
-  const check = command === "check";
-  if (check ? options.checkMetadata : options.updateMetadata)
-    stages.push("metadata");
-  else if (check && options.checkAuthors)
-    stages.push("authors");
-  if (check || options.updateFormat)
+  if (command === "check") {
+    // 检查并修复元数据：严格 100% 纯本地离线执行！绝对禁止网络通信！
     stages.push("format");
-  if (check ? options.checkJournal : options.updateJournal)
+    if (options.checkDuplicates)
+      stages.push("duplicates");
+    return stages;
+  }
+  // 更新元数据：集中收敛在线学术增强与自动补全
+  if (options.updateMetadata)
+    stages.push("metadata");
+  if (options.updateFormat)
+    stages.push("format");
+  if (options.updateJournal)
     stages.push("journal");
-  if (check ? options.checkDuplicates : options.updateDuplicates)
+  if (options.updateDuplicates)
     stages.push("duplicates");
   return stages;
 }

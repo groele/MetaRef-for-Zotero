@@ -50,9 +50,9 @@ async function executeWorkflow(command: CoreCommand, items: Zotero.Item[]) {
     return;
   const pref = (key: string, fallback: boolean) => getPref(key as any, fallback) === true;
   const options = {
-    checkMetadata: pref("workflow.updateMetadata", false),
-    checkAuthors: pref("workflow.remoteAuthorsOnCheck", false),
-    checkJournal: pref("workflow.updateJournalRankings", false),
+    checkMetadata: false,
+    checkAuthors: false,
+    checkJournal: false,
     checkDuplicates: pref("workflow.reviewDuplicatesOnCheck", false),
     updateMetadata: pref("workflow.updateBibliographic", true),
     updateFormat: pref("workflow.formatAfterUpdate", true),
@@ -71,7 +71,7 @@ async function executeWorkflow(command: CoreCommand, items: Zotero.Item[]) {
   const reviewOptions = {
     scanPDF: pref("workflow.scanPDF", false),
     searchTitle: pref("workflow.searchTitle", false),
-    repairCreators: (command === "check" && options.checkAuthors) || pref("metadata.repairCreators", true),
+    repairCreators: pref("metadata.repairCreators", true),
     reviveSnapshots: pref("workflow.reviveSnapshots", true),
     overwrite,
     history: false,

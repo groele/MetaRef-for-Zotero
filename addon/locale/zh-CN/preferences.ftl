@@ -326,7 +326,7 @@ integration-state-skipped = 已跳过
 settings-group-count = 已选 { $selected } / { $total } 项
 
 workflow-heading = 检查并修复元数据：执行步骤
-workflow-description = 下面的格式模块与详细规则共享同一组开关，半选表示仅启用部分规则。先运行可选联网核验，再整理本地格式，最后执行可选期刊查询和重复核对。完整书目核验已包含作者，不会再单独查一遍作者；不含清空 Extra 等维护操作。
+workflow-description = 本流水线严格遵循 100% 纯本地离线执行原则，绝对不发起任何外部网络通信，在物理断网或严格内网沙箱中瞬时完成。下面的本地格式模块与详细规则共享同一组开关（半选表示仅启用部分规则）。可一键清洗题名格式、排版化学式下标、规整作者与拼音、执行本地 ISO 4 刊名缩写推断以及正文与补充材料 (SI) 角色解耦重命名。所有联网更新功能统一收敛在下方「更新元数据」中配置。
 workflow-metadata = 先联网核验并自动补全书目信息（包含作者核验）
 workflow-rankings = 最后更新期刊分区与评级
 workflow-title = 标题及短标题的全部检查与格式功能
@@ -341,10 +341,10 @@ menu-placement =
 menu-placement-primary = 右键一级菜单
 menu-placement-nested = MetaFlow 子菜单
 
-metadata-update-saved-description = 两个核心命令已启用的联网步骤及单独核验共用此设置，不会自动启用联网。默认本地优先；作者仍按独立开关补全。云端优先在 DOI 核验一致时可更新标题、年份等差异字段；不同 DOI 或证据不足仍跳过，来源空值不清除本地。自动导入、期刊缩写和评级数据源策略不变，预印本继续保留并关联正式版。
+metadata-update-saved-description = 此项为“更新元数据”时的字段采纳策略，默认本地优先（仅补齐空缺字段）；云端优先在官方核验通过时可更新标题、年份等差异字段。来源空值不清除本地已有内容。
 metadata-repair-creators =
     .label = 按核验后的文献来源修复作者名单（含缺失、删除部分和已有错误）
-metadata-repair-creators-description = 控制书目信息自动填充是否包含作者。身份核验通过且开关开启时，会补全已有但不完整的作者名单；关闭时元数据补全不改作者，关联正式版也保留原有作者；单独启用的“检查时联网核验作者”和本地作者格式规则按各自开关执行。
+metadata-repair-creators-description = 控制书目信息在线补全时是否修复作者。Crossref 身份核验通过且开关开启时，自动补全不完整或被截断的作者名单；关闭时元数据补全不修改作者，关联正式版也保留原有作者。本地作者格式化规则（大小写、拼音校正）在「检查并修复元数据」中独立执行。
 metadata-update-snapshots =
     .label = 网页快照与残缺条目学术复活（Web Snapshot Reviver）
 metadata-update-snapshots-description = 当条目类型为网页（Webpage）或博客时，自动嗅探页面 URL、HTML 快照及页面头部的 DOI、arXiv ID、PMID 等学术指纹，反查补全卷期、页码与作者，一键升级为正规文献（Journal Article 或 Preprint）。
@@ -515,8 +515,8 @@ duplicates-select-one-library = 请先选中一个文库，再执行此去重操
 
 core-workflows-heading = 右键菜单与核心功能
 core-workflows-description = 统一配置命令是否显示、执行步骤及耗时选项。隐藏菜单只影响入口，自动导入仍由一般设置中的独立开关控制；同一轮不会重复查询作者或重复扫描去重。
-workflow-update-heading = 更新元数据：执行步骤
-workflow-update-description = 按顺序执行已启用的书目核验、格式整理、期刊指标和重复核对。关闭书目核验后仍可单独更新期刊指标。取消会停止后续步骤，已保存的前序步骤不会自动回滚。
+workflow-update-heading = 更新元数据：执行步骤与策略
+workflow-update-description = 集中收敛所有在线学术增强与自动补全功能。在文献具备 DOI、arXiv 标识符或残缺快照时，向官方学术数据库请求最新元数据、转正预印本、自动补全作者、提取 AI 核心论点（撷论）并更新期刊权威指标。
 workflow-update-bibliographic = 联网核验书目信息并按判据自动填充
 workflow-update-versions = 自动检测预印本并转为正式发表版本（检测到 arXiv 预印本时自动查询正式发表 DOI 及期刊并转正）
 workflow-update-snapshots = 网页快照学术复活（嗅探残缺网页快照的学术指纹并自动升级为正式文献）

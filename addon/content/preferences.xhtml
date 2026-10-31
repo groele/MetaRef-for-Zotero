@@ -22,15 +22,6 @@
       data-l10n-id="workflow-execution-overview"
       class="metaref-pref-description"
     />
-    <checkbox
-      data-l10n-id="workflow-remote-authors-check"
-      preference="workflow.remoteAuthorsOnCheck"
-      native="true"
-    />
-    <description
-      data-l10n-id="workflow-remote-authors-description"
-      class="metaref-pref-description"
-    />
 
     <!-- 添加时自动执行格式化（群组条目） -->
     <checkbox
@@ -1518,6 +1509,12 @@
         preference="rule.no-doi-prefix"
         native="true"
       />
+      <!-- DOI: 应为长型 -->
+      <checkbox
+        data-l10n-id="rule-correct-doi-long"
+        preference="rule.correct-doi-long"
+        native="true"
+      />
     </html:details>
 
     <!-- General Field: Others -->
@@ -1544,131 +1541,119 @@
     </html:details>
   </groupbox>
 
-  <!-- 更新元数据 -->
-  <groupbox>
-    <label><html:h2 data-l10n-id="section-updateMetadata" /></label>
-    <!-- Persistent update policy -->
-    <groupbox>
-      <label><html:h3 data-l10n-id="metadata-update-defaults" /></label>
+  <!-- 在线元数据更新组件暂存区（由 setupWorkflowSettings 统一编排并归纳至高等级选项“更新元数据”） -->
+  <vbox id="metaref-update-staging" hidden="true">
+    <hbox align="center" id="metaref-metadata-source-priority-row">
+      <label data-l10n-id="metadata-source-priority" />
+      <radiogroup
+        orient="horizontal"
+        id="metaref-metadata-source-priority"
+        preference="rule.tool-update-metadata.option.mode"
+      >
+        <radio data-l10n-id="metadata-source-local" value="blank" />
+        <radio data-l10n-id="metadata-source-cloud" value="all" />
+      </radiogroup>
+    </hbox>
+
+    <description
+      id="metaref-metadata-source-priority-description"
+      data-l10n-id="metadata-update-saved-description"
+      class="metaref-pref-description"
+    />
+    <checkbox
+      id="metaref-metadata-repair-creators"
+      data-l10n-id="metadata-repair-creators"
+      preference="metadata.repairCreators"
+      native="true"
+    />
+    <description
+      id="metaref-metadata-repair-creators-description"
+      data-l10n-id="metadata-repair-creators-description"
+      class="metaref-pref-description"
+    />
+    <checkbox
+      id="metaref-metadata-update-journal-info"
+      data-l10n-id="metadata-update-journal-info"
+      preference="metadata.updateJournalInfo"
+      native="true"
+    />
+    <description
+      id="metaref-metadata-update-journal-info-description"
+      data-l10n-id="metadata-update-journal-info-description"
+      class="metaref-pref-description"
+    />
+    <checkbox
+      id="metaref-metadata-update-snapshots"
+      data-l10n-id="metadata-update-snapshots"
+      preference="workflow.reviveSnapshots"
+      native="true"
+    />
+    <description
+      id="metaref-metadata-update-snapshots-description"
+      data-l10n-id="metadata-update-snapshots-description"
+      class="metaref-pref-description"
+    />
+    <checkbox
+      id="metaref-metadata-update-tldr"
+      data-l10n-id="metadata-update-tldr"
+      preference="workflow.tldrEnabled"
+      native="true"
+    />
+    <description
+      id="metaref-metadata-update-tldr-description"
+      data-l10n-id="metadata-update-tldr-description"
+      class="metaref-pref-description"
+    />
+    <vbox id="metaref-tldr-options" class="indented-pref">
       <hbox align="center">
-        <label data-l10n-id="metadata-source-priority"></label>
+        <label data-l10n-id="metadata-tldr-target-label" />
         <radiogroup
           orient="horizontal"
-          id="metaref-metadata-source-priority"
-          preference="rule.tool-update-metadata.option.mode"
+          id="metaref-tldr-target"
+          preference="workflow.tldrTarget"
         >
-          <radio data-l10n-id="metadata-source-local" value="blank" />
-          <radio data-l10n-id="metadata-source-cloud" value="all" />
+          <radio data-l10n-id="metadata-tldr-target-note" value="note" />
+          <radio data-l10n-id="metadata-tldr-target-extra" value="extra" />
+          <radio data-l10n-id="metadata-tldr-target-both" value="both" />
         </radiogroup>
       </hbox>
-
-      <description
-        data-l10n-id="metadata-update-saved-description"
-        class="metaref-pref-description"
-      />
+      <hbox align="center" style="margin-top: 6px">
+        <label data-l10n-id="metadata-tldr-extra-format-label" />
+        <radiogroup
+          orient="horizontal"
+          id="metaref-tldr-extra-format"
+          preference="workflow.tldrExtraFormat"
+        >
+          <radio
+            data-l10n-id="metadata-tldr-extra-format-remark"
+            value="remark"
+          />
+          <radio data-l10n-id="metadata-tldr-extra-format-tldr" value="tldr" />
+        </radiogroup>
+      </hbox>
       <checkbox
-        data-l10n-id="metadata-repair-creators"
-        preference="metadata.repairCreators"
+        id="metaref-metadata-update-tldr-info-pane"
+        data-l10n-id="metadata-update-tldr-info-pane"
+        preference="workflow.tldrShowInInfoPane"
         native="true"
+        style="margin-top: 6px"
       />
-      <description
-        data-l10n-id="metadata-repair-creators-description"
-        class="metaref-pref-description"
-      />
-      <checkbox
-        data-l10n-id="metadata-update-journal-info"
-        preference="metadata.updateJournalInfo"
-        native="true"
-      />
-      <description
-        data-l10n-id="metadata-update-journal-info-description"
-        class="metaref-pref-description"
-      />
-      <checkbox
-        data-l10n-id="metadata-update-snapshots"
-        preference="workflow.reviveSnapshots"
-        native="true"
-      />
-      <description
-        data-l10n-id="metadata-update-snapshots-description"
-        class="metaref-pref-description"
-      />
-      <checkbox
-        data-l10n-id="metadata-update-tldr"
-        preference="workflow.tldrEnabled"
-        native="true"
-      />
-      <description
-        data-l10n-id="metadata-update-tldr-description"
-        class="metaref-pref-description"
-      />
-      <vbox class="indented-pref">
-        <hbox align="center">
-          <label data-l10n-id="metadata-tldr-target-label" />
-          <radiogroup
-            orient="horizontal"
-            id="metaref-tldr-target"
-            preference="workflow.tldrTarget"
-          >
-            <radio data-l10n-id="metadata-tldr-target-note" value="note" />
-            <radio data-l10n-id="metadata-tldr-target-extra" value="extra" />
-            <radio data-l10n-id="metadata-tldr-target-both" value="both" />
-          </radiogroup>
-        </hbox>
-        <hbox align="center" style="margin-top: 6px">
-          <label data-l10n-id="metadata-tldr-extra-format-label" />
-          <radiogroup
-            orient="horizontal"
-            id="metaref-tldr-extra-format"
-            preference="workflow.tldrExtraFormat"
-          >
-            <radio
-              data-l10n-id="metadata-tldr-extra-format-remark"
-              value="remark"
-            />
-            <radio
-              data-l10n-id="metadata-tldr-extra-format-tldr"
-              value="tldr"
-            />
-          </radiogroup>
-        </hbox>
-        <checkbox
-          data-l10n-id="metadata-update-tldr-info-pane"
-          preference="workflow.tldrShowInInfoPane"
-          native="true"
-          style="margin-top: 6px"
-        />
-      </vbox>
-      <description
-        data-l10n-id="rule-tool-update-metadata-dialog-note-rate-limit"
-        class="metaref-pref-description"
-      />
-      <description
-        data-l10n-id="rule-tool-update-metadata-dialog-note-chinese-limit"
-        class="metaref-pref-description"
-      />
-      <description
-        data-l10n-id="rule-tool-update-metadata-dialog-note-type-change"
-        class="metaref-pref-description"
-      />
-    </groupbox>
-
-    <groupbox>
-      <label><html:h3 data-l10n-id="workflow-legacy-heading" /></label>
-      <description
-        data-l10n-id="workflow-legacy-description"
-        class="metaref-pref-description"
-      />
-      <!-- DOI: 应为长型 -->
-      <checkbox
-        data-l10n-id="rule-correct-doi-long"
-        preference="rule.correct-doi-long"
-        native="true"
-      />
-    </groupbox>
+    </vbox>
+    <description
+      data-l10n-id="rule-tool-update-metadata-dialog-note-rate-limit"
+      class="metaref-pref-description"
+    />
+    <description
+      data-l10n-id="rule-tool-update-metadata-dialog-note-chinese-limit"
+      class="metaref-pref-description"
+    />
+    <description
+      data-l10n-id="rule-tool-update-metadata-dialog-note-type-change"
+      class="metaref-pref-description"
+    />
 
     <!-- Semantic Scholar Token -->
-    <groupbox>
+    <groupbox id="metaref-metadata-provider-options">
       <label><html:h3 data-l10n-id="metadata-provider-options" /></label>
       <hbox align="center">
         <label
@@ -1695,7 +1680,7 @@
         class="metaref-pref-description"
       />
     </groupbox>
-  </groupbox>
+  </vbox>
 
   <groupbox id="metaref-duplicate-settings">
     <label><html:h2 data-l10n-id="duplicates-heading" /></label>

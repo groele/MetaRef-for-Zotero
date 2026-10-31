@@ -16,7 +16,6 @@ import { closeReviewPanels } from "./modules/review/panel";
 import { RichTextToolBar, setHtmlTag } from "./modules/rich-text";
 import { Rules } from "./modules/rules";
 import { ToolUpdateEasyScholar } from "./modules/rules/tool-update-easyscholar";
-import { ToolUpdateMetadata } from "./modules/rules/tool-update-metadata";
 import { registerShortcuts } from "./modules/shortcuts";
 import { AutomaticItems } from "./utils/automatic-items";
 import { createAutomaticWorkflow, runAutomaticWorkflow } from "./utils/automatic-workflow";
@@ -353,23 +352,12 @@ async function onLintInBatch(
   if (requestedIDs.includes("standard") && !requestedIDs.includes("require-doi") && getPref("rule.require-doi")) {
     rules.push(localDOICheck());
   }
-  if (requestedIDs.includes("standard") && !context.automatic) {
-    const mode = getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" as const : "blank" as const;
-    if (getPref("workflow.updateMetadata" as any, false) && !rules.some(rule => rule.id === "tool-update-metadata")) {
-      rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode, allowTypeChanged: false, repairCreators: getPref("metadata.repairCreators" as any, true) === true }) });
-    }
-    else if (getPref("workflow.remoteAuthorsOnCheck" as any, false) && getPref("metadata.repairCreators" as any, true) && rules.some(rule => rule.id === "require-creators") && !rules.some(rule => rule.id === "tool-update-metadata")) {
-      rules.unshift({ ...ToolUpdateMetadata, prepare: () => ({ mode, allowTypeChanged: false, repairCreators: true, creatorsOnly: true }) });
-    }
-    if (hasEnabledJournalMetrics() && getPref("workflow.updateJournalRankings" as any, false) && !rules.some(rule => rule.id === "tool-update-easyscholar"))
-      rules.push(Rules.getByID("tool-update-easyscholar")!);
-  }
 
   if (rules.length === 0 || items.length === 0)
     return;
 
   const updateJournal = hasEnabledJournalMetrics() && !context.automatic && getPref("metadata.updateJournalInfo" as any, true)
-    && (requestedIDs.includes("tool-update-metadata") || (requestedIDs.includes("standard") && getPref("workflow.updateMetadata" as any, false)));
+    && requestedIDs.includes("tool-update-metadata");
   if (updateJournal) {
     const mode = getPref("rule.tool-update-metadata.option.mode") === "all" ? "all" as const : "blank" as const;
     const rule = { ...ToolUpdateEasyScholar, prepare: () => ({ mode }) };

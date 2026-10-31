@@ -71,7 +71,7 @@ export function setupFunctionCards(pane: Element) {
     }
   }
   const sections = [...pane.querySelectorAll(":scope > .metaref-section-card")];
-  for (const id of ["section-general", "core-workflows-heading", "section-updateMetadata", "duplicates-heading", "section-article-esi", "insights-share-heading", "section-article-abbreviation", "section-rules", "data-settings-heading", "workflow-tool-center", "shortcuts-header", "section-rich-text", "section-about"]) {
+  for (const id of ["section-general", "core-workflows-heading", "duplicates-heading", "section-article-esi", "insights-share-heading", "section-article-abbreviation", "section-rules", "data-settings-heading", "workflow-tool-center", "shortcuts-header", "section-rich-text", "section-about"]) {
     const section = sections.find(section => section.querySelector(`:scope > summary [data-l10n-id$='${id}']`));
     if (section)
       pane.append(section);

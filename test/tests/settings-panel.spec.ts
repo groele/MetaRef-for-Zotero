@@ -73,7 +73,7 @@ describe("settings panel layout and validation in Zotero", function () {
     assert.isTrue(steps.every(step => general.contains(step)));
     assert.isNotNull(pane.querySelector(":scope > .metaref-section-card > #metaref-easyscholar-settings"));
     const headings = [...pane.querySelectorAll(":scope > .metaref-section-card > summary [data-l10n-id]")].map(heading => heading.getAttribute("data-l10n-id"));
-    assert.isBelow(headings.indexOf("metaref-section-updateMetadata"), headings.indexOf("metaref-section-rules"));
+    assert.isBelow(headings.indexOf("metaref-core-workflows-heading"), headings.indexOf("metaref-section-rules"));
     try {
       if (auto.checked)
         auto.click();
@@ -268,7 +268,7 @@ describe("settings panel layout and validation in Zotero", function () {
     const compact = find("menu.compact") as HTMLInputElement;
     const additional = core.querySelector<HTMLElement>("#metaref-additional-menu-options")!;
     const saved = new Map(["menu.compact", "menu.standard", "menu.tool-update-metadata"].map(key => [key, Zotero.Prefs.get(pref(key), true) as boolean]));
-    const stages = ["workflow.updateMetadata", "workflow.updateBibliographic", "workflow.formatAfterUpdate"];
+    const stages = ["workflow.updateBibliographic", "workflow.formatAfterUpdate"];
     const beforeStages = stages.map(key => Zotero.Prefs.get(pref(key), true));
     const cards = [...pane.querySelectorAll<HTMLDetailsElement>("details")];
     const opened = cards.map(card => card.open);
@@ -355,7 +355,7 @@ describe("settings panel layout and validation in Zotero", function () {
   });
 
   it("preserves workflow and field dependencies after unrelated settings change", function () {
-    const keys = ["workflow.updateBibliographic", "workflow.updateMetadata", "workflow.remoteAuthorsOnCheck", "easyscholar.fields.jcr"];
+    const keys = ["workflow.updateBibliographic", "easyscholar.fields.jcr"];
     const before = new Map(keys.map(key => [key, Zotero.Prefs.get(pref(key), true)]));
     const set = (key: string, checked: boolean) => {
       const input = find(key) as HTMLInputElement;
@@ -372,13 +372,11 @@ describe("settings panel layout and validation in Zotero", function () {
       pane.dispatchEvent(new win.Event("command", { bubbles: true }));
       for (const input of [versions, pdf, title, column])
         assert.isTrue(input.disabled, input.id);
-      set("workflow.updateMetadata", true);
-      assert.isFalse(pdf.disabled);
-      assert.isFalse(title.disabled);
-      assert.isTrue(versions.disabled, "checking metadata does not enable the update-only publication option");
       set("workflow.updateBibliographic", true);
       set("easyscholar.fields.jcr", true);
       assert.isFalse(versions.disabled);
+      assert.isFalse(pdf.disabled);
+      assert.isFalse(title.disabled);
       assert.isFalse(column.disabled);
     }
     finally {
