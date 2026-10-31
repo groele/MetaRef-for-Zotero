@@ -5,6 +5,10 @@ menuitem-label =
 menuitem-stdFormatFlow = 
   .label = Zotero MetaFlow：检查并修复元数据
 field-nature-index = Nature Index
+info-row-tldr = 撷论
+    .label = 撷论
+field-tldr = 撷论
+    .label = 撷论
 
 menu-group-primary = 常用操作
 menu-group-title = 标题与富文本

@@ -10,6 +10,7 @@ import {
   resolvePaperIDForTLDR,
   saveTLDRToAbstract,
   saveTLDRToExtra,
+  saveTLDRToItem,
   saveTLDRToNote,
   unescapeHTML,
 } from "./tldr";
@@ -294,5 +295,31 @@ describe("tldr extraction and manipulation", () => {
     });
     expect(resultTLDR).toBe(true);
     expect(extraValue).toContain("TLDR: This paper presents a scalable method");
+  });
+
+  it("handles saveTLDRToItem for inline updates and clears", async () => {
+    let extra = "DOI: 10.1038/s41586\nremark: 初始论点";
+    const saveTx = vi.fn().mockResolvedValue(true);
+    const item = {
+      isRegularItem: () => true,
+      getField: (f: string) => f === "extra" ? extra : "",
+      setField: (f: string, v: string) => {
+        if (f === "extra")
+          extra = v;
+      },
+      getNotes: () => [],
+      saveTx,
+    } as unknown as Zotero.Item;
+
+    const saved = await saveTLDRToItem(item, "更新后的撷论论点");
+    expect(saved).toBe(true);
+    expect(extra).toContain("remark: 更新后的撷论论点");
+    expect(saveTx).toHaveBeenCalled();
+
+    // Clearing
+    const cleared = await saveTLDRToItem(item, "");
+    expect(cleared).toBe(true);
+    expect(extra).not.toContain("remark:");
+    expect(extra).toContain("DOI: 10.1038/s41586");
   });
 });

@@ -349,7 +349,9 @@ metadata-update-snapshots-description = When an item is a webpage or blog post, 
 
 metadata-update-tldr =
     .label = Automatically extract and backfill Semantic Scholar TL;DR summary (撷论)
-metadata-update-tldr-description = During metadata update, if an item contains a DOI, arXiv ID, or PMID, automatically fetches a 1-2 sentence AI summary (Too Long; Didn't Read) from Semantic Scholar to capture the core takeaway. Can be displayed in the "TL;DR Takeaway (撷论)" library column and interoperates with the "Remark" column.
+metadata-update-tldr-description = During metadata update, if an item contains a DOI, arXiv ID, or PMID, automatically fetches a 1-2 sentence AI summary (Too Long; Didn't Read) from Semantic Scholar to capture the core takeaway. Can be displayed in the "TL;DR Takeaway (撷论)" library column and Item Info pane with inline editing, seamlessly interoperable with the "Remark" ecosystem.
+metadata-update-tldr-info-pane =
+    .label = Display "TL;DR Takeaway" in right sidebar Item Info pane with inline editing
 metadata-tldr-target-label = Backfill Target:
 metadata-tldr-target-note =
     .label = Standalone Child Note (Recommended, readable by "TL;DR Takeaway" column)

@@ -260,6 +260,64 @@ export function saveTLDRToAbstract(item: Zotero.Item, tldr: string): boolean {
   return true;
 }
 
+export async function saveTLDRToItem(item: Zotero.Item, value: string): Promise<boolean> {
+  if (!item || (typeof item.isRegularItem === "function" && !item.isRegularItem()))
+    return false;
+  const cleanTLDR = value.trim();
+  let changed = false;
+
+  if (!cleanTLDR) {
+    if (typeof item.getField === "function" && typeof item.setField === "function") {
+      const currentExtra = String(item.getField("extra") || "");
+      const lines = currentExtra.split(/\r?\n/);
+      const isMatch = (line: string) => /^(?:TL;?DR|撷论|remark|简记)\s*[:：]/i.test(line.trim());
+      if (lines.some(isMatch)) {
+        const filtered = lines.filter(line => !isMatch(line));
+        item.setField("extra", filtered.join("\n"));
+        changed = true;
+      }
+    }
+    const note = findExistingTLDRNote(item);
+    if (note && typeof note.eraseTx === "function") {
+      await note.eraseTx();
+      changed = true;
+    }
+  }
+  else {
+    const extraSaved = saveTLDRToExtra(item, cleanTLDR);
+    if (extraSaved)
+      changed = true;
+    const existingNote = findExistingTLDRNote(item);
+    if (existingNote && typeof existingNote.setNote === "function") {
+      const noteHtml = `<div data-metaflow-tldr="true"><p><strong>💡 撷论 (Semantic Scholar TL;DR)</strong></p><blockquote style="margin:8px 0;padding:8px 12px;border-left:3px solid #245ac7;background:rgba(36,90,199,0.06);line-height:1.6;">${escapeHTML(cleanTLDR)}</blockquote></div>`;
+      if (typeof existingNote.getNote !== "function" || existingNote.getNote() !== noteHtml) {
+        existingNote.setNote(noteHtml);
+        if (typeof existingNote.saveTx === "function")
+          await existingNote.saveTx();
+        changed = true;
+      }
+    }
+  }
+
+  if (changed && typeof item.saveTx === "function") {
+    await item.saveTx();
+  }
+
+  if (changed) {
+    try {
+      if (typeof Zotero !== "undefined" && Zotero.ItemTreeManager?.refreshColumns)
+        Zotero.ItemTreeManager.refreshColumns();
+      if (typeof Zotero !== "undefined" && Zotero.ItemPaneManager?.refreshInfoRow)
+        Zotero.ItemPaneManager.refreshInfoRow("tldr");
+    }
+    catch {
+      // Ignore in headless test contexts
+    }
+  }
+
+  return changed;
+}
+
 export async function backfillItemTLDR(
   item: Zotero.Item,
   identifiers: Partial<Identifiers> = {},
@@ -318,6 +376,8 @@ export async function backfillItemTLDR(
     try {
       if (typeof Zotero !== "undefined" && Zotero.ItemTreeManager?.refreshColumns)
         Zotero.ItemTreeManager.refreshColumns();
+      if (typeof Zotero !== "undefined" && Zotero.ItemPaneManager?.refreshInfoRow)
+        Zotero.ItemPaneManager.refreshInfoRow("tldr");
     }
     catch {
       // Ignore in headless test contexts

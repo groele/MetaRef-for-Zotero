@@ -348,7 +348,9 @@ metadata-update-snapshots-description = 当条目类型为网页（Webpage）或
 
 metadata-update-tldr =
     .label = 自动提炼并回填 Semantic Scholar TL;DR 核心论点摘要（撷论）
-metadata-update-tldr-description = 在更新元数据时，若文献包含 DOI、arXiv 或 PMID 等标识符，自动向 Semantic Scholar 请求该文献由 AI 提炼的 1~2 句核心贡献摘要（Too Long; Didn't Read），快速获悉论文要义。条目列表可开启「撷论」列直观呈现，并兼容主流「简记」列。
+metadata-update-tldr-description = 在更新元数据时，若文献包含 DOI、arXiv 或 PMID 等标识符，自动向 Semantic Scholar 请求该文献由 AI 提炼的 1~2 句核心贡献摘要（Too Long; Didn't Read），快速获悉论文要义。条目列表可开启「撷论」列直观呈现，右侧侧边栏「信息」面板亦常驻显示并支持编辑，无缝联动主流「简记」生态。
+metadata-update-tldr-info-pane =
+    .label = 在右侧侧边栏「信息」面板常驻显示「撷论」并支持直接编辑
 metadata-tldr-target-label = 回填目标位置：
 metadata-tldr-target-note =
     .label = 独立子笔记 (推荐，列表「撷论」列同步可读)

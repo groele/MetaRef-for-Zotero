@@ -1,11 +1,11 @@
 {
   "product": "Zotero MetaFlow",
-  "version": "13.3.3",
+  "version": "13.3.4",
   "addonID": "metaflow@groele",
   "file": "zotero-metaflow.xpi",
-  "bytes": 3500523,
-  "sha256": "4dde0da820f77ff734540d8628c341b732d8f51c22338faa3332730b2d2919e5",
-  "sha512": "15bc544b20c1cb85ef0eb5d007709e2ced56d050c5bf98b8e1c5103d9ede2b78cf112386ad0eb986ef0aec60a9e3f0e72b775b34480d64c7a49f132f89a1d70a",
+  "bytes": 3501877,
+  "sha256": "04512766549b5b1150826c7ddf3979d9444a78b935e6d89eacd8699c33b659ef",
+  "sha512": "bd4a49355cb510248622f40160053dd680d33162a7c344ebe07dd6950e9d30eaeb504651dd1bc23e36bae39841dea3277848f6fdfe156ecf60e1228445de68c9",
   "entries": 52,
   "zipCRC": "passed",
   "qualityChecks": {
@@ -16,15 +16,15 @@
     "releaseTagSelfTest": "passed"
   },
   "automatedTests": {
-    "unitTestFiles": 91,
-    "passed": 650,
+    "unitTestFiles": 92,
+    "passed": 659,
     "failed": 0
   },
   "packageChecks": {
     "manifestIdentity": "metaflow@groele",
-    "manifestVersion": "13.3.3",
+    "manifestVersion": "13.3.4",
     "bundledScript": "passed",
-    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.3.3/zotero-metaflow.xpi",
+    "updateFeedPath": "https://github.com/groele/Zotero-MetaFlow/releases/download/v13.3.4/zotero-metaflow.xpi",
     "updateFeedSHA512": "matches package"
   },
   "isolatedZotero": {

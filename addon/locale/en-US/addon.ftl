@@ -4,6 +4,8 @@ prefs-title = Zotero MetaFlow
 ## Item tree
 field-abbr = Abbr
 field-tldr = TL;DR Takeaway
+info-row-tldr = TL;DR Takeaway
+    .label = TL;DR Takeaway
 
 ## batch
 info-batch-init = Preparing...

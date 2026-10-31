@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("./modules/core-workflow", () => ({ stopCoreWorkflows: mocks.stopCore, localDOICheck: vi.fn(), runCoreWorkflow: vi.fn() }));
 vi.mock("./utils/persistence-shutdown", () => ({ registerPersistenceShutdown: vi.fn(() => vi.fn()) }));
 vi.mock("./modules/item-tree", () => ({ registerExtraColumns: mocks.register, unregisterExtraColumns: mocks.unregister }));
+vi.mock("./modules/item-info-row", () => ({ registerInfoRows: mocks.register, unregisterInfoRows: mocks.unregister, refreshTLDRInfoRow: vi.fn() }));
 vi.mock("./modules/journal-pane", () => ({ registerJournalPane: mocks.register, unregisterJournalPane: mocks.unregister, refreshJournalPane: vi.fn(), setJournalUpdateResult: vi.fn() }));
 vi.mock("./modules/menu", () => ({ registerMenu: mocks.register, unregisterMenu: mocks.unregister }));
 vi.mock("./modules/notifier", () => ({ registerNotifier: mocks.register, unregisterNotifier: mocks.unregister }));

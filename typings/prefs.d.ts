@@ -286,6 +286,7 @@ declare namespace _ZoteroTypes {
       "workflow.tldrEnabled": boolean;
       "workflow.tldrTarget": string;
       "workflow.tldrExtraFormat": string;
+      "workflow.tldrShowInInfoPane": boolean;
       "workflow.formatAfterUpdate": boolean;
       "workflow.scanPDF": boolean;
       "workflow.searchTitle": boolean;
