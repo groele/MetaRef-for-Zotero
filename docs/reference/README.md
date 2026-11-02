@@ -21,7 +21,7 @@
 
 ---
 
-> **12.1.0 release:** normalize imported abstract whitespace and wrapped chemical formula fragments by default through Check and Fix Metadata. The new setting also controls automatic formatting on import. Core commands now update their running notification in place when finished. See the [release notes](../../docs/releases/metaflow-v12.1.0.md).
+> **12.1.0 release:** normalize imported abstract whitespace and wrapped chemical formula fragments by default through Check and Fix Metadata. The new setting also controls automatic formatting on import. Core commands now update their running notification in place when finished. See the [release notes](https://github.com/groele/Zotero-MetaFlow/releases/tag/v12.1.0).
 
 > Existing preferences, library metadata and local runtime formats remain compatible; no settings migration is required. The earlier [audit ledger](../../docs/commercial-readiness-2026-10-18.md) retains broader commercial-readiness limitations.
 

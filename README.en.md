@@ -358,7 +358,7 @@ Updates are served automatically via [dist/update.json](https://github.com/groel
 | --------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------- |
 | **Zotero**            | **Zotero 10.0 through 12.*** (modern Gecko 153 architecture) | Fully adapted for modern Zotero host features, dark mode, and native sidebars |
 | **Operating Systems** | Windows 10 / 11, macOS (Intel & Apple Silicon), Linux        | Cross-platform native parity                                                  |
-| **Add-on Version**    | **v13.0.2**                                                  | [View Release Notes](docs/releases/metaflow-v13.0.2.md)                       |
+| **Add-on Version**    | **v13.4.0**                                                  | [View Release Notes](docs/releases/metaflow-v13.4.0.md)                       |
 
 ---
 
