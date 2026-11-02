@@ -342,6 +342,14 @@
   cursor: pointer;
 }
 
+#metaref .metaref-check-option:has(input:disabled) {
+  cursor: default;
+}
+
+#metaref .metaref-check-option input:disabled {
+  cursor: default;
+}
+
 #metaref .metaref-radio-option {
   cursor: pointer;
   user-select: none;
@@ -619,11 +627,17 @@
   line-height: 1.6;
 }
 
+#metaref .metaref-collapsible-card > #metaref-metadata-source-priority-container,
 #metaref .metaref-collapsible-card > #metaref-metadata-source-priority-row {
   margin-inline: 0;
-  margin-block: 8px 4px;
+  margin-inline-start: 24px;
+  margin-block: 4px 10px;
 }
 
+#metaref
+  .metaref-collapsible-card
+  > #metaref-metadata-source-priority-container
+  > #metaref-metadata-source-priority-label,
 #metaref .metaref-collapsible-card > #metaref-metadata-source-priority-row > label {
   display: block;
   font-weight: 600;
@@ -632,8 +646,12 @@
   margin-block-end: 4px;
 }
 
+#metaref .metaref-collapsible-card > #metaref-metadata-source-priority-container > [role="radiogroup"],
 #metaref .metaref-collapsible-card > #metaref-metadata-source-priority-row > radiogroup {
-  margin-inline-start: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-inline: 0;
 }
 
 #metaref .metaref-collapsible-card > #metaref-metadata-source-priority-row > radiogroup radio {

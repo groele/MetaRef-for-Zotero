@@ -135,14 +135,14 @@ export function setupWorkflowSettings(pane: Element) {
   // (1) 在线书目核验与自动补全
   const bibliographic = choice("update-bibliographic", "workflow.updateBibliographic", true, update);
 
-  // (2) 元数据来源优先级策略（HTML5 健壮原生单选组件，确保原生圆圈与点击勾选 100% 渲染可用）
+  // (2) 元数据来源优先级策略（作为“在线核验并补全书目元数据”的子选项，整体缩进 24px 对齐父级文字；单选组与标题左边缘完全对齐）
   const priorityGroup = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
   priorityGroup.id = "metaref-metadata-source-priority-container";
-  priorityGroup.style.cssText = "margin-inline: 0; margin-block: 6px 10px;";
+  priorityGroup.style.cssText = "margin-inline-start: 24px; margin-block: 4px 10px;";
 
   const priorityHeading = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
   priorityHeading.id = "metaref-metadata-source-priority-label";
-  priorityHeading.style.cssText = "font-weight: 600; font-size: 13px; margin-block-end: 6px; color: inherit;";
+  priorityHeading.style.cssText = "font-weight: 600; font-size: 13px; margin-block-end: 4px; color: inherit;";
   priorityHeading.textContent = getString("metadata-source-priority") || "元数据来源优先级";
   doc.l10n!.setAttributes(priorityHeading, "metaref-metadata-source-priority");
   priorityGroup.append(priorityHeading);
@@ -150,7 +150,7 @@ export function setupWorkflowSettings(pane: Element) {
   const priorityOptions = doc.createElementNS("http://www.w3.org/1999/xhtml", "div") as HTMLElement;
   priorityOptions.setAttribute("role", "radiogroup");
   priorityOptions.setAttribute("aria-labelledby", priorityHeading.id);
-  priorityOptions.style.cssText = "margin-inline-start: 24px; display: flex; flex-direction: column; gap: 4px;";
+  priorityOptions.style.cssText = "display: flex; flex-direction: column; gap: 2px; margin-inline: 0;";
 
   const makeRadio = (value: string, l10nId: string, fallbackText: string) => {
     const label = doc.createElementNS("http://www.w3.org/1999/xhtml", "label");
@@ -199,11 +199,16 @@ export function setupWorkflowSettings(pane: Element) {
   };
 
   listen(radioLocal, "change", () => {
-    if (radioLocal.checked)
+    if (radioLocal.checked && !radioLocal.disabled)
       handlePriorityChange("blank");
   });
-  listen(radioLocal, "click", () => handlePriorityChange("blank"));
+  listen(radioLocal, "click", () => {
+    if (!radioLocal.disabled)
+      handlePriorityChange("blank");
+  });
   listen(labelLocal, "click", (e: Event) => {
+    if (radioLocal.disabled)
+      return;
     if (e.target !== radioLocal) {
       radioLocal.checked = true;
       handlePriorityChange("blank");
@@ -211,11 +216,16 @@ export function setupWorkflowSettings(pane: Element) {
   });
 
   listen(radioCloud, "change", () => {
-    if (radioCloud.checked)
+    if (radioCloud.checked && !radioCloud.disabled)
       handlePriorityChange("all");
   });
-  listen(radioCloud, "click", () => handlePriorityChange("all"));
+  listen(radioCloud, "click", () => {
+    if (!radioCloud.disabled)
+      handlePriorityChange("all");
+  });
   listen(labelCloud, "click", (e: Event) => {
+    if (radioCloud.disabled)
+      return;
     if (e.target !== radioCloud) {
       radioCloud.checked = true;
       handlePriorityChange("all");

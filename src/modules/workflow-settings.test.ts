@@ -114,7 +114,15 @@ describe("workflow-settings module", () => {
     try {
       setupWorkflowSettings(pane);
 
-      // Verify the radio inputs were created
+      // Verify the radio inputs and container alignment were created
+      const priorityContainer = createdElements.find(el => el.id === "metaref-metadata-source-priority-container");
+      expect(priorityContainer).toBeDefined();
+      expect(priorityContainer.style.cssText).toContain("margin-inline-start: 24px");
+
+      const priorityOptions = createdElements.find(el => el.attributes?.get("role") === "radiogroup");
+      expect(priorityOptions).toBeDefined();
+      expect(priorityOptions.style.cssText).toContain("margin-inline: 0");
+
       const radioLocal = createdElements.find(el => el.id === "metaref-source-priority-blank");
       const radioCloud = createdElements.find(el => el.id === "metaref-source-priority-all");
       expect(radioLocal).toBeDefined();
@@ -138,6 +146,13 @@ describe("workflow-settings module", () => {
       const localClick = radioLocal.addEventListener.mock.calls.find((call: any[]) => call[0] === "click");
       expect(localClick).toBeDefined();
       localClick[1](new mockDoc.defaultView.Event("click"));
+      expect(preferences.get("rule.tool-update-metadata.option.mode")).toBe("blank");
+      expect(radioLocal.checked).toBe(true);
+      expect(radioCloud.checked).toBe(false);
+
+      // Verify disabled guard prevents priority change when disabled
+      radioCloud.disabled = true;
+      cloudClick[1](new mockDoc.defaultView.Event("click"));
       expect(preferences.get("rule.tool-update-metadata.option.mode")).toBe("blank");
       expect(radioLocal.checked).toBe(true);
       expect(radioCloud.checked).toBe(false);
